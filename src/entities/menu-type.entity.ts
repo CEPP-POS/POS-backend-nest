@@ -12,6 +12,9 @@ export class MenuType {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price_difference: number;
 
+  @Column({ type: 'boolean', default: false })
+  is_required: boolean;
+
   @ManyToOne(() => Menu, (menu) => menu.menuTypes)
   menu: Menu;
 }

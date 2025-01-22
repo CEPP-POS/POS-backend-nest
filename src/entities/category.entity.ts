@@ -1,5 +1,14 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  JoinColumn,
+  ManyToOne,
+  Index,
+} from 'typeorm';
 import { Menu } from './menu.entity';
+import { Owner } from './owner.entity';
 
 @Entity()
 export class Category {
@@ -8,6 +17,10 @@ export class Category {
 
   @Column()
   category_name: string;
+
+  @ManyToOne(() => Owner)
+  @JoinColumn({ name: 'owner_id' })
+  owner: Owner;
 
   @OneToMany(() => Menu, (menu) => menu.category)
   menu: Menu[];

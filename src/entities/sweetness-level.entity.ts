@@ -15,10 +15,9 @@ export class SweetnessLevel {
   @Column({ nullable: false })
   level_name: string;
 
-  // @ManyToOne(() => Menu, (menu) => menu.sweetnessLevels, {
-  //   nullable: false,
-  //   onDelete: 'CASCADE',
-  // })
+  @Column({ type: 'boolean', default: false })
+  is_required: boolean;
+
   @ManyToOne(() => Menu, (menu) => menu.sweetnessLevels, { nullable: false })
   @JoinColumn({ name: 'menu_id' })
   menu: Menu;
