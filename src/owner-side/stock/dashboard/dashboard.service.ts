@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Overview, TopItemDto } from './dto/overview.dto';
-import { SalesSummary } from '../../../entities/sales_summary';
+import { SalesSummary } from '../../../entities/sales-summary';
 import { Linegraph } from './dto/linegraph.dto';
 import { Order } from 'src/entities/order.entity';
 import { OrderItem } from 'src/entities/order-item.entity';

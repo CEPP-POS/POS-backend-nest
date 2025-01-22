@@ -28,5 +28,5 @@ export class Branch {
   owner: Owner;
 
   @OneToMany(() => Menu, (menu) => menu.branch)
-  menus: Menu[];
+  menu: Menu[];
 }

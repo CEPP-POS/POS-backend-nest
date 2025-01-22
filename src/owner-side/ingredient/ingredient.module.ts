@@ -9,11 +9,15 @@ import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { LocalData } from 'src/entities/local-data.entity';
 import { SyncStatus } from 'src/entities/sync-status.entity';
+import { Payment } from 'src/entities/payment.entity';
+import { OcrStatus } from 'src/entities/ocr-status.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Ingredient, IngredientCategory, IngredientMenuLink, IngredientUpdate, MenuIngredient, LocalData, SyncStatus])],
+    imports: [TypeOrmModule.forFeature([Payment,
+        OcrStatus, Ingredient, IngredientCategory, IngredientMenuLink, IngredientUpdate, MenuIngredient, LocalData, SyncStatus])],
     controllers: [IngredientController],
     providers: [IngredientService],
     exports: [IngredientService, TypeOrmModule],
+
 })
 export class IngredientModule { }

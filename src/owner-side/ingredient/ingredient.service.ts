@@ -5,6 +5,7 @@ import { Category } from '../../entities/category.entity';
 import { Menu } from '../../entities/menu.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { IngredientCategory } from 'src/entities/ingredient-category.entity';
+import { Payment } from 'src/entities/payment.entity';
 
 @Injectable()
 export class IngredientService {
@@ -14,6 +15,9 @@ export class IngredientService {
 
         @InjectRepository(IngredientCategory)
         private readonly ingredientCategoryRepository: Repository<IngredientCategory>,
+
+        @InjectRepository(Payment)
+        private readonly payment: Repository<Payment>,
     ) { }
 
     async test(): Promise<Ingredient[]> {

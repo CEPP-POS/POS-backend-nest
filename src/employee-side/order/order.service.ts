@@ -5,7 +5,7 @@ import { Order } from '../../entities/order.entity';
 import { CreateOrderDto } from './dto/create-order/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order/update-order.dto';
 import { CancelOrderDto } from './dto/cancel-order/Cancel-order.dto';
-import { SalesSummary } from 'src/entities/sales_summary';
+import { SalesSummary } from 'src/entities/sales-summary';
 import { OrderItem } from '../../entities/order-item.entity';
 
 @Injectable()
