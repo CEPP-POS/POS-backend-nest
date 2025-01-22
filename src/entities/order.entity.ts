@@ -35,7 +35,7 @@ import {
   Column,
   CreateDateColumn,
 } from 'typeorm';
-import { CancelStatus } from '../dto/create-order/create-order.dto';
+import { CancelStatus } from '../employee-side/order/dto/create-order/create-order.dto';
 
 @Entity()
 export class Order {
@@ -61,7 +61,7 @@ export class Order {
   customer_name: string; // ชื่อลูกค้า
 
   @Column({ nullable: true })
-  contact: string; // เบอร์โทรลูกค้า
+  customer_contact: string; // เบอร์โทรลูกค้า
 
   @Column({
     type: 'enum',

@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
-import { Order } from './entities/order.entity';
+import { Order } from '../../entities/order.entity';
 import { CreateOrderDto } from './dto/create-order/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order/update-order.dto';
 import { CancelOrderDto } from './dto/cancel-order/Cancel-order.dto';
-import { SalesSummary } from 'src/owner-side/stock/dashboard/entities/sales_summary';
-import { OrderItem } from './entities/order-item.entity';
+import { SalesSummary } from 'src/entities/sales_summary';
+import { OrderItem } from '../../entities/order-item.entity';
 
 @Injectable()
 export class OrderService {
@@ -144,7 +144,7 @@ export class OrderService {
     if (order.status === 'paid' || order.status === 'processing') {
       order.status = 'canceled';
       order.customer_name = cancelOrderDto.customer_name;
-      order.contact = cancelOrderDto.contact;
+      order.customer_contact = cancelOrderDto.contact;
     } else {
       throw new Error('Cannot cancel an unpaid order');
     }

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Owner } from './entities/owner/owner.entity';
+import { Owner } from '../../entities/owner.entity';
 import { CreateOwnerDto } from './dto/create-owner/create-owner.dto';
 import * as bcrypt from 'bcrypt';
 import { sendTemporaryPasswordEmail } from '../../utils/send-email.util';

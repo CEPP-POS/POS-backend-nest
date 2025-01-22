@@ -1,15 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Menu } from './entities/menu.entity';
+import { Menu } from '../../entities/menu.entity';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
-import { Category } from '../category/entities/category/category.entity';
-import { Owner } from '../owner/entities/owner/owner.entity';
-import { Branch } from '../branch/entities/branch/branch.entity';
-import { SweetnessLevel } from './entities/sweetness-level.entity';
-import { Size } from './entities/size.entity';
-import { MenuType } from './entities/menu-type.entity';
-import { AddOn } from './entities/add-on.entity';
+import { Category } from '../../entities/category.entity';
+import { Owner } from '../../entities/owner.entity';
+import { Branch } from '../../entities/branch.entity';
+import { SweetnessLevel } from '../../entities/sweetness-level.entity';
+import { Size } from '../../entities/size.entity';
+import { MenuType } from '../../entities/menu-type.entity';
+import { AddOn } from '../../entities/add-on.entity';
 import { CreateOptionDto } from './dto/create-option/create-option.dto';
 import { CreateMenuDto } from './dto/create-menu/create-menu.dto';
 

@@ -6,12 +6,12 @@ import {
   JoinColumn,
   OneToMany,
 } from 'typeorm';
-import { Owner } from '../../owner/entities/owner/owner.entity';
-import { Category } from '../../category/entities/category/category.entity';
-import { Branch } from '../../branch/entities/branch/branch.entity';
-import { Size } from 'src/owner-side/menus/entities/size.entity';
-import { AddOn } from 'src/owner-side/menus/entities/add-on.entity';
-import { SweetnessLevel } from 'src/owner-side/menus/entities/sweetness-level.entity';
+import { Owner } from './owner.entity';
+import { Category } from './category.entity';
+import { Branch } from './branch.entity';
+import { Size } from './size.entity';
+import { AddOn } from 'src/entities/add-on.entity';
+import { SweetnessLevel } from './sweetness-level.entity';
 import { MenuType } from './menu-type.entity';
 
 @Entity()

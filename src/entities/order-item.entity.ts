@@ -8,11 +8,11 @@ import {
   OneToOne,
 } from 'typeorm';
 import { Order } from './order.entity';
-import { Menu } from 'src/owner-side/menus/entities/menu.entity';
-import { MenuType } from 'src/owner-side/menus/entities/menu-type.entity';
-import { AddOn } from 'src/owner-side/menus/entities/add-on.entity';
-import { Size } from 'src/owner-side/menus/entities/size.entity';
-import { SweetnessLevel } from 'src/owner-side/menus/entities/sweetness-level.entity';
+import { Menu } from 'src/entities/menu.entity';
+import { MenuType } from 'src/entities/menu-type.entity';
+import { AddOn } from 'src/entities/add-on.entity';
+import { Size } from 'src/entities/size.entity';
+import { SweetnessLevel } from 'src/entities/sweetness-level.entity';
 
 @Entity()
 export class OrderItem {

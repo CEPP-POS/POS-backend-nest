@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BranchService } from './branch.service';
-import { Branch } from './entities/branch/branch.entity';
+import { Branch } from '../../entities/branch.entity';
 import { BranchController } from './branch.controller';
 import { OwnerModule } from '../owner/owner.module';
 

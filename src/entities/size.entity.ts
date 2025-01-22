@@ -18,6 +18,9 @@ export class Size {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   size_price: number;
 
+  @Column({ type: 'boolean', default: false })
+  is_required: boolean;
+
   @ManyToOne(() => Menu, (menu) => menu.sizes, {
     nullable: false,
     onDelete: 'CASCADE',

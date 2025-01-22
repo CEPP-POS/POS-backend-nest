@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Overview, TopItemDto } from './dto/overview.dto';
-import { SalesSummary } from './entities/sales_summary';
+import { SalesSummary } from '../../../entities/sales_summary';
 import { Linegraph } from './dto/linegraph.dto';
-import { Order } from 'src/employee-side/order/entities/order.entity';
-import { OrderItem } from 'src/employee-side/order/entities/order-item.entity';
+import { Order } from 'src/entities/order.entity';
+import { OrderItem } from 'src/entities/order-item.entity';
 
 @Injectable()
 export class DashboardService {

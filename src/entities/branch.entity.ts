@@ -6,8 +6,8 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
-import { Owner } from '../../../owner/entities/owner/owner.entity';
-import { Menu } from '../../../menus/entities/menu.entity';
+import { Owner } from './owner.entity';
+import { Menu } from './menu.entity';
 
 @Entity()
 export class Branch {
