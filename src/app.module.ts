@@ -9,6 +9,7 @@ import { MenuModule } from './owner-side/menus/menu.module';
 import { CategoryModule } from './owner-side/category/category.module';
 import { BranchModule } from './owner-side/branch/branch.module';
 import { DashboardModule } from './owner-side/stock/dashboard/dashboard.module';
+import { IngredientModule } from './owner-side/ingredient/ingredient.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { DashboardModule } from './owner-side/stock/dashboard/dashboard.module';
     CategoryModule,
     BranchModule,
     DashboardModule,
+    IngredientModule
   ],
 })
-export class AppModule {}
+export class AppModule { }
