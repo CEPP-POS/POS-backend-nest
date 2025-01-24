@@ -18,7 +18,10 @@ export class IngredientMenuLink {
     @JoinColumn({ name: 'menu_id' })
     menu_id: Menu;
 
-    @OneToMany(() => Ingredient, (ingredient) => ingredient.ingredient_id)
-    @JoinColumn({ name: 'ingredient_id' })
-    ingredient_id: Ingredient;
+    // @OneToMany(() => Ingredient, (ingredient) => ingredient.ingredient_id)
+    // @JoinColumn({ name: 'ingredient_id' })
+    // ingredient_id: Ingredient;
+
+    // @OneToMany(() => Ingredient, (ingredient) => ingredient.ingredient_id)
+    // ingredient_id: Ingredient[];
 }

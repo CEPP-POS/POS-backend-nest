@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { IngredientCategory } from './ingredient-category.entity';
 import { Owner } from './owner.entity';
+import { IngredientMenuLink } from './ingredient-menu-link.entity';
 
 @Entity()
 export class Ingredient {
@@ -30,10 +31,18 @@ export class Ingredient {
     @Column()
     total_volume: number;
 
+    @Column({ nullable: true })
+    unit: string;
+
     @ManyToOne(() => IngredientCategory)
     @JoinColumn({ name: 'category_id' })
     category_id: IngredientCategory;
 
     @CreateDateColumn()
     expiration_date: Date;
+
+    // for success connect one to many in ingredient menu link 
+    @ManyToOne(() => IngredientMenuLink, (ingredientMenuLink) => ingredientMenuLink.link_id, { nullable: true })
+    @JoinColumn({ name: 'link_id' })
+    ingredientMenuLink: IngredientMenuLink;
 }
