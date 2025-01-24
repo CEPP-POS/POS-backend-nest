@@ -9,6 +9,7 @@ import {
 import { IngredientCategory } from './ingredient-category.entity';
 import { Owner } from './owner.entity';
 import { IngredientMenuLink } from './ingredient-menu-link.entity';
+import { AddOn } from './add-on.entity';
 
 @Entity()
 export class Ingredient {
@@ -45,4 +46,9 @@ export class Ingredient {
     @ManyToOne(() => IngredientMenuLink, (ingredientMenuLink) => ingredientMenuLink.link_id, { nullable: true })
     @JoinColumn({ name: 'link_id' })
     ingredientMenuLink: IngredientMenuLink;
+
+    // for success connect one to many in add on
+    @ManyToOne(() => AddOn, (add_on) => add_on.add_on_id, { nullable: true })
+    @JoinColumn({ name: 'add_on_id' })
+    add_on: AddOn;
 }
