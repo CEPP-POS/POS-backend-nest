@@ -8,6 +8,7 @@ import { promises } from 'dns';
 import { OrderDto } from './dto/cancel-order-details.dto';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { IngredientDto } from './dto/ingredients.dto';
+import { IngredientCategoriesDto } from './dto/ingredients-categories.dto';
 
 @Controller('owner')
 export class DashboardController {
@@ -44,5 +45,10 @@ export class DashboardController {
   @Get('stock-ingredients')
   async getIngredients(): Promise<IngredientDto[]>{
     return this.dashboardService.getIngredients();
+  }
+
+  @Get('stock-ingredients/categories')
+  async getIngredientsCategories(): Promise<IngredientCategoriesDto>{
+    return this.dashboardService.getIngredientsCategories();
   }
 }

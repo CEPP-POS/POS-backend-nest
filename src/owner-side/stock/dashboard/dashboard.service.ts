@@ -213,4 +213,12 @@ export class DashboardService {
 
     return ingredients;
   }
+
+  async getIngredientsCategories(){
+    const category_id = {
+      category_id: 1,
+      category_name: 'ท็อปปิ้ง',
+    }
+    return category_id;
+  }
   }
