@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { Overview } from './dto/overview.dto';
 import { Linegraph } from './dto/linegraph.dto';
@@ -14,6 +14,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { ValidationPipe } from '@nestjs/common';
 import { create } from 'domain';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
+import { UpdateIngredientDto } from './dto/update-ingredient.dto';
 
 @Controller('owner')
 export class DashboardController {
@@ -72,6 +73,15 @@ export class DashboardController {
   async createIngredient(@Body() createIngredientDto: CreateIngredientDto){
     return this.dashboardService.createIngredient(createIngredientDto);
   }
+
+  @Patch('update-stock-ingredients/:ingredient_id')
+  async UpdateIngredient(
+    @Param('ingredient_id') ingredient_id:number,
+    @Body() updateIngredientDto: UpdateIngredientDto,
+  ){
+    return this.dashboardService.updateIngredient(ingredient_id, updateIngredientDto)
+  }
+  
 
 }
 

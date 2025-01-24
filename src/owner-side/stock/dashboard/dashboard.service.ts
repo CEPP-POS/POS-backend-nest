@@ -8,6 +8,7 @@ import { Order } from 'src/entities/order.entity';
 import { OrderItem } from 'src/entities/order-item.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
+import { UpdateIngredientDto } from './dto/update-ingredient.dto';
 
 @Injectable()
 export class DashboardService {
@@ -269,6 +270,20 @@ export class DashboardService {
       expiration_date,
     };
     return newIngredient;
+  }
+
+  async updateIngredient(ingredient_id: number, updateIngredientDto: UpdateIngredientDto){
+    const ingredient = []
+
+    if (!ingredient) {
+      return { message: `Ingredient with ID ${ingredient_id} not found` };  // Return error message if ingredient not found
+    }
+
+    // Update only the fields provided in the DTO
+    Object.assign(ingredient, updateIngredientDto);
+
+   
+    return ingredient;  // Return the updated ingredient
   }
   }
   
