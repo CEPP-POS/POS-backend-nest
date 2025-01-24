@@ -5,8 +5,10 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  ManyToMany
 } from 'typeorm';
 import { Menu } from './menu.entity';
+import { MenuIngredient } from './menu-ingredient.entity';
 
 @Entity()
 export class AddOn {
@@ -25,11 +27,13 @@ export class AddOn {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 
-  // @OneToMany(() => MenuIngreduent, { nullable: false })
-  // @JoinColumn({ name: 'menu_ingredient_id' })
-  // menu_ingredient_id: MenuIngreduent;
+  @Column({ nullable: true })
+  unit: string;
 
-  @ManyToOne(() => Menu, (menu) => menu.addOns, { nullable: false })
+  @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.add_on)
+  menu_ingredients_id: MenuIngredient[];
+
+  @ManyToOne(() => Menu, (menu) => menu.addOns)
   @JoinColumn({ name: 'menu_id' })
   menu: Menu;
 }
