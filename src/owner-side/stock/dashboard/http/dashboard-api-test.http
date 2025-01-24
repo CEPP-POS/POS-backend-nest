@@ -21,4 +21,10 @@ Content-Type: application/json
   "category_name": "ท็อปปิ้ง",
   "expiration_date": "2025-01-24"
 }
+PATCH http://localhost:3000/owner/orders/2
+Content-Type: application/json
+
+{
+  "cancel_status": "คืนเงินเสร็จสิ้น"
+}
 

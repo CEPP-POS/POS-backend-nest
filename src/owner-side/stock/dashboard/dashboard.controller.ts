@@ -15,6 +15,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { create } from 'domain';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
+import { UpdateCancelStatusDto } from './dto/update-cancel-status.dto';
 
 @Controller('owner')
 export class DashboardController {
@@ -82,6 +83,13 @@ export class DashboardController {
     return this.dashboardService.updateIngredient(ingredient_id, updateIngredientDto)
   }
   
+  @Patch('orders/:order_id')
+  async updateCancelStatus(
+    @Param('order_id') order_id: number,
+    @Body() updateCancelStatusDto: UpdateCancelStatusDto,){
+  console.log(order_id)
+      return this.dashboardService.updateCancelStatus(Number(order_id), updateCancelStatusDto);
+}
 
 }
 

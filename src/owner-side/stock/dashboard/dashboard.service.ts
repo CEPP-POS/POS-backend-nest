@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Overview, TopItemDto } from './dto/overview.dto';
@@ -9,6 +9,8 @@ import { OrderItem } from 'src/entities/order-item.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
+import { UpdateCancelStatusDto } from './dto/update-cancel-status.dto';
+
 
 @Injectable()
 export class DashboardService {
@@ -284,6 +286,22 @@ export class DashboardService {
 
    
     return ingredient;  // Return the updated ingredient
+  }
+
+  private orders = [
+    { order_id: 1, cancel_status: 'รอการคืนเงิน' },
+    { order_id: 2, cancel_status: 'กำลังดำเนินการ' },
+    // Additional mock data
+  ]
+
+  async updateCancelStatus(order_id:number, updateCancelStatusDto: UpdateCancelStatusDto){
+    const order = this.orders.find(order => order.order_id === order_id);
+    console.log('Updated Order:', order); // Debug log
+
+    // Update the cancel_status
+    order.cancel_status = updateCancelStatusDto.cancel_status;
+    
+    return order; // Return the updated order
   }
   }
   
