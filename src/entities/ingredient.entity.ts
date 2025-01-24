@@ -4,12 +4,11 @@ import {
     Column,
     ManyToOne,
     JoinColumn,
-    CreateDateColumn
+    CreateDateColumn,
 } from 'typeorm';
 import { IngredientCategory } from './ingredient-category.entity';
 import { Owner } from './owner.entity';
 import { IngredientMenuLink } from './ingredient-menu-link.entity';
-import { AddOn } from './add-on.entity';
 
 @Entity()
 export class Ingredient {

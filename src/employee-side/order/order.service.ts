@@ -7,19 +7,33 @@ import { UpdateOrderDto } from './dto/update-order/update-order.dto';
 import { CancelOrderDto } from './dto/cancel-order/Cancel-order.dto';
 import { SalesSummary } from 'src/entities/sales-summary';
 import { OrderItem } from '../../entities/order-item.entity';
+import { Branch } from 'src/entities/branch.entity';
+import { Owner } from 'src/entities/owner.entity';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
+
     @InjectRepository(SalesSummary)
     private salesSummaryRepository: Repository<SalesSummary>,
+
     @InjectRepository(OrderItem)
     private orderItemRepository: Repository<OrderItem>,
-  ) {}
+
+    @InjectRepository(Owner)
+    private ownerRepository: Repository<Owner>,
+
+    @InjectRepository(Branch)
+    private branchRepository: Repository<Branch>,
+  ) { }
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
+
+    const owner = await this.ownerRepository.findOne({ where: { owner_id: 1 } });
+    const branch = await this.branchRepository.findOne({ where: { branch_id: 1 } });
+
     // Convert order_date to Date if it's a string
     if (typeof createOrderDto.order_date === 'string') {
       const parsedDate = new Date(createOrderDto.order_date);
@@ -51,28 +65,14 @@ export class OrderService {
       }
       await this.salesSummaryRepository.save(salesSummary);
     } else {
-      if (createOrderDto.cancel_status === null) {
-        // Create a new SalesSummary if no matching date exists
-        salesSummary = this.salesSummaryRepository.create({
-          date: orderDateOnly,
-          owner_id: 2, // Hardcoded for now, can come from DTO
-          total_revenue: createOrderDto.total_price,
-          total_orders: 1,
-          canceled_orders: 0,
-          branch: { branch_id: 4 }, // Hardcoded for now, can come from DTO
-        });
-      } else {
-        // Create a new SalesSummary if no matching date exists
-        salesSummary = this.salesSummaryRepository.create({
-          date: orderDateOnly,
-          owner_id: 2, // Hardcoded for now, can come from DTO
-          total_revenue: createOrderDto.total_price,
-          total_orders: 1,
-          canceled_orders: 1,
-          branch: { branch_id: 4 }, // Hardcoded for now, can come from DTO
-        });
-      }
-
+      salesSummary = this.salesSummaryRepository.create({
+        date: orderDateOnly,
+        total_revenue: createOrderDto.total_price,
+        total_orders: 1,
+        canceled_orders: createOrderDto.cancel_status === null ? 0 : 1,
+        owner: owner,
+        branch: branch,
+      });
       await this.salesSummaryRepository.save(salesSummary);
     }
 

@@ -15,9 +15,6 @@ export class SalesSummary {
   sales_summary_id: number;
 
   @Column()
-  owner_id: number;
-
-  @Column()
   total_revenue: number;
 
   @Column()

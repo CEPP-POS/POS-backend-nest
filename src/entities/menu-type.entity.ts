@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  ManyToMany,
+  JoinColumn,
+} from 'typeorm';
 import { Menu } from './menu.entity';
 
 @Entity()
@@ -15,6 +22,7 @@ export class MenuType {
   @Column({ type: 'boolean', default: false })
   is_required: boolean;
 
-  @ManyToOne(() => Menu, (menu) => menu.menuTypes)
+  @ManyToOne(() => Menu, { nullable: true })
+  @JoinColumn({ name: 'menu_id' })
   menu: Menu;
 }

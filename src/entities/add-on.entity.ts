@@ -5,7 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
-  ManyToMany
+  ManyToMany,
 } from 'typeorm';
 import { Menu } from './menu.entity';
 import { MenuIngredient } from './menu-ingredient.entity';
@@ -25,7 +25,7 @@ export class AddOn {
   is_multipled: boolean;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
-  price: number;
+  add_on_price: number;
 
   @Column({ nullable: true })
   unit: string;
