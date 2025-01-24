@@ -6,6 +6,7 @@ import { SalesSummary } from '../../../entities/sales-summary';
 import { Linegraph } from './dto/linegraph.dto';
 import { Order } from 'src/entities/order.entity';
 import { OrderItem } from 'src/entities/order-item.entity';
+import { CreateCategoryDto } from './dto/create-category.dto';
 
 @Injectable()
 export class DashboardService {
@@ -246,4 +247,13 @@ export class DashboardService {
 
     return IngredientDetails;
   }
+
+  async createCategory(createCategoryDto: CreateCategoryDto){
+    const newCategory= {
+      category_name: createCategoryDto.category_name,  // Create a new category with the provided name
+    };
+    console.log(newCategory)
+    return newCategory;  // Return the newly created category
   }
+  }
+  

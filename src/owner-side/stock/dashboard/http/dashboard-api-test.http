@@ -2,3 +2,11 @@
 GET http://localhost:3000/owner/stock-summary/2023-09-17
 GET http://localhost:3000/owner/stock-ingredients/2
 
+GET http://localhost:3000/owner/stock-orders/2024-02-02
+
+POST http://localhost:3000/owner/stock-group
+Content-Type: application/json
+{
+    "category_name": "Topping"
+}
+

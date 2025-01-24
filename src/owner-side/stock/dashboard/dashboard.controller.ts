@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { Overview } from './dto/overview.dto';
 import { Linegraph } from './dto/linegraph.dto';
@@ -10,6 +10,8 @@ import { Ingredient } from 'src/entities/ingredient.entity';
 import { IngredientDto } from './dto/ingredients.dto';
 import { IngredientCategoriesDto } from './dto/ingredients-categories.dto';
 import { IngredientDetailsDto } from './dto/ingredients-details.dto';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { ValidationPipe } from '@nestjs/common';
 
 @Controller('owner')
 export class DashboardController {
@@ -58,6 +60,11 @@ export class DashboardController {
     return this.dashboardService.getIngredientDetails(Number(ingredient_id));
   }
 
+  @Post('stock-group')
+  async createCategory(@Body() createCategoryDto: CreateCategoryDto){
+    
+    return this.dashboardService.createCategory(createCategoryDto);
+  }
 
 }
 
