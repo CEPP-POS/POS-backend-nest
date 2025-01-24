@@ -1,0 +1,29 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, Between } from 'typeorm';
+
+
+
+@Injectable()
+export class PauseService {
+  constructor(
+  ) {}
+
+  async getIngredient(){
+    const ingredients = [
+        {
+          ingredient_id: 'asdasdasad',  // String ID
+          ingredient_name: 'ไข่มุก',
+          paused: false,
+        },
+        {
+          ingredient_id: 'qwertyuiop',  // Another example string ID
+          ingredient_name: 'วุ้นมะพร้าว',
+          paused: true,
+        },
+      ];
+  
+      return ingredients;
+    }
+  }
+
