@@ -165,4 +165,52 @@ export class DashboardService {
 
     return { cancel_order_topic: cancelOrderData };
   }
-}
+
+  async getCancelOrderDetails(order_id: number){
+    const cancelOrderDetails = {
+      order_id: 110234,
+      order_table: [
+        {
+          menu_name: 'ชานมไต้หวัน',
+          quantity: 1,
+          amount: 50,
+          category_name: 'โปรสุดคุ้ม',
+        },
+      ],
+      total_amount: 50,
+      payment_method: 'QR CODE',
+      cancel_status: 'ยังไม่คืนเงิน',
+      customer_name: 'พิมลนวย',
+      customer_contact: '086-1517-623',
+    };
+
+    return cancelOrderDetails; // Return the hardcoded data
+  }
+
+  async getIngredients(){
+    const ingredients = [
+      {
+        ingredient_id: 1,
+        ingredient_name: 'ไข่มุก',
+        net_volume: 250,
+        quantity_in_stock: 3,
+        total_volume: 100,
+        category_id: 1,
+        category_name: 'ท็อปปิ้ง',
+        expiration_date: new Date('2025-02-01'),
+      },
+      {
+        ingredient_id: 2,
+        ingredient_name: 'วุ้นมะพร้าว',
+        net_volume: 250,
+        quantity_in_stock: 3,
+        total_volume: 100,
+        category_id: 1,
+        category_name: 'ท็อปปิ้ง',
+        expiration_date: new Date('2025-02-10'),
+      },
+    ];
+
+    return ingredients;
+  }
+  }

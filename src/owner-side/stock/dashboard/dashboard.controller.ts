@@ -4,6 +4,10 @@ import { Overview } from './dto/overview.dto';
 import { Linegraph } from './dto/linegraph.dto';
 import { OrderItemDto } from 'src/employee-side/order/dto/order-item/order-item.dto';
 import { CancelOrderDto, CancelOrderTopicDto } from './dto/cancel-orders.dto';
+import { promises } from 'dns';
+import { OrderDto } from './dto/cancel-order-details.dto';
+import { Ingredient } from 'src/entities/ingredient.entity';
+import { IngredientDto } from './dto/ingredients.dto';
 
 @Controller('owner')
 export class DashboardController {
@@ -32,6 +36,13 @@ export class DashboardController {
     return this.dashboardService.getCancelOrders(new Date(date));
   }
 
-  // @GET('orders/:order_id')
-  // async
+  @Get('orders/:order_id')
+  async getCancelOrderDetails(@Param('order_id') order_id: string): Promise<OrderDto>{
+    return this.dashboardService.getCancelOrderDetails(Number(order_id));
+  }
+
+  @Get('stock-ingredients')
+  async getIngredients(): Promise<IngredientDto[]>{
+    return this.dashboardService.getIngredients();
+  }
 }
