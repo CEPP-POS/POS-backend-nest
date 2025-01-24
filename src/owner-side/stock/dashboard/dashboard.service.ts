@@ -221,4 +221,29 @@ export class DashboardService {
     }
     return category_id;
   }
+
+  async getIngredientDetails(ingredient_id: number){
+    const IngredientDetails = {
+      ingredient_id: 2,
+      ingredient_name: 'วุ้นมะพร้าว',
+      net_volume: 250,
+      quantity_in_stock: 3,
+      total_volume: 100,
+      category_name: 'ท็อปปิ้ง',
+
+      // Hardcoded Menu Ingredients (as an array)
+      menu_ingredients: [
+        {
+          menu_ingredient_id: 1,
+          menu_id: 101,  // Example menu id, linked to Menu table
+          ingredient_id: 2,  // Linked to Ingredient table
+          size_id: 's',
+          level_id: 'หวานน้อย',
+          quantity_used: 50,
+        },
+      ],
+    };
+
+    return IngredientDetails;
+  }
   }

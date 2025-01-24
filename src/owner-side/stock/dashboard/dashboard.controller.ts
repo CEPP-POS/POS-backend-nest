@@ -9,6 +9,7 @@ import { OrderDto } from './dto/cancel-order-details.dto';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { IngredientDto } from './dto/ingredients.dto';
 import { IngredientCategoriesDto } from './dto/ingredients-categories.dto';
+import { IngredientDetailsDto } from './dto/ingredients-details.dto';
 
 @Controller('owner')
 export class DashboardController {
@@ -38,7 +39,7 @@ export class DashboardController {
   }
 
   @Get('orders/:order_id')
-  async getCancelOrderDetails(@Param('order_id') order_id: string): Promise<OrderDto>{
+  async getCancelOrderDetails(@Param('order_id') order_id: number): Promise<OrderDto>{
     return this.dashboardService.getCancelOrderDetails(Number(order_id));
   }
 
@@ -51,4 +52,12 @@ export class DashboardController {
   async getIngredientsCategories(): Promise<IngredientCategoriesDto>{
     return this.dashboardService.getIngredientsCategories();
   }
+
+  @Get('stock-ingredients/:ingredient_id')
+  async getIngredientDetails(@Param('ingredient_id') ingredient_id: number): Promise<IngredientDetailsDto>{
+    return this.dashboardService.getIngredientDetails(Number(ingredient_id));
+  }
+
+
 }
+
