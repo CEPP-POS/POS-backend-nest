@@ -141,4 +141,28 @@ export class DashboardService {
       order_topic: orderTopic,
     };
   }
+
+  
+  async getCancelOrders(date: Date){
+    const cancelOrderData = [
+      {
+        order_id: 110234,
+        order_date: '02-02-24 เวลา 16:00 น.',
+        quantity: 3,
+        total_amount: 100,
+        payment_method: 'QR CODE',
+        cancel_status: 'คืนเงินเสร็จสิ้น',
+      },
+      {
+        order_id: 110235,
+        order_date: '02-02-24 เวลา 16:01 น.',
+        quantity: 2,
+        total_amount: 50,
+        payment_method: 'QR CODE',
+        cancel_status: 'ยังไม่คืนเงิน',
+      },
+    ];
+
+    return { cancel_order_topic: cancelOrderData };
+  }
 }

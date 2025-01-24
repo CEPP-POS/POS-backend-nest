@@ -3,6 +3,7 @@ import { DashboardService } from './dashboard.service';
 import { Overview } from './dto/overview.dto';
 import { Linegraph } from './dto/linegraph.dto';
 import { OrderItemDto } from 'src/employee-side/order/dto/order-item/order-item.dto';
+import { CancelOrderDto, CancelOrderTopicDto } from './dto/cancel-orders.dto';
 
 @Controller('owner')
 export class DashboardController {
@@ -25,4 +26,12 @@ export class DashboardController {
     date = date + 'T08:00:00.000Z';
     return this.dashboardService.getOrderTopic(new Date(date));
   }
+
+  @Get('stock-cancel-orders/:date')
+  async getCancelOrders(@Param('date') date: string): Promise<CancelOrderTopicDto> {
+    return this.dashboardService.getCancelOrders(new Date(date));
+  }
+
+  // @GET('orders/:order_id')
+  // async
 }
