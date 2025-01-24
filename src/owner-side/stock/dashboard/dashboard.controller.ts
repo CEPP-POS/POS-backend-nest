@@ -12,6 +12,8 @@ import { IngredientCategoriesDto } from './dto/ingredients-categories.dto';
 import { IngredientDetailsDto } from './dto/ingredients-details.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { ValidationPipe } from '@nestjs/common';
+import { create } from 'domain';
+import { CreateIngredientDto } from './dto/create-ingredient.dto';
 
 @Controller('owner')
 export class DashboardController {
@@ -64,6 +66,11 @@ export class DashboardController {
   async createCategory(@Body() createCategoryDto: CreateCategoryDto){
     
     return this.dashboardService.createCategory(createCategoryDto);
+  }
+
+  @Post('create-stock-ingredients')
+  async createIngredient(@Body() createIngredientDto: CreateIngredientDto){
+    return this.dashboardService.createIngredient(createIngredientDto);
   }
 
 }

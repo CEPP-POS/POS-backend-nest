@@ -10,3 +10,15 @@ Content-Type: application/json
     "category_name": "Topping"
 }
 
+POST http://localhost:3000/owner/create-stock-ingredients
+Content-Type: application/json
+{
+  "ingredient_id": 2,
+  "ingredient_name": "วุ้นมะพร้าว",
+  "net_volume": 250,
+  "quantity_in_stock": 3,
+  "total_volume": 100,
+  "category_name": "ท็อปปิ้ง",
+  "expiration_date": "2025-01-24"
+}
+
