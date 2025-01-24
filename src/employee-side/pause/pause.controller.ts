@@ -13,6 +13,7 @@ import {
 import { Response } from 'express';
 import { PauseService } from './pause.service';
 import { PauseIngredientDto } from './dto/pause-ingredient.dto';
+import { PauseMenuDto } from './dto/pause-menu.dto';
 
 
 @Controller('employee/pause')
@@ -21,9 +22,17 @@ export class PauseController {
 
   
 @Get('ingredients')
-    async getIngredient(): Promise<PauseIngredientDto[]>{
+async getIngredient(): Promise<PauseIngredientDto[]>{
     return this.pauseService.getIngredient();
     }
+
+  
+@Get('menu')
+async getMenu(): Promise<PauseMenuDto[]>{
+    return this.pauseService.getMenu();
+    }
+    
+    
 }
 
 

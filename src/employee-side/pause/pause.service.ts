@@ -25,5 +25,22 @@ export class PauseService {
   
       return ingredients;
     }
-  }
+
+    async getMenu(){
+        const menus = [
+            {
+              menu_id: 'ffff',  // String ID for the menu
+              menu_name: 'ไข่มุก',
+              paused: false,
+            },
+            {
+              menu_id: 'abcd',  // Another example string ID for the menu
+              menu_name: 'ชานมไต้หวัน',
+              paused: true,
+            },
+          ];
+      
+          return menus;
+        }
+    }
 
