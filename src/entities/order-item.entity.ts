@@ -19,32 +19,32 @@ export class OrderItem {
   @PrimaryGeneratedColumn()
   order_item_id: number;
 
-  @ManyToOne(() => Order, { nullable: null })
+  @ManyToOne(() => Order, { nullable: true })
   @JoinColumn({ name: 'order_id' })
   order_id: Order;
 
   //menu_id link with table menu
-  @ManyToOne(() => Menu, { nullable: null })
+  @ManyToOne(() => Menu, { nullable: true })
   @JoinColumn({ name: 'menu_id' })
   menu_id: Menu;
 
   //sweetness_id link with table sweetness
-  @ManyToOne(() => SweetnessLevel, { nullable: null })
+  @ManyToOne(() => SweetnessLevel, { nullable: true })
   @JoinColumn({ name: 'sweetness_id' })
   sweetness_id: SweetnessLevel;
 
   //MenuType_id link with table type
-  @ManyToOne(() => MenuType, { nullable: null })
+  @ManyToOne(() => MenuType, { nullable: true })
   @JoinColumn({ name: 'menu_type_id' })
   menu_type_id: MenuType;
 
   //add_on_id link with table add on
-  @ManyToOne(() => AddOn, { nullable: null })
+  @ManyToOne(() => AddOn, { nullable: true })
   @JoinColumn({ name: 'add_on_id' })
   add_on_id: AddOn[];
 
   //size_id link with table size
-  @ManyToOne(() => Size, { nullable: null })
+  @ManyToOne(() => Size, { nullable: true })
   @JoinColumn({ name: 'size_id' })
   size_id: Size;
 
