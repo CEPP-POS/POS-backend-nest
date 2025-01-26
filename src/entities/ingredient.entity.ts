@@ -15,7 +15,7 @@ export class Ingredient {
   @PrimaryGeneratedColumn()
   ingredient_id: number;
 
-  @ManyToOne(() => Owner, { nullable: false })
+  @ManyToOne(() => Owner, { nullable: true })
   @JoinColumn({ name: 'owner_id' })
   owner_id: Owner;
 

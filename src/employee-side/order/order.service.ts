@@ -55,21 +55,21 @@ export class OrderService {
         // Create a new SalesSummary if no matching date exists
         salesSummary = this.salesSummaryRepository.create({
           date: orderDateOnly,
-          owner_id: 2, // Hardcoded for now, can come from DTO
+          owner_id: 1, // Hardcoded for now, can come from DTO
           total_revenue: createOrderDto.total_price,
           total_orders: 1,
           canceled_orders: 0,
-          branch: { branch_id: 4 }, // Hardcoded for now, can come from DTO
+          branch: { branch_id: 1 }, // Hardcoded for now, can come from DTO
         });
       } else {
         // Create a new SalesSummary if no matching date exists
         salesSummary = this.salesSummaryRepository.create({
           date: orderDateOnly,
-          owner_id: 2, // Hardcoded for now, can come from DTO
+          owner_id: 1, // Hardcoded for now, can come from DTO
           total_revenue: createOrderDto.total_price,
           total_orders: 1,
           canceled_orders: 1,
-          branch: { branch_id: 4 }, // Hardcoded for now, can come from DTO
+          branch: { branch_id: 1 }, // Hardcoded for now, can come from DTO
         });
       }
 

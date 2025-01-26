@@ -23,5 +23,13 @@ Content-Type: application/json
   "menu_ids": [20, 22, 23]
 }
 
-GET http://localhost:3000/owner/categories/14/menus
+GET http://localhost:3000/owner/categories/2/menus
 Content-Type: application/json
+
+POST http://localhost:3000/owner/categories
+Content-Type: application/json
+
+{
+  "category_name": "น้ำชื่นใจ",
+  "menu_id": [1,2]
+}
