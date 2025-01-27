@@ -11,6 +11,7 @@ import { Ingredient } from './ingredient.entity';
 import { Size } from './size.entity';
 import { SweetnessLevel } from './sweetness-level.entity';
 import { AddOn } from './add-on.entity';
+import { MenuType } from './menu-type.entity';
 
 @Entity()
 export class MenuIngredient {
@@ -29,14 +30,18 @@ export class MenuIngredient {
     @JoinColumn({ name: 'size_id' })
     size_id: Size;
 
-    @ManyToOne(() => SweetnessLevel, { nullable: false })
+    @ManyToOne(() => SweetnessLevel, { nullable: true })
     @JoinColumn({ name: 'sweetness_id' })
     sweetness_id: SweetnessLevel;
+
+    @ManyToOne(() => MenuType, { nullable: false })
+    @JoinColumn({ name: 'menu_type_id' })
+    menu_type_id: MenuType;
 
     @Column()
     quantity_used: number;
 
-    //for success connect one to many in add on 
+    // for success connect one to many in add on 
     // Each MenuIngredient can have only one AddOn
     @ManyToOne(() => AddOn, (addOn) => addOn.menu_ingredients_id, { nullable: true })
     @JoinColumn({ name: 'add_on_id' })

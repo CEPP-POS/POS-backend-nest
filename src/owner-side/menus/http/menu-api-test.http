@@ -2,7 +2,7 @@
 POST http://localhost:3000/owner/menus
 Content-Type: application/json
 {
-  "store_id": 1,
+  "store_id": 1, //not use
   "category_id": 1,
   "menu_name": "matcha latte",
   "description": "Delicious spaghetti with tomato sauce",
@@ -30,3 +30,44 @@ Content-Type: application/json
 
 ### Delete a Menu by ID
 DELETE http://localhost:3000/owner/menus/32
+
+
+### link menu for auto cut stock
+POST http://localhost:3000/owner/menus/stock/10
+Content-Type: application/json
+{
+  "owner_id": 2,
+  "branch_id": 2,
+  "menuData": [
+    {
+      "ingredient_name": "น้ำเชื่อม",
+      "unit": "ml",
+      "ingredientListForStock": [
+        { "size_id": 1, "menu_type_id": 1, "quantity_used": 10 },
+        { "size_id": 1, "menu_type_id": 2, "quantity_used": 20 },
+        { "size_id": 1, "menu_type_id": 3, "quantity_used": 30 },
+        { "size_id": 2, "menu_type_id": 1, "quantity_used": 5 },
+        { "size_id": 2, "menu_type_id": 2, "quantity_used": 10 },
+        { "size_id": 2, "menu_type_id": 3, "quantity_used": 20 },
+        { "size_id": 3, "menu_type_id": 1, "quantity_used": 12 },
+        { "size_id": 3, "menu_type_id": 2, "quantity_used": 22 },
+        { "size_id": 3, "menu_type_id": 3, "quantity_used": 32 }
+      ]
+    },
+    {
+      "ingredient_name": "น้ำส้ม",
+      "unit": "ml",
+      "ingredientListForStock": [
+        { "size_id": 1, "menu_type_id": 1, "quantity_used": 10 },
+        { "size_id": 1, "menu_type_id": 2, "quantity_used": 20 },
+        { "size_id": 1, "menu_type_id": 3, "quantity_used": 30 },
+        { "size_id": 2, "menu_type_id": 1, "quantity_used": 5 },
+        { "size_id": 2, "menu_type_id": 2, "quantity_used": 10 },
+        { "size_id": 2, "menu_type_id": 3, "quantity_used": 20 },
+        { "size_id": 3, "menu_type_id": 1, "quantity_used": 12 },
+        { "size_id": 3, "menu_type_id": 2, "quantity_used": 22 },
+        { "size_id": 3, "menu_type_id": 3, "quantity_used": 32 }
+      ]
+    }
+  ]
+}

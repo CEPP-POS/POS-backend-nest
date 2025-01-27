@@ -22,13 +22,13 @@ export class Ingredient {
     @Column()
     ingredient_name: string;
 
-    @Column()
+    @Column({ nullable: true })
     net_volume: number;
 
-    @Column()
+    @Column({ nullable: true })
     quantity_in_stock: number;
 
-    @Column()
+    @Column({ nullable: true })
     total_volume: number;
 
     @Column({ nullable: true })
@@ -38,7 +38,7 @@ export class Ingredient {
     @JoinColumn({ name: 'category_id' })
     category_id: IngredientCategory;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ nullable: true })
     expiration_date: Date;
 
     // for success connect one to many in ingredient menu link 
