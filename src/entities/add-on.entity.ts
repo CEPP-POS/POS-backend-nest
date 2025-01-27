@@ -5,7 +5,6 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
-  ManyToMany,
 } from 'typeorm';
 import { Menu } from './menu.entity';
 import { MenuIngredient } from './menu-ingredient.entity';
