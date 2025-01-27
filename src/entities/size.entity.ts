@@ -22,9 +22,9 @@ export class Size {
   is_required: boolean;
 
   @ManyToOne(() => Menu, (menu) => menu.sizes, {
-    nullable: false,
+    nullable: true,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'menu_id' }) // เชื่อมกับคอลัมน์ menu_id ในฐานข้อมูล
-  menu: Menu;
+  menu: Menu[];
 }

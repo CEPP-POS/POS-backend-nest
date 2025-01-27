@@ -12,8 +12,8 @@ import {
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
-import { CreateOptionDto } from './dto/create-option/create-option.dto';
 import { CreateMenuDto } from './dto/create-menu/create-menu.dto';
+import { CreateSweetnessDto } from './dto/create-option/Sweetness.dto';
 import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 
 @Controller('owner/menus')
@@ -41,66 +41,67 @@ export class MenuController {
   // findAll() {
   //   return this.menuService.findAll();
   // }
+  // * Get all menus send only name & description for list menu:customer
+  // @HttpCode(200)
+  // @Get()
+  // findAll() {
+  //   return this.menuService.findAll();
+  // }
 
   // * Create options like sweetness, size, etc.
-  @Post('options/:type')
-  createOption(
-    @Param('type') type: 'sweetness' | 'size' | 'add-ons' | 'menu-type',
-    @Body() createOptionDto: CreateOptionDto,
-  ) {
-    return this.menuService.createOption(type, createOptionDto);
-  }
-
-  // * Link options to a menu
-  @Post('options/:type/link/:menu_id/:option_id')
-  linkOptionToMenu(
-    @Param('type') type: 'sweetness' | 'size' | 'add-ons' | 'menu-type',
-    @Param('menu_id') menu_id: number,
-    @Param('option_id') option_id: number,
-  ) {
-    return this.menuService.linkOptionToMenu(menu_id, type, option_id);
-  }
-
-  // * Get ingredients linked to a menu
-  // @Get(':menu_id/ingredients')
-  // async getIngredientsByMenu(@Param('menu_id') menu_id: number) {
-  //   return this.stockService.getIngredientsByMenu(menu_id);
+  // @Post('options/:type')
+  // createOption(
+  //   @Param('type') type: 'sweetness' | 'size' | 'add-ons' | 'menu-type',
+  //   @Body() createOptionDto: CreateOptionDto,
+  // ) {
+  //   return this.menuService.createOption(type, createOptionDto);
+  // }
+  // @Post('size-group')
+  // createSizeGroup(@Body() createSizeGroupDto: CreateSizeGroupDto) {
+  //   return this.menuService.createSizeGroup(createSizeGroupDto);
   // }
 
-  // * Add a new ingredient to a menu
-  // @Post(':menu_id/ingredients')
-  // async addIngredientToMenu(
-  //   @Param('menu_id') menu_id: number,
-  //   @Body() createMenuIngredientDto: CreateMenuIngredientDto,
-  // ) {
-  //   // เชื่อมโยงวัตถุดิบกับเมนู
-  //   const menuIngredient = {
-  //     ...createMenuIngredientDto,
-  //     menu_id, // เชื่อมโยงเมนูจากพารามิเตอร์
-  //   };
-  //   return this.stockService.addMenuIngredient(menuIngredient);
+  // // * ดึงข้อมูล Size Group ตาม ID (เผื่อใช้งานในอนาคต)
+  // @Get('size-group/:id')
+  // findSizeGroupById(@Param('id') id: number) {
+  //   return this.menuService.findSizeGroupById(id);
   // }
 
-  // * Update ingredient in a menu
-  // @Patch(':menu_id/ingredients/:menu_ingredient_id')
-  // async updateMenuIngredient(
-  //   @Param('menu_id') menu_id: number,
-  //   @Param('menu_ingredient_id') menu_ingredient_id: number,
-  //   @Body() updateMenuIngredientDto: UpdateMenuIngredientDto,
+  // @Post('options/size-group')
+  // async createSizeGroup(
+  //   @Body()
+  //   body: {
+  //     group_name: string;
+  //     sizes: { name: string; price: number }[];
+  //     menu_ids: number[];
+  //   },
   // ) {
-  //   return this.stockService.updateMenuIngredient(
-  //     menu_ingredient_id,
-  //     updateMenuIngredientDto,
+  //   return this.menuService.createSizeGroup(
+  //     body.group_name,
+  //     body.sizes,
+  //     body.menu_ids,
   //   );
   // }
 
-  // // * Delete an ingredient from a menu
-  // @Delete(':menu_id/ingredients/:menu_ingredient_id')
-  // async deleteMenuIngredient(
-  //   @Param('menu_id') menu_id: number,
-  //   @Param('menu_ingredient_id') menu_ingredient_id: number,
+  // * Link options to a menu
+  // @Post('options/:type/link/:menu_id/:option_id')
+  // linkOptionToMenu(
+  //   @Param('type') type: 'sweetness' | 'size' | 'add-ons' | 'menu-type',
+  //   @Param('menu_id') menu_id: number[],
+  //   @Param('option_id') option_id: number,
   // ) {
-  //   return this.stockService.deleteMenuIngredient(menu_ingredient_id);
+  //   return this.menuService.linkOptionToMenu(menu_id, type, option_id);
+  // }
+
+  // @Post('options/:type/link/:menu_id/:option_id')
+  // linkOptionToMenu(
+  //   @Param('type') type: 'sweetness' | 'size' | 'add-ons' | 'menu-type',
+  //   @Param('menu_id') menu_id: number[], // Accept menu_id as a string
+  //   @Param('option_id') option_id: number,
+  // ) {
+  //   // Convert the comma-separated string of menu_ids into an array of numbers
+
+  //   return this.menuService.linkOptionToMenu(menuId, type, option_id);
   // }
 
   // * Get a single menu
@@ -119,6 +120,25 @@ export class MenuController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.menuService.remove(+id);
+  }
+
+  @Post('options/sweetness')
+  async createSweetness(@Body() createSweetnessDto: CreateSweetnessDto) {
+    return this.menuService.createOption('sweetness', createSweetnessDto);
+  }
+
+  @Post('options/:type')
+  async createOption(
+    @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
+    @Body() createOptionDto: any, // ใช้ any สำหรับ add-ons, size, menu-type
+  ) {
+    if (type === 'sweetness') {
+      return this.menuService.createOption(
+        type,
+        createOptionDto as CreateSweetnessDto,
+      );
+    }
+    return this.menuService.createOption(type, createOptionDto);
   }
 
   @Post('stock/:menu_id')

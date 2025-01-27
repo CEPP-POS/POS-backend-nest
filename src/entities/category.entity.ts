@@ -5,7 +5,6 @@ import {
   OneToMany,
   JoinColumn,
   ManyToOne,
-  Index,
 } from 'typeorm';
 import { Menu } from './menu.entity';
 import { Owner } from './owner.entity';
@@ -23,5 +22,6 @@ export class Category {
   owner: Owner;
 
   @OneToMany(() => Menu, (menu) => menu.category)
+  @JoinColumn({ name: 'menu_id' })
   menu: Menu[];
 }

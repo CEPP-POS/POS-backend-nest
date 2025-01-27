@@ -5,7 +5,6 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
-  ManyToMany,
 } from 'typeorm';
 import { Menu } from './menu.entity';
 import { MenuIngredient } from './menu-ingredient.entity';
@@ -28,12 +27,15 @@ export class AddOn {
   add_on_price: number;
 
   @Column({ nullable: true })
-  unit: string;
+  unit: number;
 
   @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.add_on)
   menu_ingredients_id: MenuIngredient[];
 
-  @ManyToOne(() => Menu, (menu) => menu.addOns)
+  @ManyToOne(() => Menu, (menu) => menu.addOns, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'menu_id' })
-  menu: Menu;
+  menu: Menu[];
 }
