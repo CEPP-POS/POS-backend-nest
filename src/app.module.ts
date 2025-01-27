@@ -10,6 +10,7 @@ import { CategoryModule } from './owner-side/category/category.module';
 import { BranchModule } from './owner-side/branch/branch.module';
 import { DashboardModule } from './owner-side/stock/dashboard/dashboard.module';
 import { IngredientModule } from './owner-side/ingredient/ingredient.module';
+import { PauseModule } from './employee-side/pause/pause.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { IngredientModule } from './owner-side/ingredient/ingredient.module';
     CategoryModule,
     BranchModule,
     DashboardModule,
-    IngredientModule
+    IngredientModule,
+    PauseModule
   ],
 })
 export class AppModule { }
