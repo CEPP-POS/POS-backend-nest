@@ -27,7 +27,7 @@ export class AddOn {
   add_on_price: number;
 
   @Column({ nullable: true })
-  unit: string;
+  unit: number;
 
   @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.add_on)
   menu_ingredients_id: MenuIngredient[];

@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsDecimal,
@@ -5,12 +6,24 @@ import {
   IsInt,
   IsArray,
   ArrayNotEmpty,
+  IsNumber,
+  ValidateNested,
 } from 'class-validator';
+
+class OptionDetailDto {
+  @IsString()
+  price: string;
+
+  @IsNumber()
+  unit: number;
+}
 
 export class CreateOptionDto {
   @IsArray()
   @ArrayNotEmpty()
-  options: Record<string, string>[];
+  @ValidateNested({ each: true })
+  @Type(() => Object)
+  options: Record<string, OptionDetailDto>[];
 
   @IsString()
   add_on_name: string;
@@ -30,6 +43,10 @@ export class CreateOptionDto {
   @IsInt()
   @IsOptional()
   menu_ingredient_id?: number;
+
+  @IsOptional()
+  @IsNumber()
+  unit?: number; // ปริมาณที่ใช้
 
   @IsArray()
   @ArrayNotEmpty()

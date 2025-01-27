@@ -262,15 +262,19 @@ export class MenuService {
           options.push(savedOption);
         }
       }
-    } else {
-      // สร้าง options สำหรับ add-ons, size, หรือ menu-type
+    } else if (type === 'add-ons') {
       for (const option of createOptionDto.options) {
-        for (const [key, value] of Object.entries(option)) {
+        for (const [key, detail] of Object.entries(option)) {
+          // แยก price และ unit ออกมาจาก object
+          const { price, unit } = detail as { price: string; unit: number };
+
           const newOption = repository.create({
-            [optionKey]: key,
-            ...(type === 'add-ons' ? { add_on_price: value } : {}),
-            ...(type === 'size' ? { size_price: value } : {}),
-            ...(type === 'menu-type' ? { price_difference: value } : {}),
+            [optionKey]: key, // ตัวอย่าง: "ไข่มุก" หรือ "บุก"
+            ...(type === 'add-ons' ? { add_on_price: price } : {}),
+            ...(type === 'add-ons' ? { unit } : {}),
+            ...(type === 'add-ons'
+              ? { menu_ingredient_id: createOptionDto.menu_ingredient_id }
+              : {}),
           });
 
           const savedOption = await repository.save(newOption);
@@ -281,7 +285,27 @@ export class MenuService {
             if (type === 'add-ons') {
               if (!menu.addOns) menu.addOns = [];
               menu.addOns.push(savedOption);
-            } else if (type === 'size') {
+            }
+            await this.menuRepository.save(menu);
+          }
+        }
+      }
+    } else {
+      // สร้าง options สำหรับ add-ons, size, หรือ menu-type
+      for (const option of createOptionDto.options) {
+        for (const [key, value] of Object.entries(option)) {
+          const newOption = repository.create({
+            [optionKey]: key,
+            ...(type === 'size' ? { size_price: value } : {}),
+            ...(type === 'menu-type' ? { price_difference: value } : {}),
+          });
+
+          const savedOption = await repository.save(newOption);
+          options.push(savedOption);
+
+          // เชื่อมโยง option กับเมนู
+          for (const menu of menus) {
+            if (type === 'size') {
               if (!menu.sizes) menu.sizes = [];
               menu.sizes.push(savedOption);
             } else if (type === 'menu-type') {

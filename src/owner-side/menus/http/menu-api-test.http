@@ -16,17 +16,17 @@ Content-Type: application/json
 GET http://localhost:3000/owner/menus
 
 ### Get a specific Menu by ID
-GET http://localhost:3000/owner/menus/2
+GET http://localhost:3000/owner/menus/1
 
 ### Update a Menu by ID
-PATCH http://localhost:3000/owner/menus/25
+PATCH http://localhost:3000/owner/menus/2
 Content-Type: application/json
 
 {
-  "menu_name": "Spaghetti Bolognese",
+  "menu_name": "latte milk",
   "price": 14.99,
-  "description": "Spaghetti with meat sauce"
+  "description": "coffee with milk"
 }
 
 ### Delete a Menu by ID
-DELETE http://localhost:3000/owner/menus/32
+DELETE http://localhost:3000/owner/menus/2

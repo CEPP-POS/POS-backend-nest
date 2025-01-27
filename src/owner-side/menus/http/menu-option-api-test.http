@@ -6,7 +6,7 @@ Content-Type: application/json
     "50%",
     "25%"
   ],
-  "menu_id": [1, 2]
+  "menu_id": [1]
 }
 
 // GET http://localhost:3000/sweetness-levels
@@ -15,18 +15,17 @@ Content-Type: application/json
 # GET http://localhost:3000/sweetness-levels/menu/25 
 
 
-# DELETE http://localhost:3000/sweetness-levels/1
+# DELETE http://localhost:3000/owner/menus/options/sweetness-levels/1
 
 POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
-
 {
   "options": [
-    { "ไข่มุก": "10.00" },
-    { "บุก": "20.00" }
+    { "ไข่มุก": { "price": "10.00", "unit": 20 } },
+    { "บุก": { "price": "20.00", "unit": 50 } }
   ],
   "menu_ingredient_id": 1,
-  "menu_id": [1, 2]
+  "menu_id": [1]
 }
 
 
@@ -41,7 +40,7 @@ Content-Type: application/json
     { "big": "10.00" },
     { "small": "20.00" }
   ],
-  "menu_id": [1, 2]
+  "menu_id": [1]
 }
 
 POST http://localhost:3000/owner/menus/options/menu-type
@@ -52,7 +51,7 @@ Content-Type: application/json
     { "hot": "5.00" },
     { "ice": "20.00" }
   ],
-  "menu_id": [1, 2]
+  "menu_id": [1]
 }
 
 # POST http://localhost:3000/owner/menus/size-group

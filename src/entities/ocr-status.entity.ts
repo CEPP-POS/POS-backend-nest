@@ -12,7 +12,9 @@ export class OcrStatus {
   @PrimaryGeneratedColumn()
   ocr_status_id: number;
 
-  @OneToMany(() => Payment, (payment) => payment.payment_id, { nullable: false })
+  @OneToMany(() => Payment, (payment) => payment.payment_id, {
+    nullable: false,
+  })
   @JoinColumn({ name: 'payment_id' })
   payment: Payment[];
 
