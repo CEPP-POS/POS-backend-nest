@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Between, Repository } from 'typeorm';
+import { Between, IsNull, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Overview, TopItemDto } from './dto/overview.dto';
 import { SalesSummary } from '../../../entities/sales-summary';
@@ -199,27 +199,61 @@ export class DashboardService {
     };
   }
 
-  async getCancelOrders(date: Date) {
-    const cancelOrderData = [
-      {
-        order_id: 110234,
-        order_date: '02-02-24 เวลา 16:00 น.',
-        quantity: 3,
-        total_amount: 100,
-        payment_method: 'QR CODE',
-        cancel_status: 'คืนเงินเสร็จสิ้น',
+  async getCancelOrders() {
+    const orders = await this.orderRepository.find({
+      where: {
+        cancel_status: Not(IsNull()),
       },
-      {
-        order_id: 110235,
-        order_date: '02-02-24 เวลา 16:01 น.',
-        quantity: 2,
-        total_amount: 50,
-        payment_method: 'QR CODE',
-        cancel_status: 'ยังไม่คืนเงิน',
-      },
-    ];
+      relations: ['orderItems', 'payment'], // Load the related order_items
+    });
 
-    return { cancel_order_topic: cancelOrderData };
+    // Create an array to store the formatted order topics
+    const orderTopics = orders.map((order) => {
+      // Calculate the total quantity by summing the quantities of the related order items
+      const totalQuantity = order.orderItems.reduce(
+        (sum, item) => sum + item.quantity,
+        0,
+      );
+
+      // Extract payment method or fallback to 'Unknown' if no payment exists
+      const paymentMethod = order.payment
+        ? order.payment.payment_method
+        : 'Unknown';
+
+      // Return the formatted order details
+      return {
+        order_id: order.order_id,
+        order_date: order.order_date,
+        quantity: totalQuantity, // Total quantity of items for the order
+        total_amount: order.total_price || 0, // Total price for the order
+        payment_method: paymentMethod,
+        cancel_order_topic: order.cancel_status,
+      };
+    });
+
+    // Sort the array with "ยังไม่คืนเงิน" as the first priority, then by date (oldest first)
+    orderTopics.sort((a, b) => {
+      // Sort by cancel_order_topic ("ยังไม่คืนเงิน" comes first)
+      if (
+        a.cancel_order_topic === 'ยังไม่คืนเงิน' &&
+        b.cancel_order_topic !== 'ยังไม่คืนเงิน'
+      ) {
+        return -1;
+      }
+      if (
+        a.cancel_order_topic !== 'ยังไม่คืนเงิน' &&
+        b.cancel_order_topic === 'ยังไม่คืนเงิน'
+      ) {
+        return 1;
+      }
+
+      // If cancel_order_topic is the same, sort by order_date (ascending)
+      return (
+        new Date(a.order_date).getTime() - new Date(b.order_date).getTime()
+      );
+    });
+
+    return orderTopics;
   }
 
   async getCancelOrderDetails(order_id: number) {
