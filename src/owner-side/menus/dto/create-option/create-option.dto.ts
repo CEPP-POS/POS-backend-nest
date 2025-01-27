@@ -8,6 +8,10 @@ import {
 } from 'class-validator';
 
 export class CreateOptionDto {
+  @IsArray()
+  @ArrayNotEmpty()
+  options: Record<string, string>[];
+
   @IsString()
   add_on_name: string;
 
@@ -22,6 +26,10 @@ export class CreateOptionDto {
   @IsDecimal()
   @IsOptional()
   price_difference?: number; // For menu-types
+
+  @IsInt()
+  @IsOptional()
+  menu_ingredient_id?: number;
 
   @IsArray()
   @ArrayNotEmpty()

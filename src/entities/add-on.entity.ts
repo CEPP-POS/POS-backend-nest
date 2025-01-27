@@ -32,7 +32,10 @@ export class AddOn {
   @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.add_on)
   menu_ingredients_id: MenuIngredient[];
 
-  @ManyToOne(() => Menu, (menu) => menu.addOns)
+  @ManyToOne(() => Menu, (menu) => menu.addOns, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'menu_id' })
-  menu: Menu;
+  menu: Menu[];
 }

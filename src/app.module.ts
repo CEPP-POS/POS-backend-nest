@@ -26,7 +26,7 @@ import { PauseModule } from './employee-side/pause/pause.module';
     BranchModule,
     DashboardModule,
     IngredientModule,
-    PauseModule
+    PauseModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}
