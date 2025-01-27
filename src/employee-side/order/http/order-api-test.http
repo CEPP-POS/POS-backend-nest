@@ -39,3 +39,11 @@ Content-Type: application/json
 
 ### Get Order Item 
 GET http://localhost:3000/employee/orders/item
+
+### complete order
+PATCH http://localhost:3000/employee/orders/1/complete
+Content-Type: application/json
+{
+  "order_id": 15,
+   "status": "success"
+}

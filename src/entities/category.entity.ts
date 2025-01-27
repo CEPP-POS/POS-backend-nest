@@ -22,6 +22,5 @@ export class Category {
   owner: Owner;
 
   @OneToMany(() => Menu, (menu) => menu.category)
-  @JoinColumn({ name: 'menu_id' })
   menu: Menu[];
 }

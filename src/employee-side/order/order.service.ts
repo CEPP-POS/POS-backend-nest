@@ -9,6 +9,7 @@ import { SalesSummary } from 'src/entities/sales-summary';
 import { OrderItem } from '../../entities/order-item.entity';
 import { Branch } from 'src/entities/branch.entity';
 import { Owner } from 'src/entities/owner.entity';
+import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -185,4 +186,28 @@ export class OrderService {
       size_name: orderItem.size_id.size_name,
     }));
   }
+
+  //--------- change status to complete order --------//
+  async completeOrder(
+    order_id: number,
+    completeOrderDto: CompleteOrderDto,
+  ): Promise<Order> {
+    const order = await this.orderRepository.findOne({
+      where: { order_id: order_id },
+    });
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${order_id} not found`);
+    }
+
+    if (order.status === 'paid' || order.status === 'processing') {
+      order.status = 'success';
+    } else {
+      throw new Error('Cannot make order successful');
+    }
+
+    await this.orderRepository.save(order);
+
+    return this.orderRepository.findOne({ where: { order_id: order_id } });
+  }
+
 }
