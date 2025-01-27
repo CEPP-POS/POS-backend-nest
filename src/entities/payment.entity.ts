@@ -35,4 +35,13 @@ export class Payment {
   @ManyToOne(() => OcrStatus, (ocr_status) => ocr_status.ocr_status_id, { nullable: true })
   @JoinColumn({ name: 'ocr_status_id' })
   ocr_status_id: OcrStatus;
+
+  @Column({ nullable: false })
+  cash_given: number;
+
+  @Column({ nullable: false })
+  change: number;
+
+  @Column()
+  status: string;
 }

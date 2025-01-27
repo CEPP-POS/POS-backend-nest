@@ -7,9 +7,10 @@ import { SalesSummary } from 'src/entities/sales-summary';
 import { OrderItem } from '../../entities/order-item.entity';
 import { Owner } from 'src/entities/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
+import { Payment } from 'src/entities/payment.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, SalesSummary, OrderItem, Owner, Branch])],
+  imports: [TypeOrmModule.forFeature([Order, SalesSummary, OrderItem, Owner, Branch, Payment])],
   controllers: [OrderController],
   providers: [OrderService],
 })

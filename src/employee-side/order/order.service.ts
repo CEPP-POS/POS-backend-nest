@@ -10,6 +10,8 @@ import { OrderItem } from '../../entities/order-item.entity';
 import { Branch } from 'src/entities/branch.entity';
 import { Owner } from 'src/entities/owner.entity';
 import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
+import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
+import { Payment } from 'src/entities/payment.entity';
 
 @Injectable()
 export class OrderService {
@@ -28,6 +30,9 @@ export class OrderService {
 
     @InjectRepository(Branch)
     private branchRepository: Repository<Branch>,
+
+    @InjectRepository(Payment)
+    private paymentRepository: Repository<Payment>,
   ) { }
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
@@ -210,4 +215,45 @@ export class OrderService {
     return this.orderRepository.findOne({ where: { order_id: order_id } });
   }
 
+  //--------- pay with cash --------//
+  async payWithCash(order_id: number, payWithCashDto: PayWithCashDto): Promise<Order> {
+    const order = await this.orderRepository.findOne({
+      where: { order_id: order_id },
+    });
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${order_id} not found`);
+    }
+
+    let payment = await this.paymentRepository.findOne({
+      where: { order: { order_id: order_id } },
+    });
+
+    if (!payment) {
+      // If no payment exists, create a new one
+      payment = this.paymentRepository.create({
+        order,
+        cash_given: payWithCashDto.cash_given,
+        change: payWithCashDto.change,
+        payment_method: 'cash',
+        status: 'cash',
+        payment_date: new Date(),
+        amount: payWithCashDto.amount,
+        total_amount: payWithCashDto.total_amount,
+      });
+      await this.paymentRepository.save(payment);
+    } else {
+      // Update the existing payment
+      payment.cash_given = payWithCashDto.cash_given;
+      payment.change = payWithCashDto.change;
+      payment.payment_method = 'cash';
+      payment.status = 'cash';
+      payment.payment_date = new Date();
+      payment.amount = payWithCashDto.amount;
+      payment.total_amount = payWithCashDto.total_amount;
+
+      await this.paymentRepository.save(payment);
+    }
+
+    return this.orderRepository.findOne({ where: { order_id: order_id } });
+  }
 }

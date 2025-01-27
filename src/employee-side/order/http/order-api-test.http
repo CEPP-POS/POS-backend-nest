@@ -45,5 +45,16 @@ PATCH http://localhost:3000/employee/orders/1/complete
 Content-Type: application/json
 {
   "order_id": 15,
-   "status": "success"
+  "status": "success"
+}
+
+### pay with cash
+POST http://localhost:3000/employee/orders/1/cash
+Content-Type: application/json
+{
+"total_amount": 345,
+"cash_given": 500,
+"change": 155,
+"status": "cash",
+"amount": 345
 }
