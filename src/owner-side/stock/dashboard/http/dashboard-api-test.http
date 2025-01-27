@@ -2,7 +2,7 @@
 GET http://localhost:3000/owner/stock-summary/2025-01-01
 GET http://localhost:3000/owner/stock-ingredients/2
 
-GET http://localhost:3000/owner/stock-orders/2024-02-02
+GET http://localhost:3000/owner/stock-orders/2025-01-01
 
 POST http://localhost:3000/owner/stock-group
 Content-Type: application/json

@@ -148,34 +148,52 @@ export class DashboardService {
     // Log the input date
     console.log(date);
 
-    // Query for the total orders and canceled orders
+    const startOfDay = new Date(date.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
+
+    // Get the sales summary for the day
     const salesSummary = await this.salesSummaryRepository.findOne({
-      where: { date },
+      where: {
+        date: Between(startOfDay, endOfDay),
+      },
     });
 
     // Fallback values if no sales summary exists for the given date
     const totalOrders = salesSummary?.total_orders || 0;
     const canceledOrders = salesSummary?.canceled_orders || 0;
 
-    // Query orders and their related items
+    // Query orders for the specific date, including related OrderItems
     const orders = await this.orderRepository.find({
-      // where: { order_date: date },
-      // relations: ['order_items'], // Ensure you include relations to fetch associated order items
+      where: {
+        order_date: Between(startOfDay, endOfDay),
+      },
+      relations: ['orderItems', 'payment'], // Load the related order_items
     });
 
-    // Format the orders for the response
-    const orderTopic = orders.map((order) => ({
-      order_id: order.order_id,
-      order_date: order.order_date,
-      // quantity: order.order_items.reduce((sum, item) => sum + item.quantity, 0),
-      quantity: 1,
-      total_amount: order.total_price || 0,
-      payment_method: 'Unknown', // Add real logic to fetch payment method if available
-    }));
+    // Create an array to store the formatted order topics
+    const orderTopic = orders.map((order) => {
+      // Calculate the total quantity by summing the quantities of the related order items
+      const totalQuantity = order.orderItems.reduce(
+        (sum, item) => sum + item.quantity,
+        0,
+      );
+      const paymentMethod = order.payment
+        ? order.payment.payment_method
+        : 'Unknown'; // Fallback if no payment exists
+
+      // Return the formatted order details
+      return {
+        order_id: order.order_id,
+        order_date: order.order_date,
+        quantity: totalQuantity, // Total quantity of items for the order
+        total_amount: order.total_price || 0, // Total price for the order
+        payment_method: paymentMethod, // Add logic to fetch payment method if available
+      };
+    });
 
     // Return the formatted response
     return {
-      total_order: totalOrders,
+      total_orders: totalOrders,
       canceled_orders: canceledOrders,
       order_topic: orderTopic,
     };
