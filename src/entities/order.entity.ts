@@ -3,8 +3,10 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { CancelStatus } from '../employee-side/order/dto/create-order/create-order.dto';
+import { OrderItem } from './order-item.entity';
 
 @Entity()
 export class Order {
@@ -39,4 +41,7 @@ export class Order {
     nullable: true,
   })
   cancel_status: CancelStatus;
+
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.order_id)
+  orderItems: OrderItem[]; // Add this for the reverse relation
 }

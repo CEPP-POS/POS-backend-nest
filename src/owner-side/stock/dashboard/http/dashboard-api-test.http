@@ -1,5 +1,5 @@
 ### Get Stock Summary by Date
-GET http://localhost:3000/owner/stock-summary/2023-09-17
+GET http://localhost:3000/owner/stock-summary/2025-01-01
 GET http://localhost:3000/owner/stock-ingredients/2
 
 GET http://localhost:3000/owner/stock-orders/2024-02-02

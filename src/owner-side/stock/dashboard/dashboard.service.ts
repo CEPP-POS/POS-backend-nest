@@ -10,7 +10,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
 import { UpdateCancelStatusDto } from './dto/update-cancel-status.dto';
-
+import { Menu } from 'src/entities/menu.entity';
 
 @Injectable()
 export class DashboardService {
@@ -23,6 +23,9 @@ export class DashboardService {
 
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
+
+    @InjectRepository(Menu)
+    private menuRepository: Repository<Menu>,
   ) {}
 
   private async calculateMonthlyRevenue(year: number): Promise<number[]> {
@@ -49,6 +52,7 @@ export class DashboardService {
     totalRevenue: number;
     totalOrders: number;
     canceledOrders: number;
+    top_three: any;
   }> {
     const startOfDay = new Date(date.setHours(0, 0, 0, 0));
     const endOfDay = new Date(date.setHours(23, 59, 59, 999));
@@ -59,7 +63,39 @@ export class DashboardService {
       },
     });
 
+    const allOrdersForDay = await this.orderRepository.find({
+      where: {
+        order_date: Between(startOfDay, endOfDay),
+      },
+      relations: ['orderItems', 'orderItems.menu_id'], // Include related order items and menu
+    });
+
+    // Flatten the array of order items and aggregate quantities by menu_name
+    const items = allOrdersForDay.flatMap((order) =>
+      order.orderItems.map((item) => ({
+        quantity: item.quantity,
+        menu_name: item.menu_id.menu_name,
+      })),
+    );
+
+    // Aggregate quantities by menu_name
+    const aggregatedItems = items.reduce((acc, item) => {
+      const existingItem = acc.find((i) => i.menu_name === item.menu_name);
+      if (existingItem) {
+        existingItem.quantity += item.quantity;
+      } else {
+        acc.push({ ...item });
+      }
+      return acc;
+    }, []);
+
+    // Sort by quantity in descending order and take top 3
+    const top3Items = aggregatedItems
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 3);
+
     return {
+      top_three: top3Items,
       totalRevenue: salesSummariesForDay.reduce(
         (sum, item) => sum + item.total_revenue,
         0,
@@ -75,17 +111,15 @@ export class DashboardService {
     };
   }
 
+  //TODO
+  // TOT STUFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   async getStockSummary(date: Date): Promise<Overview> {
     const year = date.getFullYear();
     const monthlyRevenue = await this.calculateMonthlyRevenue(year);
-    const { totalRevenue, totalOrders, canceledOrders } =
+    const { top_three, totalRevenue, totalOrders, canceledOrders } =
       await this.calculateDailyStats(date);
 
-    const topThree: TopItemDto[] = [
-      { name: 'ข้าวมันไก่', count: 50 },
-      { name: 'ข้าวไข่เจียว', count: 48 },
-      { name: 'ราดหน้า', count: 42 },
-    ];
+    const topThree: TopItemDto[] = top_three;
 
     return {
       total_revenue: totalRevenue,
@@ -147,8 +181,7 @@ export class DashboardService {
     };
   }
 
-  
-  async getCancelOrders(date: Date){
+  async getCancelOrders(date: Date) {
     const cancelOrderData = [
       {
         order_id: 110234,
@@ -171,7 +204,7 @@ export class DashboardService {
     return { cancel_order_topic: cancelOrderData };
   }
 
-  async getCancelOrderDetails(order_id: number){
+  async getCancelOrderDetails(order_id: number) {
     const cancelOrderDetails = {
       order_id: 110234,
       order_table: [
@@ -192,7 +225,7 @@ export class DashboardService {
     return cancelOrderDetails; // Return the hardcoded data
   }
 
-  async getIngredients(){
+  async getIngredients() {
     const ingredients = [
       {
         ingredient_id: 1,
@@ -219,15 +252,15 @@ export class DashboardService {
     return ingredients;
   }
 
-  async getIngredientsCategories(){
+  async getIngredientsCategories() {
     const category_id = {
       category_id: 1,
       category_name: 'ท็อปปิ้ง',
-    }
+    };
     return category_id;
   }
 
-  async getIngredientDetails(ingredient_id: number){
+  async getIngredientDetails(ingredient_id: number) {
     const IngredientDetails = {
       ingredient_id: 2,
       ingredient_name: 'วุ้นมะพร้าว',
@@ -240,8 +273,8 @@ export class DashboardService {
       menu_ingredients: [
         {
           menu_ingredient_id: 1,
-          menu_id: 101,  // Example menu id, linked to Menu table
-          ingredient_id: 2,  // Linked to Ingredient table
+          menu_id: 101, // Example menu id, linked to Menu table
+          ingredient_id: 2, // Linked to Ingredient table
           size_id: 's',
           level_id: 'หวานน้อย',
           quantity_used: 50,
@@ -252,16 +285,24 @@ export class DashboardService {
     return IngredientDetails;
   }
 
-  async createCategory(createCategoryDto: CreateCategoryDto){
-    const newCategory= {
-      category_name: createCategoryDto.category_name,  // Create a new category with the provided name
+  async createCategory(createCategoryDto: CreateCategoryDto) {
+    const newCategory = {
+      category_name: createCategoryDto.category_name, // Create a new category with the provided name
     };
-    console.log(newCategory)
-    return newCategory;  // Return the newly created category
+    console.log(newCategory);
+    return newCategory; // Return the newly created category
   }
 
-  async createIngredient(createIngredientDto: CreateIngredientDto){
-    const { ingredient_id, ingredient_name, net_volume, quantity_in_stock, total_volume, category_name, expiration_date } = createIngredientDto;
+  async createIngredient(createIngredientDto: CreateIngredientDto) {
+    const {
+      ingredient_id,
+      ingredient_name,
+      net_volume,
+      quantity_in_stock,
+      total_volume,
+      category_name,
+      expiration_date,
+    } = createIngredientDto;
     const newIngredient = {
       ingredient_id,
       ingredient_name,
@@ -274,34 +315,38 @@ export class DashboardService {
     return newIngredient;
   }
 
-  async updateIngredient(ingredient_id: number, updateIngredientDto: UpdateIngredientDto){
-    const ingredient = []
+  async updateIngredient(
+    ingredient_id: number,
+    updateIngredientDto: UpdateIngredientDto,
+  ) {
+    const ingredient = [];
 
     if (!ingredient) {
-      return { message: `Ingredient with ID ${ingredient_id} not found` };  // Return error message if ingredient not found
+      return { message: `Ingredient with ID ${ingredient_id} not found` }; // Return error message if ingredient not found
     }
 
     // Update only the fields provided in the DTO
     Object.assign(ingredient, updateIngredientDto);
 
-   
-    return ingredient;  // Return the updated ingredient
+    return ingredient; // Return the updated ingredient
   }
 
   private orders = [
     { order_id: 1, cancel_status: 'รอการคืนเงิน' },
     { order_id: 2, cancel_status: 'กำลังดำเนินการ' },
     // Additional mock data
-  ]
+  ];
 
-  async updateCancelStatus(order_id:number, updateCancelStatusDto: UpdateCancelStatusDto){
-    const order = this.orders.find(order => order.order_id === order_id);
+  async updateCancelStatus(
+    order_id: number,
+    updateCancelStatusDto: UpdateCancelStatusDto,
+  ) {
+    const order = this.orders.find((order) => order.order_id === order_id);
     console.log('Updated Order:', order); // Debug log
 
     // Update the cancel_status
     order.cancel_status = updateCancelStatusDto.cancel_status;
-    
+
     return order; // Return the updated order
   }
-  }
-  
+}
