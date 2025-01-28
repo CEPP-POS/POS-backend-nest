@@ -94,7 +94,6 @@ export class DashboardController {
     @Param('order_id') order_id: number,
     @Body() updateCancelStatusDto: UpdateCancelStatusDto,
   ) {
-    console.log(order_id);
     return this.dashboardService.updateCancelStatus(
       Number(order_id),
       updateCancelStatusDto,

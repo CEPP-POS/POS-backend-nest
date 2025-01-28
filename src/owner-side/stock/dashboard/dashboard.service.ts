@@ -403,16 +403,29 @@ export class DashboardService {
     // Additional mock data
   ];
 
+  // working on thisssssssssssssssss nowwwwwwwwww
   async updateCancelStatus(
     order_id: number,
     updateCancelStatusDto: UpdateCancelStatusDto,
   ) {
-    const order = this.orders.find((order) => order.order_id === order_id);
-    console.log('Updated Order:', order); // Debug log
-
+    // Extract cancel_status from the DTO
+    const { cancel_status } = updateCancelStatusDto;
+  
+    // Find the order by ID
+    const order = await this.orderRepository.findOne({ where: { order_id } });
+  
+    // If no order is found, throw an exception
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${order_id} not found`);
+    }
+  
     // Update the cancel_status
-    order.cancel_status = updateCancelStatusDto.cancel_status;
-
-    return order; // Return the updated order
+    order.cancel_status = cancel_status;
+  
+    // Save the updated order to the database
+    await this.orderRepository.save(order);
+  
+    return order;
   }
+  
 }
