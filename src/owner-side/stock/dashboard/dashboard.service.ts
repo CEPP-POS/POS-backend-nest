@@ -111,7 +111,6 @@ export class DashboardService {
     };
   }
 
-  //TODO
   // TOT STUFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   async getStockSummary(date: Date): Promise<Overview> {
     const year = date.getFullYear();
@@ -257,22 +256,37 @@ export class DashboardService {
   }
 
   async getCancelOrderDetails(order_id: number) {
-    const cancelOrderDetails = {
-      order_id: 110234,
-      order_table: [
-        {
-          menu_name: 'ชานมไต้หวัน',
-          quantity: 1,
-          amount: 50,
-          category_name: 'โปรสุดคุ้ม',
-        },
+    console.log(order_id);
+
+    const order = await this.orderRepository.findOne({
+      where: {
+        order_id: order_id,
+      },
+      relations: [
+        'orderItems',
+        'orderItems.menu_id',
+        'orderItems.menu_id.category',
+        'payment',
       ],
-      total_amount: 50,
-      payment_method: 'QR CODE',
-      cancel_status: 'ยังไม่คืนเงิน',
-      customer_name: 'พิมลนวย',
-      customer_contact: '086-1517-623',
+    });
+
+    const cancelOrderDetails = {
+      order_id: order.order_id,
+      order_table: order.orderItems.map((item) => ({
+        menu_name: item.menu_id?.menu_name || 'N/A',
+        quantity: item.quantity,
+        amount: item.price,
+        category_name: item.menu_id?.category?.category_name || 'N/A',
+      })),
+      total_amount: order.payment.amount,
+      total_amount_vat: order.payment.amount * 1.07,
+      payment_method: order.payment.payment_method,
+      cancel_status: order.cancel_status,
+      customer_name: order.customer_name,
+      customer_contact: order.customer_contact,
     };
+
+    console.log(cancelOrderDetails);
 
     return cancelOrderDetails; // Return the hardcoded data
   }

@@ -6,6 +6,9 @@ GET http://localhost:3000/owner/stock-orders/2025-01-01
 
 GET http://localhost:3000/owner/stock-cancel-orders
 
+GET http://localhost:3000/owner/orders/32
+
+
 POST http://localhost:3000/owner/stock-group
 Content-Type: application/json
 {
