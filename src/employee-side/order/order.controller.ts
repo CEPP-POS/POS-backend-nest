@@ -15,6 +15,7 @@ import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order/update-order.dto';
 import { CancelOrderDto } from './dto/cancel-order/Cancel-order.dto';
+import { CompleteOrderDto } from './dto/complete-order.dto';
 
 @Controller('employee/orders')
 export class OrderController {
@@ -86,6 +87,14 @@ export class OrderController {
   ) {
     return this.orderService.cancelOrder(id, cancelOrderDto);
   }
+
+  // @Patch(':id/complete')
+  // async completeOrder(
+  //   @Param('id') id:number,
+  //   @Body() completeOrderDto: CompleteOrderDto,
+  // ){
+  //   return this.orderService.completeOrder(id, completeOrderDto);
+  // }
 
 }
 

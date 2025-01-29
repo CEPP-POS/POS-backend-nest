@@ -1,0 +1,6 @@
+POST http://localhost:3000/customer/orders/item
+Content-Type: application/json
+
+{
+  "orderId": 110234
+}
