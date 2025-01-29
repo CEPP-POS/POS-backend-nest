@@ -13,6 +13,7 @@ import { IngredientModule } from './owner-side/ingredient/ingredient.module';
 import { PauseModule } from './employee-side/pause/pause.module';
 import { OrdersModule } from './customer-side/orders/orders.module';
 import { QueueModule } from './customer-side/queue/queue.module';
+import { MenusModule } from './customer-side/menus/menus.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { QueueModule } from './customer-side/queue/queue.module';
     PauseModule,
     OrdersModule,
     QueueModule,
+    MenusModule,
 
   ],
 })
