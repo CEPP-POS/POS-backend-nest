@@ -12,6 +12,7 @@ import { DashboardModule } from './owner-side/stock/dashboard/dashboard.module';
 import { IngredientModule } from './owner-side/ingredient/ingredient.module';
 import { PauseModule } from './employee-side/pause/pause.module';
 import { OrdersModule } from './customer-side/orders/orders.module';
+import { QueueModule } from './customer-side/queue/queue.module';
 
 @Module({
   imports: [
@@ -29,6 +30,8 @@ import { OrdersModule } from './customer-side/orders/orders.module';
     IngredientModule,
     PauseModule,
     OrdersModule,
+    QueueModule,
+
   ],
 })
 export class AppModule { }
