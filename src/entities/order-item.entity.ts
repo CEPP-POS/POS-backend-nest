@@ -4,51 +4,55 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Order } from './order.entity';
-import { Menu } from 'src/entities/menu.entity';
-import { MenuType } from 'src/entities/menu-type.entity';
-import { AddOn } from 'src/entities/add-on.entity';
-import { Size } from 'src/entities/size.entity';
-import { SweetnessLevel } from 'src/entities/sweetness-level.entity';
+import { Menu } from './menu.entity';
+import { MenuType } from './menu-type.entity';
+import { AddOn } from './add-on.entity';
+import { Size } from './size.entity';
+import { SweetnessLevel } from './sweetness-level.entity';
 
 @Entity()
 export class OrderItem {
   @PrimaryGeneratedColumn()
   order_item_id: number;
 
-  @ManyToOne(() => Order, { nullable: true })
+  @ManyToOne(() => Order, (order) => order.order_items, { nullable: false })
   @JoinColumn({ name: 'order_id' })
-  order_id: Order;
+  order: Order;
 
-  //menu_id link with table menu
-  @ManyToOne(() => Menu, { nullable: true })
+  @ManyToOne(() => Menu, { nullable: false })
   @JoinColumn({ name: 'menu_id' })
-  menu_id: Menu;
+  menu: Menu;
 
-  //sweetness_id link with table sweetness
-  @ManyToOne(() => SweetnessLevel, { nullable: true })
+  @ManyToOne(() => SweetnessLevel, { nullable: false })
   @JoinColumn({ name: 'sweetness_id' })
-  sweetness_id: SweetnessLevel;
+  sweetness: SweetnessLevel;
 
-  //MenuType_id link with table type
-  @ManyToOne(() => MenuType, { nullable: true })
+  @ManyToOne(() => MenuType, { nullable: false })
   @JoinColumn({ name: 'menu_type_id' })
-  menu_type_id: MenuType;
+  menu_type: MenuType;
 
-  //add_on_id link with table add on
-  @ManyToOne(() => AddOn, { nullable: true })
-  @JoinColumn({ name: 'add_on_id' })
-  add_on_id: AddOn[];
+  @ManyToMany(() => AddOn, { cascade: true })
+  @JoinTable({
+    name: 'order_item_add_ons',
+    joinColumn: {
+      name: 'order_item_id',
+      referencedColumnName: 'order_item_id',
+    },
+    inverseJoinColumn: { name: 'add_on_id', referencedColumnName: 'add_on_id' },
+  })
+  addOns: AddOn[];
 
-  //size_id link with table size
-  @ManyToOne(() => Size, { nullable: true })
+  @ManyToOne(() => Size, { nullable: false })
   @JoinColumn({ name: 'size_id' })
-  size_id: Size;
+  size: Size;
 
   @Column()
-  quantity: number; //จำนวนสินค้าที่เพิ่ม
+  quantity: number;
 
   @Column()
-  price: number; //ราคา
+  price: number;
 }

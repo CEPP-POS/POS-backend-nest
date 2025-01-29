@@ -15,28 +15,40 @@ import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order/update-order.dto';
 import { CancelOrderDto } from './dto/cancel-order/Cancel-order.dto';
+import { OrderItemDto } from './dto/order-item/order-item.dto';
 
 @Controller('employee/orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) { }
+  constructor(private readonly orderService: OrderService) {}
+
+  // @Post()
+  // @HttpCode(HttpStatus.CREATED)
+  // async create(@Body() createOrderDto: CreateOrderDto) {
+  //   return this.orderService.create(createOrderDto);
+  // }
+  // @Get()
+  // @HttpCode(HttpStatus.OK)
+  // async findAll() {
+  //   return this.orderService.findAll();
+  // }
 
   @Post()
-  @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+  async createOrder(
+    @Body()
+    {
+      createOrderDto,
+      items,
+    }: {
+      createOrderDto: CreateOrderDto;
+      items: OrderItemDto[];
+    },
+  ) {
+    return this.orderService.createOrder(createOrderDto, items);
   }
 
   @Get()
-  @HttpCode(HttpStatus.OK)
-  async findAll() {
-    return this.orderService.findAll();
-  }
-
-  //--------- each order item in order --------//
-  @Get('/item')
-  @HttpCode(HttpStatus.OK)
-  async findAllOrderItems() {
-    return this.orderService.findAllOrderItems();
+  async findAllOrders() {
+    return this.orderService.findAllOrders();
   }
 
   @Get(':id')
@@ -86,8 +98,4 @@ export class OrderController {
   ) {
     return this.orderService.cancelOrder(id, cancelOrderDto);
   }
-
 }
-
-
-
