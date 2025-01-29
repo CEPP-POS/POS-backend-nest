@@ -11,7 +11,7 @@ export class CategoryController {
   async linkMenusToCategory(
     @Body() linkMenuToCategoryDto: LinkMenuToCategoryDto,
   ) {
-    return this.categoryService.linkMenusToCategory(linkMenuToCategoryDto);
+    await this.categoryService.linkMenusToCategory(linkMenuToCategoryDto);
   }
 
   @Get()
@@ -31,11 +31,11 @@ export class CategoryController {
 
   @Post()
   async create(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoryService.create(createCategoryDto);
+    await this.categoryService.create(createCategoryDto);
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    return this.categoryService.remove(+id);
+    await this.categoryService.remove(+id);
   }
 }
