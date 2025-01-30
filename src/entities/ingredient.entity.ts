@@ -34,6 +34,9 @@ export class Ingredient {
     @Column({ nullable: true })
     unit: string;
 
+    @Column({ type: "boolean", default: false })
+    paused: boolean;
+
     @ManyToOne(() => IngredientCategory)
     @JoinColumn({ name: 'category_id' })
     category_id: IngredientCategory;

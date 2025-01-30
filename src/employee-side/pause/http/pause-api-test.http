@@ -1,1 +1,40 @@
 GET http://localhost:3000/employee/pause/menu
+
+
+// * Get all ingredient and paused status
+GET http://localhost:3000/employee/pause/ingredients
+
+
+// * update ingredient and paused status
+PATCH http://localhost:3000/employee/pause/ingredients
+Content-Type: application/json
+
+[
+  {
+    "ingredient_id": 4,
+    "paused": true
+  },
+  {
+    "ingredient_id": 5,
+    "paused": true
+  }
+]
+
+
+// * Get all menu and paused status
+GET http://localhost:3000/employee/pause/menus
+
+// * update menu and paused status
+PATCH http://localhost:3000/employee/pause/menus
+Content-Type: application/json
+
+[
+  {
+    "menu_id": 18,
+    "paused": true
+  },
+  {
+    "menu_id": 19,
+    "paused": true
+  }
+]
