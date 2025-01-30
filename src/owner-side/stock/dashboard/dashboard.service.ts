@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Between, IsNull, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Overview, TopItemDto } from './dto/overview.dto';
@@ -11,6 +15,9 @@ import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
 import { UpdateCancelStatusDto } from './dto/update-cancel-status.dto';
 import { Menu } from 'src/entities/menu.entity';
+import { Ingredient } from 'src/entities/ingredient.entity';
+import { IngredientDto } from './dto/ingredients.dto';
+import { IngredientCategory } from 'src/entities/ingredient-category.entity';
 
 @Injectable()
 export class DashboardService {
@@ -26,6 +33,12 @@ export class DashboardService {
 
     @InjectRepository(Menu)
     private menuRepository: Repository<Menu>,
+
+    @InjectRepository(Ingredient)
+    private readonly ingredientRepository: Repository<Ingredient>,
+
+    @InjectRepository(IngredientCategory)
+    private ingredientCategoryRepository: Repository<IngredientCategory>,
   ) {}
 
   private async calculateMonthlyRevenue(year: number): Promise<number[]> {
@@ -111,7 +124,6 @@ export class DashboardService {
     };
   }
 
-  // TOT STUFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   async getStockSummary(date: Date): Promise<Overview> {
     const year = date.getFullYear();
     const monthlyRevenue = await this.calculateMonthlyRevenue(year);
@@ -144,24 +156,18 @@ export class DashboardService {
   }
 
   async getOrderTopic(date: Date): Promise<any> {
-    // Log the input date
-    console.log(date);
-
     const startOfDay = new Date(date.setHours(0, 0, 0, 0));
     const endOfDay = new Date(date.setHours(23, 59, 59, 999));
 
-    // Get the sales summary for the day
     const salesSummary = await this.salesSummaryRepository.findOne({
       where: {
         date: Between(startOfDay, endOfDay),
       },
     });
 
-    // Fallback values if no sales summary exists for the given date
     const totalOrders = salesSummary?.total_orders || 0;
     const canceledOrders = salesSummary?.canceled_orders || 0;
 
-    // Query orders for the specific date, including related OrderItems
     const orders = await this.orderRepository.find({
       where: {
         order_date: Between(startOfDay, endOfDay),
@@ -169,7 +175,6 @@ export class DashboardService {
       relations: ['orderItems', 'payment'], // Load the related order_items
     });
 
-    // Create an array to store the formatted order topics
     const orderTopic = orders.map((order) => {
       // Calculate the total quantity by summing the quantities of the related order items
       const totalQuantity = order.orderItems.reduce(
@@ -291,31 +296,28 @@ export class DashboardService {
     return cancelOrderDetails; // Return the hardcoded data
   }
 
-  async getIngredients() {
-    const ingredients = [
-      {
-        ingredient_id: 1,
-        ingredient_name: 'ไข่มุก',
-        net_volume: 250,
-        quantity_in_stock: 3,
-        total_volume: 100,
-        category_id: 1,
-        category_name: 'ท็อปปิ้ง',
-        expiration_date: new Date('2025-02-01'),
-      },
-      {
-        ingredient_id: 2,
-        ingredient_name: 'วุ้นมะพร้าว',
-        net_volume: 250,
-        quantity_in_stock: 3,
-        total_volume: 100,
-        category_id: 1,
-        category_name: 'ท็อปปิ้ง',
-        expiration_date: new Date('2025-02-10'),
-      },
-    ];
+  //TODO
+  // ทำอันนี้ๆๆๆๆๆๆๆๆๆๆๆๆๆๆๆๆๆ TOTTTTTTTTTTTTTT
 
-    return ingredients;
+  async getIngredients(): Promise<IngredientDto[]> {
+    const ingredients = await this.ingredientRepository.find({
+      relations: ['category_id', 'ingredientUpdate'],
+    });
+
+    return ingredients.map((ingredient) => {
+      const latestUpdate = ingredient.ingredientUpdate?.[0]; // Assuming first update is latest
+      return {
+        ingredient_id: ingredient.ingredient_id,
+        ingredient_name: ingredient.ingredient_name,
+        net_volume: latestUpdate?.net_volume || 0,
+        unit: latestUpdate?.unit || '',
+        quantity_in_stock: latestUpdate?.quantity_in_stock || 0,
+        total_volume: latestUpdate?.total_volume || 0,
+        category_id: ingredient.category_id?.category_id || null,
+        category_name: ingredient.category_id?.category_name || '',
+        expiration_date: latestUpdate?.expiration_date || null,
+      };
+    });
   }
 
   async getIngredientsCategories() {
@@ -351,12 +353,21 @@ export class DashboardService {
     return IngredientDetails;
   }
 
-  async createCategory(createCategoryDto: CreateCategoryDto) {
-    const newCategory = {
-      category_name: createCategoryDto.category_name, // Create a new category with the provided name
-    };
-    console.log(newCategory);
-    return newCategory; // Return the newly created category
+  async createCategory(
+    createCategoryDto: CreateCategoryDto,
+  ): Promise<CreateCategoryDto> {
+    const { category_name } = createCategoryDto;
+    const existingCategory = await this.ingredientCategoryRepository.findOne({
+      where: { category_name },
+    });
+    if (existingCategory) {
+      throw new BadRequestException(
+        `Category '${category_name}' มีอยู่แล้วในระบบ`,
+      );
+    }
+    const result =
+      await this.ingredientCategoryRepository.insert(createCategoryDto);
+    return { category_name: createCategoryDto.category_name };
   }
 
   async createIngredient(createIngredientDto: CreateIngredientDto) {
@@ -410,22 +421,21 @@ export class DashboardService {
   ) {
     // Extract cancel_status from the DTO
     const { cancel_status } = updateCancelStatusDto;
-  
+
     // Find the order by ID
     const order = await this.orderRepository.findOne({ where: { order_id } });
-  
+
     // If no order is found, throw an exception
     if (!order) {
       throw new NotFoundException(`Order with ID ${order_id} not found`);
     }
-  
+
     // Update the cancel_status
     order.cancel_status = cancel_status;
-  
+
     // Save the updated order to the database
     await this.orderRepository.save(order);
-  
+
     return order;
   }
-  
 }

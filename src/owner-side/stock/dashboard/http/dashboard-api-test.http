@@ -8,11 +8,13 @@ GET http://localhost:3000/owner/stock-cancel-orders
 
 GET http://localhost:3000/owner/orders/32
 
+GET http://localhost:3000/owner/stock-ingredients
+
 
 POST http://localhost:3000/owner/stock-group
 Content-Type: application/json
 {
-    "category_name": "Topping"
+    "category_name": "เครื่องครัว"
 }
 
 POST http://localhost:3000/owner/create-stock-ingredients
