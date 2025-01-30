@@ -69,7 +69,7 @@ export class MenuService {
     // สร้างเมนูใหม่
     const newMenu = this.menuRepository.create({
       ...menuData,
-      category,
+      categories: [category],
       owner,
       branch,
     });

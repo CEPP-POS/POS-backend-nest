@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Category } from '../../entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category/create-category.dto';
-import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
+// import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 import { Menu } from '../../entities/menu.entity';
+// import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -32,66 +33,66 @@ export class CategoryService {
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
     const { category_name, menu_id } = createCategoryDto;
 
-    // สร้างหมวดหมู่ใหม่
-    const newCategory = this.categoryRepository.create({ category_name });
-    const savedCategory = await this.categoryRepository.save(newCategory);
+    // ✅ ตรวจสอบว่ามีหมวดหมู่ที่ชื่อซ้ำกันหรือไม่
+    let existingCategory = await this.categoryRepository.findOne({
+      where: { category_name },
+      relations: ['menu'],
+    });
 
-    const menus = await this.menuRepository.findBy({ menu_id: In(menu_id) });
-    // ลิงก์เมนูที่ระบุเข้ากับหมวดหมู่
-    // const menus = await this.menuRepository.findByIds(menu_id);
-    if (menus.length !== menu_id.length) {
-      throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
+    // ✅ ถ้ายังไม่มีหมวดหมู่นี้ ให้สร้างใหม่
+    if (!existingCategory) {
+      existingCategory = this.categoryRepository.create({ category_name });
+      existingCategory = await this.categoryRepository.save(existingCategory);
     }
 
-    // menus.forEach((menu) => {
-    //   menu.category = savedCategory;
+    const menus = await this.menuRepository.find({
+      where: { menu_id: In(menu_id) },
+      relations: ['categories'], // ✅ โหลดหมวดหมู่ที่เกี่ยวข้อง
+    });
+
+    // const menus = await this.menuRepository.find({
+    //   where: { menu_id: In(menu_id) },
     // });
 
-    menus.forEach((menu) => {
-      // ตรวจสอบว่า category ถูกตั้งค่าเป็น null ก่อน (optional)
-      if (!menu.category) {
-        menu.category = savedCategory; // เซ็ต category เป็น savedCategory
-      }
-    });
-
-    await this.menuRepository.save(menus);
-
-    return savedCategory;
-  }
-  // async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-  //   const newCategory = this.categoryRepository.create(createCategoryDto);
-  //   return this.categoryRepository.save(newCategory);
-  // }
-
-  // เพิ่มฟังก์ชันสำหรับลิงก์เมนูเข้ากับหมวดหมู่
-  async linkMenusToCategory(
-    linkMenuToCategoryDto: LinkMenuToCategoryDto,
-  ): Promise<Category> {
-    const { category_id, menu_id } = linkMenuToCategoryDto;
-
-    // ตรวจสอบว่าหมวดหมู่มีอยู่หรือไม่
-    const category = await this.categoryRepository.findOne({
-      where: { category_id },
-    });
-    if (!category) {
-      throw new NotFoundException(`Category with ID ${category_id} not found`);
-    }
-
-    // ดึงเมนูทั้งหมดที่ต้องการลิงก์
-    const menus = await this.menuRepository.findByIds(menu_id);
     if (menus.length !== menu_id.length) {
       throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
     }
 
-    // อัปเดตเมนูให้ลิงก์กับหมวดหมู่
+    // const updatedMenus = [...new Set([...existingCategory.menu, ...menus])];
+
     menus.forEach((menu) => {
-      menu.category = category; // กำหนดความสัมพันธ์
+      menu.categories = [...(menu.categories ?? []), existingCategory]; // ✅ ใช้ `?? []` กัน `undefined`
     });
+    console.log(category_name);
+    await this.menuRepository.save(menus);
 
-    await this.menuRepository.save(menus); // บันทึกการเปลี่ยนแปลง
-
-    return category;
+    return existingCategory;
   }
+
+  // async linkMenusToCategory(
+  //   linkMenuToCategoryDto: LinkMenuToCategoryDto,
+  // ): Promise<Category> {
+  //   const { category_id, menu_id } = linkMenuToCategoryDto;
+
+  //   const category = await this.categoryRepository.findOne({
+  //     where: { category_id },
+  //   });
+  //   if (!category) {
+  //     throw new NotFoundException(`Category with ID ${category_id} not found`);
+  //   }
+
+  //   const menus = await this.menuRepository.findByIds(menu_id);
+  //   if (menus.length !== menu_id.length) {
+  //     throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
+  //   }
+
+  //   menus.forEach((menu) => {
+  //     menu.category = category; // กำหนดความสัมพันธ์
+  //   });
+  //   await this.menuRepository.save(menus); // บันทึกการเปลี่ยนแปลง
+
+  //   return category;
+  // }
 
   async remove(id: number): Promise<void> {
     const category = await this.findOne(id);

@@ -5,6 +5,8 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  JoinTable,
+  ManyToMany,
 } from 'typeorm';
 import { Owner } from './owner.entity';
 import { Category } from './category.entity';
@@ -22,9 +24,12 @@ export class Menu {
   @Column()
   store_id: number;
 
-  @ManyToOne(() => Category, { nullable: true })
-  @JoinColumn({ name: 'category_id' })
-  category: Category;
+  // @ManyToOne(() => Category, { nullable: true })
+  // @JoinColumn({ name: 'category_id' })
+  // category: Category;
+  @ManyToMany(() => Category, (category) => category.menu, { cascade: true })
+  @JoinTable() // ✅ ให้ TypeORM สร้างตารางเชื่อมกลาง (menu_categories)
+  categories: Category[];
 
   @Column()
   menu_name: string;
