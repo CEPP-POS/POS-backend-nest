@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Between, IsNull, Not, Repository } from 'typeorm';
+import { Between, Equal, IsNull, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Overview, TopItemDto } from './dto/overview.dto';
 import { SalesSummary } from '../../../entities/sales-summary';
@@ -18,6 +18,8 @@ import { Menu } from 'src/entities/menu.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { IngredientDto } from './dto/ingredients.dto';
 import { IngredientCategory } from 'src/entities/ingredient-category.entity';
+import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
+import { Owner } from 'src/entities/owner.entity';
 
 @Injectable()
 export class DashboardService {
@@ -37,8 +39,14 @@ export class DashboardService {
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
 
+    @InjectRepository(IngredientUpdate)
+    private ingredientUpdateRepository: Repository<IngredientUpdate>,
+
     @InjectRepository(IngredientCategory)
     private ingredientCategoryRepository: Repository<IngredientCategory>,
+
+    @InjectRepository(Owner)
+    private ownerRepository: Repository<Owner>,
   ) {}
 
   private async calculateMonthlyRevenue(year: number): Promise<number[]> {
@@ -370,26 +378,81 @@ export class DashboardService {
     return { category_name: createCategoryDto.category_name };
   }
 
-  async createIngredient(createIngredientDto: CreateIngredientDto) {
+  async createIngredient(
+    createIngredientDto: CreateIngredientDto,
+  ): Promise<any> {
     const {
-      ingredient_id,
+      image_url,
+      owner_id,
       ingredient_name,
       net_volume,
+      unit,
       quantity_in_stock,
-      total_volume,
       category_name,
       expiration_date,
     } = createIngredientDto;
-    const newIngredient = {
-      ingredient_id,
-      ingredient_name,
-      net_volume,
+
+    // Find owner
+    const owner = await this.ownerRepository.findOne({
+      where: { owner_id }, // Simplified query
+    });
+
+    if (!owner) {
+      throw new NotFoundException(`Owner with ID ${owner_id} not found`);
+    }
+
+    // Find or create category
+    let category = await this.ingredientCategoryRepository.findOne({
+      where: { category_name },
+    });
+
+    if (!category) {
+      category = this.ingredientCategoryRepository.create({ category_name });
+      await this.ingredientCategoryRepository.save(category);
+    }
+
+    // Find existing ingredient
+    let ingredient = await this.ingredientRepository
+      .createQueryBuilder('ingredient')
+      .leftJoinAndSelect('ingredient.owner_id', 'owner')
+      .where('ingredient.ingredient_name = :ingredient_name', {
+        ingredient_name,
+      })
+      .andWhere('owner.owner_id = :owner_id', { owner_id })
+      .getOne();
+
+    if (!ingredient) {
+      // Create new ingredient if not found
+      ingredient = this.ingredientRepository.create({
+        ingredient_name,
+        category_id: category,
+        owner_id: owner, // Pass the entire owner entity
+        image_url,
+      });
+
+      await this.ingredientRepository.save(ingredient);
+    }
+
+    // Calculate total volume
+    const total_volume = net_volume * quantity_in_stock;
+
+    // Create ingredient update
+    const newUpdate = this.ingredientUpdateRepository.create({
+      ingredient_id: ingredient,
       quantity_in_stock,
+      net_volume,
+      unit,
       total_volume,
-      category_name,
-      expiration_date,
+      expiration_date: new Date(expiration_date),
+    });
+
+    await this.ingredientUpdateRepository.save(newUpdate);
+
+    return {
+      message: 'Ingredient and update created successfully',
+      ingredient_id: ingredient.ingredient_id,
+      update_id: newUpdate.update_id,
     };
-    return newIngredient;
   }
 
   async updateIngredient(

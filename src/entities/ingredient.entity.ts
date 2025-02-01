@@ -24,6 +24,9 @@ export class Ingredient {
   @Column()
   ingredient_name: string;
 
+  @Column({ nullable: true })
+  image_url: string;
+
   @ManyToOne(() => IngredientCategory)
   @JoinColumn({ name: 'category_id' })
   category_id: IngredientCategory;

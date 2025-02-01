@@ -1,8 +1,11 @@
 import { IsInt, IsString, IsDateString, IsNumber } from 'class-validator';
 
 export class CreateIngredientDto {
+  @IsString()
+  image_url: string;
+
   @IsInt()
-  ingredient_id: number;
+  owner_id: number;
 
   @IsString()
   ingredient_name: string;
@@ -10,15 +13,15 @@ export class CreateIngredientDto {
   @IsNumber()
   net_volume: number;
 
+  @IsString()
+  unit: string;
+
   @IsInt()
   quantity_in_stock: number;
-
-  @IsNumber()
-  total_volume: number;
 
   @IsString()
   category_name: string;
 
   @IsDateString()
-  expiration_date: string;  // Ensure you use a valid ISO date string
+  expiration_date: string;
 }

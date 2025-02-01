@@ -8,6 +8,8 @@ import { OrderItem } from 'src/entities/order-item.entity';
 import { Menu } from 'src/entities/menu.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { IngredientCategory } from 'src/entities/ingredient-category.entity';
+import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
+import { Owner } from 'src/entities/owner.entity';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { IngredientCategory } from 'src/entities/ingredient-category.entity';
       Menu,
       Ingredient,
       IngredientCategory,
+      IngredientUpdate,
+      Owner
     ]),
   ],
   controllers: [DashboardController],
