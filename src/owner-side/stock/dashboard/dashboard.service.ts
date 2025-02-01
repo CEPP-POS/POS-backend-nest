@@ -318,7 +318,7 @@ export class DashboardService {
         ingredient_id: ingredient.ingredient_id,
         ingredient_name: ingredient.ingredient_name,
         net_volume: latestUpdate?.net_volume || 0,
-        unit: latestUpdate?.unit || '',
+        unit: ingredient.unit || '',
         quantity_in_stock: latestUpdate?.quantity_in_stock || 0,
         total_volume: latestUpdate?.total_volume || 0,
         category_id: ingredient.category_id?.category_id || null,
@@ -393,9 +393,7 @@ export class DashboardService {
     } = createIngredientDto;
 
     // Find owner
-    const owner = await this.ownerRepository.findOne({
-      where: { owner_id }, // Simplified query
-    });
+    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
 
     if (!owner) {
       throw new NotFoundException(`Owner with ID ${owner_id} not found`);
@@ -426,33 +424,60 @@ export class DashboardService {
       ingredient = this.ingredientRepository.create({
         ingredient_name,
         category_id: category,
-        owner_id: owner, // Pass the entire owner entity
+        owner_id: owner,
         image_url,
+        unit,
       });
 
       await this.ingredientRepository.save(ingredient);
     }
 
-    // Calculate total volume
-    const total_volume = net_volume * quantity_in_stock;
+    // Use QueryBuilder to find existing update
+    const existingUpdate = await this.ingredientUpdateRepository
+      .createQueryBuilder('update')
+      .where('update.ingredient_id = :ingredientId', { 
+        ingredientId: ingredient.ingredient_id 
+      })
+      .andWhere('update.net_volume = :netVolume', { 
+        netVolume: net_volume 
+      })
+      .andWhere('update.expiration_date = :expirationDate', { 
+        expirationDate: new Date(expiration_date) 
+      })
+      .getOne();
 
-    // Create ingredient update
-    const newUpdate = this.ingredientUpdateRepository.create({
-      ingredient_id: ingredient,
-      quantity_in_stock,
-      net_volume,
-      unit,
-      total_volume,
-      expiration_date: new Date(expiration_date),
-    });
+    if (existingUpdate) {
+      // Add quantity and update total volume if the same ingredient exists
+      existingUpdate.quantity_in_stock += quantity_in_stock;
+      existingUpdate.total_volume += quantity_in_stock * net_volume;
 
-    await this.ingredientUpdateRepository.save(newUpdate);
+      await this.ingredientUpdateRepository.save(existingUpdate);
 
-    return {
-      message: 'Ingredient and update created successfully',
-      ingredient_id: ingredient.ingredient_id,
-      update_id: newUpdate.update_id,
-    };
+      return {
+        message: 'Existing ingredient update modified successfully',
+        ingredient_id: ingredient.ingredient_id,
+        update_id: existingUpdate.update_id,
+      };
+    } else {
+      // Create new ingredient update if no existing record matches
+      const total_volume = net_volume * quantity_in_stock;
+
+      const newUpdate = this.ingredientUpdateRepository.create({
+        ingredient_id: ingredient,
+        quantity_in_stock,
+        net_volume,
+        total_volume,
+        expiration_date: new Date(expiration_date),
+      });
+
+      await this.ingredientUpdateRepository.save(newUpdate);
+
+      return {
+        message: 'Ingredient and update created successfully',
+        ingredient_id: ingredient.ingredient_id,
+        update_id: newUpdate.update_id,
+      };
+    }
   }
 
   async updateIngredient(

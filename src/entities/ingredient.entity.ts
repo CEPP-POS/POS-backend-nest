@@ -31,6 +31,9 @@ export class Ingredient {
   @JoinColumn({ name: 'category_id' })
   category_id: IngredientCategory;
 
+  @Column({ nullable: true })
+  unit: string;
+
   @OneToMany(
     () => IngredientUpdate,
     (ingredientUpdate) => ingredientUpdate.ingredient_id,

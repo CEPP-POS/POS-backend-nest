@@ -24,10 +24,10 @@ Content-Type: application/json
   "ingredient_name": "ผงโกโก้ทิวลิป",
   "net_volume": 250,
   "unit": "g",
-  "quantity_in_stock": 4,
+  "quantity_in_stock": 1,
   "category_name": "วัตถุดิบ",
-  "expiration_date": "2025-01-24",
-  "owner_id": 2
+  "expiration_date": "2025-01-27",
+  "owner_id": 1
 }
 PATCH http://localhost:3000/owner/orders/32
 Content-Type: application/json
