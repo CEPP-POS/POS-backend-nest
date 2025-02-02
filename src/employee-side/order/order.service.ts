@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, Between } from 'typeorm';
 import { Order } from '../../entities/order.entity';
 import { CreateOrderDto } from './dto/create-order/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order/update-order.dto';
@@ -19,6 +19,7 @@ import { Owner } from 'src/entities/owner.entity';
 import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
 import { Payment } from 'src/entities/payment.entity';
+import { SalesSummary } from 'src/entities/sales-summary';
 
 
 @Injectable()
@@ -26,7 +27,6 @@ export class OrderService {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
-
 
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
@@ -45,31 +45,18 @@ export class OrderService {
 
     @InjectRepository(MenuType)
     private readonly menuTypeRepository: Repository<MenuType>,
-  ) {}
 
-  // async create(createOrderDto: CreateOrderDto): Promise<Order> {
-  //   // Convert order_date to Date if it's a string
-  //   if (typeof createOrderDto.order_date === 'string') {
-  //     const parsedDate = new Date(createOrderDto.order_date);
-  //     if (isNaN(parsedDate.getTime())) {
-  //       throw new Error('Invalid date format');
-  //     }
-  //     createOrderDto.order_date = parsedDate;
-  //   }
     @InjectRepository(SalesSummary)
-    private salesSummaryRepository: Repository<SalesSummary>,
-
-    @InjectRepository(OrderItem)
-    private orderItemRepository: Repository<OrderItem>,
+    private readonly salesSummaryRepository: Repository<SalesSummary>,
 
     @InjectRepository(Owner)
-    private ownerRepository: Repository<Owner>,
+    private readonly ownerRepository: Repository<Owner>,
 
     @InjectRepository(Branch)
-    private branchRepository: Repository<Branch>,
+    private readonly branchRepository: Repository<Branch>,
 
     @InjectRepository(Payment)
-    private paymentRepository: Repository<Payment>,
+    private readonly paymentRepository: Repository<Payment>,
   ) { }
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
@@ -86,50 +73,18 @@ export class OrderService {
       createOrderDto.order_date = parsedDate;
     }
 
-  //   // Calculate start and end of the day for comparison
-  //   const orderDateOnly = new Date(
-  //     createOrderDto.order_date.toISOString().split('T')[0],
-  //   );
-  //   const startOfDay = new Date(orderDateOnly.setHours(0, 0, 0, 0));
-  //   const endOfDay = new Date(orderDateOnly.setHours(23, 59, 59, 999));
+    // Calculate start and end of the day for comparison
+    const orderDateOnly = new Date(
+      createOrderDto.order_date.toISOString().split('T')[0],
+    );
+    const startOfDay = new Date(orderDateOnly.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(orderDateOnly.setHours(23, 59, 59, 999));
 
-  //   let salesSummary = await this.salesSummaryRepository.findOne({
-  //     where: {
-  //       date: Between(startOfDay, endOfDay),
-  //     },
-  //   });
-
-
-  //   if (salesSummary) {
-  //     // Update total revenue and orders
-  //     salesSummary.total_revenue += createOrderDto.total_price;
-  //     salesSummary.total_orders += 1;
-  //     if (createOrderDto.cancel_status === null) {
-  //       salesSummary.canceled_orders += 1;
-  //     }
-  //     await this.salesSummaryRepository.save(salesSummary);
-  //   } else {
-  //     if (createOrderDto.cancel_status === null) {
-  //       // Create a new SalesSummary if no matching date exists
-  //       salesSummary = this.salesSummaryRepository.create({
-  //         date: orderDateOnly,
-  //         owner_id: 1, // Hardcoded for now, can come from DTO
-  //         total_revenue: createOrderDto.total_price,
-  //         total_orders: 1,
-  //         canceled_orders: 0,
-  //         branch: { branch_id: 1 }, // Hardcoded for now, can come from DTO
-  //       });
-  //     } else {
-  //       // Create a new SalesSummary if no matching date exists
-  //       salesSummary = this.salesSummaryRepository.create({
-  //         date: orderDateOnly,
-  //         owner_id: 1, // Hardcoded for now, can come from DTO
-  //         total_revenue: createOrderDto.total_price,
-  //         total_orders: 1,
-  //         canceled_orders: 1,
-  //         branch: { branch_id: 1 }, // Hardcoded for now, can come from DTO
-  //       });
-  //     }
+    let salesSummary = await this.salesSummaryRepository.findOne({
+      where: {
+        date: Between(startOfDay, endOfDay),
+      },
+    });
 
     if (salesSummary) {
       // Update total revenue and orders
@@ -151,15 +106,11 @@ export class OrderService {
       await this.salesSummaryRepository.save(salesSummary);
     }
 
-
-  //     await this.salesSummaryRepository.save(salesSummary);
-  //   }
-
-  //   // Proceed to create the order
-  //   const newOrder = this.orderRepository.create(createOrderDto);
-  //   console.log(newOrder.order_date);
-  //   return this.orderRepository.save(newOrder);
-  // }
+    // Proceed to create the order
+    const newOrder = this.orderRepository.create(createOrderDto);
+    console.log(newOrder.order_date);
+    return this.orderRepository.save(newOrder);
+  }
 
   async findAll(): Promise<Order[]> {
     return this.orderRepository.find({
@@ -338,35 +289,6 @@ export class OrderService {
 
     return order;
   }
-
-  //--------- each order item in order --------//
-  // async findAllOrderItems(): Promise<any[]> {
-  //   const orderItems = await this.orderItemRepository.find({
-  //     order: {
-  //       order_item_id: 'ASC',
-  //     },
-  //     relations: [
-  //       'menu_id',
-  //       'sweetness_id',
-  //       'menu_type_id',
-  //       'add_on_id',
-  //       'size_id',
-  //     ],
-  //   });
-
-  //   return orderItems.map((orderItem) => ({
-  //     order_item_id: orderItem.order_item_id,
-  //     quantity: orderItem.quantity,
-  //     price: orderItem.price,
-  //     menu_name: orderItem.menu_id.menu_name,
-  //     menu_price: orderItem.menu_id.price,
-  //     image_url: orderItem.menu_id.image_url,
-  //     level_name: orderItem.sweetness_id.level_name,
-  //     type_name: orderItem.menu_type_id.type_name,
-  //     add_on_name: orderItem.add_on_id[0]?.add_on_name,
-  //     size_name: orderItem.size_id.size_name,
-  //   }));
-  // }
 
   //--------- change status to complete order --------//
   async completeOrder(
