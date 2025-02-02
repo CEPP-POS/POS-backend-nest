@@ -32,3 +32,5 @@ export class IngredientUpdate {
   @CreateDateColumn()
   expiration_date: Date;
 }
+
+

@@ -1,15 +1,14 @@
 import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
 } from 'typeorm';
-
 
 @Entity()
 export class IngredientCategory {
-    @PrimaryGeneratedColumn()
-    category_id: number;
+  @PrimaryGeneratedColumn()
+  category_id: number;
 
-    @Column()
-    category_name: string;
+  @Column({ unique: true })
+  category_name: string;
 }

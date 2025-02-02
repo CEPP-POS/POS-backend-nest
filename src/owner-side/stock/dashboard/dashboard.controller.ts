@@ -19,7 +19,7 @@ import { UpdateCancelStatusDto } from './dto/update-cancel-status.dto';
 
 @Controller('owner')
 export class DashboardController {
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(private readonly dashboardService: DashboardService) { }
 
   @Get('stock-summary/:date')
   async getStockSummary(@Param('date') date: string): Promise<Overview> {
@@ -78,14 +78,22 @@ export class DashboardController {
     return this.dashboardService.createIngredient(createIngredientDto);
   }
 
-  @Patch('update-stock-ingredients/:ingredient_id')
-  async UpdateIngredient(
+  @Get('update-stock-ingredients/:ingredient_id')
+  async getUpdateIngredient(
     @Param('ingredient_id') ingredient_id: number,
-    @Body() updateIngredientDto: UpdateIngredientDto,
+  ): Promise<any> {
+    return this.dashboardService.getUpdateIngredient(Number(ingredient_id));
+  }
+
+  @Patch('update-stock-ingredients/:ingredient_id')
+  async updateIngredient(
+    @Param('ingredient_id') ingredient_id: number,
+    @Body() body: { updates: UpdateIngredientDto[] },
   ) {
+    console.log('Received body:', body); // Add this log to inspect the request body
     return this.dashboardService.updateIngredient(
       ingredient_id,
-      updateIngredientDto,
+      body.updates, // Pass the array to the service
     );
   }
 

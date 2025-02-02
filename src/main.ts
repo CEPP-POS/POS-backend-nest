@@ -10,6 +10,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+
   const config = new DocumentBuilder()
     .setTitle('API Documentation')
     .setDescription('The API description')
