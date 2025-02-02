@@ -2,11 +2,10 @@
 POST http://localhost:3000/owner/menus
 Content-Type: application/json
 {
-  "store_id": 1, //not use
-  "category_id": 1,
-  "menu_name": "thai tea",
-  "description": "Delicious latte with oat milk",
-  "price": 75,
+  "store_id": 1,
+  "menu_name": "latte",
+  "description": "Delicious milo with oat milk",
+  "price": 95,
   "owner_id": 1,
   "branch_id": 1,
   "image_url": "http://example.com/spaghetti.jpg"
@@ -19,7 +18,7 @@ GET http://localhost:3000/owner/menus
 GET http://localhost:3000/owner/menus/1
 
 ### Update a Menu by ID
-PATCH http://localhost:3000/owner/menus/2
+PATCH http://localhost:3000/owner/menus/1
 Content-Type: application/json
 
 {

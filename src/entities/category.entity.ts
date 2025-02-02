@@ -2,9 +2,9 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  OneToMany,
   JoinColumn,
   ManyToOne,
+  ManyToMany,
 } from 'typeorm';
 import { Menu } from './menu.entity';
 import { Owner } from './owner.entity';
@@ -21,6 +21,7 @@ export class Category {
   @JoinColumn({ name: 'owner_id' })
   owner: Owner;
 
-  @OneToMany(() => Menu, (menu) => menu.category)
+  @ManyToMany(() => Menu, (menu) => menu.categories)
+  // @JoinColumn({ name: 'menu_id' })
   menu: Menu[];
 }

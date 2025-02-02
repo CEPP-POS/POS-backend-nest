@@ -45,9 +45,8 @@ export class Order {
   })
   cancel_status: CancelStatus;
 
-  @OneToMany(() => OrderItem, (orderItem) => orderItem.order_id)
-  orderItems: OrderItem[]; // Add this for the reverse relation
-
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.order, { cascade: true })
+  order_items: OrderItem[];
   
   @OneToOne(() => Payment, (payment) => payment.order)
   payment: Payment; // Add this property

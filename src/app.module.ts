@@ -11,6 +11,7 @@ import { BranchModule } from './owner-side/branch/branch.module';
 import { DashboardModule } from './owner-side/stock/dashboard/dashboard.module';
 import { IngredientModule } from './owner-side/ingredient/ingredient.module';
 import { PauseModule } from './employee-side/pause/pause.module';
+import { MenuCustomerModule } from './customer-side/menus/menu-customer.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PauseModule } from './employee-side/pause/pause.module';
     OrderModule,
     AuthModule,
     OwnerModule,
+    MenuCustomerModule,
     MenuModule,
     CategoryModule,
     BranchModule,

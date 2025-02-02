@@ -24,8 +24,8 @@ export class MenuController {
 
   // * Create a new menu
   @Post()
-  create(@Body() createMenuDto: CreateMenuDto) {
-    return this.menuService.create(createMenuDto);
+  async create(@Body() createMenuDto: CreateMenuDto) {
+    await this.menuService.create(createMenuDto);
   }
 
   // * Get all menus
@@ -112,8 +112,8 @@ export class MenuController {
 
   // * Update a menu
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto) {
-    return this.menuService.update(+id, updateMenuDto);
+  async update(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto) {
+    await this.menuService.update(+id, updateMenuDto);
   }
 
   // * Delete a menu
@@ -124,7 +124,7 @@ export class MenuController {
 
   @Post('options/sweetness')
   async createSweetness(@Body() createSweetnessDto: CreateSweetnessDto) {
-    return this.menuService.createOption('sweetness', createSweetnessDto);
+    await this.menuService.createOption('sweetness', createSweetnessDto);
   }
 
   @Post('options/:type')
@@ -138,7 +138,7 @@ export class MenuController {
         createOptionDto as CreateSweetnessDto,
       );
     }
-    return this.menuService.createOption(type, createOptionDto);
+    await this.menuService.createOption(type, createOptionDto);
   }
 
   @Post('stock/:menu_id')
