@@ -32,16 +32,14 @@ export class Payment {
   total_amount: number;
 
   // for success connect one to many in ocr status
+  @Column({ type: 'varchar', length: 255 })
+  status: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  path_img: string;
+
+  // for success connect one to many in ocr status
   @ManyToOne(() => OcrStatus, (ocr_status) => ocr_status.ocr_status_id, { nullable: true })
   @JoinColumn({ name: 'ocr_status_id' })
   ocr_status_id: OcrStatus;
-
-  @Column({ nullable: false })
-  cash_given: number;
-
-  @Column({ nullable: false })
-  change: number;
-
-  @Column()
-  status: string;
 }
