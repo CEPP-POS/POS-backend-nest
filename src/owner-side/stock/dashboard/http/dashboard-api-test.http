@@ -10,9 +10,14 @@ GET http://localhost:3000/owner/orders/32
 
 GET http://localhost:3000/owner/stock-ingredients
 
+# getIngredientsCategories
+GET http://localhost:3000/owner/stock-ingredients/categories
 
 # getIngredientDetails
-GET http://localhost:3000/owner/stock-ingredients/19
+GET http://localhost:3000/owner/stock-ingredients/18
+
+#getUpdateIngredient
+GET http://localhost:3000/owner/update-stock-ingredients/18
 
 
 POST http://localhost:3000/owner/stock-group

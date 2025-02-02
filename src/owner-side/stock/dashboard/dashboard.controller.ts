@@ -78,6 +78,13 @@ export class DashboardController {
     return this.dashboardService.createIngredient(createIngredientDto);
   }
 
+  @Get('update-stock-ingredients/:ingredient_id')
+  async getUpdateIngredient(
+    @Param('ingredient_id') ingredient_id: number,
+  ): Promise<any> {
+    return this.dashboardService.getUpdateIngredient(Number(ingredient_id));
+  }
+
   @Patch('update-stock-ingredients/:ingredient_id')
   async UpdateIngredient(
     @Param('ingredient_id') ingredient_id: number,
