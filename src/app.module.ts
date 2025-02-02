@@ -28,7 +28,7 @@ import { MenuCustomerModule } from './customer-side/menus/menu-customer.module';
     BranchModule,
     DashboardModule,
     IngredientModule,
-    PauseModule,
+    PauseModule
   ],
 })
-export class AppModule {}
+export class AppModule { }

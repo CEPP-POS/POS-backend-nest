@@ -5,10 +5,12 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { IngredientCategory } from './ingredient-category.entity';
 import { Owner } from './owner.entity';
 import { IngredientMenuLink } from './ingredient-menu-link.entity';
+import { IngredientUpdate } from './ingredient-update.entity';
 
 @Entity()
 export class Ingredient {
@@ -22,31 +24,37 @@ export class Ingredient {
   @Column()
   ingredient_name: string;
 
-  @Column()
+  @Column({ nullable: true })
   net_volume: number;
 
-  @Column()
+  @Column({ nullable: true })
   quantity_in_stock: number;
 
-  @Column()
+  @Column({ nullable: true })
   total_volume: number;
 
   @Column({ nullable: true })
-  unit: string;
+  image_url: string;
+
+  @Column({ type: "boolean", default: false })
+  paused: boolean;
 
   @ManyToOne(() => IngredientCategory)
   @JoinColumn({ name: 'category_id' })
   category_id: IngredientCategory;
 
-  @CreateDateColumn()
-  expiration_date: Date;
+  @Column({ nullable: true })
+  unit: string;
 
-  // for success connect one to many in ingredient menu link
-  @ManyToOne(
-    () => IngredientMenuLink,
-    (ingredientMenuLink) => ingredientMenuLink.link_id,
-    { nullable: true },
+  @OneToMany(
+    () => IngredientUpdate,
+    (ingredientUpdate) => ingredientUpdate.ingredient_id,
+    { cascade: true },
   )
+  ingredientUpdate: IngredientUpdate[]; // เพิ่มความสัมพันธ์กับ AddOn
+
+  // for success connect one to many in ingredient menu link 
+  @ManyToOne(() => IngredientMenuLink, (ingredientMenuLink) => ingredientMenuLink.link_id, { nullable: true })
   @JoinColumn({ name: 'link_id' })
   ingredientMenuLink: IngredientMenuLink;
 }

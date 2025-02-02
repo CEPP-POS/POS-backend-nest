@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Body, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Menu } from '../../entities/menu.entity';
@@ -11,6 +11,10 @@ import { MenuType } from '../../entities/menu-type.entity';
 import { AddOn } from '../../entities/add-on.entity';
 import { CreateMenuDto } from './dto/create-menu/create-menu.dto';
 import { Size } from 'src/entities/size.entity';
+import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
+import { Ingredient } from 'src/entities/ingredient.entity';
+import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
+import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 
 @Injectable()
 export class MenuService {
@@ -38,7 +42,16 @@ export class MenuService {
 
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
-  ) {}
+
+    @InjectRepository(MenuIngredient)
+    private readonly menuIngredientRepository: Repository<MenuIngredient>,
+
+    @InjectRepository(Ingredient)
+    private readonly ingredientRepository: Repository<Ingredient>,
+
+    @InjectRepository(IngredientMenuLink)
+    private readonly ingredientMenuLinkRepository: Repository<IngredientMenuLink>,
+  ) { }
 
   // * สร้างเมนูใหม่
   async create(createMenuDto: CreateMenuDto): Promise<Menu> {
@@ -407,4 +420,56 @@ export class MenuService {
   //     };
   //   }
   // }
+
+  // * link menu for auto cut stock
+  async updateStock(menu_id: number, owner_id: number, branch_id: number, linkMenuToStockDtoList: LinkMenuToStockDto[]) {
+    for (const linkMenuToStockDto of linkMenuToStockDtoList) {
+      const { ingredient_name, unit, ingredientListForStock } = linkMenuToStockDto;
+
+      const menu = await this.menuRepository.findOne({ where: { menu_id } });
+      if (!menu) {
+        throw new NotFoundException(`Menu with ID ${menu_id} not found`);
+      }
+
+      const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+      if (!owner) {
+        throw new NotFoundException(`Owner with ID ${owner_id} not found`);
+      }
+
+      // check size, menu type id from each table
+      for (const property of ingredientListForStock) {
+        const size = await this.sizeRepository.findOne({ where: { size_id: property.size_id } });
+        if (!size) {
+          throw new NotFoundException(`Size with ID ${property.size_id} not found`);
+        }
+
+        const menuType = await this.menuTypeRepository.findOne({ where: { menu_type_id: property.menu_type_id } });
+        if (!menuType) {
+          throw new NotFoundException(`MenuType with ID ${property.menu_type_id} not found`);
+        }
+      }
+
+      // Find by ingredient name or create ingredient => if not have in ingredient table
+      let ingredient = await this.ingredientRepository.findOne({
+        where: { ingredient_name },
+      });
+      if (!ingredient) {
+        ingredient = this.ingredientRepository.create({ ingredient_name, unit, owner_id: owner });
+        ingredient = await this.ingredientRepository.save(ingredient);
+      }
+
+      // Save the MenuIngredient records
+      const menuIngredientsToSave = ingredientListForStock.map((property) => ({
+        menu_id: menu,
+        ingredient_id: ingredient,
+        size_id: { size_id: property.size_id },
+        menu_type_id: { menu_type_id: property.menu_type_id },
+        quantity_used: property.quantity_used,
+      }));
+
+      await this.menuIngredientRepository.save(menuIngredientsToSave);
+    }
+
+    return { message: 'Link Stock successfully' };
+  }
 }

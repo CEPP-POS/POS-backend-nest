@@ -2,12 +2,11 @@ POST http://localhost:3000/owner/menus/options/sweetness
 Content-Type: application/json
 
 {
-  "options": [
-    "50%",
-    "25%"
-  ],
-  "menu_id": [1]
+  "level_name": "หวาน 50%",
+  "menu_id": 26
 }
+
+
 
 // GET http://localhost:3000/sweetness-levels
 
@@ -15,55 +14,32 @@ Content-Type: application/json
 # GET http://localhost:3000/sweetness-levels/menu/25 
 
 
-# DELETE http://localhost:3000/owner/menus/options/sweetness-levels/1
+# DELETE http://localhost:3000/sweetness-levels/1
+
 
 POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
+
 {
-  "options": [
-    { "ไข่มุก": { "price": "10.00", "unit": 20 } },
-    { "บุก": { "price": "20.00", "unit": 50 } }
-  ],
-  "menu_ingredient_id": 1,
-  "menu_id": [1]
+  "add_on_name": "ไข่มุก",
+  "price": 10.00,
+  "menu_id": 25
 }
-
-
-
-
 
 POST http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
 
 {
-  "options": [
-    { "big": "10.00" },
-    { "small": "20.00" }
-  ],
-  "menu_id": [1]
+  "size_name": "big",
+  "size_price": 10.00,
+  "menu_id": 25
 }
 
 POST http://localhost:3000/owner/menus/options/menu-type
 Content-Type: application/json
 
 {
-  "options": [
-    { "hot": "5.00" },
-    { "ice": "20.00" }
-  ],
-  "menu_id": [1]
+  "type_name": "hot",
+  "price_difference": 5,
+  "menu_id": 10
 }
-
-# POST http://localhost:3000/owner/menus/size-group
-# Content-Type: application/json
-
-# {
-#   "size_group_name": "ใส่นม",
-#   "sizes": [
-#     { "size_name": "small", "size_price": 0 },
-#     { "size_name": "medium", "size_price": 10 },
-#     { "size_name": "large", "size_price": 20 }
-#   ],
-#   "menu_id": [1]
-# }
-

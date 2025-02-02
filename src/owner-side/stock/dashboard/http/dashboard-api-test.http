@@ -1,30 +1,67 @@
 ### Get Stock Summary by Date
-GET http://localhost:3000/owner/stock-summary/2023-09-17
+GET http://localhost:3000/owner/stock-summary/2025-01-01
 GET http://localhost:3000/owner/stock-ingredients/2
 
-GET http://localhost:3000/owner/stock-orders/2024-02-02
+GET http://localhost:3000/owner/stock-orders/2025-01-01
+
+GET http://localhost:3000/owner/stock-cancel-orders
+
+GET http://localhost:3000/owner/orders/32
+GET http://localhost:3000/owner/stock-ingredients
+
+# getIngredientsCategories
+GET http://localhost:3000/owner/stock-ingredients/categories
+
+# getIngredientDetails
+GET http://localhost:3000/owner/stock-ingredients/18
+
+#getUpdateIngredient
+GET http://localhost:3000/owner/update-stock-ingredients/18
+
+PATCH http://localhost:3000/owner/update-stock-ingredients/18
+Content-Type: application/json
+{
+  "updates": [
+    {
+      "update_id": 16,
+      "quantity_in_stock": 2,
+      "total_volume": 699,
+      "net_volume": 310,
+      "expiration_date": "2025-02-28"
+    },
+    {
+      "update_id": 15,
+      "quantity_in_stock": 4,
+      "total_volume": 500,
+      "net_volume": 300,
+      "expiration_date": "2025-02-30"
+    }
+  ]
+}
 
 POST http://localhost:3000/owner/stock-group
 Content-Type: application/json
 {
-    "category_name": "Topping"
+    "category_name": "เครื่องครัว"
 }
 
 POST http://localhost:3000/owner/create-stock-ingredients
 Content-Type: application/json
 {
-  "ingredient_id": 2,
-  "ingredient_name": "วุ้นมะพร้าว",
+  "image_url": "imagepath/image.png",
+  "ingredient_name": "ผงโกโก้ทิวลิป",
   "net_volume": 250,
-  "quantity_in_stock": 3,
-  "total_volume": 100,
-  "category_name": "ท็อปปิ้ง",
-  "expiration_date": "2025-01-24"
+  "unit": "g",
+  "quantity_in_stock": 1,
+  "category_name": "วัตถุดิบ",
+  "expiration_date": "2025-01-27",
+  "owner_id": 1
 }
-PATCH http://localhost:3000/owner/orders/2
+PATCH http://localhost:3000/owner/orders/32
 Content-Type: application/json
 
 {
   "cancel_status": "คืนเงินเสร็จสิ้น"
+  // "cancel_status": "ยังไม่คืนเงิน"
 }
 

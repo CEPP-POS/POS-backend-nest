@@ -7,18 +7,20 @@ import {
   Param,
   Delete,
   HttpCode,
+  ValidationPipe,
+  UsePipes,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
-
 import { CreateMenuDto } from './dto/create-menu/create-menu.dto';
 import { CreateSweetnessDto } from './dto/create-option/Sweetness.dto';
+import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 
 @Controller('owner/menus')
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) {}
+  ) { }
 
   // * Create a new menu
   @Post()
@@ -33,6 +35,12 @@ export class MenuController {
     return this.menuService.findAll();
   }
 
+  // * Get all menus send only name & description for list menu:customer
+  // @HttpCode(200)
+  // @Get()
+  // findAll() {
+  //   return this.menuService.findAll();
+  // }
   // * Get all menus send only name & description for list menu:customer
   // @HttpCode(200)
   // @Get()
@@ -132,4 +140,15 @@ export class MenuController {
     }
     await this.menuService.createOption(type, createOptionDto);
   }
+
+  @Post('stock/:menu_id')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async updateStock(
+    @Param('menu_id') menu_id: number,
+    @Body() body: { owner_id: number; branch_id: number; menuData: LinkMenuToStockDto[] }
+  ) {
+    const { owner_id, branch_id, menuData } = body;
+    return this.menuService.updateStock(menu_id, owner_id, branch_id, menuData);
+  }
+
 }
