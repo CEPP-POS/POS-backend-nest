@@ -1,6 +1,9 @@
-import { IsString } from 'class-validator';
+import { IsEnum } from 'class-validator';
+import { CancelStatus } from 'src/employee-side/order/dto/create-order/create-order.dto';
 
 export class UpdateCancelStatusDto {
-  @IsString()
-  cancel_status: string;
+  @IsEnum(CancelStatus, {
+    message: `cancel_status must be one of the following: ${Object.values(CancelStatus).join(', ')}`,
+  })
+  cancel_status: CancelStatus;
 }

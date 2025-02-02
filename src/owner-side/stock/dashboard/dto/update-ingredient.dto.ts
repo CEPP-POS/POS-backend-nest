@@ -1,17 +1,16 @@
-import { IsInt, IsString, IsDateString, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsInt,
+  IsString,
+  IsDateString,
+  IsNumber,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 
 export class UpdateIngredientDto {
-  @IsOptional()
   @IsInt()
-  ingredient_id?: number;
-
-  @IsOptional()
-  @IsString()
-  ingredient_name?: string;
-
-  @IsOptional()
-  @IsNumber()
-  net_volume?: number;
+  update_id: number;
 
   @IsOptional()
   @IsInt()
@@ -22,10 +21,11 @@ export class UpdateIngredientDto {
   total_volume?: number;
 
   @IsOptional()
-  @IsString()
-  category_name?: string;
+  @IsDateString()
+  expiration_date?: Date;
 
   @IsOptional()
-  @IsDateString()
-  expiration_date?: string;  // This should be an ISO string
+  @IsNumber()
+  net_volume?: number;
 }
+

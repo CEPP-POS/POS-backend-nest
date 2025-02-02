@@ -5,10 +5,12 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { IngredientCategory } from './ingredient-category.entity';
 import { Owner } from './owner.entity';
 import { IngredientMenuLink } from './ingredient-menu-link.entity';
+import { IngredientUpdate } from './ingredient-update.entity';
 
 @Entity()
 export class Ingredient {
@@ -22,24 +24,22 @@ export class Ingredient {
   @Column()
   ingredient_name: string;
 
-  @Column()
-  net_volume: number;
-
-  @Column()
-  quantity_in_stock: number;
-
-  @Column()
-  total_volume: number;
-
   @Column({ nullable: true })
-  unit: string;
+  image_url: string;
 
   @ManyToOne(() => IngredientCategory)
   @JoinColumn({ name: 'category_id' })
   category_id: IngredientCategory;
 
-  @CreateDateColumn()
-  expiration_date: Date;
+  @Column({ nullable: true })
+  unit: string;
+
+  @OneToMany(
+    () => IngredientUpdate,
+    (ingredientUpdate) => ingredientUpdate.ingredient_id,
+    { cascade: true },
+  )
+  ingredientUpdate: IngredientUpdate[]; // เพิ่มความสัมพันธ์กับ AddOn
 
   // for success connect one to many in ingredient menu link
   @ManyToOne(

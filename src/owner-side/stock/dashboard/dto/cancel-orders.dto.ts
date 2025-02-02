@@ -1,13 +1,10 @@
 export class CancelOrderDto {
-    order_id: number;
-    order_date: string; // You can parse this into a Date object if necessary
-    quantity: number;
-    total_amount: number;
-    payment_method: string;
-    cancel_status: string;
-  }
+  order_id: number;
+  order_date: Date;
+  quantity: number;
+  total_amount: number;
+  payment_method: string;
+  cancel_order_topic: string; // Ensure this matches the type of `cancel_status`
+}
 
-
-export class CancelOrderTopicDto {
-    cancel_order_topic: CancelOrderDto[];
-  }
+export type CancelOrderTopicDto = CancelOrderDto[]; // Define this as an array of `CancelOrderDto`

@@ -4,11 +4,11 @@ Content-Type: application/json
 
 {
   "customer_id": 123,
-  "order_date": "2023-09-18T08:00:00Z",
-  "total_price": 500,
+  "order_date": "2025-01-01T08:00:00Z",
+  "total_price": 100,
   "queue_number": 3,
   "status": "processing",
-  "cancel_status": "ยังไม่คืนเงิน"
+  "cancel_status": null
 }
 
 ### Get All Orders

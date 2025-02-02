@@ -8,7 +8,6 @@ import {
   OneToOne,
 } from 'typeorm';
 import { Order } from './order.entity';
-import { OcrStatus } from './ocr-status.entity';
 
 @Entity()
 export class Payment {
@@ -32,7 +31,9 @@ export class Payment {
   total_amount: number;
 
   // for success connect one to many in ocr status
-  @ManyToOne(() => OcrStatus, (ocr_status) => ocr_status.ocr_status_id, { nullable: true })
-  @JoinColumn({ name: 'ocr_status_id' })
-  ocr_status_id: OcrStatus;
+  @Column({ type: 'varchar', length: 255 })
+  status: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  path_img: string;
 }

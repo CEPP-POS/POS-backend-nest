@@ -1,4 +1,7 @@
 export class IngredientCategoriesDto {
-    category_id: number;
-    category_name: string;
+  categories: subCategory[];
+}
+export class subCategory {
+  category_id: number;
+  category_name: string;
 }
