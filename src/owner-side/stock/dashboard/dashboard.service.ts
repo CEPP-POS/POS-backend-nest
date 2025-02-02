@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Between, Equal, IsNull, Not, Repository } from 'typeorm';
+import { Between, Equal, IsNull, MoreThan, Not, Raw, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Overview, TopItemDto } from './dto/overview.dto';
 import { SalesSummary } from '../../../entities/sales-summary';
@@ -20,6 +20,11 @@ import { IngredientDto } from './dto/ingredients.dto';
 import { IngredientCategory } from 'src/entities/ingredient-category.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
 import { Owner } from 'src/entities/owner.entity';
+import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
+import {
+  IngredientDetailsDto,
+  MenuIngredientDto,
+} from './dto/ingredients-details.dto';
 
 @Injectable()
 export class DashboardService {
@@ -35,6 +40,9 @@ export class DashboardService {
 
     @InjectRepository(Menu)
     private menuRepository: Repository<Menu>,
+
+    @InjectRepository(MenuIngredient)
+    private menuIngredientRepository: Repository<MenuIngredient>,
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
@@ -336,29 +344,72 @@ export class DashboardService {
     return category_id;
   }
 
-  async getIngredientDetails(ingredient_id: number) {
-    const IngredientDetails = {
-      ingredient_id: 2,
-      ingredient_name: 'วุ้นมะพร้าว',
-      net_volume: 250,
-      quantity_in_stock: 3,
-      total_volume: 100,
-      category_name: 'ท็อปปิ้ง',
+  async getIngredientDetails(ingredient_id: number): Promise<any> {
+    // Fetch ingredient details
+    const ingredient = await this.ingredientRepository.findOne({
+      where: { ingredient_id },
+      relations: ['category_id'], // Get category details
+    });
 
-      // Hardcoded Menu Ingredients (as an array)
-      menu_ingredients: [
-        {
-          menu_ingredient_id: 1,
-          menu_id: 101, // Example menu id, linked to Menu table
-          ingredient_id: 2, // Linked to Ingredient table
-          size_id: 's',
-          level_id: 'หวานน้อย',
-          quantity_used: 50,
-        },
-      ],
+    if (!ingredient) {
+      throw new Error('Ingredient not found');
+    }
+
+    // Get today's date (set time to 00:00:00)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Get all valid ingredient stock updates (not expired, quantity > 0)
+    const latestUpdates = await this.ingredientUpdateRepository.find({
+      where: {
+        ingredient_id: Raw((alias) => `${alias} = ${ingredient_id}`),
+        expiration_date: MoreThan(today), // Exclude expired stock
+        quantity_in_stock: MoreThan(0), // Exclude empty stock
+      },
+      order: { expiration_date: 'DESC' }, // Get the latest stock updates
+    });
+
+    // Group valid stock data by net_volume
+    const groupedStockData: { net_volume: number; quantity_in_stock: number; total_volume: number }[] = [];
+
+    latestUpdates.forEach((update) => {
+      const existing = groupedStockData.find((item) => item.net_volume === update.net_volume);
+      if (existing) {
+        existing.quantity_in_stock += update.quantity_in_stock;
+        existing.total_volume += update.total_volume;
+      } else {
+        groupedStockData.push({
+          net_volume: update.net_volume,
+          quantity_in_stock: update.quantity_in_stock,
+          total_volume: update.total_volume,
+        });
+      }
+    });
+
+    // Fetch menu ingredients associated with this ingredient
+    const menuIngredients = await this.menuIngredientRepository.find({
+      where: { ingredient_id: Raw((alias) => `${alias} = ${ingredient_id}`) },
+      relations: ['menu_id', 'menu_id.category', 'size_id', 'sweetness_id'], // Get related details
+    });
+
+    // Transform menu ingredients data
+    const menuIngredientsDto = menuIngredients.map((menuIng) => ({
+      menu_name: menuIng.menu_id.menu_name,
+      size_name: menuIng.size_id.size_name,
+      level_name: menuIng.sweetness_id.level_name,
+      quantity_used: menuIng.quantity_used,
+      unit: ingredient.unit,
+      category_name: menuIng.menu_id.category?.category_name || 'Unknown', // Fetch category name from Menu
+    }));
+
+    // Construct the response
+    return {
+      ingredient_id: ingredient.ingredient_id,
+      ingredient_name: ingredient.ingredient_name,
+      category_name: ingredient.category_id?.category_name || 'Unknown',
+      stock_data: groupedStockData, // Store grouped stock data (excluding expired/zero quantity)
+      menu_ingredients: menuIngredientsDto,
     };
-
-    return IngredientDetails;
   }
 
   async createCategory(
@@ -435,14 +486,14 @@ export class DashboardService {
     // Use QueryBuilder to find existing update
     const existingUpdate = await this.ingredientUpdateRepository
       .createQueryBuilder('update')
-      .where('update.ingredient_id = :ingredientId', { 
-        ingredientId: ingredient.ingredient_id 
+      .where('update.ingredient_id = :ingredientId', {
+        ingredientId: ingredient.ingredient_id,
       })
-      .andWhere('update.net_volume = :netVolume', { 
-        netVolume: net_volume 
+      .andWhere('update.net_volume = :netVolume', {
+        netVolume: net_volume,
       })
-      .andWhere('update.expiration_date = :expirationDate', { 
-        expirationDate: new Date(expiration_date) 
+      .andWhere('update.expiration_date = :expirationDate', {
+        expirationDate: new Date(expiration_date),
       })
       .getOne();
 
@@ -502,7 +553,6 @@ export class DashboardService {
     // Additional mock data
   ];
 
-  // working on thisssssssssssssssss nowwwwwwwwww
   async updateCancelStatus(
     order_id: number,
     updateCancelStatusDto: UpdateCancelStatusDto,

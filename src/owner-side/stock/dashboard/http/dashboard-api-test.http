@@ -11,6 +11,10 @@ GET http://localhost:3000/owner/orders/32
 GET http://localhost:3000/owner/stock-ingredients
 
 
+# getIngredientDetails
+GET http://localhost:3000/owner/stock-ingredients/19
+
+
 POST http://localhost:3000/owner/stock-group
 Content-Type: application/json
 {
