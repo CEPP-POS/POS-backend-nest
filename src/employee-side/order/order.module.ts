@@ -12,6 +12,7 @@ import { AddOn } from 'src/entities/add-on.entity';
 import { Owner } from 'src/entities/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 import { Payment } from 'src/entities/payment.entity';
+import { SalesSummary } from 'src/entities/sales-summary';
 
 @Module({
   imports: [

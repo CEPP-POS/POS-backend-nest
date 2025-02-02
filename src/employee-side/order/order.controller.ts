@@ -21,7 +21,7 @@ import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
 
 @Controller('employee/orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
   // @Post()
   // @HttpCode(HttpStatus.CREATED)
@@ -33,6 +33,12 @@ export class OrderController {
   // async findAll() {
   //   return this.orderService.findAll();
   // }
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() createOrderDto: CreateOrderDto) {
+    return this.orderService.create(createOrderDto);
+  }
 
   @Post()
   async createOrder(

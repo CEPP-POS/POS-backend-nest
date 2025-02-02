@@ -110,9 +110,9 @@ export class DashboardService {
 
     // Flatten the array of order items and aggregate quantities by menu_name
     const items = allOrdersForDay.flatMap((order) =>
-      order.orderItems.map((item) => ({
+      order.order_items.map((item) => ({
         quantity: item.quantity,
-        menu_name: item.menu_id.menu_name,
+        menu_name: item.menu.menu_name,
       })),
     );
 
@@ -202,7 +202,7 @@ export class DashboardService {
 
     const orderTopic = orders.map((order) => {
       // Calculate the total quantity by summing the quantities of the related order items
-      const totalQuantity = order.orderItems.reduce(
+      const totalQuantity = order.order_items.reduce(
         (sum, item) => sum + item.quantity,
         0,
       );
@@ -239,7 +239,7 @@ export class DashboardService {
     // Create an array to store the formatted order topics
     const orderTopics = orders.map((order) => {
       // Calculate the total quantity by summing the quantities of the related order items
-      const totalQuantity = order.orderItems.reduce(
+      const totalQuantity = order.order_items.reduce(
         (sum, item) => sum + item.quantity,
         0,
       );
@@ -302,11 +302,11 @@ export class DashboardService {
 
     const cancelOrderDetails = {
       order_id: order.order_id,
-      order_table: order.orderItems.map((item) => ({
-        menu_name: item.menu_id?.menu_name || 'N/A',
+      order_table: order.order_items.map((item) => ({
+        menu_name: item.menu?.menu_name || 'N/A',
         quantity: item.quantity,
         amount: item.price,
-        category_name: item.menu_id?.category?.category_name || 'N/A',
+        category_name: item.menu?.categories?.[0]?.category_name || 'N/A',
       })),
       total_amount: order.payment.amount,
       total_amount_vat: order.payment.amount * 1.07,
@@ -423,7 +423,7 @@ export class DashboardService {
       level_name: menuIng.sweetness_id.level_name,
       quantity_used: menuIng.quantity_used,
       unit: ingredient.unit,
-      category_name: menuIng.menu_id.category?.category_name || 'Unknown', // Fetch category name from Menu
+      category_name: menuIng.menu_id.categories?.[0]?.category_name || 'Unknown', // Fetch category name from Menu
     }));
 
     // Construct the response
