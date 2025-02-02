@@ -20,19 +20,33 @@ import { PauseMenuDto } from './dto/pause-menu.dto';
 export class PauseController {
   constructor(private readonly pauseService: PauseService) { }
 
-  
-@Get('ingredients')
-async getIngredient(): Promise<PauseIngredientDto[]>{
-    return this.pauseService.getIngredient();
-    }
 
-  
-@Get('menu')
-async getMenu(): Promise<PauseMenuDto[]>{
-    return this.pauseService.getMenu();
-    }
-    
-    
+  @Get('ingredients')
+  async getAllIngredients() {
+    return this.pauseService.getAllIngredient();
+  }
+
+  @Patch('ingredients')
+  async updateIngredients(@Body() ingredientUpdates: { ingredient_id: number; paused: boolean }[]) {
+    return this.pauseService.updateIngredient(ingredientUpdates);
+  }
+
+
+  // @Get('menu')
+  // async getMenu(): Promise<PauseMenuDto[]> {
+  //   return this.pauseService.getMenu();
+  // }
+
+  @Get('menus')
+  async getAllMenu() {
+    return this.pauseService.getAllMenu();
+  }
+
+  @Patch('menus')
+  async updateMenu(@Body() MenuUpdates: { menu_id: number; paused: boolean }[]) {
+    return this.pauseService.updateMenu(MenuUpdates);
+  }
+
 }
 
 

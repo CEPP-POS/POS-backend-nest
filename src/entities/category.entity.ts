@@ -5,7 +5,6 @@ import {
   OneToMany,
   JoinColumn,
   ManyToOne,
-  Index,
 } from 'typeorm';
 import { Menu } from './menu.entity';
 import { Owner } from './owner.entity';

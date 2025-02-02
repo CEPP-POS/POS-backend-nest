@@ -3,9 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  ManyToMany,
   JoinColumn,
-  OneToOne,
 } from 'typeorm';
 import { Order } from './order.entity';
 import { Menu } from 'src/entities/menu.entity';

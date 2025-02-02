@@ -3,7 +3,6 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  ManyToMany,
   JoinColumn,
 } from 'typeorm';
 import { Menu } from './menu.entity';
@@ -22,7 +21,7 @@ export class MenuType {
   @Column({ type: 'boolean', default: false })
   is_required: boolean;
 
-  @ManyToOne(() => Menu, { nullable: true })
+  @ManyToOne(() => Menu, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'menu_id' })
-  menu: Menu;
+  menu: Menu[];
 }

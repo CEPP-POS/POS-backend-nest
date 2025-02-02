@@ -7,19 +7,39 @@ import { UpdateOrderDto } from './dto/update-order/update-order.dto';
 import { CancelOrderDto } from './dto/cancel-order/Cancel-order.dto';
 import { SalesSummary } from 'src/entities/sales-summary';
 import { OrderItem } from '../../entities/order-item.entity';
+import { Branch } from 'src/entities/branch.entity';
+import { Owner } from 'src/entities/owner.entity';
+import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
+import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
+import { Payment } from 'src/entities/payment.entity';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
+
     @InjectRepository(SalesSummary)
     private salesSummaryRepository: Repository<SalesSummary>,
+
     @InjectRepository(OrderItem)
     private orderItemRepository: Repository<OrderItem>,
-  ) {}
+
+    @InjectRepository(Owner)
+    private ownerRepository: Repository<Owner>,
+
+    @InjectRepository(Branch)
+    private branchRepository: Repository<Branch>,
+
+    @InjectRepository(Payment)
+    private paymentRepository: Repository<Payment>,
+  ) { }
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
+
+    const owner = await this.ownerRepository.findOne({ where: { owner_id: 1 } });
+    const branch = await this.branchRepository.findOne({ where: { branch_id: 1 } });
+
     // Convert order_date to Date if it's a string
     if (typeof createOrderDto.order_date === 'string') {
       const parsedDate = new Date(createOrderDto.order_date);
@@ -51,28 +71,14 @@ export class OrderService {
       }
       await this.salesSummaryRepository.save(salesSummary);
     } else {
-      if (createOrderDto.cancel_status === null) {
-        // Create a new SalesSummary if no matching date exists
-        salesSummary = this.salesSummaryRepository.create({
-          date: orderDateOnly,
-          owner_id: 2, // Hardcoded for now, can come from DTO
-          total_revenue: createOrderDto.total_price,
-          total_orders: 1,
-          canceled_orders: 0,
-          branch: { branch_id: 4 }, // Hardcoded for now, can come from DTO
-        });
-      } else {
-        // Create a new SalesSummary if no matching date exists
-        salesSummary = this.salesSummaryRepository.create({
-          date: orderDateOnly,
-          owner_id: 2, // Hardcoded for now, can come from DTO
-          total_revenue: createOrderDto.total_price,
-          total_orders: 1,
-          canceled_orders: 1,
-          branch: { branch_id: 4 }, // Hardcoded for now, can come from DTO
-        });
-      }
-
+      salesSummary = this.salesSummaryRepository.create({
+        date: orderDateOnly,
+        total_revenue: createOrderDto.total_price,
+        total_orders: 1,
+        canceled_orders: createOrderDto.cancel_status === null ? 0 : 1,
+        owner: owner,
+        branch: branch,
+      });
       await this.salesSummaryRepository.save(salesSummary);
     }
 
@@ -184,5 +190,70 @@ export class OrderService {
       add_on_name: orderItem.add_on_id[0]?.add_on_name,
       size_name: orderItem.size_id.size_name,
     }));
+  }
+
+  //--------- change status to complete order --------//
+  async completeOrder(
+    order_id: number,
+    completeOrderDto: CompleteOrderDto,
+  ): Promise<Order> {
+    const order = await this.orderRepository.findOne({
+      where: { order_id: order_id },
+    });
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${order_id} not found`);
+    }
+
+    if (order.status === 'paid' || order.status === 'processing') {
+      order.status = 'success';
+    } else {
+      throw new Error('Cannot make order successful');
+    }
+
+    await this.orderRepository.save(order);
+
+    return this.orderRepository.findOne({ where: { order_id: order_id } });
+  }
+
+  //--------- pay with cash --------//
+  async payWithCash(order_id: number, payWithCashDto: PayWithCashDto): Promise<Order> {
+    const order = await this.orderRepository.findOne({
+      where: { order_id: order_id },
+    });
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${order_id} not found`);
+    }
+
+    let payment = await this.paymentRepository.findOne({
+      where: { order: { order_id: order_id } },
+    });
+
+    if (!payment) {
+      // If no payment exists, create a new one
+      payment = this.paymentRepository.create({
+        order,
+        cash_given: payWithCashDto.cash_given,
+        change: payWithCashDto.change,
+        payment_method: 'cash',
+        status: 'cash',
+        payment_date: new Date(),
+        amount: payWithCashDto.amount,
+        total_amount: payWithCashDto.total_amount,
+      });
+      await this.paymentRepository.save(payment);
+    } else {
+      // Update the existing payment
+      payment.cash_given = payWithCashDto.cash_given;
+      payment.change = payWithCashDto.change;
+      payment.payment_method = 'cash';
+      payment.status = 'cash';
+      payment.payment_date = new Date();
+      payment.amount = payWithCashDto.amount;
+      payment.total_amount = payWithCashDto.total_amount;
+
+      await this.paymentRepository.save(payment);
+    }
+
+    return this.orderRepository.findOne({ where: { order_id: order_id } });
   }
 }

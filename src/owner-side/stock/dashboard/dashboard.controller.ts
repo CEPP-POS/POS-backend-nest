@@ -19,7 +19,7 @@ import { UpdateCancelStatusDto } from './dto/update-cancel-status.dto';
 
 @Controller('owner')
 export class DashboardController {
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(private readonly dashboardService: DashboardService) { }
 
   @Get('stock-summary/:date')
   async getStockSummary(@Param('date') date: string): Promise<Overview> {

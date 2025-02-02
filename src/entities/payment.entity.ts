@@ -30,10 +30,16 @@ export class Payment {
   @Column()
   total_amount: number;
 
+  @Column({ nullable: false })
+  cash_given: number;
+
+  @Column({ nullable: false })
+  change: number;
+
   // for success connect one to many in ocr status
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   status: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   path_img: string;
 }

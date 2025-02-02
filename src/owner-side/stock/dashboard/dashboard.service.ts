@@ -64,7 +64,7 @@ export class DashboardService {
 
     @InjectRepository(Owner)
     private ownerRepository: Repository<Owner>,
-  ) {}
+  ) { }
 
   private async calculateMonthlyRevenue(year: number): Promise<number[]> {
     const monthlyRevenue = Array(12).fill(0);
