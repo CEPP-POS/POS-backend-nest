@@ -627,25 +627,44 @@ export class DashboardService {
 
   async updateIngredient(
     ingredient_id: number,
-    updateIngredientDto: UpdateIngredientDto,
+    updateIngredientDto: UpdateIngredientDto[],
   ) {
-    const ingredient = [];
+    const updatedIngredients = [];
 
-    if (!ingredient) {
-      return { message: `Ingredient with ID ${ingredient_id} not found` }; // Return error message if ingredient not found
+    for (const update of updateIngredientDto) {
+      const ingredientUpdate = await this.ingredientUpdateRepository.findOne({
+        where: {
+          ingredient_id: Raw((alias) => `${alias} = ${ingredient_id}`),
+          update_id: update.update_id,
+        },
+      });
+
+      if (!ingredientUpdate) {
+        console.log(`No ingredient found with update_id ${update.update_id}`);
+        continue;
+      }
+
+      // Apply updates only for provided fields
+      if (update.quantity_in_stock !== undefined) {
+        ingredientUpdate.quantity_in_stock = update.quantity_in_stock;
+      }
+      if (update.total_volume !== undefined) {
+        ingredientUpdate.total_volume = update.total_volume;
+      }
+      if (update.net_volume !== undefined) {
+        ingredientUpdate.net_volume = update.net_volume;
+      }
+      if (update.expiration_date !== undefined) {
+        ingredientUpdate.expiration_date = new Date(update.expiration_date);
+      }
+
+      // Save updated ingredient record
+      await this.ingredientUpdateRepository.save(ingredientUpdate);
+      updatedIngredients.push(ingredientUpdate);
     }
 
-    // Update only the fields provided in the DTO
-    Object.assign(ingredient, updateIngredientDto);
-
-    return ingredient; // Return the updated ingredient
+    return { updatedIngredients };
   }
-
-  private orders = [
-    { order_id: 1, cancel_status: 'รอการคืนเงิน' },
-    { order_id: 2, cancel_status: 'กำลังดำเนินการ' },
-    // Additional mock data
-  ];
 
   async updateCancelStatus(
     order_id: number,

@@ -86,13 +86,14 @@ export class DashboardController {
   }
 
   @Patch('update-stock-ingredients/:ingredient_id')
-  async UpdateIngredient(
+  async updateIngredient(
     @Param('ingredient_id') ingredient_id: number,
-    @Body() updateIngredientDto: UpdateIngredientDto,
+    @Body() body: { updates: UpdateIngredientDto[] },
   ) {
+    console.log('Received body:', body); // Add this log to inspect the request body
     return this.dashboardService.updateIngredient(
       ingredient_id,
-      updateIngredientDto,
+      body.updates, // Pass the array to the service
     );
   }
 

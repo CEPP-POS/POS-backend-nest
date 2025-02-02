@@ -24,10 +24,11 @@ export class IngredientUpdate {
   net_volume: number;
 
 
-
   @Column()
   total_volume: number;
 
   @CreateDateColumn()
   expiration_date: Date;
 }
+
+
