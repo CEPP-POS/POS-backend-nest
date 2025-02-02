@@ -31,12 +31,17 @@ export class Payment {
   @Column()
   total_amount: number;
 
-  // for success connect one to many in ocr status
   @Column({ type: 'varchar', length: 255 })
   status: string;
 
   @Column({ type: 'varchar', length: 255 })
   path_img: string;
+
+  @Column({ nullable: false })
+  cash_given: number;
+
+  @Column({ nullable: false })
+  change: number;
 
   // for success connect one to many in ocr status
   @ManyToOne(() => OcrStatus, (ocr_status) => ocr_status.ocr_status_id, { nullable: true })
