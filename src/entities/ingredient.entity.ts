@@ -25,15 +25,6 @@ export class Ingredient {
   ingredient_name: string;
 
   @Column({ nullable: true })
-  net_volume: number;
-
-  @Column({ nullable: true })
-  quantity_in_stock: number;
-
-  @Column({ nullable: true })
-  total_volume: number;
-
-  @Column({ nullable: true })
   image_url: string;
 
   @Column({ type: "boolean", default: false })

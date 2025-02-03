@@ -30,10 +30,10 @@ export class Payment {
   @Column()
   total_amount: number;
 
-  @Column({ nullable: false })
+  @Column({ nullable: true })
   cash_given: number;
 
-  @Column({ nullable: false })
+  @Column({ nullable: true })
   change: number;
 
   // for success connect one to many in ocr status
