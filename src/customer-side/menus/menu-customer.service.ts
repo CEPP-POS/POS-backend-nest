@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Menu } from 'src/entities/menu.entity';
@@ -80,6 +80,35 @@ export class MenuCustomerService {
     return {
       available_category: categoryNames, // ✅ ส่งชื่อหมวดหมู่ทั้งหมดกลับไปด้วย
       available_menus: availableMenus, // ✅ คืนค่ารายการเมนูพร้อมหมวดหมู่
+    };
+  }
+  async getMenuDetails(menuId: number) {
+    const menu = await this.menuRepository.findOne({
+      where: { menu_id: menuId },
+      relations: ['menuTypes', 'sweetnessLevels', 'sizes', 'addOns'], // ✅ โหลดข้อมูลที่เกี่ยวข้อง
+    });
+    if (!menu) {
+      throw new NotFoundException(`Menu with ID ${menuId} not found`);
+    }
+
+    return {
+      menu_name: menu.menu_name,
+      price: menu.price,
+      description: menu.description,
+      image_url: menu.image_url,
+      type_name: menu.menuTypes.map((type) => ({
+        name: type.type_name,
+        price_addition: type.price_difference,
+      })),
+      level_name: menu.sweetnessLevels.map((level) => level.level_name),
+      size_name: menu.sizes.map((size) => ({
+        name: size.size_name,
+        price_addition: size.size_price,
+      })),
+      add_on_name: menu.addOns.map((addOn) => ({
+        name: addOn.add_on_name,
+        price_addition: addOn.add_on_price,
+      })),
     };
   }
 

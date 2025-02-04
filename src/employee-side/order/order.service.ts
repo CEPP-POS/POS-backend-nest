@@ -16,11 +16,10 @@ import { OrderItemDto } from './dto/order-item/order-item.dto';
 
 import { Branch } from 'src/entities/branch.entity';
 import { Owner } from 'src/entities/owner.entity';
-import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
 import { Payment } from 'src/entities/payment.entity';
 import { SalesSummary } from 'src/entities/sales-summary';
-
+import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -45,7 +44,6 @@ export class OrderService {
 
     @InjectRepository(MenuType)
     private readonly menuTypeRepository: Repository<MenuType>,
-
     @InjectRepository(SalesSummary)
     private readonly salesSummaryRepository: Repository<SalesSummary>,
 
@@ -57,12 +55,15 @@ export class OrderService {
 
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
-  ) { }
+  ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
-
-    const owner = await this.ownerRepository.findOne({ where: { owner_id: 1 } });
-    const branch = await this.branchRepository.findOne({ where: { branch_id: 1 } });
+    const owner = await this.ownerRepository.findOne({
+      where: { owner_id: 1 },
+    });
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id: 1 },
+    });
 
     // Convert order_date to Date if it's a string
     if (typeof createOrderDto.order_date === 'string') {
@@ -189,16 +190,21 @@ export class OrderService {
   async createOrder(
     createOrderDto: CreateOrderDto,
     items: OrderItemDto[],
-  ): Promise<Order> {
-    const newOrder = this.orderRepository.create(createOrderDto);
+  ): Promise<any> {
+    const generatedOrderId = Math.floor(100000 + Math.random() * 900000); // ✅ สร้าง order_id เอง
+
+    const newOrder = this.orderRepository.create({
+      ...createOrderDto,
+      order_id: generatedOrderId,
+      is_paid: false,
+    });
+
     const savedOrder = await this.orderRepository.save(newOrder);
 
-    // ดึง AddOns ที่เกี่ยวข้อง
     const allAddOns = await this.addOnRepository.findBy({
       add_on_id: In(items.flatMap((item) => item.add_on_id || [])),
     });
 
-    // สร้าง Order Items
     const orderItems = items.map((item) => {
       const relatedAddOns = allAddOns.filter((addon) =>
         item.add_on_id.includes(addon.add_on_id),
@@ -210,7 +216,7 @@ export class OrderService {
         menu: { menu_id: item.menu_id },
         sweetness: { sweetness_id: item.sweetness_id },
         size: { size_id: item.size_id },
-        addOns: relatedAddOns, // ✅ ใช้ AddOns ที่ดึงมา
+        addOns: relatedAddOns,
         menu_type: { menu_type_id: item.menu_type_id },
         order: savedOrder,
       });
@@ -218,7 +224,20 @@ export class OrderService {
 
     await this.orderItemRepository.save(orderItems);
 
-    return this.findOrderById(savedOrder.order_id);
+    return {
+      order_id: savedOrder.order_id,
+      payment_method: savedOrder.payment_method, // ✅ ส่งค่าการชำระเงินกลับไป
+      status: savedOrder.is_paid,
+      order_summary: items.map((item) => ({
+        menu_id: item.menu_id,
+        menu_type_id: item.menu_type_id,
+        size_id: item.size_id,
+        sweetness_id: item.sweetness_id,
+        add_on_id: item.add_on_id,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+    };
   }
 
   async findAllOrders(): Promise<Order[]> {
@@ -314,7 +333,10 @@ export class OrderService {
   }
 
   //--------- pay with cash --------//
-  async payWithCash(order_id: number, payWithCashDto: PayWithCashDto): Promise<Order> {
+  async payWithCash(
+    order_id: number,
+    payWithCashDto: PayWithCashDto,
+  ): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { order_id: order_id },
     });
