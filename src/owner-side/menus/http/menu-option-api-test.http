@@ -2,10 +2,12 @@ POST http://localhost:3000/owner/menus/options/sweetness
 Content-Type: application/json
 
 {
-  "level_name": "หวาน 50%",
-  "menu_id": 26
+"options": [
+    "50%",
+    "25%"
+  ],
+  "menu_id": [13, 14]
 }
-
 
 
 // GET http://localhost:3000/sweetness-levels
@@ -19,27 +21,43 @@ Content-Type: application/json
 
 POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
+{
+  "options": [
+    { "ไข่มุก": "10.00" },
+    { "บุก": "20.00" }
+  ],
+  "menu_ingredient_id": 1,
+  "menu_id": [13]
+}
+PATCH http://localhost:3000/owner/menus/options/add-ons/29
+Content-Type: application/json
 
 {
-  "add_on_name": "ไข่มุก",
-  "price": 10.00,
-  "menu_id": 25
+  "name": "ไข่มุกพิเศษ",
+  "price": "15.00",
+  "unit": 30
 }
+
 
 POST http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
 
 {
-  "size_name": "big",
-  "size_price": 10.00,
-  "menu_id": 25
+   "options": [
+    { "big": "10.00" },
+    { "small": "20.00" }
+  ],
+  "menu_id": [13, 14]
 }
 
 POST http://localhost:3000/owner/menus/options/menu-type
 Content-Type: application/json
 
 {
-  "type_name": "hot",
-  "price_difference": 5,
-  "menu_id": 10
+  "options": [
+    { "hot": "5.00" },
+    { "ice": "20.00" }
+  ],
+  "menu_id": [13, 14]
 }
+
