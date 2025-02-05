@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { typeOrmConfig } from '../ormconfig';
+import { typeOrmConfig } from './config/typeorm.config';
 import { OrderModule } from './employee-side/order/order.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
@@ -13,6 +13,7 @@ import { IngredientModule } from './owner-side/ingredient/ingredient.module';
 import { PauseModule } from './employee-side/pause/pause.module';
 import { MenuCustomerModule } from './customer-side/menus/menu-customer.module';
 import { MinioModule } from './minio/minio.module';
+import { ImageModule } from './images/image.module';
 
 @Module({
   imports: [
@@ -20,17 +21,24 @@ import { MinioModule } from './minio/minio.module';
       isGlobal: true,
     }),
     TypeOrmModule.forRoot(typeOrmConfig),
-    OrderModule,
     AuthModule,
-    OwnerModule,
+    BranchModule,
+    CategoryModule,
+    DashboardModule,
+    ImageModule,
+    IngredientModule,
     MenuCustomerModule,
     MenuModule,
     CategoryModule,
-    BranchModule,
     DashboardModule,
+    ImageModule,
     IngredientModule,
     PauseModule,
     MinioModule,
+    OrderModule,
+    OwnerModule,
+    PauseModule,
   ],
 })
+export class AppModule {}
 export class AppModule {}
