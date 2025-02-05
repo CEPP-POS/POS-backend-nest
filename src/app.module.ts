@@ -12,6 +12,7 @@ import { DashboardModule } from './owner-side/stock/dashboard/dashboard.module';
 import { IngredientModule } from './owner-side/ingredient/ingredient.module';
 import { PauseModule } from './employee-side/pause/pause.module';
 import { MenuCustomerModule } from './customer-side/menus/menu-customer.module';
+import { MinioModule } from './minio/minio.module';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { MenuCustomerModule } from './customer-side/menus/menu-customer.module';
     BranchModule,
     DashboardModule,
     IngredientModule,
-    PauseModule
+    PauseModule,
+    MinioModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}
