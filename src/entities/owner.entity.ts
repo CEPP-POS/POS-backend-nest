@@ -16,11 +16,16 @@ export class Owner {
 
   @Column({ type: 'varchar', length: 255 })
   password: string;
-  // ฟิลด์สำหรับเก็บ OTP
+
   @Column({ nullable: true })
   otp: string;
 
-  // ฟิลด์สำหรับเก็บเวลาหมดอายุของ OTP
+  @Column({ nullable: true })
+  branch_id?: number;
+
+  @Column({ default: 'user' })
+  role: string;
+
   @Column({ type: 'timestamp', nullable: true })
   otpExpiry: Date;
 }

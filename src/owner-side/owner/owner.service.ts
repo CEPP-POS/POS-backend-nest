@@ -92,7 +92,17 @@ export class OwnerService {
 
   // * Find Owner by email
   async findByEmail(email: string): Promise<Owner | undefined> {
-    return this.ownerRepository.findOne({ where: { email } });
+    return this.ownerRepository.findOne({
+      where: { email },
+      select: [
+        'owner_id',
+        'owner_name',
+        'contact_info',
+        'email',
+        'branch_id',
+        'role',
+      ],
+    });
   }
 
   // * Login Owner

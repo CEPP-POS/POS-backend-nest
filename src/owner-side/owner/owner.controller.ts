@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Param,
   Patch,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { CreateOwnerDto } from './dto/create-owner/create-owner.dto';
@@ -20,6 +22,9 @@ import * as csvParser from 'csv-parser';
 import { ForgotPasswordDto } from './dto/forgot-owner/forgot-owner.dto';
 import { VerifyOtpDto } from './dto/verify-otp-owner/verify-otp-owner.dto';
 import { sendTemporaryPasswordEmail } from 'src/utils/send-email.util';
+import { Roles } from 'src/auth/common/roles.decorator';
+import { JwtGuard } from 'src/auth/common/jwt.guard';
+import { RolesGuard } from 'src/auth/common/roles.guard';
 
 @Controller('owner')
 export class OwnerController {
@@ -177,5 +182,18 @@ export class OwnerController {
   async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
     await this.ownerService.verifyOtp(verifyOtpDto);
     return { message: 'OTP ถูกต้อง สามารถตั้งรหัสผ่านใหม่ได้' };
+  }
+
+  @Get('profile')
+  @UseGuards(JwtGuard)
+  getProfile() {
+    return { message: 'This is owner profile' };
+  }
+
+  @Get('admin')
+  @Roles('admin')
+  @UseGuards(JwtGuard, RolesGuard)
+  getAdminData() {
+    return { message: 'This is admin data' };
   }
 }
