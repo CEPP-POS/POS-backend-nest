@@ -24,5 +24,14 @@ Content-Type: application/json
 
 {
   "category_name": "flashsale",
-  "menu_id": [1]
+  "menu_id": [13]
 }
+
+PATCH http://localhost:3000/owner/categories/16
+Content-Type: application/json
+
+{
+  "category_name": "โปรโมชั่นพิเศษ",
+  "menu_id": [13,14]
+}
+
