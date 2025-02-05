@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Equal, Raw, Repository } from 'typeorm';
 import { Owner } from '../../entities/owner.entity';
 import { CreateOwnerDto } from './dto/create-owner/create-owner.dto';
 import * as bcrypt from 'bcrypt';
@@ -13,12 +13,16 @@ import { UpdatePasswordDto } from './dto/update-password/update-password.dto';
 import { LoginOwnerDto } from './dto/login-owner/login-owner.dto';
 import { ForgotPasswordDto } from './dto/forgot-owner/forgot-owner.dto';
 import { VerifyOtpDto } from './dto/verify-otp-owner/verify-otp-owner.dto';
+import { Ingredient } from 'src/entities/ingredient.entity';
 
 @Injectable()
 export class OwnerService {
   constructor(
     @InjectRepository(Owner)
     private readonly ownerRepository: Repository<Owner>,
+
+    @InjectRepository(Ingredient)
+    private ingredientRepository: Repository<Ingredient>,
   ) {}
 
   // * Check for duplicate email before creating Owner
@@ -173,5 +177,12 @@ export class OwnerService {
     owner.password = hashedPassword;
 
     return this.ownerRepository.save(owner);
+  }
+
+  async getIngredientsByOwner(ownerId: number) {
+    return this.ingredientRepository.find({
+      where: { owner_id: Equal(ownerId) },
+      select: ['ingredient_id', 'ingredient_name'],
+    });
   }
 }
