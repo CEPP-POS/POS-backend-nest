@@ -9,6 +9,11 @@ Content-Type: application/json
   "menu_id": [13, 14]
 }
 
+PATCH http://localhost:3000/owner/menus/options/sweetness/31
+Content-Type: application/json
+{
+  "name": "75%"
+}
 
 // GET http://localhost:3000/sweetness-levels
 
@@ -23,41 +28,62 @@ POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
 {
   "options": [
-    { "ไข่มุก": "10.00" },
-    { "บุก": "20.00" }
+    { "ไข่มุก": { "price": 10.00, "unit": 20 } },
+    { "บุก": { "price": 20.00, "unit": 50 } }
   ],
   "menu_ingredient_id": 1,
-  "menu_id": [13]
+  "menu_id": [13,14]
 }
-PATCH http://localhost:3000/owner/menus/options/add-ons/29
-Content-Type: application/json
 
+PATCH http://localhost:3000/owner/menus/options/add-ons/41
+Content-Type: application/json
 {
   "name": "ไข่มุกพิเศษ",
-  "price": "15.00",
+  "price": 15.00,
   "unit": 30
 }
-
 
 POST http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
 
 {
    "options": [
-    { "big": "10.00" },
-    { "small": "20.00" }
+    { "big": 10.00 },
+    { "small": 20.00 }
   ],
   "menu_id": [13, 14]
 }
+PATCH http://localhost:3000/owner/menus/options/size/13
+Content-Type: application/json
+{
+  "name": "extra largee",
+  "size_price": 25.00
+}
+
 
 POST http://localhost:3000/owner/menus/options/menu-type
 Content-Type: application/json
 
 {
   "options": [
-    { "hot": "5.00" },
-    { "ice": "20.00" }
+    { "hot": 5.00 },
+    { "ice": 20.00}
   ],
   "menu_id": [13, 14]
 }
+PATCH http://localhost:3000/owner/menus/options/menu-type/42
+Content-Type: application/json
 
+{
+  "name": "warm",
+  "price_difference": 15.00
+}
+
+
+GET http://localhost:3000/owner/menus/options/add-ons
+
+GET http://localhost:3000/owner/menus/options/size
+
+GET http://localhost:3000/owner/menus/options/sweetness
+
+GET http://localhost:3000/owner/menus/options/menu-type

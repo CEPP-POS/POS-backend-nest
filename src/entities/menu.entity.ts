@@ -51,7 +51,7 @@ export class Menu {
   @Column({ nullable: true })
   image_url: string;
 
-  @Column({ type: "boolean", default: false })
+  @Column({ type: 'boolean', default: false })
   paused: boolean;
 
   @OneToMany(() => Size, (size) => size.menu, { cascade: true })

@@ -19,7 +19,16 @@ import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Menu, AddOn, MenuType, Size, SweetnessLevel, MenuIngredient, Ingredient, IngredientMenuLink]),
+    TypeOrmModule.forFeature([
+      Menu,
+      AddOn,
+      MenuType,
+      Size,
+      SweetnessLevel,
+      MenuIngredient,
+      Ingredient,
+      IngredientMenuLink,
+    ]),
     CategoryModule,
     OwnerModule,
     BranchModule,
@@ -28,4 +37,4 @@ import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
   providers: [MenuService],
   exports: [MenuService],
 })
-export class MenuModule { }
+export class MenuModule {}
