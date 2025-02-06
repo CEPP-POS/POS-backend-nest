@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   UploadedFile,
