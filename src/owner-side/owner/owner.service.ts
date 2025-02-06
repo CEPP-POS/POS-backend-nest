@@ -103,6 +103,7 @@ export class OwnerService {
         'owner_name',
         'contact_info',
         'email',
+        'password',
         'branch_id',
         'role',
       ],
@@ -144,8 +145,8 @@ export class OwnerService {
 
     // save OTP and expiry time 5 minutes
     owner.otp = otp;
-    owner.otpExpiry = new Date();
-    owner.otpExpiry.setMinutes(owner.otpExpiry.getMinutes() + 15);
+    owner.otp_expiry = new Date();
+    owner.otp_expiry.setMinutes(owner.otp_expiry.getMinutes() + 15);
 
     await this.ownerRepository.save(owner);
 
@@ -163,12 +164,12 @@ export class OwnerService {
       where: { email: usernameOrEmail },
     });
 
-    if (!owner || owner.otp !== otp || owner.otpExpiry < new Date()) {
+    if (!owner || owner.otp !== otp || owner.otp_expiry < new Date()) {
       throw new BadRequestException('OTP expired or invalid');
     }
 
     owner.otp = null; // ลบ OTP after verify
-    owner.otpExpiry = null;
+    owner.otp_expiry = null;
 
     await this.ownerRepository.save(owner);
   }

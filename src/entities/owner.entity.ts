@@ -8,17 +8,14 @@ export class Owner {
   @Column({ type: 'varchar', length: 255 })
   owner_name: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  contact_info: string;
-
   @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
   @Column({ type: 'varchar', length: 255 })
   password: string;
 
-  @Column({ nullable: true })
-  otp: string;
+  @Column({ type: 'varchar', length: 255 })
+  contact_info: string;
 
   @Column({ nullable: true })
   branch_id?: number;
@@ -26,6 +23,9 @@ export class Owner {
   @Column({ default: 'user' })
   role: string;
 
+  @Column({ nullable: true })
+  otp: string;
+
   @Column({ type: 'timestamp', nullable: true })
-  otpExpiry: Date;
+  otp_expiry: Date;
 }
