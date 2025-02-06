@@ -12,6 +12,7 @@ import { DashboardModule } from './owner-side/stock/dashboard/dashboard.module';
 import { IngredientModule } from './owner-side/ingredient/ingredient.module';
 import { PauseModule } from './employee-side/pause/pause.module';
 import { MenuCustomerModule } from './customer-side/menus/menu-customer.module';
+import { MinioModule } from './minio/minio.module';
 import { ImageModule } from './images/image.module';
 
 @Module({
@@ -28,6 +29,12 @@ import { ImageModule } from './images/image.module';
     IngredientModule,
     MenuCustomerModule,
     MenuModule,
+    CategoryModule,
+    DashboardModule,
+    ImageModule,
+    IngredientModule,
+    PauseModule,
+    MinioModule,
     OrderModule,
     OwnerModule,
     PauseModule,

@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { OwnerService } from './owner.service';
 import { OwnerController } from './owner.controller';
 import { Owner } from '../../entities/owner.entity';
+import { Ingredient } from 'src/entities/ingredient.entity';
 
 /**
  * * The OwnerModule is responsible for handling everything related to Owners.
@@ -15,7 +16,7 @@ import { Owner } from '../../entities/owner.entity';
    * * This allows us to use the repository pattern with TypeORM for interacting
    * * with the 'owner' table in the database.
    */
-  imports: [TypeOrmModule.forFeature([Owner])],
+  imports: [TypeOrmModule.forFeature([Owner, Ingredient])],
 
   /**
    * * Controllers define the routes and the HTTP methods for interacting with the owner data.
