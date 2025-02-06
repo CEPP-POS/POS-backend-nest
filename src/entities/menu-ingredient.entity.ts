@@ -22,11 +22,11 @@ export class MenuIngredient {
     @JoinColumn({ name: 'menu_id' })
     menu_id: Menu;
 
-    @ManyToOne(() => Ingredient, { nullable: false })
+    @ManyToOne(() => Ingredient, { nullable: true })
     @JoinColumn({ name: 'ingredient_id' })
     ingredient_id: Ingredient;
 
-    @ManyToOne(() => Size, { nullable: false })
+    @ManyToOne(() => Size, { nullable: true })
     @JoinColumn({ name: 'size_id' })
     size_id: Size;
 
@@ -34,7 +34,7 @@ export class MenuIngredient {
     @JoinColumn({ name: 'sweetness_id' })
     sweetness_id: SweetnessLevel;
 
-    @ManyToOne(() => MenuType, { nullable: false })
+    @ManyToOne(() => MenuType, { nullable: true })
     @JoinColumn({ name: 'menu_type_id' })
     menu_type_id: MenuType;
 

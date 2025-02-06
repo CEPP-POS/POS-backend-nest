@@ -5,7 +5,7 @@ import { CreateCategoryDto } from './dto/create-category/create-category.dto';
 
 @Controller('owner/categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) { }
 
   // @Post('link-menus')
   // async linkMenusToCategory(
@@ -13,6 +13,11 @@ export class CategoryController {
   // ) {
   //   await this.categoryService.linkMenusToCategory(linkMenuToCategoryDto);
   // }
+
+  @Get('')
+  async findAll() {
+    return this.categoryService.findAll();
+  }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {

@@ -1,9 +1,11 @@
 POST http://localhost:3000/owner/menus/options/sweetness
 Content-Type: application/json
-
 {
-  "level_name": "หวาน 50%",
-  "menu_id": 26
+  "options": [
+    "50%",
+    "25%"
+  ],
+  "menu_id": [1, 2]
 }
 
 
@@ -21,9 +23,11 @@ POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
 
 {
-  "add_on_name": "ไข่มุก",
-  "price": 10.00,
-  "menu_id": 25
+  "options": [
+    { "มุกแก้ว": { "price": "10.00", "unit": 20 } },
+    { "ว่านหางจระเข้": { "price": "20.00", "unit": 50 } }
+  ],
+  "menu_id": [16]
 }
 
 POST http://localhost:3000/owner/menus/options/size

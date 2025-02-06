@@ -12,11 +12,11 @@ Content-Type: application/json
   },
   "items": [
     {
-      "menu_id": 1,
-      "sweetness_id": 31,
-      "size_id": 13,
-      "add_on_id": [23],  
-      "menu_type_id": 20,
+      "menu_id": 10,
+      "sweetness_id": 1,
+      "size_id": 1,
+      "add_on_id": [],  
+      "menu_type_id": 2,
       "quantity": 2,
       "price": 100
     }
