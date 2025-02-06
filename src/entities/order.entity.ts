@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   OneToMany,
   OneToOne,
-  JoinColumn,
 } from 'typeorm';
-import { CancelStatus } from '../employee-side/order/dto/create-order/create-order.dto';
+import {
+  CancelStatus,
+  PaymentMethod,
+} from '../employee-side/order/dto/create-order/create-order.dto';
 import { OrderItem } from './order-item.entity';
 import { Payment } from './payment.entity';
 
@@ -45,9 +47,19 @@ export class Order {
   })
   cancel_status: CancelStatus;
 
+  @Column({
+    type: 'enum',
+    enum: PaymentMethod, // ✅ ใช้ Enum PaymentMethod
+    default: PaymentMethod.QR_CODE,
+  })
+  payment_method: PaymentMethod;
+
+  @Column({ default: false }) // ✅ ค่าเริ่มต้นเป็น false
+  is_paid: boolean;
+
   @OneToMany(() => OrderItem, (orderItem) => orderItem.order, { cascade: true })
   order_items: OrderItem[];
-  
+
   @OneToOne(() => Payment, (payment) => payment.order)
   payment: Payment; // Add this property
 }

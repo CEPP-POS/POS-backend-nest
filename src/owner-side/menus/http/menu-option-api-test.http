@@ -1,13 +1,13 @@
 POST http://localhost:3000/owner/menus/options/sweetness
 Content-Type: application/json
+
 {
-  "options": [
+"options": [
     "50%",
     "25%"
   ],
-  "menu_id": [1, 2]
+  "menu_id": [13, 14]
 }
-
 
 
 // GET http://localhost:3000/sweetness-levels
@@ -21,6 +21,16 @@ Content-Type: application/json
 
 POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
+{
+  "options": [
+    { "มุกแก้ว": { "price": "10.00", "unit": 20 } },
+    { "ว่านหางจระเข้": { "price": "20.00", "unit": 50 } }
+  ],
+  "menu_id": [16]
+}
+
+PATCH http://localhost:3000/owner/menus/options/add-ons/29
+Content-Type: application/json
 
 {
   "options": [
@@ -30,20 +40,26 @@ Content-Type: application/json
   "menu_id": [16]
 }
 
+
 POST http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
 
 {
-  "size_name": "big",
-  "size_price": 10.00,
-  "menu_id": 25
+   "options": [
+    { "big": "10.00" },
+    { "small": "20.00" }
+  ],
+  "menu_id": [13, 14]
 }
 
 POST http://localhost:3000/owner/menus/options/menu-type
 Content-Type: application/json
 
 {
-  "type_name": "hot",
-  "price_difference": 5,
-  "menu_id": 10
+  "options": [
+    { "hot": "5.00" },
+    { "ice": "20.00" }
+  ],
+  "menu_id": [13, 14]
 }
+

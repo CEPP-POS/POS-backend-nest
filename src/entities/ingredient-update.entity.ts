@@ -23,14 +23,9 @@ export class IngredientUpdate {
   @Column()
   net_volume: number;
 
-  @Column({ nullable: true })
-  unit: string;
-
   @Column()
   total_volume: number;
 
   @CreateDateColumn()
   expiration_date: Date;
 }
-
-

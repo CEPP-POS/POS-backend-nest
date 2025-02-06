@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   UploadedFile,
@@ -178,4 +180,12 @@ export class OwnerController {
     await this.ownerService.verifyOtp(verifyOtpDto);
     return { message: 'OTP ถูกต้อง สามารถตั้งรหัสผ่านใหม่ได้' };
   }
+
+  @Get('ingredients/:owner_id')
+  async getIngredients(@Param('owner_id', ParseIntPipe) ownerId: number) {
+    console.log(ownerId)
+    console.log(typeof(ownerId))
+    return this.ownerService.getIngredientsByOwner(ownerId);
+  }
+
 }

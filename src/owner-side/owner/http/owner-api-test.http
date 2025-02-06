@@ -54,3 +54,4 @@ Content-Type: application/json
   "newPassword": "12345password"
 }
 
+GET http://localhost:3000/owner/ingredients/1

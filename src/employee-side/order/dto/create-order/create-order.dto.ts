@@ -6,6 +6,10 @@ export enum CancelStatus {
   RefundComplete = 'คืนเงินเสร็จสิ้น',
   RefundPending = 'ยังไม่คืนเงิน',
 }
+export enum PaymentMethod {
+  CASH = 'cash',
+  QR_CODE = 'qr-code',
+}
 
 export class CreateOrderDto {
   @IsInt()
@@ -30,6 +34,10 @@ export class CreateOrderDto {
   @IsEnum(CancelStatus)
   @IsNotEmpty()
   cancel_status: CancelStatus;
+
+  @IsEnum(PaymentMethod)
+  @IsNotEmpty()
+  payment_method: PaymentMethod;
 
   @Column({ nullable: true })
   customer_name: string;
