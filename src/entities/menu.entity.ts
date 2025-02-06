@@ -65,6 +65,9 @@ export class Menu {
   })
   sweetnessLevels: SweetnessLevel[]; //
 
-  @OneToMany(() => MenuType, (menuType) => menuType.menu, { cascade: true })
+  @OneToMany(() => MenuType, (menuType) => menuType.menu, {
+    cascade: true,
+    eager: true,
+  })
   menuTypes: MenuType[];
 }
