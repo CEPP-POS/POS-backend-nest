@@ -12,7 +12,7 @@ export class MenuCustomerService {
 
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-  ) {}
+  ) { }
 
   async getCustomerMenus() {
     // ดึงเมนูทั้งหมดพร้อม category
@@ -25,7 +25,7 @@ export class MenuCustomerService {
       menu_name: menu.menu_name,
       description: menu.description,
       price: menu.price,
-      //   category: [menu.category.category_name], // ✅ ดึง category เป็น array
+      // category: [menu.category.category_name], // ✅ ดึง category เป็น array
     }));
 
     // ดึงหมวดหมู่ทั้งหมดที่มีเมนู
@@ -44,44 +44,51 @@ export class MenuCustomerService {
     };
   }
   async getMenusAllCategory() {
+    // Fetch categories with related menus
     const categories = await this.categoryRepository.find({
-      relations: ['menu'], // ✅ โหลดเมนูทั้งหมดในแต่ละ Category
+      relations: ['menu'],
     });
 
-    // ✅ ดึงชื่อ Category ทั้งหมดเป็นอาร์เรย์ (ลบค่าที่ซ้ำกันด้วย Set)
-    const categoryNames = [
-      ...new Set(categories.map((cat) => cat.category_name)),
-    ];
+    // Extract unique category names
+    const categoryNames = Array.from(new Set(categories.map(cat => cat.category_name)));
 
-    // ✅ ดึงเมนูและจัดกลุ่มตามหมวดหมู่
-    const menuMap = new Map();
-
-    categories.forEach((category) => {
-      category.menu.forEach((menu) => {
-        if (!menuMap.has(menu.menu_id)) {
-          menuMap.set(menu.menu_id, {
+    // Group menus by menu_id
+    const menuMap = categories.reduce((map, category) => {
+      category.menu.forEach(menu => {
+        if (!map.has(menu.menu_id)) {
+          map.set(menu.menu_id, {
+            menu_id: menu.menu_id,
             menu_name: menu.menu_name,
             description: menu.description,
-            price: Number(menu.price), // ✅ แปลง price เป็น number
+            price: Number(menu.price),
             image_url: menu.image_url,
-            category: new Set(), // ✅ ใช้ Set เพื่อป้องกันค่าซ้ำ
+            category: [], // Store category objects
           });
         }
-        menuMap.get(menu.menu_id).category.add(category.category_name); // ✅ เพิ่มค่าใน Set
-      });
-    });
 
-    // ✅ แปลง `Set` เป็น `array` เพื่อคืนค่า
-    const availableMenus = Array.from(menuMap.values()).map((menu) => ({
-      ...menu,
-      category: Array.from(menu.category), // ✅ แปลง Set เป็น Array
-    }));
+        // Add category details (avoid duplicates)
+        const existingCategories = map.get(menu.menu_id).category;
+        if (!existingCategories.some((c) => c.category_id === category.category_id)) {
+          existingCategories.push({
+            category_id: category.category_id,
+            category_name: category.category_name,
+          });
+        }
+      });
+
+      return map;
+    }, new Map<number, any>());
+
+    // Convert Map to Array
+    const availableMenus = Array.from(menuMap.values());
 
     return {
-      available_category: categoryNames, // ✅ ส่งชื่อหมวดหมู่ทั้งหมดกลับไปด้วย
-      available_menus: availableMenus, // ✅ คืนค่ารายการเมนูพร้อมหมวดหมู่
+      available_category: categoryNames,
+      available_menus: availableMenus,
     };
   }
+
+
   async getMenuDetails(menuId: number) {
     const menu = await this.menuRepository.findOne({
       where: { menu_id: menuId },

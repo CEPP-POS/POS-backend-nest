@@ -28,20 +28,20 @@ POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
 {
   "options": [
-    { "ไข่มุกdfff": { "price": 10.00, "unit": 20 } },
-    { "บุก": { "price": 20.00, "unit": 50 } }
+    { "มุกแก้ว": { "price": "10.00", "unit": 20 } },
+    { "ว่านหางจระเข้": { "price": "20.00", "unit": 50 } }
   ],
-  "menu_ingredient_id": 1,
-  "menu_id": [14]
+  "menu_id": [16]
 }
 
-PATCH http://localhost:3000/owner/menus/options/add-ons/41
+PATCH http://localhost:3000/owner/menus/options/add-ons/29
 Content-Type: application/json
 {
-  "name": "ไข่มุกพิเศษ",
-  "price": 15.00,
-  "unit": 30,
-  "menu_id": [13,14]
+  "options": [
+    { "มุกแก้ว": { "price": "10.00", "unit": 20 } },
+    { "ว่านหางจระเข้": { "price": "20.00", "unit": 50 } }
+  ],
+  "menu_id": [16]
 }
 
 POST http://localhost:3000/owner/menus/options/size

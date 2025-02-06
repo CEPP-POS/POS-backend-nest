@@ -1,6 +1,7 @@
 ### Create a new Category
 
-
+### Get a specific Category by ID
+GET http://localhost:3000/owner/categories
 
 ### Get a specific Category by ID
 GET http://localhost:3000/owner/categories/1
