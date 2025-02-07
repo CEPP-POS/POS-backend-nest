@@ -51,7 +51,7 @@ export class Menu {
   @Column({ nullable: true })
   image_url: string;
 
-  @Column({ type: "boolean", default: false })
+  @Column({ type: 'boolean', default: false })
   paused: boolean;
 
   @OneToMany(() => Size, (size) => size.menu, { cascade: true })
@@ -65,6 +65,9 @@ export class Menu {
   })
   sweetnessLevels: SweetnessLevel[]; //
 
-  @OneToMany(() => MenuType, (menuType) => menuType.menu, { cascade: true })
+  @OneToMany(() => MenuType, (menuType) => menuType.menu, {
+    cascade: true,
+    eager: true,
+  })
   menuTypes: MenuType[];
 }

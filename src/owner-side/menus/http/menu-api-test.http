@@ -15,7 +15,7 @@ Content-Type: application/json
 GET http://localhost:3000/owner/menus
 
 ### Get a specific Menu by ID
-GET http://localhost:3000/owner/menus/1
+GET http://localhost:3000/owner/menus/13
 
 ### Update a Menu by ID
 PATCH http://localhost:3000/owner/menus/1

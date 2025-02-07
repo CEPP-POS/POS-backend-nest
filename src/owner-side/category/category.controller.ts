@@ -1,11 +1,19 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Patch,
+} from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category/create-category.dto';
 // import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 
 @Controller('owner/categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) { }
 
   // @Post('link-menus')
   // async linkMenusToCategory(
@@ -13,6 +21,11 @@ export class CategoryController {
   // ) {
   //   await this.categoryService.linkMenusToCategory(linkMenuToCategoryDto);
   // }
+
+  @Get('')
+  async findAll() {
+    return this.categoryService.findAll();
+  }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
@@ -32,5 +45,13 @@ export class CategoryController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     await this.categoryService.remove(+id);
+  }
+
+  @Patch(':id')
+  async updateCategory(
+    @Param('id') id: number,
+    @Body() updateCategoryDto: CreateCategoryDto,
+  ) {
+    await this.categoryService.updateCategory(id, updateCategoryDto);
   }
 }

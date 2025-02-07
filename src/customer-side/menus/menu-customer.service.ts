@@ -12,7 +12,7 @@ export class MenuCustomerService {
 
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-  ) {}
+  ) { }
 
   async getCustomerMenus() {
     // ดึงเมนูทั้งหมดพร้อม category
@@ -48,10 +48,10 @@ export class MenuCustomerService {
     const categories = await this.categoryRepository.find({
       relations: ['menu'],
     });
-  
+
     // Extract unique category names
     const categoryNames = Array.from(new Set(categories.map(cat => cat.category_name)));
-  
+
     // Group menus by menu_id
     const menuMap = categories.reduce((map, category) => {
       category.menu.forEach(menu => {
@@ -65,7 +65,7 @@ export class MenuCustomerService {
             category: [], // Store category objects
           });
         }
-  
+
         // Add category details (avoid duplicates)
         const existingCategories = map.get(menu.menu_id).category;
         if (!existingCategories.some((c) => c.category_id === category.category_id)) {
@@ -75,19 +75,19 @@ export class MenuCustomerService {
           });
         }
       });
-  
+
       return map;
     }, new Map<number, any>());
-  
+
     // Convert Map to Array
     const availableMenus = Array.from(menuMap.values());
-  
+
     return {
       available_category: categoryNames,
       available_menus: availableMenus,
     };
   }
-  
+
 
   async getMenuDetails(menuId: number) {
     const menu = await this.menuRepository.findOne({

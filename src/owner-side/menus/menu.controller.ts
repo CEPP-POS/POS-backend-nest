@@ -9,6 +9,7 @@ import {
   HttpCode,
   ValidationPipe,
   UsePipes,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
@@ -20,13 +21,30 @@ import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) { }
+  ) {}
 
   // * Create a new menu
   @Post()
   async create(@Body() createMenuDto: CreateMenuDto) {
     await this.menuService.create(createMenuDto);
   }
+
+  // @Patch('options/:type/:optionId')
+  // async updateOption(
+  //   @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
+  //   @Param('optionId') optionId: number,
+  //   @Body() updateOptionDto: any,
+  // ) {
+  //   return this.menuService.updateOption(type, optionId, updateOptionDto);
+  // }
+  // @Patch('options/:type/:id')
+  // async updateOption(
+  //   @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
+  //   @Param('id') id: number,
+  //   @Body() updateOptionDto: any,
+  // ) {
+  //   return this.menuService.updateOption(type, id, updateOptionDto);
+  // }
 
   // * Get all menus
   @HttpCode(200)
@@ -35,31 +53,14 @@ export class MenuController {
     return this.menuService.findAll();
   }
 
-  // * Get all menus send only name & description for list menu:customer
-  // @HttpCode(200)
-  // @Get()
-  // findAll() {
-  //   return this.menuService.findAll();
-  // }
-  // * Get all menus send only name & description for list menu:customer
-  // @HttpCode(200)
-  // @Get()
-  // findAll() {
-  //   return this.menuService.findAll();
-  // }
-
-  // * Create options like sweetness, size, etc.
-  // @Post('options/:type')
-  // createOption(
-  //   @Param('type') type: 'sweetness' | 'size' | 'add-ons' | 'menu-type',
-  //   @Body() createOptionDto: CreateOptionDto,
-  // ) {
-  //   return this.menuService.createOption(type, createOptionDto);
-  // }
-  // @Post('size-group')
-  // createSizeGroup(@Body() createSizeGroupDto: CreateSizeGroupDto) {
-  //   return this.menuService.createSizeGroup(createSizeGroupDto);
-  // }
+  @Patch('options/:type/:id')
+  async updateOption(
+    @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateOptionDto: any,
+  ) {
+    await this.menuService.updateOption(type, id, updateOptionDto);
+  }
 
   // // * ดึงข้อมูล Size Group ตาม ID (เผื่อใช้งานในอนาคต)
   // @Get('size-group/:id')
@@ -110,6 +111,13 @@ export class MenuController {
     return this.menuService.findOne(+id);
   }
 
+  @Get('options/:type')
+  async getOptions(
+    @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
+  ) {
+    return this.menuService.getOptions(type);
+  }
+
   // * Update a menu
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto) {
@@ -145,10 +153,14 @@ export class MenuController {
   @UsePipes(new ValidationPipe({ transform: true }))
   async updateStock(
     @Param('menu_id') menu_id: number,
-    @Body() body: { owner_id: number; branch_id: number; menuData: LinkMenuToStockDto[] }
+    @Body()
+    body: {
+      owner_id: number;
+      branch_id: number;
+      menuData: LinkMenuToStockDto[];
+    },
   ) {
     const { owner_id, branch_id, menuData } = body;
     return this.menuService.updateStock(menu_id, owner_id, branch_id, menuData);
   }
-
 }
