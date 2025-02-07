@@ -58,12 +58,13 @@ export class Menu {
   sizes: Size[];
 
   @OneToMany(() => AddOn, (addOn) => addOn.menu, { cascade: true })
-  addOns: AddOn[]; // เพิ่มความสัมพันธ์กับ AddOn
+  addOns: AddOn[];
+  // เพิ่มความสัมพันธ์กับ AddOn
 
   @OneToMany(() => SweetnessLevel, (sweetnessLevel) => sweetnessLevel.menu, {
     cascade: true,
   })
-  sweetnessLevels: SweetnessLevel[]; //
+  sweetnessLevels: SweetnessLevel[];
 
   @OneToMany(() => MenuType, (menuType) => menuType.menu, {
     cascade: true,

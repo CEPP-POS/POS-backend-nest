@@ -51,7 +51,7 @@ export class MenuService {
 
     @InjectRepository(IngredientMenuLink)
     private readonly ingredientMenuLinkRepository: Repository<IngredientMenuLink>,
-  ) {}
+  ) { }
 
   // * สร้างเมนูใหม่
   async create(createMenuDto: CreateMenuDto): Promise<Menu> {
@@ -179,21 +179,7 @@ export class MenuService {
         for (const [ingredientName, detail] of Object.entries(option)) {
           const { price, unit } = detail as { price: string; unit: number };
 
-          // 1. **Check if the add-on exists, create if not**
-          let addOn = await this.addOnRepository.findOne({
-            where: { add_on_name: ingredientName },
-          });
-
-          if (!addOn) {
-            addOn = this.addOnRepository.create({
-              add_on_name: ingredientName,
-              add_on_price: parseFloat(price),
-            });
-            await this.addOnRepository.save(addOn);
-          }
-          console.log("ADD-ON:", addOn);
-
-          // 2. **Check if the ingredient exists, create if not**
+          // 1. **Check if the ingredient exists, create if not**
           let ingredient = await this.ingredientRepository.findOne({
             where: { ingredient_name: ingredientName },
           });
@@ -206,11 +192,23 @@ export class MenuService {
           }
           console.log("INGREDIENT:", ingredient);
 
-          console.log(addOn)
-
-
-          // 3. **Link to `menu_ingredient` table**
           for (const menuId of createOptionDto.menu_id) {
+            // 2. **Check if the add-on exists for this menu, create if not**
+            let addOn = await this.addOnRepository.findOne({
+              where: { add_on_name: ingredientName, menu: { menu_id: menuId } },
+            });
+
+            if (!addOn) {
+              addOn = this.addOnRepository.create({
+                add_on_name: ingredientName,
+                add_on_price: parseFloat(price),
+                menu: { menu_id: menuId },
+              });
+              await this.addOnRepository.save(addOn);
+            }
+            console.log("ADD-ON:", addOn);
+
+            // 3. **Link to `menu_ingredient` table**
             let menuIngredient = await this.menuIngredientRepository.findOne({
               where: {
                 menu_id: menuId,
@@ -658,7 +656,11 @@ export class MenuService {
     const options = await repository.find();
 
     return options.map((option) => ({
-      id: option.id || option[`${type}_id`], // ✅ ใช้ id ที่ถูกต้อง
+      id:
+        option.id ||
+        option[`${type}_id`] ||
+        option['menu_type_id'] ||
+        option['add_on_id'], // ✅ ใช้ id ที่ถูกต้อง
       name: option[optionKey], // ✅ ชื่อ option เช่น `ไข่มุก`, `big`, `50%`
       ...(type === 'add-ons' ? { add_on_price: option.add_on_price } : {}),
       ...(type === 'add-ons' ? { unit: option.unit } : {}),
