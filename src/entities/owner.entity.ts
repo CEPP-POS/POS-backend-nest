@@ -20,8 +20,8 @@ export class Owner {
   @Column({ nullable: true })
   branch_id?: number;
 
-  @Column({ default: 'user' })
-  role: string;
+  @Column("text", { array: true, default: () => "ARRAY['owner']" })
+  roles: string[];
 
   @Column({ nullable: true })
   otp: string;

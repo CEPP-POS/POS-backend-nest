@@ -31,7 +31,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       owner_id: existingUser.owner_id,
       email: existingUser.email,
       branch_id: existingUser.branch_id || null,
-      role: existingUser.role || 'user',
+      roles: existingUser.roles || ['owner', 'employee'],
     };
   }
 }

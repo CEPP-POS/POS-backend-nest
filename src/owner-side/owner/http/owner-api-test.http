@@ -17,6 +17,11 @@ Content-Type: application/json
   "password": "AdminTestNew"
 }
 
+### Get Profile
+GET http://localhost:3000/owner/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NSwiZW1haWwiOiJhZG1pbkZsdWtAZ21haWwuY29tIiwiYnJhbmNoX2lkIjpudWxsLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3Mzg4NzA5MjQsImV4cCI6MTczODk1NzMyNH0.buRyJBmbNH_3H28lb5YwU8kdy-5J6FH34fshlK-5_tM
+
+
 ### Upload CSV with Owner Data
 POST http://localhost:3000/owner/upload-csv
 Content-Type: multipart/form-data

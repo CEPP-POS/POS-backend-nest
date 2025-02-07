@@ -14,6 +14,7 @@ import { PauseModule } from './employee-side/pause/pause.module';
 import { MenuCustomerModule } from './customer-side/menus/menu-customer.module';
 import { MinioModule } from './minio/minio.module';
 import { ImageModule } from './images/image.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -21,6 +22,10 @@ import { ImageModule } from './images/image.module';
       isGlobal: true,
     }),
     TypeOrmModule.forRoot(typeOrmConfig),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '1h' },
+    }),
     AuthModule,
     BranchModule,
     CategoryModule,

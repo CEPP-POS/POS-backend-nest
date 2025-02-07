@@ -105,9 +105,10 @@ export class OwnerService {
         'email',
         'password',
         'branch_id',
-        'role',
+        'roles',
       ],
     });
+    
   }
 
   // * Login Owner

@@ -26,10 +26,14 @@ import { sendTemporaryPasswordEmail } from 'src/utils/send-email.util';
 import { Roles } from 'src/auth/common/roles.decorator';
 import { JwtGuard } from 'src/auth/common/jwt.guard';
 import { RolesGuard } from 'src/auth/common/roles.guard';
+import { AuthService } from '../../auth/auth.service';
 
 @Controller('owner')
 export class OwnerController {
-  constructor(private readonly ownerService: OwnerService) {}
+  constructor(
+    private readonly ownerService: OwnerService,
+    private readonly authService: AuthService,
+  ) {}
   @Patch('reset-password/:id')
   async updatePassword(
     @Param('id') ownerId: string,
@@ -54,7 +58,7 @@ export class OwnerController {
   // * Function Login Owner
   @Post('login')
   async login(@Body() loginOwnerDto: LoginOwnerDto) {
-    return this.ownerService.login(loginOwnerDto);
+    return this.authService.login(loginOwnerDto);
   }
 
   // * Function upload and read CSV with owner data
