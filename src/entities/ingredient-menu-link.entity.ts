@@ -18,10 +18,7 @@ export class IngredientMenuLink {
     @JoinColumn({ name: 'menu_id' })
     menu_id: Menu;
 
-    // @OneToMany(() => Ingredient, (ingredient) => ingredient.ingredient_id)
-    // @JoinColumn({ name: 'ingredient_id' })
-    // ingredient_id: Ingredient;
-
-    // @OneToMany(() => Ingredient, (ingredient) => ingredient.ingredient_id)
-    // ingredient_id: Ingredient[];
+    @ManyToOne(() => Ingredient, { nullable: false })
+    @JoinColumn({ name: 'link_id' })
+    ingredient_id: Ingredient;  // Reference the Ingredient's link_id
 }

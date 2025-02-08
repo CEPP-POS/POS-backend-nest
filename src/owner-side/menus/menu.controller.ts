@@ -146,8 +146,8 @@ export class MenuController {
         createOptionDto as CreateSweetnessDto,
       );
     }
-    await this.menuService.createOption(type, createOptionDto);
-    return this.menuService.createOption(type, createOptionDto);
+    // await this.menuService.createOption(type, createOptionDto);
+    return await this.menuService.createOption(type, createOptionDto);
   }
 
   @Post('stock/:menu_id')
@@ -167,5 +167,12 @@ export class MenuController {
       throw new Error('menuData is not an array');
     }
     return this.menuService.updateStock(menu_id, owner_id, branch_id, menuData);
+  }
+
+
+  @Get('/options/:type/:id')
+  async findOptionById(@Param('type') type: string, @Param('id') id: string) {
+    const menuId = +id; //change type str to number
+    return this.menuService.findOptionById(type, menuId);
   }
 }

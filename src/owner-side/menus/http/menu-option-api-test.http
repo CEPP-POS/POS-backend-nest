@@ -1,13 +1,14 @@
 POST http://localhost:3000/owner/menus/options/sweetness
 Content-Type: application/json
-
 {
 "options": [
     "น้อยร้อยเปอร์%",
     "มากถวายชีวิต%"
   ],
-  "menu_id": [1,15]
+  "menu_id": [16,15],
+  "is_required":"true"
 }
+
 GET http://localhost:3000/owner/menus/1
 PATCH http://localhost:3000/owner/menus/options/sweetness/83
 Content-Type: application/json
@@ -32,7 +33,9 @@ Content-Type: application/json
     { "มุกแก้ว": { "price": "10.00", "unit": 20 } },
     { "ว่านหาง": { "price": "20.00", "unit": 50 } }
   ],
-  "menu_id": [16,15]
+  "menu_id": [16,15],
+  "is_required":true,
+  "is_multipled":true
 }
 
 PATCH http://localhost:3000/owner/menus/options/add-ons/29
@@ -55,7 +58,8 @@ Content-Type: application/json
     { "bu": "10.00" },
     { "su": "20.00" }
   ],
-  "menu_id": [10, 16]
+  "menu_id": [10, 16],
+  "is_required":true,
 }
 
 POST http://localhost:3000/owner/menus/options/menu-type
@@ -66,10 +70,11 @@ Content-Type: application/json
     { "sudhot": 5.00 },
     { "icecool": 20.00}
   ],
-  "menu_id": [16,17]
+  "menu_id": [16,17],
+  "is_required":true,
 }
 
-GET http://localhost:3000/owner/menus/14
+GET http://localhost:3000/owner/menus/16
 
 GET http://localhost:3000/owner/menus/options/add-ons
 
@@ -78,3 +83,11 @@ GET http://localhost:3000/owner/menus/options/size
 GET http://localhost:3000/owner/menus/options/sweetness
 
 GET http://localhost:3000/owner/menus/options/menu-type
+
+GET http://localhost:3000/owner/menus/options/add-ons/16
+
+GET http://localhost:3000/owner/menus/options/size/16
+
+GET http://localhost:3000/owner/menus/options/sweetness/16
+
+GET http://localhost:3000/owner/menus/options/menu-type/16
