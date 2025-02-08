@@ -19,6 +19,6 @@ export class IngredientMenuLink {
     menu_id: Menu;
 
     @ManyToOne(() => Ingredient, { nullable: false })
-    @JoinColumn({ name: 'link_id' })
-    ingredient_id: Ingredient;  // Reference the Ingredient's link_id
+    @JoinColumn({ name: 'ingredient_id' }) // Referencing the ingredient_id
+    ingredient_id: Ingredient;
 }

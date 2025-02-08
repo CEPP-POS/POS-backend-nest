@@ -199,6 +199,8 @@ export class MenuService {
               await this.ingredientRepository.save(ingredient);
             }
 
+            console.log("INGREDIENT:", ingredient)
+
             for (const menuId of createOptionDto.menu_id) {
               // 2. Check if the add-on exists for this menu, create if not
               let addOn = await this.addOnRepository.findOne({
@@ -216,7 +218,25 @@ export class MenuService {
                 await this.addOnRepository.save(addOn);
               }
 
-              // 3. Link to menu_ingredient table
+              console.log("ADD ON:", addOn)
+
+              // 3. Create a link to the IngredientMenuLink table
+              let ingredientMenuLink = await this.ingredientMenuLinkRepository.findOne({
+                where: {
+                  menu_id: menuId,
+                  ingredient_id: Equal(ingredient.ingredient_id),
+                },
+              });
+
+              if (!ingredientMenuLink) {
+                ingredientMenuLink = this.ingredientMenuLinkRepository.create({
+                  menu_id: { menu_id: menuId },
+                  ingredient_id: ingredient,
+                });
+                await this.ingredientMenuLinkRepository.save(ingredientMenuLink);
+              }
+
+              // 4. Link to menu_ingredient table
               let menuIngredient = await this.menuIngredientRepository.findOne({
                 where: {
                   menu_id: menuId,
