@@ -147,6 +147,7 @@ export class MenuController {
       );
     }
     await this.menuService.createOption(type, createOptionDto);
+    return this.menuService.createOption(type, createOptionDto);
   }
 
   @Post('stock/:menu_id')

@@ -30,9 +30,9 @@ Content-Type: application/json
 {
   "options": [
     { "มุกแก้ว": { "price": "10.00", "unit": 20 } },
-    { "ว่านหางจระเข้": { "price": "20.00", "unit": 50 } }
+    { "ว่านหาง": { "price": "20.00", "unit": 50 } }
   ],
-  "menu_id": [16]
+  "menu_id": [16,15]
 }
 
 PATCH http://localhost:3000/owner/menus/options/add-ons/29
@@ -43,7 +43,7 @@ Content-Type: application/json
     { "มุกแก้ว": { "price": "10.00", "unit": 20 } },
     { "ว่านหางจระเข้": { "price": "20.00", "unit": 50 } }
   ],
-  "menu_id": [16]
+  "menu_id": [16,15]
 }
 
 
@@ -52,10 +52,10 @@ Content-Type: application/json
 
 {
    "options": [
-    { "big": "10.00" },
-    { "small": "20.00" }
+    { "bu": "10.00" },
+    { "su": "20.00" }
   ],
-  "menu_id": [13, 14]
+  "menu_id": [10, 16]
 }
 
 POST http://localhost:3000/owner/menus/options/menu-type
@@ -63,12 +63,11 @@ Content-Type: application/json
 
 {
   "options": [
-    { "hot": "5.00" },
-    { "ice": "20.00" }
+    { "sudhot": 5.00 },
+    { "icecool": 20.00}
   ],
-  "menu_id": [13, 14]
+  "menu_id": [16,17]
 }
-
 
 GET http://localhost:3000/owner/menus/14
 

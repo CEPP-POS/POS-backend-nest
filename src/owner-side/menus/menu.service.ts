@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, In, Repository } from 'typeorm';
 import { Menu } from '../../entities/menu.entity';
@@ -146,122 +146,131 @@ export class MenuService {
       default:
         throw new NotFoundException(`Invalid option type: ${type}`);
     }
+    try {
+      // ตรวจสอบว่า menu_id ที่ส่งมามีอยู่ในระบบหรือไม่
+      const menus = await this.menuRepository.findBy({
+        menu_id: In(createOptionDto.menu_id),
+      });
 
-    // ตรวจสอบว่า menu_id ที่ส่งมามีอยู่ในระบบหรือไม่
-    const menus = await this.menuRepository.findBy({
-      menu_id: In(createOptionDto.menu_id),
-    });
-
-    if (menus.length !== createOptionDto.menu_id.length) {
-      throw new NotFoundException(
-        `Some menus with IDs ${createOptionDto.menu_id} not found`,
-      );
-    }
-
-    const options = [];
-
-    if (type === 'sweetness') {
-      // สร้าง sweetness option สำหรับแต่ละเมนู
-      for (const level of createOptionDto.options) {
-        for (const menu of menus) {
-          const newOption = repository.create({
-            [optionKey]: level, // ตั้งค่า level_name สำหรับ sweetness
-            menu, // เชื่อมโยง option กับเมนู
-          });
-
-          const savedOption = await repository.save(newOption); // บันทึก sweetness option
-          options.push(savedOption);
-        }
+      if (menus.length !== createOptionDto.menu_id.length) {
+        throw new NotFoundException(
+          `Some menus with IDs ${createOptionDto.menu_id} not found`,
+        );
       }
-    }
-    else if (type === 'add-ons') {
-      for (const option of createOptionDto.options) {
-        for (const [ingredientName, detail] of Object.entries(option)) {
-          const { price, unit } = detail as { price: string; unit: number };
 
-          // 1. **Check if the ingredient exists, create if not**
-          let ingredient = await this.ingredientRepository.findOne({
-            where: { ingredient_name: ingredientName },
-          });
+      const options = [];
 
-          if (!ingredient) {
-            ingredient = this.ingredientRepository.create({
-              ingredient_name: ingredientName,
-            });
-            await this.ingredientRepository.save(ingredient);
-          }
-          console.log("INGREDIENT:", ingredient);
-
-          for (const menuId of createOptionDto.menu_id) {
-            // 2. **Check if the add-on exists for this menu, create if not**
-            let addOn = await this.addOnRepository.findOne({
-              where: { add_on_name: ingredientName, menu: { menu_id: menuId } },
-            });
-
-            if (!addOn) {
-              addOn = this.addOnRepository.create({
-                add_on_name: ingredientName,
-                add_on_price: parseFloat(price),
-                menu: { menu_id: menuId },
-              });
-              await this.addOnRepository.save(addOn);
-            }
-            console.log("ADD-ON:", addOn);
-
-            // 3. **Link to `menu_ingredient` table**
-            let menuIngredient = await this.menuIngredientRepository.findOne({
-              where: {
-                menu_id: menuId,
-                add_on: Equal(addOn.add_on_id),
-                ingredient_id: Equal(ingredient.ingredient_id),
-              },
-            });
-
-            if (!menuIngredient) {
-              menuIngredient = this.menuIngredientRepository.create({
-                menu_id: menuId,
-                add_on: addOn,
-                ingredient_id: ingredient,
-                quantity_used: unit,
-              });
-              await this.menuIngredientRepository.save(menuIngredient);
-            }
-            console.log("MENU INGREDIENT:", menuIngredient);
-          }
-        }
-      }
-    }
-    else {
-      // สร้าง options สำหรับ add-ons, size, หรือ menu-type
-      for (const option of createOptionDto.options) {
-        for (const [key, value] of Object.entries(option)) {
-          const newOption = repository.create({
-            [optionKey]: key,
-            ...(type === 'size' ? { size_price: value } : {}),
-          });
-
-          const savedOption = await repository.save(newOption);
-          options.push(savedOption);
-
-          // เชื่อมโยง option กับเมนู
+      if (type === 'sweetness') {
+        // สร้าง sweetness option สำหรับแต่ละเมนู
+        for (const level of createOptionDto.options) {
           for (const menu of menus) {
-            if (type === 'size') {
-              if (!menu.sizes) menu.sizes = [];
-              menu.sizes.push(savedOption);
-              savedOption.menu = menu; // ✅ ตั้งค่า reverse relation ให้ชัดเจน
-              await this.menuRepository.save(menu); // บันทึก Menu
-              await repository.save(savedOption);
-            }
-            await this.menuRepository.save(menu);
+            const newOption = repository.create({
+              [optionKey]: level, // ตั้งค่า level_name สำหรับ sweetness
+              menu, // เชื่อมโยง option กับเมนู
+            });
+
+            const savedOption = await repository.save(newOption); // บันทึก sweetness option
+            options.push(savedOption);
           }
         }
       }
-    }
+      else if (type === 'add-ons') {
+        for (const option of createOptionDto.options) {
+          for (const [ingredientName, detail] of Object.entries(option)) {
+            const { price, unit } = detail as { price: string; unit: number };
 
-    return {
-      message: `${type} options created successfully`,
-      data: options,
-    };
+            // 1. **Check if the ingredient exists, create if not**
+            let ingredient = await this.ingredientRepository.findOne({
+              where: { ingredient_name: ingredientName },
+            });
+
+            if (!ingredient) {
+              ingredient = this.ingredientRepository.create({
+                ingredient_name: ingredientName,
+              });
+              await this.ingredientRepository.save(ingredient);
+            }
+            console.log("INGREDIENT:", ingredient);
+
+            for (const menuId of createOptionDto.menu_id) {
+              // 2. **Check if the add-on exists for this menu, create if not**
+              let addOn = await this.addOnRepository.findOne({
+                where: { add_on_name: ingredientName, menu: { menu_id: menuId } },
+              });
+
+              if (!addOn) {
+                addOn = this.addOnRepository.create({
+                  add_on_name: ingredientName,
+                  add_on_price: parseFloat(price),
+                  menu: { menu_id: menuId },
+                });
+                await this.addOnRepository.save(addOn);
+              }
+              console.log("ADD-ON:", addOn);
+
+              // 3. **Link to `menu_ingredient` table**
+              let menuIngredient = await this.menuIngredientRepository.findOne({
+                where: {
+                  menu_id: menuId,
+                  add_on: Equal(addOn.add_on_id),
+                  ingredient_id: Equal(ingredient.ingredient_id),
+                },
+              });
+
+              if (!menuIngredient) {
+                menuIngredient = this.menuIngredientRepository.create({
+                  menu_id: menuId,
+                  add_on: addOn,
+                  ingredient_id: ingredient,
+                  quantity_used: unit,
+                });
+                await this.menuIngredientRepository.save(menuIngredient);
+              }
+              console.log("MENU INGREDIENT:", menuIngredient);
+            }
+          }
+        }
+      }
+      else {
+        // สร้าง options สำหรับ add-ons, size, หรือ menu-type
+        for (const option of createOptionDto.options) {
+          for (const [key, value] of Object.entries(option)) {
+            const newOption = repository.create({
+              [optionKey]: key,
+              ...(type === 'size' ? { size_price: value } : {}),
+            });
+
+            const savedOption = await repository.save(newOption);
+            options.push(savedOption);
+
+            // เชื่อมโยง option กับเมนู
+            for (const menu of menus) {
+              if (type === 'size') {
+                if (!menu.sizes) menu.sizes = [];
+                menu.sizes.push(savedOption);
+                savedOption.menu = menu; // ✅ ตั้งค่า reverse relation ให้ชัดเจน
+                await this.menuRepository.save(menu); // บันทึก Menu
+                await repository.save(savedOption);
+              }
+              await this.menuRepository.save(menu);
+            }
+          }
+        }
+      }
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: `${type} options created successfully`,
+        data: options,
+      };
+
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Failed to create ${type} options`,
+        error: error.message,
+      };
+    }
   }
 
   // async createOption(type: string, createOptionDto: any) {
