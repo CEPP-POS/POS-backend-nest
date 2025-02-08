@@ -6,6 +6,7 @@ import { Menu } from '../../entities/menu.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { IngredientCategory } from 'src/entities/ingredient-category.entity';
 import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
+import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 
 @Injectable()
 export class IngredientService {
@@ -20,7 +21,10 @@ export class IngredientService {
         private readonly ingredientCategoryRepository: Repository<IngredientCategory>,
 
         @InjectRepository(IngredientMenuLink)
-        private readonly ingredientMenuLinkRepository: Repository<IngredientMenuLink>
+        private readonly ingredientMenuLinkRepository: Repository<IngredientMenuLink>,
+
+        @InjectRepository(MenuIngredient)
+        private readonly menuIngredientRepository: Repository<MenuIngredient>
     ) { }
 
     async test(): Promise<Ingredient[]> {
@@ -62,6 +66,7 @@ export class IngredientService {
             ingredients: ingredients.map(ingredient => ({
                 ingredient_id: ingredient.ingredient_id,
                 ingredient_name: ingredient.ingredient_name,
+                ingredient_unit: ingredient.unit
             })),
         };
     }

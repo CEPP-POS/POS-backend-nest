@@ -376,6 +376,114 @@ export class MenuService {
   }
 
   // * link menu for auto cut stock
+  // async updateStock(
+  //   menu_id: number,
+  //   owner_id: number,
+  //   branch_id: number,
+  //   linkMenuToStockDtoList: LinkMenuToStockDto[],
+  // ) {
+  //   const queryRunner = this.dataSource.createQueryRunner();
+  //   await queryRunner.startTransaction();
+
+  //   try {
+  //     for (const linkMenuToStockDto of linkMenuToStockDtoList) {
+  //       const { ingredient_name, unit, ingredientListForStock } = linkMenuToStockDto;
+
+  //       // Find the menu
+  //       const menu = await this.menuRepository.findOne({ where: { menu_id } });
+  //       if (!menu) {
+  //         throw new NotFoundException(`Menu with ID ${menu_id} not found`);
+  //       }
+
+  //       // Find the owner
+  //       const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+  //       if (!owner) {
+  //         throw new NotFoundException(`Owner with ID ${owner_id} not found`);
+  //       }
+
+  //       // Validate ingredient list items
+  //       for (const property of ingredientListForStock) {
+  //         const size = await this.sizeRepository.findOne({
+  //           where: { size_id: property.size_id },
+  //         });
+  //         if (!size) {
+  //           throw new NotFoundException(`Size with ID ${property.size_id} not found`);
+  //         }
+
+  //         const menuType = await this.menuTypeRepository.findOne({
+  //           where: { menu_type_id: property.menu_type_id },
+  //         });
+  //         if (!menuType) {
+  //           throw new NotFoundException(`MenuType with ID ${property.menu_type_id} not found`);
+  //         }
+  //       }
+
+  //       // Find or create the ingredient
+  //       let ingredient = await this.ingredientRepository.findOne({
+  //         where: { ingredient_name },
+  //       });
+
+  //       if (!ingredient) {
+  //         ingredient = this.ingredientRepository.create({
+  //           ingredient_name,
+  //           unit,
+  //           owner_id: owner,
+  //         });
+  //         ingredient = await this.ingredientRepository.save(ingredient);
+  //       } else {
+  //         // Update the unit in the ingredient table if needed
+  //         if (ingredient.unit !== unit) {
+  //           ingredient.unit = unit;
+  //           await this.ingredientRepository.save(ingredient);
+  //         }
+  //       }
+
+  //       // Process the ingredient list for stock and link them
+  //       for (const property of ingredientListForStock) {
+  //         let menuIngredient = await this.menuIngredientRepository.findOne({
+  //           where: {
+  //             menu_id: menu,
+  //             ingredient_id: ingredient,
+  //             size_id: Equal(property.size_id),
+  //             menu_type_id: Equal(property.menu_type_id),
+  //           },
+  //         });
+
+  //         if (menuIngredient) {
+  //           // If the ingredient already exists, update quantity_used
+  //           menuIngredient.quantity_used = property.quantity_used;
+  //           await this.menuIngredientRepository.save(menuIngredient);
+  //         } else {
+  //           // Create a new menu ingredient if it doesn't exist
+  //           menuIngredient = this.menuIngredientRepository.create({
+  //             menu_id: menu,
+  //             ingredient_id: ingredient,
+  //             size_id: { size_id: property.size_id },
+  //             menu_type_id: { menu_type_id: property.menu_type_id },
+  //             quantity_used: property.quantity_used,
+  //           });
+  //           await this.menuIngredientRepository.save(menuIngredient);
+  //         }
+  //       }
+
+  //       // Create the ingredient-menu link if necessary
+  //       const ingredientMenuLinkToSave = {
+  //         menu_id: { menu_id: menu.menu_id },
+  //         ingredient_id: { ingredient_id: ingredient.ingredient_id },
+  //       };
+  //       await this.ingredientMenuLinkRepository.save(ingredientMenuLinkToSave);
+  //     }
+
+  //     await queryRunner.commitTransaction();
+  //     return { message: 'Link Stock successfully' };
+  //   } catch (error) {
+  //     await queryRunner.rollbackTransaction();
+  //     throw error;
+  //   } finally {
+  //     await queryRunner.release();
+  //   }
+  // }
+
   async updateStock(
     menu_id: number,
     owner_id: number,
@@ -431,15 +539,47 @@ export class MenuService {
       }
 
       // Save the MenuIngredient records
-      const menuIngredientsToSave = ingredientListForStock.map((property) => ({
-        menu_id: menu,
-        ingredient_id: ingredient,
-        size_id: { size_id: property.size_id },
-        menu_type_id: { menu_type_id: property.menu_type_id },
-        quantity_used: property.quantity_used,
-      }));
+      // Process the ingredient list for stock and link them
+      for (const property of ingredientListForStock) {
+        let menuIngredient = await this.menuIngredientRepository.findOne({
+          where: {
+            menu_id: Equal(menu.menu_id),
+            ingredient_id: Equal(ingredient.ingredient_id),
+            size_id: Equal(property.size_id),
+            menu_type_id: Equal(property.menu_type_id),
+          },
+        });
 
-      await this.menuIngredientRepository.save(menuIngredientsToSave);
+        if (menuIngredient) {
+          // If the ingredient already exists, update quantity_used
+          menuIngredient.quantity_used = property.quantity_used;
+          await this.menuIngredientRepository.save(menuIngredient);
+        } else {
+          // Create a new menu ingredient if it doesn't exist
+          menuIngredient = this.menuIngredientRepository.create({
+            menu_id: menu,
+            ingredient_id: ingredient,
+            size_id: { size_id: property.size_id },
+            menu_type_id: { menu_type_id: property.menu_type_id },
+            quantity_used: property.quantity_used,
+          });
+          await this.menuIngredientRepository.save(menuIngredient);
+        }
+        console.log("menuIngredient:", menuIngredient)
+      }
+
+      console.log("ingredientListForStock:", ingredientListForStock)
+
+      // link menu id and ingredient id in ingredient menu link
+      const ingredientMenuLinkToSave = {
+        menu_id: { menu_id: menu.menu_id },
+        ingredient_id: { ingredient_id: ingredient.ingredient_id },
+      };
+
+      console.log("ingredientMenuLinkToSave:", ingredientMenuLinkToSave);
+
+      await this.ingredientMenuLinkRepository.save(ingredientMenuLinkToSave);
+
     }
 
     return { message: 'Link Stock successfully' };

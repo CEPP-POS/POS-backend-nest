@@ -121,8 +121,8 @@ export class MenuCustomerService {
       })),
       add_on_name: menu.addOns.map((addOn) => ({
         add_on_id: addOn.add_on_id,
-        name: addOn.add_on_name,
-        price_addition: addOn.add_on_price,
+        add_on_name: addOn.add_on_name,
+        add_on_name_price_addition: addOn.add_on_price,
       })),
     };
   }
