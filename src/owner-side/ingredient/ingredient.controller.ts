@@ -18,8 +18,8 @@ export class IngredientController {
         return this.ingredientService.findIngredientById(menuId);
     }
 
-    // @Get('/menu/:id')
-    // async findMenuIngredientById(@Param('id') menuId: number) {
-    //     return this.ingredientService.findMenuIngredientById(menuId);
-    // }
+    @Get('/menu/:id')
+    async findAllMenuIngredientById(@Param('id') menuId: number) {
+        return this.ingredientService.findAllMenuIngredientById(menuId);
+    }
 }

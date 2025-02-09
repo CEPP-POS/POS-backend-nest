@@ -67,8 +67,8 @@ Content-Type: application/json
 
 {
   "options": [
-    { "sudhot": 5.00 },
-    { "icecool": 20.00}
+    { "sudhothot": 5.00 },
+    { "icecoolcool": 20.00}
   ],
   "menu_id": [16,17],
   "is_required":true,
@@ -84,10 +84,10 @@ GET http://localhost:3000/owner/menus/options/sweetness
 
 GET http://localhost:3000/owner/menus/options/menu-type
 
-GET http://localhost:3000/owner/menus/options/add-ons/21
+GET http://localhost:3000/owner/menus/options/add-ons/23
 
-GET http://localhost:3000/owner/menus/options/size/16
+GET http://localhost:3000/owner/menus/options/size/23
 
-GET http://localhost:3000/owner/menus/options/sweetness/16
+GET http://localhost:3000/owner/menus/options/sweetness/23
 
-GET http://localhost:3000/owner/menus/options/menu-type/21
+GET http://localhost:3000/owner/menus/options/menu-type/23
