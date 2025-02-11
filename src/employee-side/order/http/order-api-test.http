@@ -4,16 +4,16 @@ Content-Type: application/json
 
 {
   "createOrderDto": {
-    "customer_id": 123,
-    "order_date": "2023-09-18T08:00:00Z",
+    // "customer_id": 123,
+    "order_date": "2023-09-17T08:00:00Z",
     "total_price": 500,
     "queue_number": 3,
     "status": "รอทำ"
   },
   "items": [
     {
-      "menu_id": 10,
-      "sweetness_id": 1,
+      "menu_id": 16,
+      "sweetness_id": 2,
       "size_id": 1,
       "add_on_id": [],  
       "menu_type_id": 2,

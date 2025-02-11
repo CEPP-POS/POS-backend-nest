@@ -29,7 +29,7 @@ import { RolesGuard } from 'src/auth/common/roles.guard';
 
 @Controller('owner')
 export class OwnerController {
-  constructor(private readonly ownerService: OwnerService) {}
+  constructor(private readonly ownerService: OwnerService) { }
   @Patch('reset-password/:id')
   async updatePassword(
     @Param('id') ownerId: string,
@@ -196,5 +196,12 @@ export class OwnerController {
   @UseGuards(JwtGuard, RolesGuard)
   getAdminData() {
     return { message: 'This is admin data' };
+  }
+
+  @Get('ingredients/:owner_id')
+  async getIngredients(@Param('owner_id', ParseIntPipe) ownerId: number) {
+    console.log(ownerId)
+    console.log(typeof (ownerId))
+    return this.ownerService.getIngredientsByOwner(ownerId);
   }
 }
