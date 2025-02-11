@@ -187,15 +187,13 @@ export class OrderService {
       where: { order_id: orderId },
     });
   }
+
   async createOrder(
     createOrderDto: CreateOrderDto,
     items: OrderItemDto[],
   ): Promise<any> {
-    const generatedOrderId = Math.floor(100000 + Math.random() * 900000); // ✅ สร้าง order_id เอง
-
     const newOrder = this.orderRepository.create({
       ...createOrderDto,
-      order_id: generatedOrderId,
       is_paid: false,
     });
 
@@ -205,35 +203,78 @@ export class OrderService {
       add_on_id: In(items.flatMap((item) => item.add_on_id || [])),
     });
 
-    const orderItems = items.map((item) => {
-      const relatedAddOns = allAddOns.filter((addon) =>
-        item.add_on_id.includes(addon.add_on_id),
-      );
+    const orderItems = await Promise.all(
+      items.map(async (item) => {
+        const menu = await this.menuRepository.findOneBy({
+          menu_id: item.menu_id,
+        });
+        const sweetness = await this.sweetnessRepository.findOneBy({
+          sweetness_id: item.sweetness_id,
+        });
+        const size = await this.sizeRepository.findOneBy({
+          size_id: item.size_id,
+        });
+        const menuType = await this.menuTypeRepository.findOneBy({
+          menu_type_id: item.menu_type_id,
+        });
 
-      return this.orderItemRepository.create({
-        quantity: item.quantity,
-        price: item.price,
-        menu: { menu_id: item.menu_id },
-        sweetness: { sweetness_id: item.sweetness_id },
-        size: { size_id: item.size_id },
-        addOns: relatedAddOns,
-        menu_type: { menu_type_id: item.menu_type_id },
-        order: savedOrder,
-      });
-    });
+        // Debugging logs to check what is missing
+        if (!menu) {
+          console.warn(`⚠️ Menu not found for menu_id: ${item.menu_id}`);
+        }
+        if (!sweetness) {
+          console.warn(
+            `⚠️ Sweetness not found for sweetness_id: ${item.sweetness_id}`,
+          );
+        }
+        if (!size) {
+          console.warn(`⚠️ Size not found for size_id: ${item.size_id}`);
+        }
+        if (!menuType) {
+          console.warn(
+            `⚠️ MenuType not found for menu_type_id: ${item.menu_type_id}`,
+          );
+        }
 
-    await this.orderItemRepository.save(orderItems);
+        if (!menu || !sweetness || !size || !menuType) {
+          console.warn(
+            `⚠️ Skipping invalid OrderItem: ${JSON.stringify(item)}`,
+          );
+          return null; // Skip invalid items
+        }
+
+        const relatedAddOns = allAddOns.filter((addon) =>
+          item.add_on_id.includes(addon.add_on_id),
+        );
+
+        return this.orderItemRepository.create({
+          quantity: item.quantity,
+          price: item.price,
+          menu, // Full entity
+          sweetness, // Full entity
+          size, // Full entity
+          menu_type: menuType,
+          addOns: relatedAddOns,
+          order: savedOrder,
+        });
+      }),
+    );
+
+    console.log(orderItems); // Log the order items
+
+    const validOrderItems = orderItems.filter(Boolean); // Remove null items
+    await this.orderItemRepository.save(validOrderItems);
 
     return {
       order_id: savedOrder.order_id,
-      payment_method: savedOrder.payment_method, // ✅ ส่งค่าการชำระเงินกลับไป
+      payment_method: savedOrder.payment_method,
       status: savedOrder.is_paid,
-      order_summary: items.map((item) => ({
-        menu_id: item.menu_id,
-        menu_type_id: item.menu_type_id,
-        size_id: item.size_id,
-        sweetness_id: item.sweetness_id,
-        add_on_id: item.add_on_id,
+      order_summary: validOrderItems.map((item) => ({
+        menu_id: item.menu.menu_id,
+        menu_type_id: item.menu_type.menu_type_id,
+        size_id: item.size.size_id,
+        sweetness_id: item.sweetness.sweetness_id,
+        add_on_id: item.addOns.map((addon) => addon.add_on_id),
         quantity: item.quantity,
         price: item.price,
       })),
