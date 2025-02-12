@@ -37,6 +37,7 @@ export class AddOn {
     nullable: true,
     onDelete: 'CASCADE',
   })
+
   @JoinColumn({ name: 'menu_id' })
   menu: Menu;
 }

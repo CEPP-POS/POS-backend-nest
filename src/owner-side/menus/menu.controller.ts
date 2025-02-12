@@ -21,7 +21,7 @@ import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) {}
+  ) { }
 
   // * Create a new menu
   @Post()
@@ -53,14 +53,14 @@ export class MenuController {
     return this.menuService.findAll();
   }
 
-  @Patch('options/:type/:id')
-  async updateOption(
-    @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateOptionDto: any,
-  ) {
-    await this.menuService.updateOption(type, id, updateOptionDto);
-  }
+  // @Patch('options/:type/:id')
+  // async updateOption(
+  //   @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
+  //   @Param('id', ParseIntPipe) id: number,
+  //   @Body() updateOptionDto: any,
+  // ) {
+  //   await this.menuService.updateOption(type, id, updateOptionDto);
+  // }
 
   // // * ดึงข้อมูล Size Group ตาม ID (เผื่อใช้งานในอนาคต)
   // @Get('size-group/:id')
@@ -147,20 +147,25 @@ export class MenuController {
       );
     }
     await this.menuService.createOption(type, createOptionDto);
+    return this.menuService.createOption(type, createOptionDto);
   }
 
   @Post('stock/:menu_id')
   @UsePipes(new ValidationPipe({ transform: true }))
   async updateStock(
     @Param('menu_id') menu_id: number,
-    @Body()
-    body: {
-      owner_id: number;
-      branch_id: number;
-      menuData: LinkMenuToStockDto[];
+    @Body() body: {
+      data: {
+        owner_id: number;
+        branch_id: number;
+        menuData: LinkMenuToStockDto[];
+      };
     },
   ) {
-    const { owner_id, branch_id, menuData } = body;
+    const { owner_id, branch_id, menuData } = body.data;
+    if (!Array.isArray(menuData)) {
+      throw new Error('menuData is not an array');
+    }
     return this.menuService.updateStock(menu_id, owner_id, branch_id, menuData);
   }
 }

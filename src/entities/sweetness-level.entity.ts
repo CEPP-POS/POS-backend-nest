@@ -23,5 +23,5 @@ export class SweetnessLevel {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'menu_id' })
-  menu: Menu[];
+  menu: Menu;
 }

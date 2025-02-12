@@ -29,41 +29,34 @@ POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
 {
   "options": [
-    { "มุกแก้วใยไหมสดใสจริงๆ": { "price": 10.00, "unit": 20 } },
-    { "ว่านหางจระเข้บุกเข้าถ้ำป่า": { "price": 20.00, "unit": 50 } }
+    { "มุกแก้ว": { "price": "10.00", "unit": 20 } },
+    { "ว่านหาง": { "price": "20.00", "unit": 50 } }
   ],
-  "menu_id": [1,15]
+  "menu_id": [16,15]
 }
-GET http://localhost:3000/owner/menus/15
-PATCH http://localhost:3000/owner/menus/options/add-ons/83
+
+PATCH http://localhost:3000/owner/menus/options/add-ons/29
 Content-Type: application/json
+
 {
   "options": [
-    { "มุกแก้ว": { "price": 10.00, "unit": 20 }},
-    { "ว่านหางจระเข้": { "price": 20.00, "unit": 50 }}
+    { "มุกแก้ว": { "price": "10.00", "unit": 20 } },
+    { "ว่านหางจระเข้": { "price": "20.00", "unit": 50 } }
   ],
-  "menu_id": [15]
+  "menu_id": [16,15]
 }
+
 
 POST http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
 
 {
    "options": [
-    { "very biggg makmak": 10.00 },
-    { "small": 20.00 }
+    { "bu": "10.00" },
+    { "su": "20.00" }
   ],
-  "menu_id": [1,15]
+  "menu_id": [10, 16]
 }
-GET http://localhost:3000/owner/menus/15
-PATCH http://localhost:3000/owner/menus/options/size/34
-Content-Type: application/json
-{
-  "name": "extra largeegg",
-  "size_price": 25.00,
-   "menu_id": [13]
-}
-
 
 POST http://localhost:3000/owner/menus/options/menu-type
 Content-Type: application/json
@@ -74,15 +67,7 @@ Content-Type: application/json
   ],
   "menu_id": [16,17]
 }
-GET http://localhost:3000/owner/menus/17
-PATCH http://localhost:3000/owner/menus/options/menu-type/109
-Content-Type: application/json
 
-{
-  "name": "ร้อนนะจ๊ะ",
-  "price_difference": "10.00",
-  "menu_id": [14]
-}
 GET http://localhost:3000/owner/menus/14
 
 GET http://localhost:3000/owner/menus/options/add-ons

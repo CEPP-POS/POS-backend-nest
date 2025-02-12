@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Equal, In, Repository } from 'typeorm';
 import { Menu } from '../../entities/menu.entity';
@@ -55,8 +51,7 @@ export class MenuService {
 
     @InjectRepository(IngredientMenuLink)
     private readonly ingredientMenuLinkRepository: Repository<IngredientMenuLink>,
-    private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   // * สร้างเมนูใหม่
   async create(createMenuDto: CreateMenuDto): Promise<Menu> {
@@ -156,193 +151,131 @@ export class MenuService {
       default:
         throw new NotFoundException(`Invalid option type: ${type}`);
     }
-    const menus = await this.menuRepository.find({
-      where: { menu_id: In(createOptionDto.menu_id) },
-      relations: [relationField], // โหลดความสัมพันธ์ที่เกี่ยวข้อง
-    });
-
-    if (menus.length !== createOptionDto.menu_id.length) {
-      throw new NotFoundException(
-        `Some menus with IDs ${createOptionDto.menu_id} not found`,
-      );
-    }
-
-    const options = [];
-
-    if (type === 'sweetness') {
-      // สร้าง sweetness option สำหรับแต่ละเมนู
-      for (const level of createOptionDto.options) {
-        for (const menu of menus) {
-          const newOption = repository.create({
-            [optionKey]: level, // ตั้งค่า level_name สำหรับ sweetness
-            menu, // เชื่อมโยง option กับเมนู
-          });
-
-          const savedOption = await repository.save(newOption); // บันทึก sweetness option
-          options.push(savedOption);
-        }
-      }
-    } else if (type === 'add-ons') {
-      for (const option of createOptionDto.options) {
-        for (const [ingredientName, detail] of Object.entries(option)) {
-          const { price, unit } = detail as { price: string; unit: number };
-
-          // 1. **Check if the ingredient exists, create if not**
-          let ingredient = await this.ingredientRepository.findOne({
-            where: { ingredient_name: ingredientName },
-          });
-
-          if (!ingredient) {
-            ingredient = this.ingredientRepository.create({
-              ingredient_name: ingredientName,
-            });
-            await this.ingredientRepository.save(ingredient);
-          }
-          console.log('INGREDIENT:', ingredient);
-
-          for (const menuId of createOptionDto.menu_id) {
-            // 2. **Check if the add-on exists for this menu, create if not**
-            let addOn = await this.addOnRepository.findOne({
-              where: { add_on_name: ingredientName, menu: { menu_id: menuId } },
-            });
-
-            if (!addOn) {
-              addOn = this.addOnRepository.create({
-                add_on_name: ingredientName,
-                add_on_price: parseFloat(price),
-                menu: { menu_id: menuId },
-              });
-              await this.addOnRepository.save(addOn);
-            }
-            console.log('ADD-ON:', addOn);
-
-            // 3. **Link to `menu_ingredient` table**
-            let menuIngredient = await this.menuIngredientRepository.findOne({
-              where: {
-                menu_id: menuId,
-                add_on: Equal(addOn.add_on_id),
-                ingredient_id: Equal(ingredient.ingredient_id),
-              },
-            });
-
-            if (!menuIngredient) {
-              menuIngredient = this.menuIngredientRepository.create({
-                menu_id: menuId,
-                add_on: addOn,
-                ingredient_id: ingredient,
-                quantity_used: unit,
-              });
-              await this.menuIngredientRepository.save(menuIngredient);
-            }
-            console.log('MENU INGREDIENT:', menuIngredient);
-          }
-        }
-      }
-    } else if (type === 'menu-type') {
-      await this.dataSource.transaction(async (manager) => {
-        // ✅ ใช้ Transaction
-        const menus = await manager.find(Menu, {
-          where: { menu_id: In(createOptionDto.menu_id) },
-          relations: ['menuTypes'], // ✅ โหลดความสัมพันธ์กับ menuTypes
-        });
-
-        const options = [];
-
-        for (const option of createOptionDto.options) {
-          for (const [typeName, price] of Object.entries(option)) {
-            for (const menu of menus) {
-              // ✅ ค้นหา MenuType ที่เชื่อมโยงกับ Menu โดยเฉพาะ
-              let menuType = await manager.findOne(MenuType, {
-                where: {
-                  type_name: typeName,
-                  menu: { menu_id: menu.menu_id }, // ✅ ค้นหาแบบเจาะจงเมนู
-                },
-                relations: ['menu'],
-              });
-
-              // ✅ ถ้าไม่มี MenuType ให้สร้างใหม่สำหรับเมนูนี้
-              if (!menuType) {
-                menuType = manager.create(MenuType, {
-                  type_name: typeName,
-                  price_difference: Number(price),
-                  menu: { menu_id: menu.menu_id }, // ✅ เชื่อมโยงกับเมนู
-                });
-                await manager.save(menuType);
-              }
-
-              // ✅ ตรวจสอบการเชื่อมโยงเพื่อป้องกันการเพิ่มซ้ำ
-              const isAlreadyLinked = menu.menuTypes.some(
-                (linkedType) =>
-                  linkedType.menu_type_id === menuType.menu_type_id,
-              );
-
-              if (!isAlreadyLinked) {
-                await manager
-                  .createQueryBuilder()
-                  .relation(Menu, 'menuTypes')
-                  .of(menu.menu_id)
-                  .add(menuType.menu_type_id);
-
-                menu.menuTypes.push(menuType); // ✅ อัปเดตใน Memory
-                await manager.save(menu); // ✅ บันทึกใน Database
-              }
-
-              options.push(menuType);
-            }
-          }
-        }
-
-        return {
-          message: `Menu types created and linked successfully`,
-          data: options,
-        };
+    try {
+      // ตรวจสอบว่า menu_id ที่ส่งมามีอยู่ในระบบหรือไม่
+      const menus = await this.menuRepository.findBy({
+        menu_id: In(createOptionDto.menu_id),
       });
-    } else {
-      const menus = await this.menuRepository.find({
-        where: { menu_id: In(createOptionDto.menu_id) },
-        relations: ['sizes'], // ✅ โหลด relation ด้วย
-      });
+
+      if (menus.length !== createOptionDto.menu_id.length) {
+        throw new NotFoundException(
+          `Some menus with IDs ${createOptionDto.menu_id} not found`,
+        );
+      }
+
       const options = [];
 
-      for (const option of createOptionDto.options) {
-        for (const [sizeName, sizePrice] of Object.entries(option)) {
-          // ✅ ตรวจสอบว่ามี Size สำหรับเมนูนี้อยู่แล้วหรือไม่
+      if (type === 'sweetness') {
+        // สร้าง sweetness option สำหรับแต่ละเมนู
+        for (const level of createOptionDto.options) {
           for (const menu of menus) {
-            let existingSize = await this.sizeRepository.findOne({
-              where: { size_name: sizeName, menu: { menu_id: menu.menu_id } },
-              relations: ['menu'],
+            const newOption = repository.create({
+              [optionKey]: level, // ตั้งค่า level_name สำหรับ sweetness
+              menu, // เชื่อมโยง option กับเมนู
             });
 
-            // ✅ ถ้าไม่มี Size ให้สร้างใหม่
-            if (!existingSize) {
-              existingSize = this.sizeRepository.create({
-                size_name: sizeName,
-                size_price: Number(sizePrice),
-                menu: { menu_id: menu.menu_id }, // ✅ เชื่อมโยงกับเมนู
-              });
-              await this.sizeRepository.save(existingSize);
-            }
-
-            // ✅ ตรวจสอบการเชื่อมโยงเพื่อป้องกันการเพิ่มซ้ำ
-            const isAlreadyLinked = menu.sizes.some(
-              (linkedSize) => linkedSize.size_id === existingSize.size_id,
-            );
-
-            if (!isAlreadyLinked) {
-              menu.sizes.push(existingSize); // ✅ อัปเดตใน Memory
-              await this.menuRepository.save(menu); // ✅ บันทึกการเชื่อมโยง
-            }
-
-            options.push(existingSize);
+            const savedOption = await repository.save(newOption); // บันทึก sweetness option
+            options.push(savedOption);
           }
         }
       }
-    }
+      else if (type === 'add-ons') {
+        for (const option of createOptionDto.options) {
+          for (const [ingredientName, detail] of Object.entries(option)) {
+            const { price, unit } = detail as { price: string; unit: number };
 
-    return {
-      message: `${type} options created successfully`,
-      data: options,
-    };
+            // 1. **Check if the ingredient exists, create if not**
+            let ingredient = await this.ingredientRepository.findOne({
+              where: { ingredient_name: ingredientName },
+            });
+
+            if (!ingredient) {
+              ingredient = this.ingredientRepository.create({
+                ingredient_name: ingredientName,
+              });
+              await this.ingredientRepository.save(ingredient);
+            }
+            console.log("INGREDIENT:", ingredient);
+
+            for (const menuId of createOptionDto.menu_id) {
+              // 2. **Check if the add-on exists for this menu, create if not**
+              let addOn = await this.addOnRepository.findOne({
+                where: { add_on_name: ingredientName, menu: { menu_id: menuId } },
+              });
+
+              if (!addOn) {
+                addOn = this.addOnRepository.create({
+                  add_on_name: ingredientName,
+                  add_on_price: parseFloat(price),
+                  menu: { menu_id: menuId },
+                });
+                await this.addOnRepository.save(addOn);
+              }
+              console.log("ADD-ON:", addOn);
+
+              // 3. **Link to `menu_ingredient` table**
+              let menuIngredient = await this.menuIngredientRepository.findOne({
+                where: {
+                  menu_id: menuId,
+                  add_on: Equal(addOn.add_on_id),
+                  ingredient_id: Equal(ingredient.ingredient_id),
+                },
+              });
+
+              if (!menuIngredient) {
+                menuIngredient = this.menuIngredientRepository.create({
+                  menu_id: menuId,
+                  add_on: addOn,
+                  ingredient_id: ingredient,
+                  quantity_used: unit,
+                });
+                await this.menuIngredientRepository.save(menuIngredient);
+              }
+              console.log("MENU INGREDIENT:", menuIngredient);
+            }
+          }
+        }
+      }
+      else {
+        // สร้าง options สำหรับ add-ons, size, หรือ menu-type
+        for (const option of createOptionDto.options) {
+          for (const [key, value] of Object.entries(option)) {
+            const newOption = repository.create({
+              [optionKey]: key,
+              ...(type === 'size' ? { size_price: value } : {}),
+            });
+
+            const savedOption = await repository.save(newOption);
+            options.push(savedOption);
+
+            // เชื่อมโยง option กับเมนู
+            for (const menu of menus) {
+              if (type === 'size') {
+                if (!menu.sizes) menu.sizes = [];
+                menu.sizes.push(savedOption);
+                savedOption.menu = menu; // ✅ ตั้งค่า reverse relation ให้ชัดเจน
+                await this.menuRepository.save(menu); // บันทึก Menu
+                await repository.save(savedOption);
+              }
+              await this.menuRepository.save(menu);
+            }
+          }
+        }
+      }
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: `${type} options created successfully`,
+        data: options,
+      };
+
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Failed to create ${type} options`,
+        error: error.message,
+      };
+    }
   }
 
   // async createOption(type: string, createOptionDto: any) {

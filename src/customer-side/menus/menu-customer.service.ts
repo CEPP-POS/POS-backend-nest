@@ -43,6 +43,7 @@ export class MenuCustomerService {
       available_menus,
     };
   }
+
   async getMenusAllCategory() {
     // Fetch categories with related menus
     const categories = await this.categoryRepository.find({
@@ -99,20 +100,27 @@ export class MenuCustomerService {
     }
 
     return {
+      menu_id: menu.menu_id,
       menu_name: menu.menu_name,
       price: menu.price,
       description: menu.description,
       image_url: menu.image_url,
       type_name: menu.menuTypes.map((type) => ({
-        name: type.type_name,
-        price_addition: type.price_difference,
+        menu_type_id: type.menu_type_id,
+        menu_type_name: type.type_name,
+        menu_type_price_addition: type.price_difference,
       })),
-      level_name: menu.sweetnessLevels.map((level) => level.level_name),
+      level_name: menu.sweetnessLevels.map((level) => ({
+        sweetness_level_id: level.sweetness_id,
+        sweetness_level_name: level.level_name
+      })),
       size_name: menu.sizes.map((size) => ({
-        name: size.size_name,
-        price_addition: size.size_price,
+        size_id: size.size_id,
+        size_name: size.size_name,
+        size_price_addition: size.size_price,
       })),
       add_on_name: menu.addOns.map((addOn) => ({
+        add_on_id: addOn.add_on_id,
         name: addOn.add_on_name,
         price_addition: addOn.add_on_price,
       })),
