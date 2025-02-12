@@ -8,11 +8,11 @@ Content-Type: application/json
   ],
   "menu_id": [1,15]
 }
-GET http://localhost:3000/owner/menus/1
-PATCH http://localhost:3000/owner/menus/options/sweetness/83
+GET http://localhost:3000/owner/menus/15
+PATCH http://localhost:3000/owner/menus/options/sweetness/31
 Content-Type: application/json
 {
-  "name": "mmee5%",
+  "name": "น้อยมากแต่เรียบ%",
   "menu_id": [13, 14, 1]
 }
 //pass////////////////////////
@@ -29,20 +29,20 @@ POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
 {
   "options": [
-    { "มุกแก้วใยไหม": { "price": 10.00, "unit": 20 } },
-    { "ว่านหางจระเข้บุกเข้าถ้ำ": { "price": 20.00, "unit": 50 } }
+    { "มุกแก้วใยไหมสดใสจริงๆ": { "price": 10.00, "unit": 20 } },
+    { "ว่านหางจระเข้บุกเข้าถ้ำป่า": { "price": 20.00, "unit": 50 } }
   ],
   "menu_id": [1,15]
 }
 GET http://localhost:3000/owner/menus/15
-PATCH http://localhost:3000/owner/menus/options/add-ons/29
+PATCH http://localhost:3000/owner/menus/options/add-ons/83
 Content-Type: application/json
 {
   "options": [
     { "มุกแก้ว": { "price": 10.00, "unit": 20 }},
     { "ว่านหางจระเข้": { "price": 20.00, "unit": 50 }}
   ],
-  "menu_id": [16]
+  "menu_id": [15]
 }
 
 POST http://localhost:3000/owner/menus/options/size
@@ -53,13 +53,13 @@ Content-Type: application/json
     { "very biggg makmak": 10.00 },
     { "small": 20.00 }
   ],
-  "menu_id": [13,14]
+  "menu_id": [1,15]
 }
-GET http://localhost:3000/owner/menus/14
-PATCH http://localhost:3000/owner/menus/options/size/31
+GET http://localhost:3000/owner/menus/15
+PATCH http://localhost:3000/owner/menus/options/size/34
 Content-Type: application/json
 {
-  "name": "extra largee",
+  "name": "extra largeegg",
   "size_price": 25.00,
    "menu_id": [13]
 }
@@ -67,20 +67,19 @@ Content-Type: application/json
 
 POST http://localhost:3000/owner/menus/options/menu-type
 Content-Type: application/json
-
 {
   "options": [
-    { "sudhot": 5.00 },
-    { "icecool": 20.00}
+    { "เย็น": 5.00 },
+    { "ร้อนทานร้าน": 20.00}
   ],
   "menu_id": [16,17]
 }
 GET http://localhost:3000/owner/menus/17
-PATCH http://localhost:3000/owner/menus/options/menu-type/56
+PATCH http://localhost:3000/owner/menus/options/menu-type/109
 Content-Type: application/json
 
 {
-  "name": "socool",
+  "name": "ร้อนนะจ๊ะ",
   "price_difference": "10.00",
   "menu_id": [14]
 }

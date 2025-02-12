@@ -2,9 +2,9 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
-  JoinColumn,
   OneToMany,
+  JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { Menu } from './menu.entity';
 import { MenuIngredient } from './menu-ingredient.entity';
@@ -32,10 +32,11 @@ export class AddOn {
   @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.add_on)
   menu_ingredients_id: MenuIngredient[];
 
+  // @ManyToMany(() => Menu, (menu) => menu.addOns)
   @ManyToOne(() => Menu, (menu) => menu.addOns, {
     nullable: true,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'menu_id' })
-  menu: Menu[];
+  menu: Menu;
 }

@@ -26,5 +26,5 @@ export class Size {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'menu_id' }) // เชื่อมกับคอลัมน์ menu_id ในฐานข้อมูล
-  menu: Menu[];
+  menu: Menu;
 }

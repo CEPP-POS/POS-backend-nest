@@ -23,5 +23,5 @@ export class MenuType {
 
   @ManyToOne(() => Menu, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'menu_id' })
-  menu: Menu[];
+  menu: Menu;
 }
