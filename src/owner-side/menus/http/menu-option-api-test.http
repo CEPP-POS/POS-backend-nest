@@ -9,7 +9,7 @@ Content-Type: application/json
   "is_required":"true"
 }
 
-GET http://localhost:3000/owner/menus/1
+GET http://localhost:3000/owner/menus/16
 PATCH http://localhost:3000/owner/menus/options/sweetness/83
 Content-Type: application/json
 {
@@ -70,7 +70,8 @@ Content-Type: application/json
     { "icecoolcool": 20.00}
   ],
   "menu_id": [16,17],
-  "is_required":true,}
+  "is_required":true
+}
 
 
 GET http://localhost:3000/owner/menus/16

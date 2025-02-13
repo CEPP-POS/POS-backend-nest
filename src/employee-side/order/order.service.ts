@@ -55,7 +55,7 @@ export class OrderService {
 
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
-  ) {}
+  ) { }
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
     const owner = await this.ownerRepository.findOne({
@@ -187,6 +187,7 @@ export class OrderService {
       where: { order_id: orderId },
     });
   }
+
   async createOrder(
     createOrderDto: CreateOrderDto,
     items: OrderItemDto[],

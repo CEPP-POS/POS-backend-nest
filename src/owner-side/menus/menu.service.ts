@@ -126,7 +126,6 @@ export class MenuService {
     let repository: Repository<any>;
     let optionKey: string;
     let relationField: string;
-    let relationField: string;
 
     switch (type) {
       case 'add-ons':
