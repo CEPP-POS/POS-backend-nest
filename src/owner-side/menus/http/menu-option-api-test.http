@@ -3,17 +3,17 @@ Content-Type: application/json
 
 {
 "options": [
-    "น้อยร้อยเปอร์%",
-    "มากถวายชีวิต%"
+    "น้อยร้อยเปอร์999%",
+    "มากถวายชีวิต999%"
   ],
   "menu_id": [1,15]
 }
 GET http://localhost:3000/owner/menus/15
-PATCH http://localhost:3000/owner/menus/options/sweetness/31
+PATCH http://localhost:3000/owner/menus/options/sweetness/94
 Content-Type: application/json
 {
-  "name": "น้อยมากแต่เรียบ%",
-  "menu_id": [13, 14, 1]
+  "name": "น้อยมากแต่เรียบ3%",
+  "menu_id": [15, 16, 1]
 }
 //pass////////////////////////
 // GET http://localhost:3000/sweetness-levels
@@ -29,19 +29,19 @@ POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
 {
   "options": [
-    { "มุกแก้ว": { "price": "10.00", "unit": 20 } },
-    { "ว่านหาง": { "price": "20.00", "unit": 50 } }
+    { "มุกแก้วvintage1": { "price": "10.00", "unit": 20 } },
+    { "ว่านหางจระเข้ฝาดหาง2": { "price": "20.00", "unit": 50 } }
   ],
   "menu_id": [16,15]
 }
 
-PATCH http://localhost:3000/owner/menus/options/add-ons/29
+PATCH http://localhost:3000/owner/menus/options/add-ons/94
 Content-Type: application/json
 
 {
   "options": [
-    { "มุกแก้ว": { "price": "10.00", "unit": 20 } },
-    { "ว่านหางจระเข้": { "price": "20.00", "unit": 50 } }
+    { "ไข่มุก": { "price": "20.00", "unit": 20 } },
+    { "บุกหวาน": { "price": "20.00", "unit": 50 } }
   ],
   "menu_id": [16,15]
 }
@@ -52,20 +52,20 @@ Content-Type: application/json
 
 {
    "options": [
-    { "bu": "10.00" },
-    { "su": "20.00" }
+    { "bu":  { "price": "5.00" } },
+    { "su":  { "price": "20.00" } }
   ],
-  "menu_id": [10, 16]
+  "menu_id": [17, 16]
 }
 
 POST http://localhost:3000/owner/menus/options/menu-type
 Content-Type: application/json
 {
   "options": [
-    { "เย็น": 5.00 },
-    { "ร้อนทานร้าน": 20.00}
+    { "เย็นmakmak565": { "price": "5.00" } },
+    { "ร้อนทานร้านsudsud767": { "price": "20.00" } }
   ],
-  "menu_id": [16,17]
+  "menu_id": [15, 16]
 }
 
 GET http://localhost:3000/owner/menus/14
