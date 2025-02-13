@@ -12,9 +12,7 @@ export enum PaymentMethod {
 }
 
 export class CreateOrderDto {
-  @IsInt()
-  @IsNotEmpty()
-  customer_id: number;
+
 
   @IsDate()
   @Type(() => Date)

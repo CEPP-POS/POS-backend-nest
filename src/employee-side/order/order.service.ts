@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, Between } from 'typeorm';
+import { Repository, In, Between, Equal, MoreThan } from 'typeorm';
 import { Order } from '../../entities/order.entity';
 import { CreateOrderDto } from './dto/create-order/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order/update-order.dto';
@@ -20,6 +20,8 @@ import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
 import { Payment } from 'src/entities/payment.entity';
 import { SalesSummary } from 'src/entities/sales-summary';
 import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
+import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
+import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
 
 @Injectable()
 export class OrderService {
@@ -55,6 +57,11 @@ export class OrderService {
 
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
+
+    @InjectRepository(MenuIngredient)
+    private readonly menuIngredientRepository: Repository<MenuIngredient>,
+    @InjectRepository(IngredientUpdate)
+    private readonly ingredientUpdateRepository: Repository<IngredientUpdate>,
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
@@ -188,6 +195,86 @@ export class OrderService {
     });
   }
 
+  async updateIngredientStock(
+    menuId: number,
+    sizeId: number,
+    orderQuantity: number,
+    orderDate: any,
+  ) {
+    // 1. Find all ingredients for the menu and size combination
+    const menuIngredients = await this.menuIngredientRepository.find({
+      where: {
+        menu_id: Equal(menuId),
+        size_id: Equal(sizeId),
+      },
+      relations: {
+        ingredient_id: true,
+        menu_id: true,
+        size_id: true,
+      },
+    });
+
+    // Process each ingredient
+    for (const menuIngredient of menuIngredients) {
+      if (!menuIngredient.ingredient_id) {
+        console.warn(
+          `No ingredient found for menu ingredient ${menuIngredient.menu_ingredient_id}`,
+        );
+        continue;
+      }
+
+      const totalNeeded = menuIngredient.quantity_used * orderQuantity;
+
+      // 2. Get all ingredient updates sorted by expiration date
+      const ingredientUpdates = await this.ingredientUpdateRepository.find({
+        where: {
+          ingredient_id: Equal(menuIngredient.ingredient_id.ingredient_id),
+          expiration_date: MoreThan(orderDate),
+        },
+        order: {
+          expiration_date: 'ASC',
+        },
+      });
+
+      let remainingToProcess = totalNeeded;
+
+      // Process each ingredient update record
+      for (const update of ingredientUpdates) {
+        if (remainingToProcess <= 0) break;
+
+        const currentAvailableVolume = update.total_volume;
+        const volumeToDeduct = Math.min(
+          remainingToProcess,
+          currentAvailableVolume,
+        );
+        const stockThreshold =
+          update.net_volume * (update.quantity_in_stock - 1);
+
+        // Calculate new total volume after deduction
+        const newTotalVolume = currentAvailableVolume - volumeToDeduct;
+
+        if (newTotalVolume <= stockThreshold) {
+          // Update quantity if threshold is reached
+          update.quantity_in_stock -= 1;
+          update.total_volume = update.quantity_in_stock * update.net_volume;
+        } else {
+          update.total_volume = newTotalVolume;
+        }
+
+        remainingToProcess -= volumeToDeduct;
+
+        await this.ingredientUpdateRepository.save(update);
+      }
+
+      if (remainingToProcess > 0) {
+        console.warn(
+          `Insufficient stock for ingredient ${menuIngredient.ingredient_id.ingredient_id}`,
+        );
+        // You might want to throw an error here or handle this case differently
+      }
+    }
+  }
+
   async createOrder(
     createOrderDto: CreateOrderDto,
     items: OrderItemDto[],
@@ -218,29 +305,24 @@ export class OrderService {
           menu_type_id: item.menu_type_id,
         });
 
-        // Debugging logs to check what is missing
-        if (!menu) {
-          console.warn(`⚠️ Menu not found for menu_id: ${item.menu_id}`);
-        }
-        if (!sweetness) {
-          console.warn(
-            `⚠️ Sweetness not found for sweetness_id: ${item.sweetness_id}`,
-          );
-        }
-        if (!size) {
-          console.warn(`⚠️ Size not found for size_id: ${item.size_id}`);
-        }
-        if (!menuType) {
-          console.warn(
-            `⚠️ MenuType not found for menu_type_id: ${item.menu_type_id}`,
-          );
-        }
-
         if (!menu || !sweetness || !size || !menuType) {
           console.warn(
             `⚠️ Skipping invalid OrderItem: ${JSON.stringify(item)}`,
           );
-          return null; // Skip invalid items
+          return null;
+        }
+
+        try {
+          // Update ingredient stock levels
+          await this.updateIngredientStock(
+            item.menu_id,
+            item.size_id,
+            item.quantity,
+            savedOrder.order_date,
+          );
+        } catch (error) {
+          console.error(`Failed to update ingredient stock: ${error.message}`);
+          // You might want to handle this error differently
         }
 
         const relatedAddOns = allAddOns.filter((addon) =>
@@ -250,9 +332,9 @@ export class OrderService {
         return this.orderItemRepository.create({
           quantity: item.quantity,
           price: item.price,
-          menu, // Full entity
-          sweetness, // Full entity
-          size, // Full entity
+          menu,
+          sweetness,
+          size,
           menu_type: menuType,
           addOns: relatedAddOns,
           order: savedOrder,
@@ -260,25 +342,11 @@ export class OrderService {
       }),
     );
 
-    console.log(orderItems); // Log the order items
-
-    const validOrderItems = orderItems.filter(Boolean); // Remove null items
+    // Filter out null items and save valid order items
+    const validOrderItems = orderItems.filter((item) => item !== null);
     await this.orderItemRepository.save(validOrderItems);
 
-    return {
-      order_id: savedOrder.order_id,
-      payment_method: savedOrder.payment_method,
-      status: savedOrder.is_paid,
-      order_summary: validOrderItems.map((item) => ({
-        menu_id: item.menu.menu_id,
-        menu_type_id: item.menu_type.menu_type_id,
-        size_id: item.size.size_id,
-        sweetness_id: item.sweetness.sweetness_id,
-        add_on_id: item.addOns.map((addon) => addon.add_on_id),
-        quantity: item.quantity,
-        price: item.price,
-      })),
-    };
+    return savedOrder;
   }
 
   async findAllOrders(): Promise<Order[]> {
@@ -297,7 +365,6 @@ export class OrderService {
         total_price: true,
         queue_number: true,
         status: true,
-        customer_id: true,
         customer_name: true,
         customer_contact: true,
         cancel_status: true,

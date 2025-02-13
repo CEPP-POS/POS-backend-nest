@@ -33,7 +33,7 @@ Content-Type: application/json
     { "มุกแก้ว": { "price": "10.00", "unit": 20 } },
     { "ว่านหาง": { "price": "20.00", "unit": 50 } }
   ],
-  "menu_id": [16,15],
+  "menu_id": [11],
   "is_required":true,
   "is_multipled":true
 }
