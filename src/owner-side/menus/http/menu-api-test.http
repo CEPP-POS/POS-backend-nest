@@ -3,7 +3,7 @@ POST http://localhost:3000/owner/menus
 Content-Type: application/json
 {
   "store_id": 1,
-  "menu_name": "latte",
+  "menu_name": "milk caramel",
   "description": "Delicious milo with oat milk",
   "price": 95,
   "owner_id": 1,

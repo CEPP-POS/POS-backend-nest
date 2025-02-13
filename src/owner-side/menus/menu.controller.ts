@@ -9,7 +9,6 @@ import {
   HttpCode,
   ValidationPipe,
   UsePipes,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
@@ -29,14 +28,14 @@ export class MenuController {
     await this.menuService.create(createMenuDto);
   }
 
-  // @Patch('options/:type/:optionId')
-  // async updateOption(
-  //   @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
-  //   @Param('optionId') optionId: number,
-  //   @Body() updateOptionDto: any,
-  // ) {
-  //   return this.menuService.updateOption(type, optionId, updateOptionDto);
-  // }
+  @Patch('options/:type/:optionId')
+  async updateOption(
+    @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
+    @Param('optionId') optionId: number,
+    @Body() updateOptionDto: any,
+  ) {
+    return this.menuService.updateOption(type, optionId, updateOptionDto);
+  }
   // @Patch('options/:type/:id')
   // async updateOption(
   //   @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
