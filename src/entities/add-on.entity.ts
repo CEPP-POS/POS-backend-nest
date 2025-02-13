@@ -14,7 +14,7 @@ export class AddOn {
   @PrimaryGeneratedColumn()
   add_on_id: number;
 
-  @Column()
+  @Column({ nullable: true })
   add_on_name: string;
 
   @Column({ type: 'boolean', default: false })
@@ -37,7 +37,6 @@ export class AddOn {
     nullable: true,
     onDelete: 'CASCADE',
   })
-
   @JoinColumn({ name: 'menu_id' })
   menu: Menu;
 }

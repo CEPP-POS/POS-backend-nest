@@ -13,7 +13,7 @@ export class Size {
   @PrimaryGeneratedColumn()
   size_id: number;
 
-  @Column()
+  @Column({ nullable: false })
   size_name: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
