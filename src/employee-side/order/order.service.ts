@@ -62,7 +62,7 @@ export class OrderService {
     private readonly menuIngredientRepository: Repository<MenuIngredient>,
     @InjectRepository(IngredientUpdate)
     private readonly ingredientUpdateRepository: Repository<IngredientUpdate>,
-  ) { }
+  ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
     const owner = await this.ownerRepository.findOne({
@@ -283,7 +283,9 @@ export class OrderService {
       ...createOrderDto,
       is_paid: false,
     });
-
+    console.log('HELLO');
+    console.log(createOrderDto.total_price);
+    console.log(typeof(createOrderDto.total_price));
     const savedOrder = await this.orderRepository.save(newOrder);
 
     const allAddOns = await this.addOnRepository.findBy({
@@ -345,6 +347,21 @@ export class OrderService {
     // Filter out null items and save valid order items
     const validOrderItems = orderItems.filter((item) => item !== null);
     await this.orderItemRepository.save(validOrderItems);
+    const amount = Math.round(createOrderDto.total_price * 100) / 100; // Convert to 2 decimal places
+    const vat = Math.round(amount * 0.07 * 100) / 100;
+    const totalAmount = Math.round((amount + vat) * 100) / 100;
+    // ✅ Create a payment entry
+    const newPayment = this.paymentRepository.create({
+      order: savedOrder,
+      payment_date: savedOrder.order_date, // ✅ Same as order date
+      payment_method: createOrderDto.payment_method, // ✅ Provided by frontend
+      amount: amount, // ✅ Total price of order
+      total_amount: totalAmount, // ✅ VAT calculation
+      status: createOrderDto.status || null, // ✅ Optional from frontend
+      path_img: createOrderDto.path_img || null, // ✅ Optional from frontend
+    });
+
+    await this.paymentRepository.save(newPayment);
 
     return savedOrder;
   }

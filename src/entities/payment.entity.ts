@@ -24,16 +24,32 @@ export class Payment {
   @Column({ type: 'varchar', length: 255 })
   payment_method: string;
 
-  @Column()
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: {
+      to: (value: number) => Math.round(value * 100) / 100,
+      from: (value: string) => parseFloat(value),
+    },
+  })
   amount: number;
 
-  @Column()
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: {
+      to: (value: number) => Math.round(value * 100) / 100,
+      from: (value: string) => parseFloat(value),
+    },
+  })
   total_amount: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   cash_given: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   change: number;
 
   // for success connect one to many in ocr status

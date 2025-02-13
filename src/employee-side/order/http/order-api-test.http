@@ -5,14 +5,16 @@ Content-Type: application/json
 {
   "createOrderDto": {
     "order_date": "2025-03-01T08:00:00Z",
-    "total_price": 260,
+    "total_price": 260.00,
     "queue_number": 4,
-    "status": "รอทำ"
+    "status": "รอทำ",
+    "payment_method": "QR_CODE",
+    "path_img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/QR_code_for_mobile_English_Wikipedia.svg/1200px-QR_code_for_mobile_English_Wikipedia.svg.png"
   },
   "items": [
     {
       "menu_id": 15,
-      "sweetness_id": 2,
+      "sweetness_id": 1,
       "size_id": 1,
       "add_on_id": [1,3],  
       "menu_type_id": 2,

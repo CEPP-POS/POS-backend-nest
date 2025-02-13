@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsNotEmpty, IsDate } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, IsDate, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Column } from 'typeorm';
 
@@ -12,12 +12,11 @@ export enum PaymentMethod {
 }
 
 export class CreateOrderDto {
-
-
   @IsDate()
   @Type(() => Date)
   order_date: Date;
 
+  @IsNumber()
   @IsNotEmpty()
   total_price: number;
 
@@ -35,6 +34,9 @@ export class CreateOrderDto {
   @IsEnum(PaymentMethod)
   @IsNotEmpty()
   payment_method: PaymentMethod;
+
+  @Column({ nullable: true })
+  path_img?: string;
 
   @Column({ nullable: true })
   customer_name: string;
