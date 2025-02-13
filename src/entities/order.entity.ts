@@ -31,9 +31,6 @@ export class Order {
   status: string;
 
   @Column({ nullable: true })
-  customer_id: number; // ไอดีลูกค้า
-
-  @Column({ nullable: true })
   customer_name: string; // ชื่อลูกค้า
 
   @Column({ nullable: true })
@@ -47,12 +44,7 @@ export class Order {
   })
   cancel_status: CancelStatus;
 
-  @Column({
-    type: 'enum',
-    enum: PaymentMethod, // ✅ ใช้ Enum PaymentMethod
-    default: PaymentMethod.QR_CODE,
-  })
-  payment_method: PaymentMethod;
+
 
   @Column({ default: false }) // ✅ ค่าเริ่มต้นเป็น false
   is_paid: boolean;
