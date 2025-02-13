@@ -20,7 +20,6 @@ export class CreateOrderDto {
   @Type(() => Date)
   order_date: Date;
 
-  @IsInt()
   @IsNotEmpty()
   total_price: number;
 

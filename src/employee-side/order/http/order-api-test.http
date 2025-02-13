@@ -11,8 +11,8 @@ Content-Type: application/json
   },
   "items": [
     {
-      "menu_id": 10,
-      "sweetness_id": 1,
+      "menu_id": 16,
+      "sweetness_id": 2,
       "size_id": 1,
       "add_on_id": [1],  
       "menu_type_id": 2,
