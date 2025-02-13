@@ -30,8 +30,8 @@ POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
 {
   "options": [
-    { "มุกแก้ว": { "price": "10.00", "unit": 20 } },
-    { "ว่านหาง": { "price": "20.00", "unit": 50 } }
+    { "บุกใสใบเตย": { "price": "10.00", "unit": 11 } },
+    { "บุกใสอัญชัญ": { "price": "20.00", "unit": 21 } }
   ],
   "menu_id": [16,15],
   "is_required":true,
@@ -59,7 +59,7 @@ Content-Type: application/json
     { "su": "20.00" }
   ],
   "menu_id": [10, 16],
-  "is_required":true,
+  "is_required":true
 }
 
 POST http://localhost:3000/owner/menus/options/menu-type
