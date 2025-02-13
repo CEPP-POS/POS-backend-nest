@@ -13,6 +13,8 @@ import { Owner } from 'src/entities/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 import { Payment } from 'src/entities/payment.entity';
 import { SalesSummary } from 'src/entities/sales-summary';
+import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
+import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 
 @Module({
   imports: [
@@ -27,11 +29,13 @@ import { SalesSummary } from 'src/entities/sales-summary';
       SweetnessLevel,
       Size,
       MenuType,
-      Payment
+      Payment,
+      MenuIngredient,
+      IngredientUpdate,
     ]),
   ],
 
   controllers: [OrderController],
   providers: [OrderService],
 })
-export class OrderModule { }
+export class OrderModule {}

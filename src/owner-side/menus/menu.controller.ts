@@ -9,7 +9,6 @@ import {
   HttpCode,
   ValidationPipe,
   UsePipes,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
@@ -29,14 +28,14 @@ export class MenuController {
     await this.menuService.create(createMenuDto);
   }
 
-  // @Patch('options/:type/:optionId')
-  // async updateOption(
-  //   @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
-  //   @Param('optionId') optionId: number,
-  //   @Body() updateOptionDto: any,
-  // ) {
-  //   return this.menuService.updateOption(type, optionId, updateOptionDto);
-  // }
+  @Patch('options/:type/:optionId')
+  async updateOption(
+    @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
+    @Param('optionId') optionId: number,
+    @Body() updateOptionDto: any,
+  ) {
+    return this.menuService.updateOption(type, optionId, updateOptionDto);
+  }
   // @Patch('options/:type/:id')
   // async updateOption(
   //   @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
@@ -146,26 +145,29 @@ export class MenuController {
         createOptionDto as CreateSweetnessDto,
       );
     }
-    await this.menuService.createOption(type, createOptionDto);
-    return this.menuService.createOption(type, createOptionDto);
+    // await this.menuService.createOption(type, createOptionDto);
+    return await this.menuService.createOption(type, createOptionDto);
   }
 
-  @Post('stock/:menu_id')
-  @UsePipes(new ValidationPipe({ transform: true }))
+  @Patch('stock/:menu_id')
+  // @UsePipes(new ValidationPipe({ transform: true }))
   async updateStock(
     @Param('menu_id') menu_id: number,
     @Body() body: {
-      data: {
-        owner_id: number;
-        branch_id: number;
-        menuData: LinkMenuToStockDto[];
-      };
+      owner_id: number;
+      branch_id: number;
+      menuData: LinkMenuToStockDto[];
     },
   ) {
-    const { owner_id, branch_id, menuData } = body.data;
-    if (!Array.isArray(menuData)) {
-      throw new Error('menuData is not an array');
-    }
-    return this.menuService.updateStock(menu_id, owner_id, branch_id, menuData);
+    console.log('menu_id:', menu_id);
+    console.log('Request Body:', body);
+
+    return this.menuService.updateStock(menu_id, body.owner_id, body.branch_id, body.menuData);
+  }
+
+  @Get('/options/:type/:id')
+  async findOptionById(@Param('type') type: string, @Param('id') id: string) {
+    const menuId = +id; //change type str to number
+    return this.menuService.findOptionById(type, menuId);
   }
 }

@@ -8,6 +8,7 @@ import {
   ArrayNotEmpty,
   IsNumber,
   ValidateNested,
+  IsBoolean,
 } from 'class-validator';
 
 class OptionDetailDto {
@@ -52,4 +53,12 @@ export class CreateOptionDto {
   @ArrayNotEmpty()
   @IsInt({ each: true })
   menu_id: number[];
+
+  @IsBoolean()
+  @IsOptional()
+  is_required?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  is_multipled?: boolean;
 }

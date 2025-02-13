@@ -1,4 +1,4 @@
-import { IsString, IsArray, ArrayNotEmpty, IsInt } from 'class-validator';
+import { IsString, IsArray, ArrayNotEmpty, IsInt, IsBoolean } from 'class-validator';
 
 export class CreateSweetnessDto {
   @IsArray()
@@ -10,4 +10,7 @@ export class CreateSweetnessDto {
   @ArrayNotEmpty()
   @IsInt({ each: true })
   menu_id: number[];
+
+  @IsBoolean()
+  is_required: boolean;
 }

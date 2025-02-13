@@ -3,7 +3,7 @@ POST http://localhost:3000/owner/menus
 Content-Type: application/json
 {
   "store_id": 1,
-  "menu_name": "latte",
+  "menu_name": "milk caramel",
   "description": "Delicious milo with oat milk",
   "price": 95,
   "owner_id": 1,
@@ -15,7 +15,7 @@ Content-Type: application/json
 GET http://localhost:3000/owner/menus
 
 ### Get a specific Menu by ID
-GET http://localhost:3000/owner/menus/13
+GET http://localhost:3000/owner/menus/15
 
 ### Update a Menu by ID
 PATCH http://localhost:3000/owner/menus/1
@@ -32,7 +32,7 @@ DELETE http://localhost:3000/owner/menus/32
 
 
 ### link menu for auto cut stock
-POST http://localhost:3000/owner/menus/stock/10
+PATCH http://localhost:3000/owner/menus/stock/16
 Content-Type: application/json
 {
   "owner_id": 2,
@@ -50,7 +50,7 @@ Content-Type: application/json
         { "size_id": 2, "menu_type_id": 3, "quantity_used": 20 },
         { "size_id": 3, "menu_type_id": 1, "quantity_used": 12 },
         { "size_id": 3, "menu_type_id": 2, "quantity_used": 22 },
-        { "size_id": 3, "menu_type_id": 3, "quantity_used": 32 }
+        { "size_id": 3, "menu_type_id": 3, "quantity_used": 35 }
       ]
     },
     {
@@ -60,12 +60,12 @@ Content-Type: application/json
         { "size_id": 1, "menu_type_id": 1, "quantity_used": 10 },
         { "size_id": 1, "menu_type_id": 2, "quantity_used": 20 },
         { "size_id": 1, "menu_type_id": 3, "quantity_used": 30 },
-        { "size_id": 2, "menu_type_id": 1, "quantity_used": 5 },
+        { "size_id": 2, "menu_type_id": 1, "quantity_used": 7 },
         { "size_id": 2, "menu_type_id": 2, "quantity_used": 10 },
         { "size_id": 2, "menu_type_id": 3, "quantity_used": 20 },
         { "size_id": 3, "menu_type_id": 1, "quantity_used": 12 },
         { "size_id": 3, "menu_type_id": 2, "quantity_used": 22 },
-        { "size_id": 3, "menu_type_id": 3, "quantity_used": 32 }
+        { "size_id": 3, "menu_type_id": 3, "quantity_used": 37 }
       ]
     }
   ]

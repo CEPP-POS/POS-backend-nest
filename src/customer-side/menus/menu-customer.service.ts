@@ -109,20 +109,25 @@ export class MenuCustomerService {
         menu_type_id: type.menu_type_id,
         menu_type_name: type.type_name,
         menu_type_price_addition: type.price_difference,
+        menu_type_is_required: type.is_required
       })),
       level_name: menu.sweetnessLevels.map((level) => ({
         sweetness_level_id: level.sweetness_id,
-        sweetness_level_name: level.level_name
+        sweetness_level_name: level.level_name,
+        sweetness_level_is_required: level.is_required
       })),
       size_name: menu.sizes.map((size) => ({
         size_id: size.size_id,
         size_name: size.size_name,
         size_price_addition: size.size_price,
+        size_is_required: size.is_required
       })),
       add_on_name: menu.addOns.map((addOn) => ({
         add_on_id: addOn.add_on_id,
-        name: addOn.add_on_name,
-        price_addition: addOn.add_on_price,
+        add_on_name: addOn.add_on_name,
+        add_on_name_price_addition: addOn.add_on_price,
+        add_on_is_required: addOn.is_required,
+        add_on_is_multiple: addOn.is_multipled,
       })),
     };
   }

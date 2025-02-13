@@ -45,7 +45,6 @@ export class Ingredient {
   ingredientUpdate: IngredientUpdate[]; // เพิ่มความสัมพันธ์กับ AddOn
 
   // for success connect one to many in ingredient menu link 
-  @ManyToOne(() => IngredientMenuLink, (ingredientMenuLink) => ingredientMenuLink.link_id, { nullable: true })
-  @JoinColumn({ name: 'link_id' })
-  ingredientMenuLink: IngredientMenuLink;
+  @OneToMany(() => IngredientMenuLink, (ingredientMenuLink) => ingredientMenuLink.ingredient_id)
+  ingredientMenuLinks: IngredientMenuLink[];
 }
