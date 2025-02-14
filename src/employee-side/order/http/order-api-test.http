@@ -5,7 +5,7 @@ Content-Type: application/json
 {
   "createOrderDto": {
     "order_date": "2025-03-01T08:00:00Z",
-    "total_price": 260.00,
+    "total_price": 275.50,
     "queue_number": 4,
     "status": "รอทำ",
     "payment_method": "QR_CODE",
