@@ -48,7 +48,7 @@ export class Order {
   is_paid: boolean;
 
   @OneToMany(() => OrderItem, (orderItem) => orderItem.order, { cascade: true })
-  order_items: OrderItem[];
+  order_item: OrderItem[];
 
   @OneToOne(() => Payment, (payment) => payment.order)
   payment: Payment; // Add this property

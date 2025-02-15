@@ -1,23 +1,29 @@
 ### Get Stock Summary by Date
 GET http://localhost:3000/owner/stock-summary/2025-09-18
 
-GET http://localhost:3000/owner/stock-ingredients/2
+## fix
+GET http://localhost:3000/owner/stock-ingredients/16
 
 GET http://localhost:3000/owner/stock-orders/2025-01-01
 
+## GET ALL CANCEL ORDERS
 GET http://localhost:3000/owner/stock-cancel-orders
 
+## fix
 GET http://localhost:3000/owner/orders/32
 
+## GET ALL INGREDIENT
 GET http://localhost:3000/owner/stock-ingredients
 
 # getIngredientsCategories
 GET http://localhost:3000/owner/stock-ingredients/categories
 
 # getIngredientDetails
+## fix
 GET http://localhost:3000/owner/stock-ingredients/18
 
 #getUpdateIngredient
+## fix
 GET http://localhost:3000/owner/update-stock-ingredients/18
 
 PATCH http://localhost:3000/owner/update-stock-ingredients/18
@@ -47,6 +53,7 @@ Content-Type: application/json
     "category_name": "เครื่องครัว"
 }
 
+## create new ingredient
 POST http://localhost:3000/owner/create-stock-ingredients
 Content-Type: application/json
 {
@@ -59,6 +66,8 @@ Content-Type: application/json
   "expiration_date": "2025-01-27",
   "owner_id": 1
 }
+
+## update cancel order status
 PATCH http://localhost:3000/owner/orders/32
 Content-Type: application/json
 

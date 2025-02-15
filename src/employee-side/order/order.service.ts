@@ -352,12 +352,12 @@ export class OrderService {
   async findAllOrders(): Promise<Order[]> {
     return this.orderRepository.find({
       relations: [
-        'order_items',
-        'order_items.menu',
-        'order_items.sweetness',
-        'order_items.size',
-        'order_items.addOns',
-        'order_items.menu_type',
+        'order_item',
+        'order_item.menu',
+        'order_item.sweetness',
+        'order_item.size',
+        'order_item.addOns',
+        'order_item.menu_type',
       ],
       select: {
         order_id: true,
@@ -368,7 +368,7 @@ export class OrderService {
         customer_name: true,
         customer_contact: true,
         cancel_status: true,
-        order_items: {
+        order_item: {
           order_item_id: true,
           quantity: true,
           price: true,
@@ -401,12 +401,12 @@ export class OrderService {
     const order = await this.orderRepository.findOne({
       where: { order_id },
       relations: [
-        'order_items',
-        'order_items.menu',
-        'order_items.sweetness',
-        'order_items.size',
-        'order_items.addOns',
-        'order_items.menu_type',
+        'order_item',
+        'order_item.menu',
+        'order_item.sweetness',
+        'order_item.size',
+        'order_item.addOns',
+        'order_item.menu_type',
       ],
     });
 

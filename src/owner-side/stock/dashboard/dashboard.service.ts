@@ -105,12 +105,12 @@ export class DashboardService {
       where: {
         order_date: Between(startOfDay, endOfDay),
       },
-      relations: ['orderItems', 'orderItems.menu_id'], // Include related order items and menu
+      relations: ['order_item', 'order_item.menu'], // Include related order items and menu
     });
 
     // Flatten the array of order items and aggregate quantities by menu_name
     const items = allOrdersForDay.flatMap((order) =>
-      order.order_items.map((item) => ({
+      order.order_item.map((item) => ({
         quantity: item.quantity,
         menu_name: item.menu.menu_name,
       })),
@@ -197,12 +197,12 @@ export class DashboardService {
       where: {
         order_date: Between(startOfDay, endOfDay),
       },
-      relations: ['orderItems', 'payment'], // Load the related order_items
+      relations: ['order_item', 'payment'], // Load the related order_items
     });
 
     const orderTopic = orders.map((order) => {
       // Calculate the total quantity by summing the quantities of the related order items
-      const totalQuantity = order.order_items.reduce(
+      const totalQuantity = order.order_item.reduce(
         (sum, item) => sum + item.quantity,
         0,
       );
@@ -233,13 +233,13 @@ export class DashboardService {
       where: {
         cancel_status: Not(IsNull()),
       },
-      relations: ['orderItems', 'payment'], // Load the related order_items
+      relations: ['order_item', 'payment'], // Load the related order_items
     });
 
     // Create an array to store the formatted order topics
     const orderTopics = orders.map((order) => {
       // Calculate the total quantity by summing the quantities of the related order items
-      const totalQuantity = order.order_items.reduce(
+      const totalQuantity = order.order_item.reduce(
         (sum, item) => sum + item.quantity,
         0,
       );
@@ -293,16 +293,16 @@ export class DashboardService {
         order_id: order_id,
       },
       relations: [
-        'orderItems',
-        'orderItems.menu_id',
-        'orderItems.menu_id.category',
+        'order_item',
+        'order_item.menu_id',
+        'order_item.menu_id.category',
         'payment',
       ],
     });
 
     const cancelOrderDetails = {
       order_id: order.order_id,
-      order_table: order.order_items.map((item) => ({
+      order_table: order.order_item.map((item) => ({
         menu_name: item.menu?.menu_name || 'N/A',
         quantity: item.quantity,
         amount: item.price,
@@ -413,7 +413,7 @@ export class DashboardService {
     // Fetch menu ingredients associated with this ingredient
     const menuIngredients = await this.menuIngredientRepository.find({
       where: { ingredient_id: Raw((alias) => `${alias} = ${ingredient_id}`) },
-      relations: ['menu_id', 'menu_id.category', 'size_id', 'sweetness_id'], // Get related details
+      relations: ['menu_id', 'menu_id.categories', 'size_id', 'sweetness_id'], // Get related details
     });
 
     // Transform menu ingredients data
@@ -423,7 +423,7 @@ export class DashboardService {
       level_name: menuIng.sweetness_id.level_name,
       quantity_used: menuIng.quantity_used,
       unit: ingredient.unit,
-      category_name: menuIng.menu_id.categories?.[0]?.category_name || 'Unknown', // Fetch category name from Menu
+      category_name: menuIng.menu_id.categories?.map(cat => cat.category_name).join(', ') || 'Unknown', // Adjust to handle multiple categories
     }));
 
     // Construct the response

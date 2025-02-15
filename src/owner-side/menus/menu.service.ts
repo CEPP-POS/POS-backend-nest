@@ -290,6 +290,7 @@ export class MenuService {
                   type_name: ingredientName,
                   price_difference: parseFloat(price),
                   menu: { menu_id: menu.menu_id },
+                  is_required: createOptionDto.is_required
                 });
                 await this.menuTypeRepository.save(menuType);
               }
@@ -348,6 +349,7 @@ export class MenuService {
                   size_name: sizeName,
                   size_price: parseFloat(price),
                   menu: { menu_id: menu.menu_id },
+                  is_required: createOptionDto.is_required
                 });
                 await this.sizeRepository.save(size);
               }
