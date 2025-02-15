@@ -44,8 +44,6 @@ export class Order {
   })
   cancel_status: CancelStatus;
 
-
-
   @Column({ default: false }) // ✅ ค่าเริ่มต้นเป็น false
   is_paid: boolean;
 

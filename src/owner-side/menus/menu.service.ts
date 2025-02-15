@@ -639,7 +639,7 @@ export class MenuService {
 
     const { repository, optionKey, idKey, priceKey } = optionConfig[type];
 
-    // ✅ ดึง Option ตาม ID
+    // หา option เดิมจาก ID ที่ส่งมา
     const existingOption = await repository.findOne({
       where: { [idKey]: optionId },
       relations: ['menu'],
@@ -649,35 +649,93 @@ export class MenuService {
       throw new NotFoundException(`Option with ID ${optionId} not found`);
     }
 
-    const oldName = existingOption[optionKey]; // ✅ ชื่อเก่าที่จะใช้ค้นหา
+    const oldName = existingOption[optionKey];
 
-    // ✅ อัปเดตชื่อใหม่
+    // สำหรับ request ในรูปแบบใหม่
+    if (updateOptionDto.options && updateOptionDto.menu_id) {
+      for (const menuId of updateOptionDto.menu_id) {
+        for (const option of updateOptionDto.options) {
+          const optionName = Object.keys(option)[0];
+          const optionDetails = option[optionName];
+
+          // ค้นหา option ที่มีชื่อเดิม (oldName) ใน menu ที่ระบุ
+          const existingMenuOption = await repository.findOne({
+            where: {
+              [optionKey]: oldName,
+              menu: { menu_id: menuId },
+            },
+          });
+
+          if (existingMenuOption) {
+            // ถ้าเจอให้อัพเดตข้อมูล
+            existingMenuOption[optionKey] = optionName;
+            if (priceKey) {
+              existingMenuOption[priceKey] = parseFloat(optionDetails.price);
+            }
+            if (optionDetails.unit !== undefined) {
+              existingMenuOption.unit = optionDetails.unit;
+            }
+            await repository.save(existingMenuOption);
+          } else {
+            // ถ้าไม่เจอให้สร้างใหม่
+            const newOption = repository.create({
+              [optionKey]: optionName,
+              ...(priceKey
+                ? { [priceKey]: parseFloat(optionDetails.price) }
+                : {}),
+              ...(optionDetails.unit !== undefined
+                ? { unit: optionDetails.unit }
+                : {}),
+              menu: { menu_id: menuId },
+            });
+            await repository.save(newOption);
+          }
+        }
+      }
+
+      return {
+        message: `${type} options updated successfully`,
+        oldName,
+        updatedMenuIds: updateOptionDto.menu_id,
+      };
+    }
+
+    // สำหรับ request ในรูปแบบเดิม (backward compatibility)
     if (updateOptionDto.name) {
       existingOption[optionKey] = updateOptionDto.name;
     }
-
-    // ✅ อัปเดตราคา (ถ้ามี)
     if (priceKey && updateOptionDto[priceKey] !== undefined) {
       existingOption[priceKey] = parseFloat(updateOptionDto[priceKey]);
     }
 
-    await repository.save(existingOption); // ✅ บันทึก Option หลัก
+    await repository.save(existingOption);
 
-    // ✅ ค้นหาและอัปเดต Option อื่น ๆ ที่มีชื่อเดิม
     if (updateOptionDto.menu_id) {
-      const relatedOptions = await repository.find({
-        where: {
-          [optionKey]: oldName,
-          menu: In(updateOptionDto.menu_id),
-        },
-      });
+      for (const menuId of updateOptionDto.menu_id) {
+        const relatedOption = await repository.findOne({
+          where: {
+            [optionKey]: oldName,
+            menu: { menu_id: menuId },
+          },
+        });
 
-      for (const option of relatedOptions) {
-        option[optionKey] = updateOptionDto.name; // ✅ เปลี่ยนชื่อใหม่
-        if (priceKey && updateOptionDto[priceKey] !== undefined) {
-          option[priceKey] = parseFloat(updateOptionDto[priceKey]); // ✅ อัปเดตราคา
+        if (relatedOption) {
+          relatedOption[optionKey] = updateOptionDto.name;
+          if (priceKey && updateOptionDto[priceKey] !== undefined) {
+            relatedOption[priceKey] = parseFloat(updateOptionDto[priceKey]);
+          }
+          await repository.save(relatedOption);
+        } else {
+          const newOption = repository.create({
+            [optionKey]: updateOptionDto.name,
+            ...(priceKey
+              ? { [priceKey]: parseFloat(updateOptionDto[priceKey]) }
+              : {}),
+            menu: { menu_id: menuId },
+          });
+
+          await repository.save(newOption);
         }
-        await repository.save(option);
       }
     }
 

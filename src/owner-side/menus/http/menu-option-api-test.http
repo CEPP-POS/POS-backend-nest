@@ -1,20 +1,20 @@
 POST http://localhost:3000/owner/menus/options/sweetness
 Content-Type: application/json
+
 {
 "options": [
     "น้อยร้อยเปอร์999%",
     "มากถวายชีวิต999%"
   ],
-  "menu_id": [16,15],
-  "is_required":"true"
+  "menu_id": [1,15]
 }
 
-GET http://localhost:3000/owner/menus/16
-PATCH http://localhost:3000/owner/menus/options/sweetness/83
+GET http://localhost:3000/owner/menus/15
+PATCH http://localhost:3000/owner/menus/options/sweetness/104
 Content-Type: application/json
 {
-  "name": "น้อยมากแต่เรียบ3%",
-  "menu_id": [15, 16, 1]
+  "name": "น้อยมากแต่หวาน",
+  "menu_id": [15, 16, 10]
 }
 //pass////////////////////////
 // GET http://localhost:3000/sweetness-levels
@@ -30,21 +30,19 @@ POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
 {
   "options": [
-    { "บุกใสใบเตย": { "price": "10.00", "unit": 11 } },
-    { "บุกใสอัญชัญ": { "price": "20.00", "unit": 21 } }
+    { "ไข่มุกสีสันสดใส": { "price": "10.00", "unit": 20 } },
+    { "ขนมปังกรอบฝุดๆ": { "price": "20.00", "unit": 50 } }
   ],
-  "menu_id": [11],
-  "is_required":true,
-  "is_multipled":true
+  "menu_id": [16,15]
 }
 
-PATCH http://localhost:3000/owner/menus/options/add-ons/94
+PATCH http://localhost:3000/owner/menus/options/add-ons/114
 Content-Type: application/json
 
 {
   "options": [
-    { "ไข่มุก": { "price": "20.00", "unit": 20 } },
-    { "บุกหวาน": { "price": "20.00", "unit": 50 } }
+    { "ไข่มุกบราวชูการ์": { "price": "20.00", "unit": 20 } },
+    { "ขนมปังกรอบ": { "price": "20.00", "unit": 50 } }
   ],
   "menu_id": [16,15]
 }
@@ -58,23 +56,42 @@ Content-Type: application/json
     { "bu":  { "price": "5.00" } },
     { "su":  { "price": "20.00" } }
   ],
-  "menu_id": [10, 16],
-  "is_required":true
+  "menu_id": [17, 16]
 }
+PATCH http://localhost:3000/owner/menus/options/size/130
+Content-Type: application/json
+{
+  "options": [
+    { "biggg": { "price": "20.00"} },
+    { "so small": { "price": "20.00" } }
+  ],
+  "menu_id": [16, 15]
+}
+
 
 POST http://localhost:3000/owner/menus/options/menu-type
 Content-Type: application/json
 {
   "options": [
-    { "sudhothot": 5.00 },
-    { "icecoolcool": 20.00}
+    { "เย็นmakmak565": { "price": "5.00" } },
+    { "ร้อนทานร้านsudsud767": { "price": "20.00" } }
   ],
-  "menu_id": [16,17],
-  "is_required":true
+  "menu_id": [15, 16]
+}
+
+PATCH http://localhost:3000/owner/menus/options/menu-type/98
+Content-Type: application/json
+
+{
+  "options": [
+    { "เย็นmakmak565": { "price": "5.00" } },
+    { "ร้อนทานร้านsudsud767": { "price": "20.00" } }
+  ],
+  "menu_id": [15, 16]
 }
 
 
-GET http://localhost:3000/owner/menus/16
+GET http://localhost:3000/owner/menus/14
 
 GET http://localhost:3000/owner/menus/options/add-ons
 
@@ -83,11 +100,3 @@ GET http://localhost:3000/owner/menus/options/size
 GET http://localhost:3000/owner/menus/options/sweetness
 
 GET http://localhost:3000/owner/menus/options/menu-type
-
-GET http://localhost:3000/owner/menus/options/add-ons/23
-
-GET http://localhost:3000/owner/menus/options/size/23
-
-GET http://localhost:3000/owner/menus/options/sweetness/23
-
-GET http://localhost:3000/owner/menus/options/menu-type/23
