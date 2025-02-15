@@ -1,16 +1,18 @@
 ### Get Stock Summary by Date
 GET http://localhost:3000/owner/stock-summary/2025-09-18
 
+## get menu ingredient by ingredient id
 ## fix
 GET http://localhost:3000/owner/stock-ingredients/16
 
+## GET ALL ORDERS
 GET http://localhost:3000/owner/stock-orders/2025-01-01
 
 ## GET ALL CANCEL ORDERS
 GET http://localhost:3000/owner/stock-cancel-orders
 
-## fix
-GET http://localhost:3000/owner/orders/32
+## get menu detail
+GET http://localhost:3000/owner/orders/1
 
 ## GET ALL INGREDIENT
 GET http://localhost:3000/owner/stock-ingredients
@@ -68,7 +70,7 @@ Content-Type: application/json
 }
 
 ## update cancel order status
-PATCH http://localhost:3000/owner/orders/32
+PATCH http://localhost:3000/owner/orders/1
 Content-Type: application/json
 
 {

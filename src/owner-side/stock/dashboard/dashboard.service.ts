@@ -294,11 +294,15 @@ export class DashboardService {
       },
       relations: [
         'order_item',
-        'order_item.menu_id',
-        'order_item.menu_id.category',
+        'order_item.menu',
+        'order_item.menu.categories',
         'payment',
       ],
     });
+
+    if (!order) {
+      throw new Error(`Order with ID ${order_id} not found`);
+    }
 
     const cancelOrderDetails = {
       order_id: order.order_id,
@@ -309,7 +313,7 @@ export class DashboardService {
         category_name: item.menu?.categories?.[0]?.category_name || 'N/A',
       })),
       total_amount: order.payment.amount,
-      total_amount_vat: order.payment.amount * 1.07,
+      // total_amount_vat: order.payment.amount * 1.07,
       payment_method: order.payment.payment_method,
       cancel_status: order.cancel_status,
       customer_name: order.customer_name,
