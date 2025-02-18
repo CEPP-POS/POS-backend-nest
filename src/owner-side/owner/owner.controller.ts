@@ -27,6 +27,7 @@ import { Roles } from 'src/auth/common/roles.decorator';
 import { JwtGuard } from 'src/auth/common/jwt.guard';
 import { RolesGuard } from 'src/auth/common/roles.guard';
 import { AuthService } from '../../auth/auth.service';
+import { CreateEmployeeDto } from './dto/create-employee/create-employee.dto';
 
 @Controller('owner')
 export class OwnerController {
@@ -201,11 +202,20 @@ export class OwnerController {
   getAdminData() {
     return { message: 'This is admin data' };
   }
-
+  
+  // * Function Get Ingredients
   @Get('ingredients/:owner_id')
   async getIngredients(@Param('owner_id', ParseIntPipe) ownerId: number) {
     console.log(ownerId)
     console.log(typeof (ownerId))
     return this.ownerService.getIngredientsByOwner(ownerId);
+  }
+
+  // * Function Create Employee
+  @Post('create-employee')
+  @Roles('owner')
+  @UseGuards(JwtGuard, RolesGuard)
+  async createEmployee(@Body() createEmployeeDto: CreateEmployeeDto) {
+    return this.ownerService.createEmployee(createEmployeeDto);
   }
 }

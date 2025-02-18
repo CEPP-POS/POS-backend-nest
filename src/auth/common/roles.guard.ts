@@ -15,12 +15,16 @@ export class RolesGuard implements CanActivate {
     const user = request.user as UserPayload;
 
     console.log('User in RolesGuard:', user);
-
+    
+    // * If user is not logged in, he can't access any route
     if (!user || !Array.isArray(user.roles)) {  
       console.warn('User has no valid roles:', user);
       return false;
     }
+    // * If user is owner, he can access any route
+    if (user.roles.includes('owner')) return true;
 
-    return user.roles.some((role) => requiredRoles.includes(role));
+    return requiredRoles.some((requiredRole) => user.roles.includes(requiredRole));
+        
   }
 }
