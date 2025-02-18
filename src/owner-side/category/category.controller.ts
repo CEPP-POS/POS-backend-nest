@@ -13,7 +13,7 @@ import { CreateCategoryDto } from './dto/create-category/create-category.dto';
 
 @Controller('owner/categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) { }
+  constructor(private readonly categoryService: CategoryService) {}
 
   // @Post('link-menus')
   // async linkMenusToCategory(

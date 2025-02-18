@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   Res,
+  BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { OrderService } from './order.service';
@@ -41,17 +42,13 @@ export class OrderController {
   // }
 
   @Post()
-  async createOrder(
-    @Body()
-    {
-      createOrderDto,
-      items,
-    }: {
-      createOrderDto: CreateOrderDto;
-      items: OrderItemDto[];
-    },
+  async createOrders(
+    @Body() body: { createOrderDto: CreateOrderDto; items: OrderItemDto[] }[],
   ) {
-    return this.orderService.createOrder(createOrderDto, items);
+    if (!Array.isArray(body)) {
+      throw new BadRequestException('Invalid input: expected an array');
+    }
+    return this.orderService.createOrders(body);
   }
 
   @Get()
@@ -70,19 +67,19 @@ export class OrderController {
     return res.status(HttpStatus.OK).json(order);
   }
 
-  @Post()
-  async createOrderItem(
-    @Body()
-    {
-      createOrderDto,
-      items,
-    }: {
-      createOrderDto: CreateOrderDto;
-      items: OrderItemDto[];
-    },
-  ) {
-    return this.orderService.createOrder(createOrderDto, items);
-  }
+  // @Post()
+  // async createOrderItem(
+  //   @Body()
+  //   {
+  //     createOrderDto,
+  //     items,
+  //   }: {
+  //     createOrderDto: CreateOrderDto;
+  //     items: OrderItemDto[];
+  //   },
+  // ) {
+  //   return this.orderService.createOrder(createOrderDto, items);
+  // }
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)

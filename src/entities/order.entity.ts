@@ -21,7 +21,16 @@ export class Order {
   @CreateDateColumn()
   order_date: Date;
 
-  @Column({ nullable: true })
+  @Column({
+    nullable: true,
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: {
+      to: (value: number) => Math.round(value * 100) / 100,
+      from: (value: string) => parseFloat(value),
+    },
+  })
   total_price: number;
 
   @Column()

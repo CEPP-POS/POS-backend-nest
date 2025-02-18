@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, Between } from 'typeorm';
 import { Order } from '../../entities/order.entity';
@@ -171,7 +175,6 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    // ตรวจสอบสถานะ หากคำสั่งซื้อชำระเงินแล้ว
     if (order.status === 'paid' || order.status === 'processing') {
       order.status = 'canceled';
       order.customer_name = cancelOrderDto.customer_name;
@@ -182,61 +185,90 @@ export class OrderService {
 
     await this.orderRepository.save(order);
 
-    // ดึงข้อมูลคำสั่งซื้อที่อัปเดตพร้อมทุกฟิลด์
     return this.orderRepository.findOne({
       where: { order_id: orderId },
     });
   }
-  async createOrder(
-    createOrderDto: CreateOrderDto,
-    items: OrderItemDto[],
+
+  async createOrders(
+    createOrdersDto: {
+      createOrderDto: CreateOrderDto;
+      items: OrderItemDto[];
+    }[],
   ): Promise<any> {
-    const generatedOrderId = Math.floor(100000 + Math.random() * 900000); // ✅ สร้าง order_id เอง
+    if (!Array.isArray(createOrdersDto)) {
+      throw new BadRequestException('Invalid input: orders must be an array');
+    }
 
-    const newOrder = this.orderRepository.create({
-      ...createOrderDto,
-      order_id: generatedOrderId,
-      is_paid: false,
-    });
+    const savedOrders = [];
 
-    const savedOrder = await this.orderRepository.save(newOrder);
+    for (const orderData of createOrdersDto) {
+      const { createOrderDto, items } = orderData;
 
-    const allAddOns = await this.addOnRepository.findBy({
-      add_on_id: In(items.flatMap((item) => item.add_on_id || [])),
-    });
+      if (!createOrderDto || !items || items.length === 0) {
+        throw new BadRequestException(
+          'Each order must have createOrderDto and items',
+        );
+      }
 
-    const orderItems = items.map((item) => {
-      const relatedAddOns = allAddOns.filter((addon) =>
-        item.add_on_id.includes(addon.add_on_id),
-      );
-
-      return this.orderItemRepository.create({
-        quantity: item.quantity,
-        price: item.price,
-        menu: { menu_id: item.menu_id },
-        sweetness: { sweetness_id: item.sweetness_id },
-        size: { size_id: item.size_id },
-        addOns: relatedAddOns,
-        menu_type: { menu_type_id: item.menu_type_id },
-        order: savedOrder,
+      // ✅ สร้าง order
+      const generatedOrderId = Math.floor(100000 + Math.random() * 900000);
+      const newOrder = this.orderRepository.create({
+        ...createOrderDto,
+        order_id: generatedOrderId,
+        is_paid: false,
       });
-    });
 
-    await this.orderItemRepository.save(orderItems);
+      const savedOrder = await this.orderRepository.save(newOrder);
+
+      // ✅ ดึงข้อมูล add-ons ที่เกี่ยวข้อง
+      const allAddOns = await this.addOnRepository.findBy({
+        add_on_id: In(items.flatMap((item) => item.add_on_id || [])),
+      });
+
+      // ✅ สร้าง OrderItems (หลายเมนูใน 1 ออเดอร์)
+      const orderItems = items.map((item) => {
+        const relatedAddOns = allAddOns.filter((addon) =>
+          item.add_on_id.includes(addon.add_on_id),
+        );
+
+        return this.orderItemRepository.create({
+          quantity: item.quantity,
+          price: item.price,
+          menu: { menu_id: item.menu_id },
+          sweetness: item.sweetness_id
+            ? { sweetness_id: item.sweetness_id }
+            : null,
+          size: item.size_id ? { size_id: item.size_id } : null,
+          addOns: relatedAddOns.length > 0 ? relatedAddOns : [],
+          menu_type: item.menu_type_id
+            ? { menu_type_id: item.menu_type_id }
+            : null,
+          order: savedOrder, // ✅ เชื่อมโยง OrderItems กับ Order
+        });
+      });
+
+      await this.orderItemRepository.save(orderItems);
+
+      savedOrders.push({
+        order_id: savedOrder.order_id,
+        payment_method: savedOrder.payment_method,
+        status: savedOrder.is_paid,
+        order_summary: items.map((item) => ({
+          menu_id: item.menu_id,
+          menu_type_id: item.menu_type_id,
+          size_id: item.size_id,
+          sweetness_id: item.sweetness_id,
+          add_on_id: item.add_on_id,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      });
+    }
 
     return {
-      order_id: savedOrder.order_id,
-      payment_method: savedOrder.payment_method, // ✅ ส่งค่าการชำระเงินกลับไป
-      status: savedOrder.is_paid,
-      order_summary: items.map((item) => ({
-        menu_id: item.menu_id,
-        menu_type_id: item.menu_type_id,
-        size_id: item.size_id,
-        sweetness_id: item.sweetness_id,
-        add_on_id: item.add_on_id,
-        quantity: item.quantity,
-        price: item.price,
-      })),
+      message: `${savedOrders.length} orders created successfully`,
+      orders: savedOrders,
     };
   }
 
@@ -312,6 +344,7 @@ export class OrderService {
   //--------- change status to complete order --------//
   async completeOrder(
     order_id: number,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     completeOrderDto: CompleteOrderDto,
   ): Promise<Order> {
     const order = await this.orderRepository.findOne({
