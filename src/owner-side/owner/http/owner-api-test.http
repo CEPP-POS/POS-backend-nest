@@ -2,12 +2,29 @@
 POST http://localhost:3000/owner/register
 Content-Type: application/json
 {
-  "owner_name": "Admin FluekFix",
+  "owner_name": "Owner FluekFix",
   "contact_info": "0840969769",
-  "email": "adminFluk@gmail.com",
-  "password": "AdminTest",
-  "role": "admin"
+  "email": "ownerFluk@gmail.com",
+  "password": "OwnerTest",
+  "role": "owner"
 }
+
+### Create Employee
+POST http://localhost:3000/owner/create-employee
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NSwiZW1haWwiOiJhZG1pbkZsdWtAZ21haWwuY29tIiwiYnJhbmNoX2lkIjpudWxsLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3Mzk4ODY3NDksImV4cCI6MTczOTk3MzE0OX0.B0PWsLgofCubNILo-gzP3Fk8TY-wakR82lLeC82xHtE
+Content-Type: application/json
+
+{
+  "email": "employee2@example.com",
+  "password": "employee1234",
+  "owner_id": 1
+}
+
+### Count Employees
+GET http://localhost:3000/owner/count-employees?owner_id=1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NSwiZW1haWwiOiJhZG1pbkZsdWtAZ21haWwuY29tIiwiYnJhbmNoX2lkIjpudWxsLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3Mzk4ODY3NDksImV4cCI6MTczOTk3MzE0OX0.B0PWsLgofCubNILo-gzP3Fk8TY-wakR82lLeC82xHtE
+
+
 
 ### Login Owner
 POST http://localhost:3000/owner/login
@@ -16,6 +33,24 @@ Content-Type: application/json
   "email": "adminFluk@gmail.com",
   "password": "AdminTestNew"
 }
+
+### Get Profile
+GET http://localhost:3000/owner/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NSwiZW1haWwiOiJhZG1pbkZsdWtAZ21haWwuY29tIiwiYnJhbmNoX2lkIjpudWxsLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3Mzk4OTAxMDUsImV4cCI6MTczOTk3NjUwNX0.O5MsndiRjiuLLsqwtAq5duU6TzlwMIOiiLcjvIsXRas
+
+### Owner Dashboard
+GET http://localhost:3000/owner/dashboard
+Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NSwiZW1haWwiOiJhZG1pbkZsdWtAZ21haWwuY29tIiwiYnJhbmNoX2lkIjpudWxsLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3Mzk4ODY3NDksImV4cCI6MTczOTk3MzE0OX0.B0PWsLgofCubNILo-gzP3Fk8TY-wakR82lLeC82xHtE
+
+
+### Employee Dashboard
+GET http://localhost:3000/employee/dashboard
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NSwiZW1haWwiOiJhZG1pbkZsdWtAZ21haWwuY29tIiwiYnJhbmNoX2lkIjpudWxsLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3Mzg4NzA5MjQsImV4cCI6MTczODk1NzMyNH0.buRyJBmbNH_3H28lb5YwU8kdy-5J6FH34fshlK-5_tM
+
+### Admin Dashboard
+GET http://localhost:3000/admin
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NSwiZW1haWwiOiJhZG1pbkZsdWtAZ21haWwuY29tIiwiYnJhbmNoX2lkIjpudWxsLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3Mzg4NzA5MjQsImV4cCI6MTczODk1NzMyNH0.buRyJBmbNH_3H28lb5YwU8kdy-5J6FH34fshlK-5_tM
+
 
 ### Upload CSV with Owner Data
 POST http://localhost:3000/owner/upload-csv

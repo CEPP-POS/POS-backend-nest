@@ -5,7 +5,7 @@ export class Owner {
   @PrimaryGeneratedColumn()
   owner_id: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   owner_name: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
@@ -14,14 +14,14 @@ export class Owner {
   @Column({ type: 'varchar', length: 255 })
   password: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255 , nullable: true})
   contact_info: string;
 
   @Column({ nullable: true })
   branch_id?: number;
 
-  @Column({ default: 'user' })
-  role: string;
+  @Column('text', { array: true, default: () => "ARRAY['owner']" })
+  roles: string[];
 
   @Column({ nullable: true })
   otp: string;

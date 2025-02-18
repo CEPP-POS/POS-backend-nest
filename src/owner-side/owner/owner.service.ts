@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, Raw, Repository } from 'typeorm';
+import { ArrayContains, Equal, Raw, Repository } from 'typeorm';
 import { Owner } from '../../entities/owner.entity';
 import { CreateOwnerDto } from './dto/create-owner/create-owner.dto';
 import * as bcrypt from 'bcrypt';
@@ -14,6 +14,7 @@ import { LoginOwnerDto } from './dto/login-owner/login-owner.dto';
 import { ForgotPasswordDto } from './dto/forgot-owner/forgot-owner.dto';
 import { VerifyOtpDto } from './dto/verify-otp-owner/verify-otp-owner.dto';
 import { Ingredient } from 'src/entities/ingredient.entity';
+import { CreateEmployeeDto } from './dto/create-employee/create-employee.dto';
 
 @Injectable()
 export class OwnerService {
@@ -43,7 +44,6 @@ export class OwnerService {
       password: hashedPassword, // ? Save the hashed password
     });
 
-    // return this.ownerRepository.save(newOwner);
     // * Save the new owner to the database
     const savedOwner = await this.ownerRepository.save(newOwner);
     // * Send the temporary password to the owner's email
@@ -105,9 +105,10 @@ export class OwnerService {
         'email',
         'password',
         'branch_id',
-        'role',
+        'roles',
       ],
     });
+    
   }
 
   // * Login Owner
@@ -140,10 +141,10 @@ export class OwnerService {
       throw new BadRequestException('not found');
     }
 
-    // create OTP
+    // * Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // save OTP and expiry time 5 minutes
+    // * save OTP and expiry time 5 minutes
     owner.otp = otp;
     owner.otp_expiry = new Date();
     owner.otp_expiry.setMinutes(owner.otp_expiry.getMinutes() + 15);
@@ -196,4 +197,39 @@ export class OwnerService {
       select: ['ingredient_id', 'ingredient_name'],
     });
   }
+  // * Create Employee
+  async createEmployee(createEmployeeDto: CreateEmployeeDto): Promise<Owner> {
+    const { email, password, owner_id } = createEmployeeDto;
+
+   // * check if the email already exists
+    const existingUser = await this.findByEmail(email);
+    if (existingUser) {
+      throw new BadRequestException('Email already exists.');
+    }
+
+    // * Hash the password before saving it to the database
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+   // * Create a new employee with the owner_id
+    const newEmployee = this.ownerRepository.create({
+      email,
+      password: hashedPassword,
+      roles: ['employee'],
+      branch_id: owner_id, 
+      owner_name: null,
+      contact_info: null,
+    });
+
+    return this.ownerRepository.save(newEmployee);
+  }
+  // * Count Employees
+  async countEmployees(ownerId: number): Promise<number> {
+    return this.ownerRepository.count({
+        where: {
+            branch_id: ownerId, 
+            roles: ArrayContains(['employee']),
+        }
+    });
+}
+
 }
