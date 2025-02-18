@@ -15,21 +15,23 @@ import { Size } from './size.entity';
 import { AddOn } from 'src/entities/add-on.entity';
 import { SweetnessLevel } from './sweetness-level.entity';
 import { MenuType } from './menu-type.entity';
+import { MenuTypeGroup } from './menu-type-group.entity';
+import { SweetnessGroup } from './sweetness-group.entity';
+import { SizeGroup } from './size-group.entity';
 
 @Entity()
 export class Menu {
   @PrimaryGeneratedColumn()
   menu_id: number;
 
-  @Column()
-  store_id: number;
-
   // @ManyToOne(() => Category, { nullable: true })
   // @JoinColumn({ name: 'category_id' })
   // category: Category;
-  @ManyToMany(() => Category, (category) => category.menu, { cascade: true })
-  @JoinTable() // ✅ ให้ TypeORM สร้างตารางเชื่อมกลาง (menu_categories)
-  categories: Category[];
+
+  // edit entity
+  // @ManyToMany(() => Category, (category) => category.menu, { cascade: true })
+  // @JoinTable() // ✅ ให้ TypeORM สร้างตารางเชื่อมกลาง (menu_categories)
+  // categories: Category[];
 
   @Column()
   menu_name: string;
@@ -54,21 +56,36 @@ export class Menu {
   @Column({ type: 'boolean', default: false })
   paused: boolean;
 
-  @OneToMany(() => Size, (size) => size.menu, { cascade: true })
-  sizes: Size[];
+  @ManyToOne(() => MenuTypeGroup, { nullable: false })
+  @JoinColumn({ name: 'menu_type_group_id' })
+  menuTypeGroup: MenuTypeGroup;
 
-  @OneToMany(() => AddOn, (addOn) => addOn.menu, { cascade: true })
-  addOns: AddOn[];
+  @ManyToOne(() => SweetnessGroup, { nullable: false })
+  @JoinColumn({ name: 'sweetness_group_id' })
+  sweetnessGroup: SweetnessGroup;
+
+  @ManyToOne(() => SizeGroup, { nullable: false })
+  @JoinColumn({ name: 'size_group_id' })
+  sizeGroup: SizeGroup;
+
+  // remove unused entity
+  // @OneToMany(() => Size, (size) => size.menu, { cascade: true })
+  // sizes: Size[];
+
+  // @OneToMany(() => AddOn, (addOn) => addOn.menu, { cascade: true })
+  // addOns: AddOn[];
   // เพิ่มความสัมพันธ์กับ AddOn
 
-  @OneToMany(() => SweetnessLevel, (sweetnessLevel) => sweetnessLevel.menu, {
-    cascade: true,
-  })
-  sweetnessLevels: SweetnessLevel[];
+  // edit entity sweetness
+  // @OneToMany(() => SweetnessLevel, (sweetnessLevel) => sweetnessLevel.menu, {
+  //   cascade: true,
+  // })
+  // sweetnessLevels: SweetnessLevel[];
 
-  @OneToMany(() => MenuType, (menuType) => menuType.menu, {
-    cascade: true,
-    eager: true,
-  })
-  menuTypes: MenuType[];
+  // edit entity
+  // @OneToMany(() => MenuType, (menuType) => menuType.menu, {
+  //   cascade: true,
+  //   eager: true,
+  // })
+  // menuTypes: MenuType[];
 }

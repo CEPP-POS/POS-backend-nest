@@ -16,6 +16,9 @@ import { BranchModule } from 'src/owner-side/branch/branch.module';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
+import { MenuTypeGroup } from 'src/entities/menu-type-group.entity';
+import { SweetnessGroup } from 'src/entities/sweetness-group.entity';
+import { SizeGroup } from 'src/entities/size-group.entity';
 
 @Module({
   imports: [
@@ -23,8 +26,11 @@ import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
       Menu,
       AddOn,
       MenuType,
+      MenuTypeGroup,
       Size,
+      SizeGroup,
       SweetnessLevel,
+      SweetnessGroup,
       MenuIngredient,
       Ingredient,
       IngredientMenuLink,
@@ -37,4 +43,4 @@ import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
   providers: [MenuService],
   exports: [MenuService],
 })
-export class MenuModule {}
+export class MenuModule { }

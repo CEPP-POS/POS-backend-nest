@@ -33,18 +33,19 @@ export class OrderItem {
 
   @ManyToOne(() => MenuType, { nullable: false })
   @JoinColumn({ name: 'menu_type_id' })
-  menu_type: MenuType;
+  menuType: MenuType;
 
-  @ManyToMany(() => AddOn, { cascade: true })
-  @JoinTable({
-    name: 'order_item_add_ons',
-    joinColumn: {
-      name: 'order_item_id',
-      referencedColumnName: 'order_item_id',
-    },
-    inverseJoinColumn: { name: 'add_on_id', referencedColumnName: 'add_on_id' },
-  })
-  addOns: AddOn[];
+  //remove unused entity
+  // @ManyToMany(() => AddOn, { cascade: true })
+  // @JoinTable({
+  //   name: 'order_item_add_ons',
+  //   joinColumn: {
+  //     name: 'order_item_id',
+  //     referencedColumnName: 'order_item_id',
+  //   },
+  //   inverseJoinColumn: { name: 'add_on_id', referencedColumnName: 'add_on_id' },
+  // })
+  // addOns: AddOn[];
 
   @ManyToOne(() => Size, { nullable: false })
   @JoinColumn({ name: 'size_id' })
@@ -53,6 +54,6 @@ export class OrderItem {
   @Column()
   quantity: number;
 
-  @Column()
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 }

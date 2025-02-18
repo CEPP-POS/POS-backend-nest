@@ -21,7 +21,8 @@ export class Category {
   @JoinColumn({ name: 'owner_id' })
   owner: Owner;
 
-  @ManyToMany(() => Menu, (menu) => menu.categories)
+  // edit entity
+  // @ManyToMany(() => Menu, (menu) => menu.categories)
   // @JoinColumn({ name: 'menu_id' })
-  menu: Menu[];
+  // menu: Menu[];
 }

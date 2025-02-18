@@ -26,7 +26,4 @@ export class Branch {
   @ManyToOne(() => Owner, { nullable: false })
   @JoinColumn({ name: 'owner_id' })
   owner: Owner;
-
-  @OneToMany(() => Menu, (menu) => menu.branch)
-  menu: Menu[];
 }

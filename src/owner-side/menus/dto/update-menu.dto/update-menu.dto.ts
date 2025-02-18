@@ -1,9 +1,6 @@
 import { IsString, IsInt, IsOptional, IsDecimal, IsUrl } from 'class-validator';
 
 export class UpdateMenuDto {
-  @IsInt()
-  @IsOptional()
-  store_id?: number;
 
   @IsInt()
   @IsOptional()

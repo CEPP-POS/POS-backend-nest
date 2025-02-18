@@ -18,7 +18,7 @@ import { Branch } from 'src/entities/branch.entity';
 import { Owner } from 'src/entities/owner.entity';
 import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
 import { Payment } from 'src/entities/payment.entity';
-import { SalesSummary } from 'src/entities/sales-summary';
+import { SalesSummary } from 'src/entities/sales-summary.entity';
 import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
@@ -329,16 +329,17 @@ export class OrderService {
           item.add_on_id.includes(addon.add_on_id),
         );
 
-        return this.orderItemRepository.create({
-          quantity: item.quantity,
-          price: item.price,
-          menu,
-          sweetness,
-          size,
-          menu_type: menuType,
-          addOns: relatedAddOns,
-          order: savedOrder,
-        });
+        // edit entity
+        // return this.orderItemRepository.create({
+        //   quantity: item.quantity,
+        //   price: item.price,
+        //   menu,
+        //   sweetness,
+        //   size,
+        //   menu_type: menuType,
+        //   addOns: relatedAddOns,
+        //   order: savedOrder,
+        // });
       }),
     );
 
@@ -368,31 +369,33 @@ export class OrderService {
         customer_name: true,
         customer_contact: true,
         cancel_status: true,
-        order_item: {
-          order_item_id: true,
-          quantity: true,
-          price: true,
-          menu: {
-            menu_id: true,
-            menu_name: true, // ✅ เอาเฉพาะ `menu_id` และ `menu_name`
-          },
-          sweetness: {
-            sweetness_id: true,
-            level_name: true,
-          },
-          size: {
-            size_id: true,
-            size_name: true,
-          },
-          addOns: {
-            add_on_id: true,
-            add_on_name: true,
-          },
-          menu_type: {
-            menu_type_id: true,
-            type_name: true,
-          },
-        },
+        // edit entity
+        // order_item: {
+        //   order_item_id: true,
+        //   quantity: true,
+        //   price: true,
+        //   menu: {
+        //     menu_id: true,
+        //     menu_name: true, // ✅ เอาเฉพาะ `menu_id` และ `menu_name`
+        //   },
+        // sweetness: {
+        //   sweetness_id: true,
+        //   level_name: true,
+        // },
+        // size: {
+        //   size_id: true,
+        //   size_name: true,
+        // },
+        // edit entity
+        // addOns: {
+        //   add_on_id: true,
+        //   add_on_name: true,
+        // },
+        // menuType: {
+        //   menu_type_id: true,
+        //   type_name: true,
+        // },
+        // },
       },
     });
   }

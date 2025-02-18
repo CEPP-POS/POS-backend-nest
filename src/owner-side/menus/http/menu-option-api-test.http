@@ -59,8 +59,8 @@ Content-Type: application/json
 
 {
    "options": [
-    { "bugg":  { "price": "5.00" } },
-    { "sugg":  { "price": "20.00" } }
+    { "small mak":  { "price": "5.00" } },
+    { "mid mak":  { "price": "20.00" } }
   ],
   "menu_id": [17, 16],
   "is_required": true

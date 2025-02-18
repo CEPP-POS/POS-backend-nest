@@ -23,10 +23,10 @@ export class MenuController {
   ) { }
 
   // * Create a new menu
-  @Post()
-  async create(@Body() createMenuDto: CreateMenuDto) {
-    await this.menuService.create(createMenuDto);
-  }
+  // @Post()
+  // async create(@Body() createMenuDto: CreateMenuDto) {
+  //   await this.menuService.create(createMenuDto);
+  // }
 
   @Patch('options/:type/:optionId')
   async updateOption(
@@ -51,58 +51,6 @@ export class MenuController {
   findAll() {
     return this.menuService.findAll();
   }
-
-  // @Patch('options/:type/:id')
-  // async updateOption(
-  //   @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
-  //   @Param('id', ParseIntPipe) id: number,
-  //   @Body() updateOptionDto: any,
-  // ) {
-  //   await this.menuService.updateOption(type, id, updateOptionDto);
-  // }
-
-  // // * ดึงข้อมูล Size Group ตาม ID (เผื่อใช้งานในอนาคต)
-  // @Get('size-group/:id')
-  // findSizeGroupById(@Param('id') id: number) {
-  //   return this.menuService.findSizeGroupById(id);
-  // }
-
-  // @Post('options/size-group')
-  // async createSizeGroup(
-  //   @Body()
-  //   body: {
-  //     group_name: string;
-  //     sizes: { name: string; price: number }[];
-  //     menu_ids: number[];
-  //   },
-  // ) {
-  //   return this.menuService.createSizeGroup(
-  //     body.group_name,
-  //     body.sizes,
-  //     body.menu_ids,
-  //   );
-  // }
-
-  // * Link options to a menu
-  // @Post('options/:type/link/:menu_id/:option_id')
-  // linkOptionToMenu(
-  //   @Param('type') type: 'sweetness' | 'size' | 'add-ons' | 'menu-type',
-  //   @Param('menu_id') menu_id: number[],
-  //   @Param('option_id') option_id: number,
-  // ) {
-  //   return this.menuService.linkOptionToMenu(menu_id, type, option_id);
-  // }
-
-  // @Post('options/:type/link/:menu_id/:option_id')
-  // linkOptionToMenu(
-  //   @Param('type') type: 'sweetness' | 'size' | 'add-ons' | 'menu-type',
-  //   @Param('menu_id') menu_id: number[], // Accept menu_id as a string
-  //   @Param('option_id') option_id: number,
-  // ) {
-  //   // Convert the comma-separated string of menu_ids into an array of numbers
-
-  //   return this.menuService.linkOptionToMenu(menuId, type, option_id);
-  // }
 
   // * Get a single menu
   @Get(':id')

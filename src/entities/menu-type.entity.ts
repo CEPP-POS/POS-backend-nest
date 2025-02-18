@@ -1,11 +1,8 @@
 import {
   Entity,
   PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
+  Column
 } from 'typeorm';
-import { Menu } from './menu.entity';
 
 @Entity()
 export class MenuType {
@@ -17,11 +14,4 @@ export class MenuType {
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   price_difference: number;
-
-  @Column({ type: 'boolean', default: false })
-  is_required: boolean;
-
-  @ManyToOne(() => Menu, { nullable: true, onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'menu_id' })
-  menu: Menu;
 }

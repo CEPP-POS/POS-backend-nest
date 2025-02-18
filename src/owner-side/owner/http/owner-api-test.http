@@ -14,7 +14,7 @@ POST http://localhost:3000/owner/login
 Content-Type: application/json
 {
   "email": "adminFluk@gmail.com",
-  "password": "AdminTestNew"
+  "password": "3gbwhqe8"
 }
 
 ### Upload CSV with Owner Data

@@ -18,12 +18,4 @@ export class Size {
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   size_price: number;
-
-  @Column({ type: 'boolean', default: false })
-  is_required: boolean;
-
-  @ManyToOne(() => Menu, { nullable: true, onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'menu_id' })
-  @Exclude()
-  menu: Menu;
 }

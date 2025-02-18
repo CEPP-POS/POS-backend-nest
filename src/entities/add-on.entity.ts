@@ -32,11 +32,12 @@ export class AddOn {
   @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.add_on)
   menu_ingredients_id: MenuIngredient[];
 
+  // remove unused entity
   // @ManyToMany(() => Menu, (menu) => menu.addOns)
-  @ManyToOne(() => Menu, (menu) => menu.addOns, {
-    nullable: true,
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'menu_id' })
-  menu: Menu;
+  // @ManyToOne(() => Menu, (menu) => menu.addOns, {
+  //   nullable: true,
+  //   onDelete: 'CASCADE',
+  // })
+  // @JoinColumn({ name: 'menu_id' })
+  // menu: Menu;
 }

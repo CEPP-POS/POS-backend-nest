@@ -60,11 +60,12 @@ export class CategoryService {
 
     // const updatedMenus = [...new Set([...existingCategory.menu, ...menus])];
 
-    menus.forEach((menu) => {
-      menu.categories = [...(menu.categories ?? []), existingCategory]; // ✅ ใช้ `?? []` กัน `undefined`
-    });
-    console.log(category_name);
-    await this.menuRepository.save(menus);
+    // edit entity
+    // menus.forEach((menu) => {
+    //   menu.categories = [...(menu.categories ?? []), existingCategory]; // ✅ ใช้ `?? []` กัน `undefined`
+    // });
+    // console.log(category_name);
+    // await this.menuRepository.save(menus);
 
     return existingCategory;
   }
@@ -99,18 +100,19 @@ export class CategoryService {
     await this.categoryRepository.remove(category);
   }
 
-  async getMenusByCategory(categoryId: number): Promise<Menu[]> {
-    const category = await this.categoryRepository.findOne({
-      where: { category_id: categoryId },
-      relations: ['menu'], // โหลดเมนูที่สัมพันธ์กับหมวดหมู่
-    });
+  // edit entity
+  // async getMenusByCategory(categoryId: number): Promise<Menu[]> {
+  //   const category = await this.categoryRepository.findOne({
+  //     where: { category_id: categoryId },
+  //     relations: ['menu'], // โหลดเมนูที่สัมพันธ์กับหมวดหมู่
+  //   });
 
-    if (!category) {
-      throw new NotFoundException(`Category with ID ${categoryId} not found`);
-    }
+  //   if (!category) {
+  //     throw new NotFoundException(`Category with ID ${categoryId} not found`);
+  //   }
 
-    return category.menu; // คืนค่ารายการเมนูในหมวดหมู่
-  }
+  //   //return category.menu; // คืนค่ารายการเมนูในหมวดหมู่
+  // }
 
   async updateCategory(
     categoryId: number,
@@ -145,11 +147,13 @@ export class CategoryService {
       }
 
       // ✅ อัปเดตหมวดหมู่ของเมนู (ไม่ลบทิ้ง แต่เพิ่มเข้าไป)
-      menus.forEach((menu) => {
-        menu.categories = [...(menu.categories ?? []), category];
-      });
 
-      await this.menuRepository.save(menus);
+      // edit entity
+      // menus.forEach((menu) => {
+      //   menu.categories = [...(menu.categories ?? []), category];
+      // });
+
+      // await this.menuRepository.save(menus);
     }
 
     // ✅ บันทึกการอัปเดต

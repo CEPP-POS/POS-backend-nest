@@ -3,16 +3,18 @@ import { MenuCustomerService } from './menu-customer.service';
 
 @Controller('customer/menus')
 export class MenuCustomerController {
-  constructor(private readonly menuCustomerService: MenuCustomerService) {}
+  constructor(private readonly menuCustomerService: MenuCustomerService) { }
 
   // @Get()
   // async getCustomerMenus() {
   //   return this.menuCustomerService.getCustomerMenus();
   // }
-  @Get()
-  async getMenusAllCategory() {
-    return this.menuCustomerService.getMenusAllCategory();
-  }
+
+  // edit entity
+  // @Get()
+  // async getMenusAllCategory() {
+  //   return this.menuCustomerService.getMenusAllCategory();
+  // }
 
   @Get(':id')
   async getMenuDetails(@Param('id') id: number) {

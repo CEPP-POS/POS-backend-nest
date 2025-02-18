@@ -14,7 +14,7 @@ import {
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Overview, TopItemDto } from './dto/overview.dto';
-import { SalesSummary } from '../../../entities/sales-summary';
+import { SalesSummary } from '../../../entities/sales-summary.entity';
 import { Linegraph } from './dto/linegraph.dto';
 import { Order } from 'src/entities/order.entity';
 import { OrderItem } from 'src/entities/order-item.entity';
@@ -304,25 +304,26 @@ export class DashboardService {
       throw new Error(`Order with ID ${order_id} not found`);
     }
 
-    const cancelOrderDetails = {
-      order_id: order.order_id,
-      order_table: order.order_item.map((item) => ({
-        menu_name: item.menu?.menu_name || 'N/A',
-        quantity: item.quantity,
-        amount: item.price,
-        category_name: item.menu?.categories?.[0]?.category_name || 'N/A',
-      })),
-      total_amount: order.payment.amount,
-      // total_amount_vat: order.payment.amount * 1.07,
-      payment_method: order.payment.payment_method,
-      cancel_status: order.cancel_status,
-      customer_name: order.customer_name,
-      customer_contact: order.customer_contact,
-    };
+    // edit entity
+    // const cancelOrderDetails = {
+    //   order_id: order.order_id,
+    //   order_table: order.order_item.map((item) => ({
+    //     menu_name: item.menu?.menu_name || 'N/A',
+    //     quantity: item.quantity,
+    //     amount: item.price,
+    //     category_name: item.menu?.categories?.[0]?.category_name || 'N/A',
+    //   })),
+    //   total_amount: order.payment.amount,
+    //   // total_amount_vat: order.payment.amount * 1.07,
+    //   payment_method: order.payment.payment_method,
+    //   cancel_status: order.cancel_status,
+    //   customer_name: order.customer_name,
+    //   customer_contact: order.customer_contact,
+    // };
 
-    console.log(cancelOrderDetails);
+    // console.log(cancelOrderDetails);
 
-    return cancelOrderDetails; // Return the hardcoded data
+    // return cancelOrderDetails; // Return the hardcoded data
   }
 
   //TODO
@@ -420,24 +421,25 @@ export class DashboardService {
       relations: ['menu_id', 'menu_id.categories', 'size_id', 'sweetness_id'], // Get related details
     });
 
+    // edit entity
     // Transform menu ingredients data
-    const menuIngredientsDto = menuIngredients.map((menuIng) => ({
-      menu_name: menuIng.menu_id.menu_name,
-      size_name: menuIng.size_id.size_name,
-      level_name: menuIng.sweetness_id.level_name,
-      quantity_used: menuIng.quantity_used,
-      unit: ingredient.unit,
-      category_name: menuIng.menu_id.categories?.map(cat => cat.category_name).join(', ') || 'Unknown', // Adjust to handle multiple categories
-    }));
+    // const menuIngredientsDto = menuIngredients.map((menuIng) => ({
+    //   menu_name: menuIng.menu_id.menu_name,
+    //   size_name: menuIng.size_id.size_name,
+    //   level_name: menuIng.sweetness_id.level_name,
+    //   quantity_used: menuIng.quantity_used,
+    //   unit: ingredient.unit,
+    //   category_name: menuIng.menu_id.categories?.map(cat => cat.category_name).join(', ') || 'Unknown', // Adjust to handle multiple categories
+    // }));
 
     // Construct the response
-    return {
-      ingredient_id: ingredient.ingredient_id,
-      ingredient_name: ingredient.ingredient_name,
-      category_name: ingredient.category_id?.category_name || 'Unknown',
-      stock_data: groupedStockData, // Store grouped stock data (excluding expired/zero quantity)
-      menu_ingredients: menuIngredientsDto,
-    };
+    // return {
+    //   ingredient_id: ingredient.ingredient_id,
+    //   ingredient_name: ingredient.ingredient_name,
+    //   category_name: ingredient.category_id?.category_name || 'Unknown',
+    //   stock_data: groupedStockData, // Store grouped stock data (excluding expired/zero quantity)
+    //   menu_ingredients: menuIngredientsDto,
+    // };
   }
 
   async createCategory(

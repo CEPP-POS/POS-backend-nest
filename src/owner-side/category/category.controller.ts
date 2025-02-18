@@ -32,10 +32,11 @@ export class CategoryController {
     return this.categoryService.findOne(+id);
   }
 
-  @Get(':id/menus')
-  async getMenusByCategory(@Param('id') id: number) {
-    return this.categoryService.getMenusByCategory(id);
-  }
+  // edit entity
+  // @Get(':id/menus')
+  // async getMenusByCategory(@Param('id') id: number) {
+  //   return this.categoryService.getMenusByCategory(id);
+  // }
 
   @Post()
   async create(@Body() createCategoryDto: CreateCategoryDto) {

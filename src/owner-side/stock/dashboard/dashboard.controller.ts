@@ -44,12 +44,13 @@ export class DashboardController {
     return this.dashboardService.getCancelOrders();
   }
 
-  @Get('orders/:order_id')
-  async getCancelOrderDetails(
-    @Param('order_id') order_id: number,
-  ): Promise<OrderDto> {
-    return this.dashboardService.getCancelOrderDetails(Number(order_id));
-  }
+  // edit entity
+  // @Get('orders/:order_id')
+  // async getCancelOrderDetails(
+  //   @Param('order_id') order_id: number,
+  // ): Promise<OrderDto> {
+  //   return this.dashboardService.getCancelOrderDetails(Number(order_id));
+  // }
 
   @Get('stock-ingredients')
   async getIngredients(): Promise<IngredientDto[]> {

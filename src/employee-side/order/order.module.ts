@@ -12,9 +12,10 @@ import { AddOn } from 'src/entities/add-on.entity';
 import { Owner } from 'src/entities/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 import { Payment } from 'src/entities/payment.entity';
-import { SalesSummary } from 'src/entities/sales-summary';
+import { SalesSummary } from 'src/entities/sales-summary.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
+import { OrderItemAddOn } from 'src/entities/order-item-add-on.entity';
 
 @Module({
   imports: [
@@ -32,10 +33,11 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
       Payment,
       MenuIngredient,
       IngredientUpdate,
+      OrderItemAddOn
     ]),
   ],
 
   controllers: [OrderController],
   providers: [OrderService],
 })
-export class OrderModule {}
+export class OrderModule { }

@@ -44,50 +44,53 @@ export class MenuCustomerService {
     };
   }
 
-  async getMenusAllCategory() {
-    // Fetch categories with related menus
-    const categories = await this.categoryRepository.find({
-      relations: ['menu'],
-    });
+  // edit entity
+  // async getMenusAllCategory() {
+  //   // Fetch categories with related menus
+  //   const categories = await this.categoryRepository.find({
+  //     relations: ['menu'],
+  //   });
 
-    // Extract unique category names
-    const categoryNames = Array.from(new Set(categories.map(cat => cat.category_name)));
+  //   // Extract unique category names
+  //   const categoryNames = Array.from(new Set(categories.map(cat => cat.category_name)));
 
-    // Group menus by menu_id
-    const menuMap = categories.reduce((map, category) => {
-      category.menu.forEach(menu => {
-        if (!map.has(menu.menu_id)) {
-          map.set(menu.menu_id, {
-            menu_id: menu.menu_id,
-            menu_name: menu.menu_name,
-            description: menu.description,
-            price: Number(menu.price),
-            image_url: menu.image_url,
-            category: [], // Store category objects
-          });
-        }
+  // Group menus by menu_id
+  // edit entity
+  // const menuMap = categories.reduce((map, category) => {
+  //   category.menu.forEach(menu => {
+  //     if (!map.has(menu.menu_id)) {
+  //       map.set(menu.menu_id, {
+  //         menu_id: menu.menu_id,
+  //         menu_name: menu.menu_name,
+  //         description: menu.description,
+  //         price: Number(menu.price),
+  //         image_url: menu.image_url,
+  //         category: [], // Store category objects
+  //       });
+  //     }
 
-        // Add category details (avoid duplicates)
-        const existingCategories = map.get(menu.menu_id).category;
-        if (!existingCategories.some((c) => c.category_id === category.category_id)) {
-          existingCategories.push({
-            category_id: category.category_id,
-            category_name: category.category_name,
-          });
-        }
-      });
+  //     // Add category details (avoid duplicates)
+  //     const existingCategories = map.get(menu.menu_id).category;
+  //     if (!existingCategories.some((c) => c.category_id === category.category_id)) {
+  //       existingCategories.push({
+  //         category_id: category.category_id,
+  //         category_name: category.category_name,
+  //       });
+  //     }
+  //   });
 
-      return map;
-    }, new Map<number, any>());
+  //   return map;
+  // }, 
+  //   new Map<number, any>());
 
-    // Convert Map to Array
-    const availableMenus = Array.from(menuMap.values());
+  //   // Convert Map to Array
+  //   const availableMenus = Array.from(menuMap.values());
 
-    return {
-      available_category: categoryNames,
-      available_menus: availableMenus,
-    };
-  }
+  //   return {
+  //     available_category: categoryNames,
+  //     available_menus: availableMenus,
+  //   };
+  // }
 
 
   async getMenuDetails(menuId: number) {
@@ -105,30 +108,32 @@ export class MenuCustomerService {
       price: menu.price,
       description: menu.description,
       image_url: menu.image_url,
-      type_name: menu.menuTypes.map((type) => ({
-        menu_type_id: type.menu_type_id,
-        menu_type_name: type.type_name,
-        menu_type_price_addition: type.price_difference,
-        menu_type_is_required: type.is_required
-      })),
-      level_name: menu.sweetnessLevels.map((level) => ({
-        sweetness_level_id: level.sweetness_id,
-        sweetness_level_name: level.level_name,
-        sweetness_level_is_required: level.is_required
-      })),
-      size_name: menu.sizes.map((size) => ({
-        size_id: size.size_id,
-        size_name: size.size_name,
-        size_price_addition: size.size_price,
-        size_is_required: size.is_required
-      })),
-      add_on_name: menu.addOns.map((addOn) => ({
-        add_on_id: addOn.add_on_id,
-        add_on_name: addOn.add_on_name,
-        add_on_name_price_addition: addOn.add_on_price,
-        add_on_is_required: addOn.is_required,
-        add_on_is_multiple: addOn.is_multipled,
-      })),
+      
+      // edit entity
+      // type_name: menu.menuTypes.map((type) => ({
+      //   menu_type_id: type.menu_type_id,
+      //   menu_type_name: type.type_name,
+      //   menu_type_price_addition: type.price_difference,
+      //   menu_type_is_required: type.is_required
+      // })),
+      // level_name: menu.sweetnessLevels.map((level) => ({
+      //   sweetness_level_id: level.sweetness_id,
+      //   sweetness_level_name: level.level_name,
+      //   sweetness_level_is_required: level.is_required
+      // })),
+      // size_name: menu.sizes.map((size) => ({
+      //   size_id: size.size_id,
+      //   size_name: size.size_name,
+      //   size_price_addition: size.size_price,
+      //   size_is_required: size.is_required
+      // })),
+      // add_on_name: menu.addOns.map((addOn) => ({
+      //   add_on_id: addOn.add_on_id,
+      //   add_on_name: addOn.add_on_name,
+      //   add_on_name_price_addition: addOn.add_on_price,
+      //   add_on_is_required: addOn.is_required,
+      //   add_on_is_multiple: addOn.is_multipled,
+      // })),
     };
   }
 

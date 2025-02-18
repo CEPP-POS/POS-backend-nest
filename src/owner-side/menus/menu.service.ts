@@ -54,41 +54,43 @@ export class MenuService {
   ) { }
 
   // * สร้างเมนูใหม่
-  async create(createMenuDto: CreateMenuDto): Promise<Menu> {
-    const { category_id, owner_id, branch_id, ...menuData } = createMenuDto;
+  // edit entity
+  // async create(createMenuDto: CreateMenuDto): Promise<Menu> {
+  //   const { category_id, owner_id, branch_id, ...menuData } = createMenuDto;
 
-    // โหลดข้อมูล Category
-    const category = await this.categoryRepository.findOne({
-      where: { category_id },
-    });
-    if (!category) {
-      throw new NotFoundException(`Category with ID ${category_id} not found`);
-    }
+  //   // โหลดข้อมูล Category
+  //   const category = await this.categoryRepository.findOne({
+  //     where: { category_id },
+  //   });
+  //   if (!category) {
+  //     throw new NotFoundException(`Category with ID ${category_id} not found`);
+  //   }
 
-    // โหลดข้อมูล Owner
-    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
-    if (!owner) {
-      throw new NotFoundException(`Owner with ID ${owner_id} not found`);
-    }
+  //   // โหลดข้อมูล Owner
+  //   const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+  //   if (!owner) {
+  //     throw new NotFoundException(`Owner with ID ${owner_id} not found`);
+  //   }
 
-    // โหลดข้อมูล Branch
-    const branch = await this.branchRepository.findOne({
-      where: { branch_id },
-    });
-    if (!branch) {
-      throw new NotFoundException(`Branch with ID ${branch_id} not found`);
-    }
+  //   // โหลดข้อมูล Branch
+  //   const branch = await this.branchRepository.findOne({
+  //     where: { branch_id },
+  //   });
+  //   if (!branch) {
+  //     throw new NotFoundException(`Branch with ID ${branch_id} not found`);
+  //   }
 
-    // สร้างเมนูใหม่
-    const newMenu = this.menuRepository.create({
-      ...menuData,
-      categories: [category],
-      owner,
-      branch,
-    });
+  // สร้างเมนูใหม่
+  // edit entity
+  // const newMenu = this.menuRepository.create({
+  //   ...menuData,
+  //   categories: [category],
+  //   owner,
+  //   branch,
+  // });
 
-    return this.menuRepository.save(newMenu);
-  }
+  // return this.menuRepository.save(newMenu);
+  // }
   async findAll(): Promise<Menu[]> {
     return this.menuRepository.find({
       relations: ['addOns', 'sweetnessLevels', 'sizes', 'menuTypes'],
@@ -123,275 +125,280 @@ export class MenuService {
 
   // สร้าง option
   async createOption(type: string, createOptionDto: any) {
-    let repository: Repository<any>;
-    let optionKey: string;
-    let relationField: string;
 
-    switch (type) {
-      case 'add-ons':
-        repository = this.addOnRepository;
-        optionKey = 'add_on_name';
-        relationField = 'addOns';
-        break;
-      case 'size':
-        repository = this.sizeRepository;
-        optionKey = 'size_name';
-        relationField = 'sizes';
-        break;
-      case 'menu-type':
-        repository = this.menuTypeRepository;
-        optionKey = 'type_name';
-        relationField = 'menuTypes';
-        break;
-      case 'sweetness':
-        repository = this.sweetnessRepository;
-        optionKey = 'level_name';
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        relationField = 'sweetnessLevels';
-        break;
-      default:
-        throw new NotFoundException(`Invalid option type: ${type}`);
-    }
+    // edit entity
 
-    try {
-      const menus = await this.menuRepository.find({
-        where: { menu_id: In(createOptionDto.menu_id) },
-        relations: [relationField],
-      });
+    // let repository: Repository<any>;
+    // let optionKey: string;
+    // let relationField: string;
 
-      if (menus.length !== createOptionDto.menu_id.length) {
-        throw new NotFoundException(
-          `Some menus with IDs ${createOptionDto.menu_id} not found`,
-        );
-      }
+    // switch (type) {
+    //   case 'add-ons':
+    //     repository = this.addOnRepository;
+    //     optionKey = 'add_on_name';
+    //     relationField = 'addOns';
+    //     break;
+    //   case 'size':
+    //     repository = this.sizeRepository;
+    //     optionKey = 'size_name';
+    //     relationField = 'sizes';
+    //     break;
+    //   case 'menu-type':
+    //     repository = this.menuTypeRepository;
+    //     optionKey = 'type_name';
+    //     relationField = 'menuTypes';
+    //     break;
+    //   case 'sweetness':
+    //     repository = this.sweetnessRepository;
+    //     optionKey = 'level_name';
+    //     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    //     relationField = 'sweetnessLevels';
+    //     break;
+    //   default:
+    //     throw new NotFoundException(`Invalid option type: ${type}`);
+    // }
 
-      const options = [];
+    // try {
+    //   const menus = await this.menuRepository.find({
+    //     where: { menu_id: In(createOptionDto.menu_id) },
+    //     relations: [relationField],
+    //   });
 
-      if (type === 'sweetness') {
-        // สร้าง sweetness option สำหรับแต่ละเมนู
-        for (const level of createOptionDto.options) {
-          for (const menu of menus) {
-            const newOption = repository.create({
-              [optionKey]: level, // ตั้งค่า level_name สำหรับ sweetness
-              menu, // เชื่อมโยง option กับเมนู
-              is_required: createOptionDto.is_required, // Include is_require
-            });
+    //   if (menus.length !== createOptionDto.menu_id.length) {
+    //     throw new NotFoundException(
+    //       `Some menus with IDs ${createOptionDto.menu_id} not found`,
+    //     );
+    //   }
 
-            const savedOption = await repository.save(newOption); // บันทึก sweetness option
-            options.push(savedOption);
-          }
-        }
-      } else if (type === 'add-ons') {
-        // Handle add-ons option creation
-        for (const option of createOptionDto.options) {
-          for (const [ingredientName, detail] of Object.entries(option)) {
-            const { price, unit } = detail as { price: string; unit: number };
+    //   const options = [];
 
-            // 1. Check if the ingredient exists, create if not
-            let ingredient = await this.ingredientRepository.findOne({
-              where: { ingredient_name: ingredientName },
-            });
+    //   if (type === 'sweetness') {
+    //     // สร้าง sweetness option สำหรับแต่ละเมนู
+    //     for (const level of createOptionDto.options) {
+    //       for (const menu of menus) {
+    //         const newOption = repository.create({
+    //           [optionKey]: level, // ตั้งค่า level_name สำหรับ sweetness
+    //           menu, // เชื่อมโยง option กับเมนู
+    //           is_required: createOptionDto.is_required, // Include is_require
+    //         });
 
-            if (!ingredient) {
-              ingredient = this.ingredientRepository.create({
-                ingredient_name: ingredientName,
-              });
-              await this.ingredientRepository.save(ingredient);
-            }
+    //         const savedOption = await repository.save(newOption); // บันทึก sweetness option
+    //         options.push(savedOption);
+    //       }
+    //     }
+    //   } else if (type === 'add-ons') {
+    //     // Handle add-ons option creation
+    //     for (const option of createOptionDto.options) {
+    //       for (const [ingredientName, detail] of Object.entries(option)) {
+    //         const { price, unit } = detail as { price: string; unit: number };
 
-            console.log("INGREDIENT:", ingredient)
+    //         // 1. Check if the ingredient exists, create if not
+    //         let ingredient = await this.ingredientRepository.findOne({
+    //           where: { ingredient_name: ingredientName },
+    //         });
 
-            for (const menuId of createOptionDto.menu_id) {
-              // 2. Check if the add-on exists for this menu, create if not
-              let addOn = await this.addOnRepository.findOne({
-                where: {
-                  add_on_name: ingredientName,
-                  menu: { menu_id: menuId },
-                },
-              });
+    //         if (!ingredient) {
+    //           ingredient = this.ingredientRepository.create({
+    //             ingredient_name: ingredientName,
+    //           });
+    //           await this.ingredientRepository.save(ingredient);
+    //         }
 
-              if (!addOn) {
-                addOn = this.addOnRepository.create({
-                  add_on_name: ingredientName,
-                  add_on_price: parseFloat(price),
-                  unit: unit,
-                  menu: { menu_id: menuId },
-                  is_required: createOptionDto.is_required,
-                  is_multipled: createOptionDto.is_multipled,
-                });
-                await this.addOnRepository.save(addOn);
-              }
+    //         console.log("INGREDIENT:", ingredient)
 
-              console.log("ADD ON:", addOn)
+    //         for (const menuId of createOptionDto.menu_id) {
+    //           // 2. Check if the add-on exists for this menu, create if not
+    //           let addOn = await this.addOnRepository.findOne({
+    //             where: {
+    //               add_on_name: ingredientName,
+    //               menu: { menu_id: menuId },
+    //             },
+    //           });
 
-              // 3. Create a link to the IngredientMenuLink table
-              let ingredientMenuLink = await this.ingredientMenuLinkRepository.findOne({
-                where: {
-                  menu_id: menuId,
-                  ingredient_id: Equal(ingredient.ingredient_id),
-                },
-              });
+    //           if (!addOn) {
+    //             addOn = this.addOnRepository.create({
+    //               add_on_name: ingredientName,
+    //               add_on_price: parseFloat(price),
+    //               unit: unit,
+    //               menu: { menu_id: menuId },
+    //               is_required: createOptionDto.is_required,
+    //               is_multipled: createOptionDto.is_multipled,
+    //             });
+    //             await this.addOnRepository.save(addOn);
+    //           }
 
-              if (!ingredientMenuLink) {
-                ingredientMenuLink = this.ingredientMenuLinkRepository.create({
-                  menu_id: { menu_id: menuId },
-                  ingredient_id: ingredient,
-                });
-                await this.ingredientMenuLinkRepository.save(ingredientMenuLink);
-              }
+    //           console.log("ADD ON:", addOn)
 
-              // 4. Link to menu_ingredient table
-              let menuIngredient = await this.menuIngredientRepository.findOne({
-                where: {
-                  menu_id: menuId,
-                  add_on: Equal(addOn.add_on_id),
-                  ingredient_id: Equal(ingredient.ingredient_id),
-                },
-              });
+    //           // 3. Create a link to the IngredientMenuLink table
+    //           let ingredientMenuLink = await this.ingredientMenuLinkRepository.findOne({
+    //             where: {
+    //               menu_id: menuId,
+    //               ingredient_id: Equal(ingredient.ingredient_id),
+    //             },
+    //           });
 
-              if (!menuIngredient) {
-                menuIngredient = this.menuIngredientRepository.create({
-                  menu_id: menuId,
-                  add_on: addOn,
-                  ingredient_id: ingredient,
-                  quantity_used: unit,
-                });
-                await this.menuIngredientRepository.save(menuIngredient);
-              }
-              console.log('MENU INGREDIENT:', menuIngredient);
-            }
-          }
-        }
-      } else if (type === 'menu-type') {
-        const menus = await this.menuRepository.find({
-          where: { menu_id: In(createOptionDto.menu_id) },
-          relations: ['menuTypes'], // ✅ โหลดความสัมพันธ์กับ menuTypes
-        });
+    //           if (!ingredientMenuLink) {
+    //             ingredientMenuLink = this.ingredientMenuLinkRepository.create({
+    //               menu_id: { menu_id: menuId },
+    //               ingredient_id: ingredient,
+    //             });
+    //             await this.ingredientMenuLinkRepository.save(ingredientMenuLink);
+    //           }
 
-        const options = [];
+    //           // 4. Link to menu_ingredient table
+    //           let menuIngredient = await this.menuIngredientRepository.findOne({
+    //             where: {
+    //               menu_id: menuId,
+    //               add_on: Equal(addOn.add_on_id),
+    //               ingredient_id: Equal(ingredient.ingredient_id),
+    //             },
+    //           });
 
-        for (const option of createOptionDto.options) {
-          for (const [ingredientName, detail] of Object.entries(option)) {
-            const { price } = detail as { price: string };
+    //           if (!menuIngredient) {
+    //             menuIngredient = this.menuIngredientRepository.create({
+    //               menu_id: menuId,
+    //               add_on: addOn,
+    //               ingredient_id: ingredient,
+    //               quantity_used: unit,
+    //             });
+    //             await this.menuIngredientRepository.save(menuIngredient);
+    //           }
+    //           console.log('MENU INGREDIENT:', menuIngredient);
+    //         }
+    //       }
+    //     }
+    //   } else if (type === 'menu-type') {
+    //     const menus = await this.menuRepository.find({
+    //       where: { menu_id: In(createOptionDto.menu_id) },
+    //       relations: ['menuTypes'], // ✅ โหลดความสัมพันธ์กับ menuTypes
+    //     });
 
-            for (const menu of menus) {
-              // ✅ ค้นหา MenuType ที่เชื่อมโยงกับ Menu โดยเฉพาะ
-              let menuType = await this.menuTypeRepository.findOne({
-                where: {
-                  type_name: ingredientName,
-                  menu: { menu_id: menu.menu_id },
-                },
-                relations: ['menu'],
-              });
+    //     const options = [];
 
-              // ✅ ถ้าไม่มี MenuType ให้สร้างใหม่สำหรับเมนูนี้
-              if (!menuType) {
-                menuType = this.menuTypeRepository.create({
-                  type_name: ingredientName,
-                  price_difference: parseFloat(price),
-                  menu: { menu_id: menu.menu_id },
-                  is_required: createOptionDto.is_required
-                });
-                await this.menuTypeRepository.save(menuType);
-              }
+    //     for (const option of createOptionDto.options) {
+    //       for (const [ingredientName, detail] of Object.entries(option)) {
+    //         const { price } = detail as { price: string };
 
-              // ✅ ตรวจสอบการเชื่อมโยงเพื่อป้องกันการเพิ่มซ้ำ
-              const isAlreadyLinked = menu.menuTypes.some(
-                (linkedType) =>
-                  linkedType.menu_type_id === menuType.menu_type_id,
-              );
+    //         for (const menu of menus) {
+    //           // ✅ ค้นหา MenuType ที่เชื่อมโยงกับ Menu โดยเฉพาะ
+    //           let menuType = await this.menuTypeRepository.findOne({
+    //             where: {
+    //               type_name: ingredientName,
+    //               // edit entity
+    //               // menu: { menu_id: menu.menu_id },
+    //             },
+    //             relations: ['menu'],
+    //           });
 
-              if (!isAlreadyLinked) {
-                await this.menuRepository
-                  .createQueryBuilder()
-                  .relation(Menu, 'menuTypes')
-                  .of(menu.menu_id)
-                  .add(menuType.menu_type_id);
+    //           // ✅ ถ้าไม่มี MenuType ให้สร้างใหม่สำหรับเมนูนี้
+    //           // edit entity
+    //           // if (!menuType) {
+    //           //   menuType = this.menuTypeRepository.create({
+    //           //     type_name: ingredientName,
+    //           //     price_difference: parseFloat(price),
+    //           //     menu: { menu_id: menu.menu_id },
+    //           //     is_required: createOptionDto.is_required
+    //           //   });
+    //           //   await this.menuTypeRepository.save(menuType);
+    //           // }
 
-                menu.menuTypes.push(menuType); // ✅ อัปเดตใน Memory
-                await this.menuRepository.save(menu); // ✅ บันทึกใน Database
-              }
+    //           // ✅ ตรวจสอบการเชื่อมโยงเพื่อป้องกันการเพิ่มซ้ำ
+    //       //     const isAlreadyLinked = menu.menuTypes.some(
+    //       //       (linkedType) =>
+    //       //         linkedType.menu_type_id === menuType.menu_type_id,
+    //       //     );
 
-              options.push(menuType);
-            }
-          }
-        }
+    //       //     if (!isAlreadyLinked) {
+    //       //       await this.menuRepository
+    //       //         .createQueryBuilder()
+    //       //         .relation(Menu, 'menuTypes')
+    //       //         .of(menu.menu_id)
+    //       //         .add(menuType.menu_type_id);
 
-        return {
-          message: `Menu types created and linked successfully`,
-        };
-      } else if (type === 'size') {
-        // ✅ โหลดเมนูที่เกี่ยวข้องทั้งหมด
-        const menus = await this.menuRepository.find({
-          where: { menu_id: In(createOptionDto.menu_id) },
-          relations: ['sizes'], // ✅ โหลดความสัมพันธ์กับ sizes
-        });
+    //       //       menu.menuTypes.push(menuType); // ✅ อัปเดตใน Memory
+    //       //       await this.menuRepository.save(menu); // ✅ บันทึกใน Database
+    //       //     }
 
-        const options = [];
+    //       //     options.push(menuType);
+    //       //   }
+    //       // }
+    //     // }
 
-        for (const option of createOptionDto.options) {
-          for (const [sizeName, detail] of Object.entries(option)) {
-            const { price } = detail as { price: string };
+    //     return {
+    //       message: `Menu types created and linked successfully`,
+    //     };
+    //   } else if (type === 'size') {
+    //     // ✅ โหลดเมนูที่เกี่ยวข้องทั้งหมด
+    //     const menus = await this.menuRepository.find({
+    //       where: { menu_id: In(createOptionDto.menu_id) },
+    //       relations: ['sizes'], // ✅ โหลดความสัมพันธ์กับ sizes
+    //     });
 
-            for (const menu of menus) {
-              // ✅ ค้นหา Size ที่เชื่อมโยงกับ Menu นี้
-              let size = await this.sizeRepository.findOne({
-                where: {
-                  size_name: sizeName,
-                  menu: { menu_id: menu.menu_id },
-                },
-                relations: ['menu'],
-              });
+    //     const options = [];
 
-              // ✅ ถ้ายังไม่มี Size ให้สร้างใหม่
-              if (!size) {
-                size = this.sizeRepository.create({
-                  size_name: sizeName,
-                  size_price: parseFloat(price),
-                  menu: { menu_id: menu.menu_id },
-                  is_required: createOptionDto.is_required
-                });
-                await this.sizeRepository.save(size);
-              }
+    //     for (const option of createOptionDto.options) {
+    //       for (const [sizeName, detail] of Object.entries(option)) {
+    //         const { price } = detail as { price: string };
 
-              // ✅ ตรวจสอบการเชื่อมโยงเพื่อป้องกันการเพิ่มซ้ำ
-              const isAlreadyLinked = menu.sizes.some(
-                (linkedSize) => linkedSize.size_id === size.size_id,
-              );
+    //         for (const menu of menus) {
+    //           // ✅ ค้นหา Size ที่เชื่อมโยงกับ Menu นี้
+    //           let size = await this.sizeRepository.findOne({
+    //             where: {
+    //               size_name: sizeName,
+    //               menu: { menu_id: menu.menu_id },
+    //             },
+    //             relations: ['menu'],
+    //           });
 
-              if (!isAlreadyLinked) {
-                await this.menuRepository
-                  .createQueryBuilder()
-                  .relation(Menu, 'sizes')
-                  .of(menu.menu_id)
-                  .add(size.size_id);
+    //           // ✅ ถ้ายังไม่มี Size ให้สร้างใหม่
+    //           if (!size) {
+    //             size = this.sizeRepository.create({
+    //               size_name: sizeName,
+    //               size_price: parseFloat(price),
+    //               menu: { menu_id: menu.menu_id },
+    //               is_required: createOptionDto.is_required
+    //             });
+    //             await this.sizeRepository.save(size);
+    //           }
 
-                menu.sizes.push(size); // ✅ อัปเดตใน Memory
-                await this.menuRepository.save(menu); // ✅ บันทึกใน Database
-              }
+    //           // ✅ ตรวจสอบการเชื่อมโยงเพื่อป้องกันการเพิ่มซ้ำ
+    //           const isAlreadyLinked = menu.sizes.some(
+    //             (linkedSize) => linkedSize.size_id === size.size_id,
+    //           );
 
-              options.push(size);
-            }
-          }
-        }
+    //           if (!isAlreadyLinked) {
+    //             await this.menuRepository
+    //               .createQueryBuilder()
+    //               .relation(Menu, 'sizes')
+    //               .of(menu.menu_id)
+    //               .add(size.size_id);
 
-        return {
-          message: `Sizes created and linked successfully`,
-        };
-      }
+    //             menu.sizes.push(size); // ✅ อัปเดตใน Memory
+    //             await this.menuRepository.save(menu); // ✅ บันทึกใน Database
+    //           }
 
-      return {
-        statusCode: HttpStatus.OK,
-        message: `${type} options created successfully`,
-        data: options,
-      };
-    } catch (error) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: `Failed to create ${type} options`,
-        error: error.message,
-      };
-    }
+    //           options.push(size);
+    //         }
+    //       }
+    //     }
+
+    //     return {
+    //       message: `Sizes created and linked successfully`,
+    //     };
+    //   }
+
+    //   return {
+    //     statusCode: HttpStatus.OK,
+    //     message: `${type} options created successfully`,
+    //     data: options,
+    //   };
+    // } catch (error) {
+    //   return {
+    //     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+    //     message: `Failed to create ${type} options`,
+    //     error: error.message,
+    //   };
+    // }
   }
 
   // * link menu for auto cut stock
@@ -793,14 +800,16 @@ export class MenuService {
 
   async findOptionById(type: string, menuId: number) {
     switch (type) {
-      case 'add-ons':
-        return this.addOnRepository.find({ where: { menu: { menu_id: menuId } } });
-      case 'size':
-        return this.sizeRepository.find({ where: { menu: { menu_id: menuId } } });
-      case 'sweetness':
-        return this.sweetnessRepository.find({ where: { menu: { menu_id: menuId } } });
-      case 'menu-type':
-        return this.menuTypeRepository.find({ where: { menu: { menu_id: menuId } } });
+      // edit entity
+      // case 'add-ons':
+      //   return this.addOnRepository.find({ where: { menu: { menu_id: menuId } } });
+      // case 'size':
+      //   return this.sizeRepository.find({ where: { menu: { menu_id: menuId } } });
+      // edit entity
+      // case 'sweetness':
+      //   return this.sweetnessRepository.find({ where: { menu: { menu_id: menuId } } });
+      // case 'menu-type':
+      // return this.menuTypeRepository.find({ where: { menu: { menu_id: menuId } } });
       default:
         throw new Error('Invalid option type');
     }
