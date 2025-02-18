@@ -95,6 +95,7 @@ export class OwnerService {
   }
 
   // * Find Owner by email
+  // ENTITY
   async findByEmail(email: string): Promise<Owner | undefined> {
     return this.ownerRepository.findOne({
       where: { email },
@@ -104,7 +105,7 @@ export class OwnerService {
         'contact_info',
         'email',
         'password',
-        'branch_id',
+        // 'branch_id',
         'role',
       ],
     });

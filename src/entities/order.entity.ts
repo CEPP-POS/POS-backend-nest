@@ -5,6 +5,8 @@ import {
   CreateDateColumn,
   OneToMany,
   OneToOne,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import {
   CancelStatus,
@@ -12,17 +14,18 @@ import {
 } from '../employee-side/order/dto/create-order/create-order.dto';
 import { OrderItem } from './order-item.entity';
 import { Payment } from './payment.entity';
+import { Branch } from './branch.entity';
+import { LocalData } from './local-data.entity';
 
 @Entity()
 export class Order {
+  
   @PrimaryGeneratedColumn()
   order_id: number;
 
   @CreateDateColumn()
   order_date: Date;
 
-  @Column({ nullable: true })
-  total_price: number;
 
   @Column()
   queue_number: number;
@@ -47,9 +50,16 @@ export class Order {
   @Column({ default: false }) // ✅ ค่าเริ่มต้นเป็น false
   is_paid: boolean;
 
+  @ManyToOne(() => Branch, { nullable: true })
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
+
   @OneToMany(() => OrderItem, (orderItem) => orderItem.order, { cascade: true })
   order_item: OrderItem[];
 
   @OneToOne(() => Payment, (payment) => payment.order)
   payment: Payment; // Add this property
+
+  @OneToOne(() => LocalData, (localData) => localData.order, { cascade: true })
+  local_data: LocalData;
 }

@@ -4,8 +4,11 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Menu } from './menu.entity';
+import { SweetnessGroup } from './sweetness-group.entity';
+import { OrderItem } from './order-item.entity';
 
 @Entity()
 export class SweetnessLevel {
@@ -14,4 +17,18 @@ export class SweetnessLevel {
 
   @Column({ nullable: false })
   level_name: string;
+
+  @OneToMany(
+    () => SweetnessGroup,
+    (sweetnessGroup) => sweetnessGroup.sweetnessLevel,
+    {
+      cascade: true,
+    },
+  )
+  sweetnessGroup: SweetnessGroup[];
+
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.sweetnessLevel, {
+    cascade: true,
+  })
+  orderItem: OrderItem[];
 }

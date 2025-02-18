@@ -4,11 +4,12 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   ManyToMany,
 } from 'typeorm';
-import { Menu } from './menu.entity';
 import { Owner } from './owner.entity';
 import { MenuCategory } from './menu_category';
+import { Menu } from './menu.entity';
 
 @Entity()
 export class Category {
@@ -22,7 +23,8 @@ export class Category {
   @JoinColumn({ name: 'owner_id' })
   owner: Owner;
 
-  // add relation many to many with menu_category
-  @ManyToMany(() => Menu, (menu) => menu.categories)
-  menus: Menu[];
+  @OneToMany(() => MenuCategory, (menuCategory) => menuCategory.category, { cascade: true })
+  menuCategory: MenuCategory[];
+  // @ManyToMany(() => Menu, (menu) => menu.menuCategory)
+  // menus: Menu[];
 }

@@ -180,6 +180,7 @@ export class DashboardService {
     };
   }
 
+  // Entity order total price
   async getOrderTopic(date: Date): Promise<any> {
     const startOfDay = new Date(date.setHours(0, 0, 0, 0));
     const endOfDay = new Date(date.setHours(23, 59, 59, 999));
@@ -215,7 +216,7 @@ export class DashboardService {
         order_id: order.order_id,
         order_date: order.order_date,
         quantity: totalQuantity, // Total quantity of items for the order
-        total_amount: order.total_price || 0, // Total price for the order
+        // total_amount: order.total_price || 0, // Total price for the order
         payment_method: paymentMethod, // Add logic to fetch payment method if available
       };
     });
@@ -228,6 +229,7 @@ export class DashboardService {
     };
   }
 
+  // ENTITY ORDER TOTAL PRICE
   async getCancelOrders() {
     const orders = await this.orderRepository.find({
       where: {
@@ -254,7 +256,7 @@ export class DashboardService {
         order_id: order.order_id,
         order_date: order.order_date,
         quantity: totalQuantity, // Total quantity of items for the order
-        total_amount: order.total_price || 0, // Total price for the order
+        // total_amount: order.total_price || 0, // Total price for the order
         payment_method: paymentMethod,
         cancel_order_topic: order.cancel_status,
       };
@@ -343,8 +345,8 @@ export class DashboardService {
         unit: ingredient.unit || '',
         quantity_in_stock: latestUpdate?.quantity_in_stock || 0,
         total_volume: latestUpdate?.total_volume || 0,
-        category_id: ingredient.ingredientCategory?.category_id || null,
-        category_name: ingredient.ingredientCategory?.category_name || '',
+        category_id: ingredient.ingredientCategory?.ingredient_category_id || null,
+        category_name: ingredient.ingredientCategory?.ingredient_category_name || '',
         expiration_date: latestUpdate?.expiration_date || null,
       };
     });
@@ -355,8 +357,8 @@ export class DashboardService {
 
     const result: IngredientCategoriesDto = {
       categories: categories.map((category) => ({
-        category_id: category.category_id,
-        category_name: category.category_name,
+        category_id: category.ingredient_category_id,
+        category_name: category.ingredient_category_name,
       })),
     };
 
@@ -442,24 +444,26 @@ export class DashboardService {
     // };
   }
 
+  // ENTITY 
   async createCategory(
     createCategoryDto: CreateCategoryDto,
-  ): Promise<CreateCategoryDto> {
-    const { category_name } = createCategoryDto;
-    const existingCategory = await this.ingredientCategoryRepository.findOne({
-      where: { category_name },
-    });
-    if (existingCategory) {
-      throw new BadRequestException(
-        `Category '${category_name}' มีอยู่แล้วในระบบ`,
-      );
-    }
+  ): Promise<any> {
+    // const { category_name } = createCategoryDto;
+    // const existingCategory = await this.ingredientCategoryRepository.findOne({
+    //   where: { category_name },
+    // });
+    // if (existingCategory) {
+    //   throw new BadRequestException(
+    //     `Category '${category_name}' มีอยู่แล้วในระบบ`,
+    //   );
+    // }
     const result =
       await this.ingredientCategoryRepository.insert(createCategoryDto);
-    return { category_name: createCategoryDto.category_name };
+    // return { category_name: createCategoryDto.category_name };
   }
 
   // EDIT ENTITY change owner to branch id
+  // ENTITY INGREDIENT CATEGORY
   async createIngredient(
     createIngredientDto: CreateIngredientDto,
   ): Promise<any> {
@@ -482,14 +486,14 @@ export class DashboardService {
     }
 
     // Find or create category
-    let category = await this.ingredientCategoryRepository.findOne({
-      where: { category_name },
-    });
+    // let category = await this.ingredientCategoryRepository.findOne({
+    //   where: { ingredient_category_name },
+    // });
 
-    if (!category) {
-      category = this.ingredientCategoryRepository.create({ category_name });
-      await this.ingredientCategoryRepository.save(category);
-    }
+    // if (!category) {
+    //   category = this.ingredientCategoryRepository.create({ category_name });
+    //   await this.ingredientCategoryRepository.save(category);
+    // }
 
     // Find existing ingredient
     let ingredient = await this.ingredientRepository
@@ -505,7 +509,7 @@ export class DashboardService {
       // Create new ingredient if not found
       ingredient = this.ingredientRepository.create({
         ingredient_name,
-        ingredientCategory: category,
+        // ingredientCategory: category,
         // owner_id: owner,
         image_url,
         unit,
@@ -627,7 +631,7 @@ export class DashboardService {
     return {
       ingredient_id: ingredient.ingredient_id,
       ingredient_name: ingredient.ingredient_name,
-      category_name: ingredient.ingredientCategory?.category_name || 'Unknown',
+      category_name: ingredient.ingredientCategory?.ingredient_category_name || 'Unknown',
       stock_data: groupedStockData, // Store grouped stock data (excluding expired/zero quantity)
     };
   }

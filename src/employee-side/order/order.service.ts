@@ -62,7 +62,7 @@ export class OrderService {
     private readonly menuIngredientRepository: Repository<MenuIngredient>,
     @InjectRepository(IngredientUpdate)
     private readonly ingredientUpdateRepository: Repository<IngredientUpdate>,
-  ) { }
+  ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
     const owner = await this.ownerRepository.findOne({
@@ -350,7 +350,7 @@ export class OrderService {
 
     return savedOrder;
   }
-// EDIT ENTITY
+  // EDIT ENTITY
   async findAllOrders(): Promise<Order[]> {
     return this.orderRepository.find({
       relations: [
@@ -364,7 +364,7 @@ export class OrderService {
       select: {
         order_id: true,
         order_date: true,
-        total_price: true,
+        // total_price: true,
         queue_number: true,
         status: true,
         customer_name: true,

@@ -18,6 +18,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
+  // ENTITY
+
   async validate(payload: IJwtPayload): Promise<UserPayload> {
     console.log('Decoded JWT Payload:', payload);
 
@@ -30,7 +32,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       owner_id: existingUser.owner_id,
       email: existingUser.email,
-      branch_id: existingUser.branch_id || null,
+      // branch_id: existingUser.branch_id || null,
       role: existingUser.role || 'user',
     };
   }

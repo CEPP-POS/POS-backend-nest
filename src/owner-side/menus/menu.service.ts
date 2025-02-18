@@ -13,7 +13,7 @@ import { CreateMenuDto } from './dto/create-menu/create-menu.dto';
 import { Size } from 'src/entities/size.entity';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
-import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
+// import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
 import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 
 @Injectable()
@@ -49,8 +49,8 @@ export class MenuService {
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
 
-    @InjectRepository(IngredientMenuLink)
-    private readonly ingredientMenuLinkRepository: Repository<IngredientMenuLink>,
+    // @InjectRepository(IngredientMenuLink)
+    // private readonly ingredientMenuLinkRepository: Repository<IngredientMenuLink>,
   ) { }
 
   // * สร้างเมนูใหม่
@@ -511,6 +511,8 @@ export class MenuService {
   //   }
   // }
 
+
+  // EDIT ENTITY INGREDIENT_MENULINK
   async updateStock(
     menu_id: number,
     owner_id: number,
@@ -606,7 +608,7 @@ export class MenuService {
 
       console.log("ingredientMenuLinkToSave:", ingredientMenuLinkToSave);
 
-      await this.ingredientMenuLinkRepository.save(ingredientMenuLinkToSave);
+      // await this.ingredientMenuLinkRepository.save(ingredientMenuLinkToSave);
 
     }
 

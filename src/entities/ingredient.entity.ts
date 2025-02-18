@@ -9,9 +9,10 @@ import {
 } from 'typeorm';
 import { IngredientCategory } from './ingredient-category.entity';
 import { Owner } from './owner.entity';
-import { IngredientMenuLink } from './ingredient-menu-link.entity';
+// import { IngredientMenuLink } from './ingredient-menu-link.entity';
 import { IngredientUpdate } from './ingredient-update.entity';
 import { Branch } from './branch.entity';
+import { OrderItemAddOn } from './order-item-add-on.entity';
 
 @Entity()
 export class Ingredient {
@@ -41,6 +42,11 @@ export class Ingredient {
   @OneToMany(
     () => IngredientUpdate,
     (ingredientUpdate) => ingredientUpdate.ingredient,
+    { cascade: true },
+  )
+  @OneToMany(
+    () => OrderItemAddOn,
+    (orderItemAddon) => orderItemAddon.ingredient,
     { cascade: true },
   )
   ingredientUpdate: IngredientUpdate[]; // เพิ่มความสัมพันธ์กับ AddOn
