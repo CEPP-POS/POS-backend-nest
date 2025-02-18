@@ -12,9 +12,8 @@ export class AuthService {
   ) {}
 
   async login(loginOwnerDto: LoginOwnerDto) {
-    
     const user = await this.validateUser(loginOwnerDto);
-    console.log('USER FOUND:', user);   
+    console.log('[File auth service] USER FOUND:', user);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials.');
     }
@@ -26,11 +25,11 @@ export class AuthService {
       branch_id: user.branch_id || null,
       roles: user.roles && user.roles.length > 0 ? user.roles : ['employee'],
     };
-        
+
     const token = await this.jwtService.signAsync(payload);
-    console.log('GENERATED TOKEN:', token);   
+    console.log('[File auth service] GENERATED TOKEN:', token);
     return {
-      token
+      token,
     };
   }
 
