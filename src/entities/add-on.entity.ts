@@ -8,14 +8,16 @@ import {
 } from 'typeorm';
 import { Menu } from './menu.entity';
 import { MenuIngredient } from './menu-ingredient.entity';
+import { Ingredient } from './ingredient.entity';
 
 @Entity()
 export class AddOn {
   @PrimaryGeneratedColumn()
   add_on_id: number;
 
-  @Column({ nullable: true })
-  add_on_name: string;
+  @ManyToOne(() => Ingredient, { nullable: false })
+  @JoinColumn({ name: 'ingredient_id' })
+  ingredient: Ingredient;
 
   @Column({ type: 'boolean', default: false })
   is_required: boolean;
@@ -25,18 +27,4 @@ export class AddOn {
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   add_on_price: number;
-
-  @Column({ nullable: true })
-  unit: number;
-
-  @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.add_on)
-  menu_ingredients_id: MenuIngredient[];
-
-  // @ManyToMany(() => Menu, (menu) => menu.addOns)
-  @ManyToOne(() => Menu, (menu) => menu.addOns, {
-    nullable: true,
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'menu_id' })
-  menu: Menu;
 }

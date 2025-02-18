@@ -15,7 +15,7 @@ export class IngredientUpdate {
 
   @ManyToOne(() => Ingredient, { nullable: false })
   @JoinColumn({ name: 'ingredient_id' })
-  ingredient_id: Ingredient;
+  ingredient: Ingredient;
 
   @Column()
   quantity_in_stock: number;

@@ -190,9 +190,11 @@ export class OwnerService {
     return this.ownerRepository.save(owner);
   }
 
-  async getIngredientsByOwner(ownerId: number) {
+  // EDIT ENTITY TO BRANCH ID
+
+  async getIngredientsByOwner(branchId: number) {
     return this.ingredientRepository.find({
-      where: { owner_id: Equal(ownerId) },
+      where: { branch: Equal(branchId) },
       select: ['ingredient_id', 'ingredient_name'],
     });
   }

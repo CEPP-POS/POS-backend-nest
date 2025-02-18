@@ -24,22 +24,21 @@ export class Payment {
   @Column({ type: 'varchar', length: 255 })
   payment_method: string;
 
-  @Column()
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
 
-  @Column()
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   total_amount: number;
 
-  @Column({ nullable: true })
-  cash_given: number;
-
-  @Column({ nullable: true })
-  change: number;
-
-  // for success connect one to many in ocr status
   @Column({ type: 'varchar', length: 255, nullable: true })
   status: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   path_img: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  cash_given: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  change: number;
 }

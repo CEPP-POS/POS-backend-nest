@@ -64,7 +64,7 @@ export class DashboardService {
 
     @InjectRepository(Owner)
     private ownerRepository: Repository<Owner>,
-  ) { }
+  ) {}
 
   private async calculateMonthlyRevenue(year: number): Promise<number[]> {
     const monthlyRevenue = Array(12).fill(0);
@@ -342,8 +342,8 @@ export class DashboardService {
         unit: ingredient.unit || '',
         quantity_in_stock: latestUpdate?.quantity_in_stock || 0,
         total_volume: latestUpdate?.total_volume || 0,
-        category_id: ingredient.category_id?.category_id || null,
-        category_name: ingredient.category_id?.category_name || '',
+        category_id: ingredient.ingredientCategory?.category_id || null,
+        category_name: ingredient.ingredientCategory?.category_name || '',
         expiration_date: latestUpdate?.expiration_date || null,
       };
     });
@@ -380,7 +380,7 @@ export class DashboardService {
     // Get all valid ingredient stock updates (not expired, quantity > 0)
     const latestUpdates = await this.ingredientUpdateRepository.find({
       where: {
-        ingredient_id: Raw((alias) => `${alias} = ${ingredient_id}`),
+        ingredient: Raw((alias) => `${alias} = ${ingredient_id}`),
         expiration_date: MoreThan(today), // Exclude expired stock
         quantity_in_stock: MoreThan(0), // Exclude empty stock
       },
@@ -416,25 +416,27 @@ export class DashboardService {
 
     // Fetch menu ingredients associated with this ingredient
     const menuIngredients = await this.menuIngredientRepository.find({
-      where: { ingredient_id: Raw((alias) => `${alias} = ${ingredient_id}`) },
+      where: { ingredient: Raw((alias) => `${alias} = ${ingredient_id}`) },
       relations: ['menu_id', 'menu_id.categories', 'size_id', 'sweetness_id'], // Get related details
     });
 
     // Transform menu ingredients data
     const menuIngredientsDto = menuIngredients.map((menuIng) => ({
-      menu_name: menuIng.menu_id.menu_name,
-      size_name: menuIng.size_id.size_name,
-      level_name: menuIng.sweetness_id.level_name,
+      menu_name: menuIng.menu.menu_name,
+      size_name: menuIng.size.size_name,
+      // level_name: menuIng.sweetness_id.level_name,
       quantity_used: menuIng.quantity_used,
       unit: ingredient.unit,
-      category_name: menuIng.menu_id.categories?.map(cat => cat.category_name).join(', ') || 'Unknown', // Adjust to handle multiple categories
+      category_name:
+        menuIng.menu.categories?.map((cat) => cat.category_name).join(', ') ||
+        'Unknown', // Adjust to handle multiple categories
     }));
 
     // Construct the response
     return {
       ingredient_id: ingredient.ingredient_id,
       ingredient_name: ingredient.ingredient_name,
-      category_name: ingredient.category_id?.category_name || 'Unknown',
+      category_name: ingredient.ingredientCategory?.category_name || 'Unknown',
       stock_data: groupedStockData, // Store grouped stock data (excluding expired/zero quantity)
       menu_ingredients: menuIngredientsDto,
     };
@@ -457,6 +459,7 @@ export class DashboardService {
     return { category_name: createCategoryDto.category_name };
   }
 
+  // EDIT ENTITY change owner to branch id
   async createIngredient(
     createIngredientDto: CreateIngredientDto,
   ): Promise<any> {
@@ -502,8 +505,8 @@ export class DashboardService {
       // Create new ingredient if not found
       ingredient = this.ingredientRepository.create({
         ingredient_name,
-        category_id: category,
-        owner_id: owner,
+        ingredientCategory: category,
+        // owner_id: owner,
         image_url,
         unit,
       });
@@ -542,7 +545,7 @@ export class DashboardService {
       const total_volume = net_volume * quantity_in_stock;
 
       const newUpdate = this.ingredientUpdateRepository.create({
-        ingredient_id: ingredient,
+        ingredient: ingredient,
         quantity_in_stock,
         net_volume,
         total_volume,
@@ -578,7 +581,7 @@ export class DashboardService {
     // Get all valid ingredient stock updates (not expired, quantity > 0)
     const latestUpdates = await this.ingredientUpdateRepository.find({
       where: {
-        ingredient_id: Raw((alias) => `${alias} = ${ingredient_id}`),
+        ingredient: Raw((alias) => `${alias} = ${ingredient_id}`),
         expiration_date: MoreThan(today), // Exclude expired stock
         quantity_in_stock: MoreThan(0), // Exclude empty stock
       },
@@ -616,7 +619,7 @@ export class DashboardService {
 
     // Fetch menu ingredients associated with this ingredient
     const menuIngredients = await this.menuIngredientRepository.find({
-      where: { ingredient_id: Raw((alias) => `${alias} = ${ingredient_id}`) },
+      where: { ingredient: Raw((alias) => `${alias} = ${ingredient_id}`) },
       relations: ['menu_id', 'menu_id.category', 'size_id', 'sweetness_id'], // Get related details
     });
 
@@ -624,7 +627,7 @@ export class DashboardService {
     return {
       ingredient_id: ingredient.ingredient_id,
       ingredient_name: ingredient.ingredient_name,
-      category_name: ingredient.category_id?.category_name || 'Unknown',
+      category_name: ingredient.ingredientCategory?.category_name || 'Unknown',
       stock_data: groupedStockData, // Store grouped stock data (excluding expired/zero quantity)
     };
   }
@@ -638,7 +641,7 @@ export class DashboardService {
     for (const update of updateIngredientDto) {
       const ingredientUpdate = await this.ingredientUpdateRepository.findOne({
         where: {
-          ingredient_id: Raw((alias) => `${alias} = ${ingredient_id}`),
+          ingredient: Raw((alias) => `${alias} = ${ingredient_id}`),
           update_id: update.update_id,
         },
       });

@@ -204,19 +204,19 @@ export class OrderService {
     // 1. Find all ingredients for the menu and size combination
     const menuIngredients = await this.menuIngredientRepository.find({
       where: {
-        menu_id: Equal(menuId),
-        size_id: Equal(sizeId),
+        menu: Equal(menuId),
+        size: Equal(sizeId),
       },
       relations: {
-        ingredient_id: true,
-        menu_id: true,
-        size_id: true,
+        ingredient: true,
+        menu: true,
+        size: true,
       },
     });
 
     // Process each ingredient
     for (const menuIngredient of menuIngredients) {
-      if (!menuIngredient.ingredient_id) {
+      if (!menuIngredient.ingredient) {
         console.warn(
           `No ingredient found for menu ingredient ${menuIngredient.menu_ingredient_id}`,
         );
@@ -228,7 +228,7 @@ export class OrderService {
       // 2. Get all ingredient updates sorted by expiration date
       const ingredientUpdates = await this.ingredientUpdateRepository.find({
         where: {
-          ingredient_id: Equal(menuIngredient.ingredient_id.ingredient_id),
+          ingredient: Equal(menuIngredient.ingredient.ingredient_id),
           expiration_date: MoreThan(orderDate),
         },
         order: {
@@ -268,13 +268,14 @@ export class OrderService {
 
       if (remainingToProcess > 0) {
         console.warn(
-          `Insufficient stock for ingredient ${menuIngredient.ingredient_id.ingredient_id}`,
+          `Insufficient stock for ingredient ${menuIngredient.ingredient.ingredient_id}`,
         );
         // You might want to throw an error here or handle this case differently
       }
     }
   }
 
+  // EDIT ENTITY
   async createOrder(
     createOrderDto: CreateOrderDto,
     items: OrderItemDto[],
@@ -286,9 +287,9 @@ export class OrderService {
 
     const savedOrder = await this.orderRepository.save(newOrder);
 
-    const allAddOns = await this.addOnRepository.findBy({
-      add_on_id: In(items.flatMap((item) => item.add_on_id || [])),
-    });
+    // const allAddOns = await this.addOnRepository.findBy({
+    //   add_on_id: In(items.flatMap((item) => item.add_on_id || [])),
+    // });
 
     const orderItems = await Promise.all(
       items.map(async (item) => {
@@ -325,9 +326,9 @@ export class OrderService {
           // You might want to handle this error differently
         }
 
-        const relatedAddOns = allAddOns.filter((addon) =>
-          item.add_on_id.includes(addon.add_on_id),
-        );
+        // const relatedAddOns = allAddOns.filter((addon) =>
+        //   item.add_on_id.includes(addon.add_on_id),
+        // );
 
         return this.orderItemRepository.create({
           quantity: item.quantity,
@@ -336,7 +337,7 @@ export class OrderService {
           sweetness,
           size,
           menu_type: menuType,
-          addOns: relatedAddOns,
+          // addOns: relatedAddOns,
           order: savedOrder,
         });
       }),
@@ -348,7 +349,7 @@ export class OrderService {
 
     return savedOrder;
   }
-
+// EDIT ENTITY
   async findAllOrders(): Promise<Order[]> {
     return this.orderRepository.find({
       relations: [
@@ -384,10 +385,10 @@ export class OrderService {
             size_id: true,
             size_name: true,
           },
-          addOns: {
-            add_on_id: true,
-            add_on_name: true,
-          },
+          // addOns: {
+          //   add_on_id: true,
+          //   add_on_name: true,
+          // },
           menu_type: {
             menu_type_id: true,
             type_name: true,

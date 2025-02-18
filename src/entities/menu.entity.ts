@@ -24,9 +24,6 @@ export class Menu {
   @Column()
   store_id: number;
 
-  // @ManyToOne(() => Category, { nullable: true })
-  // @JoinColumn({ name: 'category_id' })
-  // category: Category;
   @ManyToMany(() => Category, (category) => category.menu, { cascade: true })
   @JoinTable() // ✅ ให้ TypeORM สร้างตารางเชื่อมกลาง (menu_categories)
   categories: Category[];
@@ -57,9 +54,6 @@ export class Menu {
   @OneToMany(() => Size, (size) => size.menu, { cascade: true })
   sizes: Size[];
 
-  @OneToMany(() => AddOn, (addOn) => addOn.menu, { cascade: true })
-  addOns: AddOn[];
-  // เพิ่มความสัมพันธ์กับ AddOn
 
   @OneToMany(() => SweetnessLevel, (sweetnessLevel) => sweetnessLevel.menu, {
     cascade: true,

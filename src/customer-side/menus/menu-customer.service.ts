@@ -43,7 +43,7 @@ export class MenuCustomerService {
       available_menus,
     };
   }
-
+// EDIT ENTITY
   async getMenusAllCategory() {
     // Fetch categories with related menus
     const categories = await this.categoryRepository.find({
@@ -53,43 +53,43 @@ export class MenuCustomerService {
     // Extract unique category names
     const categoryNames = Array.from(new Set(categories.map(cat => cat.category_name)));
 
-    // Group menus by menu_id
-    const menuMap = categories.reduce((map, category) => {
-      category.menu.forEach(menu => {
-        if (!map.has(menu.menu_id)) {
-          map.set(menu.menu_id, {
-            menu_id: menu.menu_id,
-            menu_name: menu.menu_name,
-            description: menu.description,
-            price: Number(menu.price),
-            image_url: menu.image_url,
-            category: [], // Store category objects
-          });
-        }
+    // // Group menus by menu_id
+    // const menuMap = categories.reduce((map, category) => {
+    //   category.menu.forEach(menu => {
+    //     if (!map.has(menu.menu_id)) {
+    //       map.set(menu.menu_id, {
+    //         menu_id: menu.menu_id,
+    //         menu_name: menu.menu_name,
+    //         description: menu.description,
+    //         price: Number(menu.price),
+    //         image_url: menu.image_url,
+    //         category: [], // Store category objects
+    //       });
+    //     }
 
-        // Add category details (avoid duplicates)
-        const existingCategories = map.get(menu.menu_id).category;
-        if (!existingCategories.some((c) => c.category_id === category.category_id)) {
-          existingCategories.push({
-            category_id: category.category_id,
-            category_name: category.category_name,
-          });
-        }
-      });
+    //     // Add category details (avoid duplicates)
+    //     const existingCategories = map.get(menu.menu_id).category;
+    //     if (!existingCategories.some((c) => c.category_id === category.category_id)) {
+    //       existingCategories.push({
+    //         category_id: category.category_id,
+    //         category_name: category.category_name,
+    //       });
+    //     }
+    //   });
 
-      return map;
-    }, new Map<number, any>());
+    //   return map;
+    // }, new Map<number, any>());
 
     // Convert Map to Array
-    const availableMenus = Array.from(menuMap.values());
+    // const availableMenus = Array.from(menuMap.values());
 
     return {
       available_category: categoryNames,
-      available_menus: availableMenus,
+      // available_menus: availableMenus,
     };
   }
 
-
+// EDIT ENTITY
   async getMenuDetails(menuId: number) {
     const menu = await this.menuRepository.findOne({
       where: { menu_id: menuId },
@@ -122,13 +122,13 @@ export class MenuCustomerService {
         size_price_addition: size.size_price,
         size_is_required: size.is_required
       })),
-      add_on_name: menu.addOns.map((addOn) => ({
-        add_on_id: addOn.add_on_id,
-        add_on_name: addOn.add_on_name,
-        add_on_name_price_addition: addOn.add_on_price,
-        add_on_is_required: addOn.is_required,
-        add_on_is_multiple: addOn.is_multipled,
-      })),
+      // add_on_name: menu.addOns.map((addOn) => ({
+      //   add_on_id: addOn.add_on_id,
+      //   add_on_name: addOn.add_on_name,
+      //   add_on_name_price_addition: addOn.add_on_price,
+      //   add_on_is_required: addOn.is_required,
+      //   add_on_is_multiple: addOn.is_multipled,
+      // })),
     };
   }
 
