@@ -68,6 +68,15 @@ export class Menu {
   @JoinColumn({ name: 'size_group_id' })
   sizeGroup: SizeGroup;
 
+  // link Many-to-Many relationship with menu category table
+  @ManyToMany(() => Category, (category) => category.menus, { cascade: true })
+  @JoinTable({
+    name: 'menu_category',
+    joinColumn: { name: 'menu_id', referencedColumnName: 'menu_id' }, // Custom FK column for Menu
+    inverseJoinColumn: { name: 'category_id', referencedColumnName: 'category_id' }, // Custom FK column for Category
+  })
+  categories: Category[];
+
   // remove unused entity
   // @OneToMany(() => Size, (size) => size.menu, { cascade: true })
   // sizes: Size[];

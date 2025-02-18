@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Menu } from './menu.entity';
 import { Owner } from './owner.entity';
+import { MenuCategory } from './menu_category';
 
 @Entity()
 export class Category {
@@ -21,8 +22,7 @@ export class Category {
   @JoinColumn({ name: 'owner_id' })
   owner: Owner;
 
-  // edit entity
-  // @ManyToMany(() => Menu, (menu) => menu.categories)
-  // @JoinColumn({ name: 'menu_id' })
-  // menu: Menu[];
+  // add relation many to many with menu_category
+  @ManyToMany(() => Menu, (menu) => menu.categories)
+  menus: Menu[];
 }

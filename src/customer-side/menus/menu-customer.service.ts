@@ -92,7 +92,7 @@ export class MenuCustomerService {
   //   };
   // }
 
-
+// EDIT ENTITY
   async getMenuDetails(menuId: number) {
     const menu = await this.menuRepository.findOne({
       where: { menu_id: menuId },

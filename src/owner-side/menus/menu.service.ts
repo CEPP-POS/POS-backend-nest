@@ -124,6 +124,7 @@ export class MenuService {
   }
 
   // สร้าง option
+  // EDIT ENTITY
   async createOption(type: string, createOptionDto: any) {
 
     // edit entity
@@ -551,6 +552,7 @@ export class MenuService {
         }
       }
 
+      // EDIT ENTITY
       // Find by ingredient name or create ingredient => if not have in ingredient table
       let ingredient = await this.ingredientRepository.findOne({
         where: { ingredient_name },
@@ -559,7 +561,7 @@ export class MenuService {
         ingredient = this.ingredientRepository.create({
           ingredient_name,
           unit,
-          owner_id: owner,
+          // owner_id: owner,
         });
         ingredient = await this.ingredientRepository.save(ingredient);
       }
@@ -569,10 +571,10 @@ export class MenuService {
       for (const property of ingredientListForStock) {
         let menuIngredient = await this.menuIngredientRepository.findOne({
           where: {
-            menu_id: Equal(menu.menu_id),
-            ingredient_id: Equal(ingredient.ingredient_id),
-            size_id: Equal(property.size_id),
-            menu_type_id: Equal(property.menu_type_id),
+            menu: Equal(menu.menu_id),
+            ingredient: Equal(ingredient.ingredient_id),
+            size: Equal(property.size_id),
+            menu_type: Equal(property.menu_type_id),
           },
         });
 
@@ -583,10 +585,10 @@ export class MenuService {
         } else {
           // Create a new menu ingredient if it doesn't exist
           menuIngredient = this.menuIngredientRepository.create({
-            menu_id: menu,
-            ingredient_id: ingredient,
-            size_id: { size_id: property.size_id },
-            menu_type_id: { menu_type_id: property.menu_type_id },
+            menu: menu,
+            ingredient: ingredient,
+            size: { size_id: property.size_id },
+            menu_type: { menu_type_id: property.menu_type_id },
             quantity_used: property.quantity_used,
           });
           await this.menuIngredientRepository.save(menuIngredient);
@@ -797,7 +799,7 @@ export class MenuService {
         : {}),
     }));
   }
-
+// EDIT ENTITY
   async findOptionById(type: string, menuId: number) {
     switch (type) {
       // edit entity

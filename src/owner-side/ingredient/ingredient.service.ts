@@ -73,7 +73,7 @@ export class IngredientService {
 
     async findAllMenuIngredientById(menuId: number) {
         const menuIngredients = await this.menuIngredientRepository.find({
-            where: { menu_id: Equal(menuId) },
+            where: { menu: Equal(menuId) },
             relations: ['menu_id', 'ingredient_id', 'size_id', 'sweetness_id', 'menu_type_id', 'add_on'],
         });
 
@@ -92,30 +92,30 @@ export class IngredientService {
             message: 'Menu ingredients retrieved successfully',
             menuIngredients: menuIngredients.map(menuIngredient => ({
                 menu_ingredient_id: menuIngredient.menu_ingredient_id,
-                menu: menuIngredient.menu_id ? {
-                    menu_id: menuIngredient.menu_id.menu_id,
-                    menu_name: menuIngredient.menu_id.menu_name,
+                menu: menuIngredient.menu ? {
+                    menu_id: menuIngredient.menu.menu_id,
+                    menu_name: menuIngredient.menu.menu_name,
                 } : null,
-                ingredient: menuIngredient.ingredient_id ? {
-                    ingredient_id: menuIngredient.ingredient_id.ingredient_id,
-                    ingredient_name: menuIngredient.ingredient_id.ingredient_name,
+                ingredient: menuIngredient.ingredient ? {
+                    ingredient_id: menuIngredient.ingredient.ingredient_id,
+                    ingredient_name: menuIngredient.ingredient.ingredient_name,
                 } : null,
-                size: menuIngredient.size_id ? {
-                    size_id: menuIngredient.size_id.size_id,
-                    size_name: menuIngredient.size_id.size_name,
+                // size: menuIngredient.size_id ? {
+                //     size_id: menuIngredient.size_id.size_id,
+                //     size_name: menuIngredient.size_id.size_name,
+                // } : null,
+                //     sweetness: menuIngredient.sweetness_id ? {
+                //     sweetness_id: menuIngredient.sweetness_id.sweetness_id,
+                //     sweetness_level: menuIngredient.sweetness_id.level_name,
+                // } : null,
+                menu_type: menuIngredient.menu_type ? {
+                    menu_type_id: menuIngredient.menu_type.menu_type_id,
+                    menu_type_name: menuIngredient.menu_type.type_name,
                 } : null,
-                sweetness: menuIngredient.sweetness_id ? {
-                    sweetness_id: menuIngredient.sweetness_id.sweetness_id,
-                    sweetness_level: menuIngredient.sweetness_id.level_name,
-                } : null,
-                menu_type: menuIngredient.menu_type_id ? {
-                    menu_type_id: menuIngredient.menu_type_id.menu_type_id,
-                    menu_type_name: menuIngredient.menu_type_id.type_name,
-                } : null,
-                add_on: menuIngredient.add_on ? {
-                    add_on_id: menuIngredient.add_on.add_on_id,
-                    add_on_name: menuIngredient.add_on.add_on_name,
-                } : null,
+                // add_on: menuIngredient.add_on ? {
+                //     add_on_id: menuIngredient.add_on.add_on_id,
+                //     add_on_name: menuIngredient.add_on.add_on_name,
+                // } : null,
                 quantity_used: menuIngredient.quantity_used,
             })),
         };
