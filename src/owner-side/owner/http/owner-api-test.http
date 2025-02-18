@@ -48,4 +48,4 @@ Content-Type: application/json
   "newPassword": "AdminTestNew"
 }
 
-GET http://localhost:3000/owner/ingredients/1
+GET http://localhost:3000/owner/ingredients/16

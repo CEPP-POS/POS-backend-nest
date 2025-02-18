@@ -14,7 +14,7 @@ export class CategoryService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Menu)
     private readonly menuRepository: Repository<Menu>,
-  ) {}
+  ) { }
 
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find();
@@ -110,5 +110,51 @@ export class CategoryService {
     }
 
     return category.menu; // คืนค่ารายการเมนูในหมวดหมู่
+  }
+
+  async updateCategory(
+    categoryId: number,
+    updateCategoryDto: CreateCategoryDto,
+  ): Promise<Category> {
+    const { category_name, menu_id } = updateCategoryDto;
+
+    // ✅ ค้นหา Category ที่ต้องการอัปเดต
+    const category = await this.categoryRepository.findOne({
+      where: { category_id: categoryId },
+      relations: ['menu'], // ✅ โหลดเมนูที่เกี่ยวข้อง
+    });
+
+    if (!category) {
+      throw new NotFoundException(`Category with ID ${categoryId} not found`);
+    }
+
+    // ✅ อัปเดตชื่อหมวดหมู่ถ้ามีการส่ง `category_name` มา
+    if (category_name) {
+      category.category_name = category_name;
+    }
+
+    if (menu_id && menu_id.length > 0) {
+      // ✅ ค้นหาเมนูที่ต้องการเพิ่มเข้าไปในหมวดหมู่นี้
+      const menus = await this.menuRepository.find({
+        where: { menu_id: In(menu_id) },
+        relations: ['categories'], // ✅ โหลดหมวดหมู่ที่เกี่ยวข้องกับเมนู
+      });
+
+      if (menus.length !== menu_id.length) {
+        throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
+      }
+
+      // ✅ อัปเดตหมวดหมู่ของเมนู (ไม่ลบทิ้ง แต่เพิ่มเข้าไป)
+      menus.forEach((menu) => {
+        menu.categories = [...(menu.categories ?? []), category];
+      });
+
+      await this.menuRepository.save(menus);
+    }
+
+    // ✅ บันทึกการอัปเดต
+    await this.categoryRepository.save(category);
+
+    return category;
   }
 }

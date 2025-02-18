@@ -15,7 +15,7 @@ export class MenuType {
   @Column()
   type_name: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   price_difference: number;
 
   @Column({ type: 'boolean', default: false })
@@ -23,5 +23,5 @@ export class MenuType {
 
   @ManyToOne(() => Menu, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'menu_id' })
-  menu: Menu[];
+  menu: Menu;
 }

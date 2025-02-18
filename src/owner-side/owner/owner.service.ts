@@ -23,7 +23,7 @@ export class OwnerService {
 
     @InjectRepository(Ingredient)
     private ingredientRepository: Repository<Ingredient>,
-  ) {}
+  ) { }
 
   // * Check for duplicate email before creating Owner
   async create(createOwnerDto: CreateOwnerDto): Promise<Owner> {

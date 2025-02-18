@@ -21,7 +21,7 @@ import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 
 @Controller('employee/orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
   // @Post()
   // @HttpCode(HttpStatus.CREATED)
@@ -54,6 +54,20 @@ export class OrderController {
     return this.orderService.createOrder(createOrderDto, items);
   }
 
+  // @Post()
+  // async createOrderItem(
+  //   @Body()
+  //   {
+  //     createOrderDto,
+  //     items,
+  //   }: {
+  //     createOrderDto: CreateOrderDto;
+  //     items: OrderItemDto[];
+  //   },
+  // ) {
+  //   return this.orderService.createOrder(createOrderDto, items);
+  // }
+
   @Get()
   async findAllOrders() {
     return this.orderService.findAllOrders();
@@ -68,20 +82,6 @@ export class OrderController {
         .json({ message: 'Order not found' });
     }
     return res.status(HttpStatus.OK).json(order);
-  }
-
-  @Post()
-  async createOrderItem(
-    @Body()
-    {
-      createOrderDto,
-      items,
-    }: {
-      createOrderDto: CreateOrderDto;
-      items: OrderItemDto[];
-    },
-  ) {
-    return this.orderService.createOrder(createOrderDto, items);
   }
 
   @Patch(':id')

@@ -12,7 +12,7 @@ import { DashboardModule } from './owner-side/stock/dashboard/dashboard.module';
 import { IngredientModule } from './owner-side/ingredient/ingredient.module';
 import { PauseModule } from './employee-side/pause/pause.module';
 import { MenuCustomerModule } from './customer-side/menus/menu-customer.module';
-import { MinioModule } from './minio/minio.module';
+// import { MinioModule } from './minio/minio.module';
 import { ImageModule } from './images/image.module';
 import { JwtModule } from '@nestjs/jwt';
 
@@ -39,10 +39,10 @@ import { JwtModule } from '@nestjs/jwt';
     ImageModule,
     IngredientModule,
     PauseModule,
-    MinioModule,
+    // MinioModule,
     OrderModule,
     OwnerModule,
     PauseModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

@@ -10,11 +10,13 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { LocalData } from 'src/entities/local-data.entity';
 import { SyncStatus } from 'src/entities/sync-status.entity';
 import { Payment } from 'src/entities/payment.entity';
+import { Menu } from 'src/entities/menu.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Payment,
+      Menu,
       Ingredient,
       IngredientCategory,
       IngredientMenuLink,
@@ -28,4 +30,4 @@ import { Payment } from 'src/entities/payment.entity';
   providers: [IngredientService],
   exports: [IngredientService, TypeOrmModule],
 })
-export class IngredientModule {}
+export class IngredientModule { }

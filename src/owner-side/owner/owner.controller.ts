@@ -201,4 +201,11 @@ export class OwnerController {
   getAdminData() {
     return { message: 'This is admin data' };
   }
+
+  @Get('ingredients/:owner_id')
+  async getIngredients(@Param('owner_id', ParseIntPipe) ownerId: number) {
+    console.log(ownerId)
+    console.log(typeof (ownerId))
+    return this.ownerService.getIngredientsByOwner(ownerId);
+  }
 }

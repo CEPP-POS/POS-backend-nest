@@ -12,15 +12,12 @@ export enum PaymentMethod {
 }
 
 export class CreateOrderDto {
-  @IsInt()
-  @IsNotEmpty()
-  customer_id: number;
+
 
   @IsDate()
   @Type(() => Date)
   order_date: Date;
 
-  @IsInt()
   @IsNotEmpty()
   total_price: number;
 
