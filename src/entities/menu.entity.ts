@@ -50,15 +50,15 @@ export class Menu {
   @Column({ type: 'boolean', default: false })
   paused: boolean;
 
-  @ManyToOne(() => MenuTypeGroup, { nullable: false })
+  @ManyToOne(() => MenuTypeGroup, { nullable: true })
   @JoinColumn({ name: 'menu_type_group_id' })
   menuTypeGroup: MenuTypeGroup;
 
-  @ManyToOne(() => SweetnessGroup, { nullable: false })
+  @ManyToOne(() => SweetnessGroup, { nullable: true })
   @JoinColumn({ name: 'sweetness_group_id' })
   sweetnessGroup: SweetnessGroup;
 
-  @ManyToOne(() => SizeGroup, { nullable: false })
+  @ManyToOne(() => SizeGroup, { nullable: true })
   @JoinColumn({ name: 'size_group_id' })
   sizeGroup: SizeGroup;
 

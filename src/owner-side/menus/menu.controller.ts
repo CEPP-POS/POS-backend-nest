@@ -9,6 +9,7 @@ import {
   HttpCode,
   ValidationPipe,
   UsePipes,
+  Req,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
@@ -20,13 +21,29 @@ import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) { }
+  ) {}
 
   // * Create a new menu
-  // @Post()
-  // async create(@Body() createMenuDto: CreateMenuDto) {
-  //   await this.menuService.create(createMenuDto);
-  // }
+  @Post()
+  async create(@Req() request: Request, @Body() createMenuDto: CreateMenuDto) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    const menuData = {
+      ...createMenuDto,
+      owner_id: ownerIdNum,
+      branch_id: branchIdNum,
+    };
+
+    return await this.menuService.create(menuData);
+  }
 
   @Patch('options/:type/:optionId')
   async updateOption(
@@ -101,7 +118,8 @@ export class MenuController {
   // @UsePipes(new ValidationPipe({ transform: true }))
   async updateStock(
     @Param('menu_id') menu_id: number,
-    @Body() body: {
+    @Body()
+    body: {
       owner_id: number;
       branch_id: number;
       menuData: LinkMenuToStockDto[];
@@ -110,7 +128,12 @@ export class MenuController {
     console.log('menu_id:', menu_id);
     console.log('Request Body:', body);
 
-    return this.menuService.updateStock(menu_id, body.owner_id, body.branch_id, body.menuData);
+    return this.menuService.updateStock(
+      menu_id,
+      body.owner_id,
+      body.branch_id,
+      body.menuData,
+    );
   }
 
   @Get('/options/:type/:id')
