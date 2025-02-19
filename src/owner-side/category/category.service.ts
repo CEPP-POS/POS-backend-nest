@@ -1,11 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Category } from '../../entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category/create-category.dto';
-// import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 import { Menu } from '../../entities/menu.entity';
-// import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
+import { MenuCategory } from 'src/entities/menu_category';
+import { Owner } from 'src/entities/owner.entity';
+import { Branch } from 'src/entities/branch.entity';
 
 @Injectable()
 export class CategoryService {
@@ -14,7 +19,13 @@ export class CategoryService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Menu)
     private readonly menuRepository: Repository<Menu>,
-  ) { }
+
+    @InjectRepository(Owner)
+    private readonly ownerRepository: Repository<Owner>,
+
+    @InjectRepository(Branch)
+    private readonly branchRepository: Repository<Branch>,
+  ) {}
 
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find();
@@ -30,44 +41,80 @@ export class CategoryService {
     return category;
   }
 
-  async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    const { category_name, menu_id } = createCategoryDto;
+  async create(createCategoryDto: CreateCategoryDto): Promise<any> {
+    const { owner_id, branch_id, category_name, menu_id } = createCategoryDto;
 
-    // ✅ ตรวจสอบว่ามีหมวดหมู่ที่ชื่อซ้ำกันหรือไม่
-    let existingCategory = await this.categoryRepository.findOne({
-      where: { category_name },
-      relations: ['menu'],
+    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+    if (!owner) {
+      throw new NotFoundException(`Owner with ID ${owner_id} not found`);
+    }
+
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id },
     });
+    if (!branch) {
+      throw new NotFoundException(`Branch with ID ${branch_id} not found`);
+    }
 
-    // ✅ ถ้ายังไม่มีหมวดหมู่นี้ ให้สร้างใหม่
+    let existingCategory = await this.categoryRepository
+      .createQueryBuilder('category')
+      .leftJoinAndSelect('category.menuCategory', 'menuCategory')
+      .leftJoinAndSelect('category.owner', 'owner')
+      .leftJoinAndSelect('category.branch', 'branch')
+      .where('category.category_name = :category_name', { category_name })
+      .andWhere('owner.owner_id = :owner_id', { owner_id })
+      .andWhere('branch.branch_id = :branch_id', { branch_id })
+      .getOne();
+
+    // ✅ ถ้ายังไม่มี Category → ให้สร้างใหม่
     if (!existingCategory) {
-      existingCategory = this.categoryRepository.create({ category_name });
+      existingCategory = this.categoryRepository.create({
+        category_name,
+      });
+
+      existingCategory.owner = owner;
+      existingCategory.branch = branch;
+
       existingCategory = await this.categoryRepository.save(existingCategory);
     }
 
+    // ✅ ตรวจสอบว่าเมนูที่ส่งมา มีอยู่จริงในฐานข้อมูล
     const menus = await this.menuRepository.find({
       where: { menu_id: In(menu_id) },
-      relations: ['categories'], // ✅ โหลดหมวดหมู่ที่เกี่ยวข้อง
+      relations: ['menuCategory'],
     });
-
-    // const menus = await this.menuRepository.find({
-    //   where: { menu_id: In(menu_id) },
-    // });
 
     if (menus.length !== menu_id.length) {
       throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
     }
 
-    // const updatedMenus = [...new Set([...existingCategory.menu, ...menus])];
+    for (const menu of menus) {
+      if (!menu.menuCategory) {
+        menu.menuCategory = [];
+      }
 
-    // edit entity
-    // menus.forEach((menu) => {
-    //   menu.categories = [...(menu.categories ?? []), existingCategory]; // ✅ ใช้ `?? []` กัน `undefined`
-    // });
-    // console.log(category_name);
-    // await this.menuRepository.save(menus);
+      const isAlreadyLinked = menu.menuCategory.some(
+        (cat) => cat.category.category_id === existingCategory.category_id,
+      );
 
-    return existingCategory;
+      if (!isAlreadyLinked) {
+        const newMenuCategory = new MenuCategory();
+        newMenuCategory.menu = [menu];
+        newMenuCategory.category = existingCategory;
+
+        menu.menuCategory = [...menu.menuCategory, newMenuCategory];
+      }
+    }
+
+    await this.menuRepository.save(menus);
+
+    return {
+      message: 'Category created successfully',
+      category: {
+        category_id: existingCategory.category_id,
+        category_name: existingCategory.category_name,
+      },
+    };
   }
 
   // async linkMenusToCategory(
@@ -116,49 +163,44 @@ export class CategoryService {
 
   async updateCategory(
     categoryId: number,
+    owner_id: number,
+    branch_id: number,
     updateCategoryDto: CreateCategoryDto,
-  ): Promise<Category> {
-    const { category_name, menu_id } = updateCategoryDto;
+  ): Promise<any> {
+    const { category_name } = updateCategoryDto;
 
-    // ✅ ค้นหา Category ที่ต้องการอัปเดต
     const category = await this.categoryRepository.findOne({
       where: { category_id: categoryId },
-      relations: ['menu'], // ✅ โหลดเมนูที่เกี่ยวข้อง
+      relations: ['owner', 'branch', 'menuCategory'],
     });
 
     if (!category) {
       throw new NotFoundException(`Category with ID ${categoryId} not found`);
     }
 
-    // ✅ อัปเดตชื่อหมวดหมู่ถ้ามีการส่ง `category_name` มา
+    console.log(
+      `Category: ${category.category_id}, Owner: ${category.owner.owner_id}, Branch: ${category.branch.branch_id}`,
+    );
+    console.log(`Request Header -> Owner: ${owner_id}, Branch: ${branch_id}`);
+
+    if (
+      category.owner.owner_id !== owner_id ||
+      category.branch.branch_id !== branch_id
+    ) {
+      throw new ConflictException(
+        `Category does not belong to the specified owner or branch`,
+      );
+    }
+
     if (category_name) {
       category.category_name = category_name;
     }
 
-    if (menu_id && menu_id.length > 0) {
-      // ✅ ค้นหาเมนูที่ต้องการเพิ่มเข้าไปในหมวดหมู่นี้
-      const menus = await this.menuRepository.find({
-        where: { menu_id: In(menu_id) },
-        relations: ['categories'], // ✅ โหลดหมวดหมู่ที่เกี่ยวข้องกับเมนู
-      });
-
-      if (menus.length !== menu_id.length) {
-        throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
-      }
-
-      // ✅ อัปเดตหมวดหมู่ของเมนู (ไม่ลบทิ้ง แต่เพิ่มเข้าไป)
-
-      // edit entity
-      // menus.forEach((menu) => {
-      //   menu.categories = [...(menu.categories ?? []), category];
-      // });
-
-      // await this.menuRepository.save(menus);
-    }
-
-    // ✅ บันทึกการอัปเดต
     await this.categoryRepository.save(category);
 
-    return category;
+    return {
+      category_id: category.category_id,
+      category_name: category.category_name,
+    };
   }
 }

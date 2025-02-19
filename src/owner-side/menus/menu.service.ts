@@ -1,6 +1,11 @@
-import { ConflictException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Equal, In, Repository } from 'typeorm';
+import { Equal, Repository } from 'typeorm';
 import { Menu } from '../../entities/menu.entity';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
 import { Category } from '../../entities/category.entity';
@@ -51,7 +56,7 @@ export class MenuService {
 
   // * สร้างเมนูใหม่
   async create(createMenuDto: CreateMenuDto): Promise<any> {
-    const { owner_id, branch_id,menu_name, ...menuData } = createMenuDto;
+    const { owner_id, branch_id, menu_name, ...menuData } = createMenuDto;
     // เช็กว่ามี Owner นี้
     const owner = await this.ownerRepository.findOne({ where: { owner_id } });
     if (!owner) {
@@ -87,6 +92,7 @@ export class MenuService {
     const savedMenu = await this.menuRepository.save(newMenu);
 
     return {
+      statusCode: HttpStatus.CREATED,
       message: 'Menu created successfully',
       menu: {
         menu_name: savedMenu.menu_name,
@@ -97,9 +103,29 @@ export class MenuService {
     };
   }
 
-  async findAll(): Promise<Menu[]> {
-    return this.menuRepository.find({
-      relations: ['addOns', 'sweetnessLevels', 'sizes', 'menuTypes'],
+  async findAll(): Promise<any[]> {
+    const menus = await this.menuRepository.find({
+      relations: [
+        'menuIngredient',
+        'sweetnessGroup',
+        'sizeGroup',
+        'menuTypeGroup',
+      ],
+    });
+
+    return menus.map((menu) => {
+      const hasRelations =
+        (menu.menuIngredient && menu.menuIngredient.length > 0) ||
+        (menu.sweetnessGroup !== null && menu.sweetnessGroup !== undefined) ||
+        (menu.sizeGroup != null && menu.sizeGroup !== undefined) ||
+        (menu.menuTypeGroup != null && menu.menuTypeGroup !== undefined);
+
+      return hasRelations
+        ? menu
+        : {
+            menu_id: menu.menu_id,
+            menu_name: menu.menu_name,
+          };
     });
   }
 

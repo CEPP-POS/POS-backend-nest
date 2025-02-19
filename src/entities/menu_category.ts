@@ -1,14 +1,11 @@
 import {
   Entity,
-  Column,
   PrimaryGeneratedColumn,
   JoinColumn,
   ManyToOne,
   ManyToMany,
-  JoinTable,
 } from 'typeorm';
 import { Menu } from './menu.entity';
-import { Owner } from './owner.entity';
 import { Category } from './category.entity';
 
 @Entity()

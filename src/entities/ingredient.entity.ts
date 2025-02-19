@@ -4,12 +4,9 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
-  CreateDateColumn,
   OneToMany,
 } from 'typeorm';
 import { IngredientCategory } from './ingredient-category.entity';
-import { Owner } from './owner.entity';
-// import { IngredientMenuLink } from './ingredient-menu-link.entity';
 import { IngredientUpdate } from './ingredient-update.entity';
 import { Branch } from './branch.entity';
 import { OrderItemAddOn } from './order-item-add-on.entity';

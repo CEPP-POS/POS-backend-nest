@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   HttpCode,
-  ValidationPipe,
-  UsePipes,
   Req,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';

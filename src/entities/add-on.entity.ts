@@ -2,12 +2,9 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
   JoinColumn,
   ManyToOne,
 } from 'typeorm';
-import { Menu } from './menu.entity';
-import { MenuIngredient } from './menu-ingredient.entity';
 import { Ingredient } from './ingredient.entity';
 
 @Entity()
