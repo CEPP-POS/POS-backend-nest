@@ -16,6 +16,8 @@ import { BranchModule } from 'src/owner-side/branch/branch.module';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
+import { MulterModule } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Module({
   imports: [
@@ -32,9 +34,18 @@ import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
     CategoryModule,
     OwnerModule,
     BranchModule,
+    MulterModule.register({
+      storage: diskStorage({
+        destination: 'uploads/',
+        filename: (req, file, cb) => {
+          const filename = `${Date.now()}-${file.originalname}`;
+          cb(null, filename);
+        },
+      }),
+    }),
   ],
   controllers: [MenuController],
   providers: [MenuService],
   exports: [MenuService],
 })
-export class MenuModule {}
+export class MenuModule { }

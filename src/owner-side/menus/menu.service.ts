@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Equal, In, Repository } from 'typeorm';
 import { Menu } from '../../entities/menu.entity';
@@ -15,9 +15,16 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
 import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
+import { join } from 'path';
+import { writeFile } from 'fs/promises';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class MenuService {
+
+  // upload local storage image
+  private uploadFolder = join(__dirname, '..', 'uploads')
+
   constructor(
     @InjectRepository(Menu)
     private readonly menuRepository: Repository<Menu>,
@@ -52,6 +59,28 @@ export class MenuService {
     @InjectRepository(IngredientMenuLink)
     private readonly ingredientMenuLinkRepository: Repository<IngredientMenuLink>,
   ) { }
+
+  // upload image to local
+  handleFileUpload(file: Express.Multer.File) {
+    console.log("HIIII")
+    if (!file) {
+      throw new BadRequestException('no file uploaded');
+    }
+
+    // validate file type
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException('invalid file type');
+    }
+
+    // validate file size (e.g., max 5mb)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new BadRequestException('file is too large!');
+    }
+
+    return { message: 'File uploaded successfully', filePath: file.path };
+  }
 
   // * สร้างเมนูใหม่
   async create(createMenuDto: CreateMenuDto): Promise<Menu> {

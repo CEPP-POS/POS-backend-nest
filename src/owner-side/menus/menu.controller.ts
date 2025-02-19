@@ -9,18 +9,29 @@ import {
   HttpCode,
   ValidationPipe,
   UsePipes,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
 import { CreateMenuDto } from './dto/create-menu/create-menu.dto';
 import { CreateSweetnessDto } from './dto/create-option/Sweetness.dto';
 import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller('owner/menus')
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
   ) { }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    return this.menuService.handleFileUpload(file);
+  }
 
   // * Create a new menu
   @Post()
