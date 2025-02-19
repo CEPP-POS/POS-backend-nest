@@ -13,16 +13,13 @@ export class Owner {
   @Column({ type: 'varchar', length: 255, nullable: true })
   owner_name: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  contact_info: string;
-
   @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
   @Column({ type: 'varchar', length: 255 })
   password: string;
 
-  @Column({ type: 'varchar', length: 255 , nullable: true})
+  @Column({ type: 'varchar', length: 255, nullable: true })
   contact_info: string;
 
   @Column({ nullable: true })
@@ -30,7 +27,6 @@ export class Owner {
 
   @Column('text', { array: true, default: () => "ARRAY['owner']" })
   roles: string[];
-
 
   @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.owner, {
     cascade: true,

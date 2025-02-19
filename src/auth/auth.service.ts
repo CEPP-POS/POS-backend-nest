@@ -23,7 +23,7 @@ export class AuthService {
     const payload = {
       owner_id: user.owner_id,
       email: user.email,
-      branch_id: user.branch_id || null,
+      branch_id: user.branch || null,
       roles: user.roles && user.roles.length > 0 ? user.roles : ['employee'],
     };
 
