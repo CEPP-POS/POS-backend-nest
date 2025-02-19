@@ -62,10 +62,17 @@ export class MenuController {
   //   return this.menuService.updateOption(type, id, updateOptionDto);
   // }
 
-  // * Get all menus
-  @HttpCode(200)
+  // * เรียกดู ชื่อ ID Menu ทั้งหมด
   @Get()
-  findAll() {
+  async findAll(@Req() request: Request) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
     return this.menuService.findAll();
   }
 

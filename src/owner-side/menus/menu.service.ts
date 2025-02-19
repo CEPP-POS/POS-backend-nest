@@ -89,6 +89,7 @@ export class MenuService {
     return {
       message: 'Menu created successfully',
       menu: {
+        menu_id: savedMenu.menu_id,
         menu_name: savedMenu.menu_name,
         description: savedMenu.description,
         price: savedMenu.price,

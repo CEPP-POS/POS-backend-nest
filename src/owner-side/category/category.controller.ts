@@ -6,21 +6,45 @@ import {
   Param,
   Delete,
   Patch,
+  Req,
+  HttpStatus,
+  HttpException,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category/create-category.dto';
+import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 // import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 
 @Controller('owner/categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) { }
+  constructor(private readonly categoryService: CategoryService) {}
 
-  // @Post('link-menus')
-  // async linkMenusToCategory(
-  //   @Body() linkMenuToCategoryDto: LinkMenuToCategoryDto,
-  // ) {
-  //   await this.categoryService.linkMenusToCategory(linkMenuToCategoryDto);
-  // }
+  @Post('link-menus')
+  async linkMenusToCategory(
+    @Req() request: Request,
+    @Body() linkMenuToCategoryDto: LinkMenuToCategoryDto,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new HttpException(
+        'Missing required headers: owner_id or branch_id',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    const categoryData = {
+      ...linkMenuToCategoryDto,
+      owner_id: ownerIdNum,
+      branch_id: branchIdNum,
+    };
+
+    return await this.categoryService.linkMenusToCategory(categoryData);
+  }
 
   @Get('')
   async findAll() {

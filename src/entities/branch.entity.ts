@@ -12,6 +12,7 @@ import { Order } from './order.entity';
 import { SalesSummary } from './sales-summary.entity';
 import { Ingredient } from './ingredient.entity';
 import { SyncStatus } from './sync-status.entity';
+import { MenuCategory } from './menu_category';
 
 @Entity()
 export class Branch {
@@ -53,4 +54,9 @@ export class Branch {
     cascade: true,
   })
   syncStatus: SyncStatus[];
+
+  @OneToMany(() => MenuCategory, (menuCategory) => menuCategory.branch, {
+    cascade: true,
+  })
+  menuCategory: MenuCategory[];
 }

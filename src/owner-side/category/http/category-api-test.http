@@ -36,3 +36,12 @@ Content-Type: application/json
   "menu_id": [13,14]
 }
 
+### Link menu to category
+POST http://localhost:3000/owner/categories/link-menus
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+{
+  "category_id": 1,
+  "menu_ids": [1,2,3]
+}

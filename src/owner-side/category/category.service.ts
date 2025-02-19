@@ -5,7 +5,10 @@ import { Category } from '../../entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category/create-category.dto';
 // import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 import { Menu } from '../../entities/menu.entity';
+import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
+import { MenuCategory } from 'src/entities/menu_category';
 // import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class CategoryService {
@@ -14,7 +17,10 @@ export class CategoryService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Menu)
     private readonly menuRepository: Repository<Menu>,
-  ) { }
+
+    @InjectRepository(MenuCategory)
+    private readonly menuCategoryRepository: Repository<MenuCategory>,
+  ) {}
 
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find();
@@ -70,30 +76,65 @@ export class CategoryService {
     return existingCategory;
   }
 
-  // async linkMenusToCategory(
-  //   linkMenuToCategoryDto: LinkMenuToCategoryDto,
-  // ): Promise<Category> {
-  //   const { category_id, menu_id } = linkMenuToCategoryDto;
+  async linkMenusToCategory(
+    linkMenuToCategoryDto: LinkMenuToCategoryDto,
+  ): Promise<any> {
+    const { owner_id, branch_id, category_id, menu_ids } =
+      linkMenuToCategoryDto;
 
-  //   const category = await this.categoryRepository.findOne({
-  //     where: { category_id },
-  //   });
-  //   if (!category) {
-  //     throw new NotFoundException(`Category with ID ${category_id} not found`);
-  //   }
+    // Find the category by category_id, owner_id, and branch_id
+    const category = await this.categoryRepository.findOne({
+      where: { category_id },
+    });
 
-  //   const menus = await this.menuRepository.findByIds(menu_id);
-  //   if (menus.length !== menu_id.length) {
-  //     throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
-  //   }
+    if (!category) {
+      throw new HttpException(
+        `Category with ID ${category_id} not found for the specified owner and branch`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
 
-  //   menus.forEach((menu) => {
-  //     menu.category = category; // กำหนดความสัมพันธ์
-  //   });
-  //   await this.menuRepository.save(menus); // บันทึกการเปลี่ยนแปลง
+    // Find the menus by menu_ids and validate ownership/branch
+    const menus = await this.menuRepository.find({
+      where: { menu_id: In(menu_ids) },
+    });
 
-  //   return category;
-  // }
+    if (menus.length !== menu_ids.length) {
+      throw new HttpException(
+        `Some menus with IDs ${menu_ids} not found for the specified owner and branch`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // Step 1: Delete existing MenuCategory entries that are not in the new list
+    const deleteResult = await this.menuCategoryRepository
+      .createQueryBuilder()
+      .delete()
+      .where('category_id = :category_id', { category_id })
+      .andWhere('owner_id = :owner_id', { owner_id })
+      .andWhere('branch_id = :branch_id', { branch_id })
+      .andWhere('menu_id NOT IN (:...menu_ids)', { menu_ids })
+      .execute();
+
+    // Step 2: Create and save new MenuCategory entries for the given menus
+    const menuCategories = menus.map((menu) =>
+      this.menuCategoryRepository.create({
+        category_id: category.category_id,
+        menu_id: menu.menu_id,
+        owner_id: owner_id,
+        branch_id: branch_id,
+      }),
+    );
+
+    await this.menuCategoryRepository.save(menuCategories);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Menu-category links updated successfully',
+      deletedCount: deleteResult.affected || 0,
+      addedCount: menuCategories.length,
+    };
+  }
 
   async remove(id: number): Promise<void> {
     const category = await this.findOne(id);
