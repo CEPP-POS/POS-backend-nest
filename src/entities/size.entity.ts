@@ -4,9 +4,13 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Menu } from './menu.entity';
 import { Exclude } from 'class-transformer';
+import { SizeGroup } from './size-group.entity';
+import { OrderItem } from './order-item.entity';
+import { MenuIngredient } from './menu-ingredient.entity';
 
 @Entity()
 export class Size {
@@ -18,4 +22,19 @@ export class Size {
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   size_price: number;
+
+  @OneToMany(() => SizeGroup, (sizeGroup) => sizeGroup.size, {
+    cascade: true,
+  })
+  sizeGroup: SizeGroup[];
+
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.size, {
+    cascade: true,
+  })
+  orderItem: OrderItem[];
+
+  @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.size, {
+    cascade: true,
+  })
+  menuIngredient: MenuIngredient[];
 }

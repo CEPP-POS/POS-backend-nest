@@ -5,8 +5,10 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { Branch } from './branch.entity';
+import { LocalData } from './local-data.entity';
 
 export enum syncStatus {
   'online',
@@ -20,7 +22,7 @@ export class SyncStatus {
 
   @ManyToOne(() => Branch, { nullable: false })
   @JoinColumn({ name: 'branch_id' })
-  branch_id: Branch;
+  branch: Branch;
 
   @CreateDateColumn()
   last_sync: Date;
@@ -32,4 +34,9 @@ export class SyncStatus {
     nullable: true,
   })
   status: syncStatus;
+
+  @OneToMany(() => LocalData, (localData) => localData.sync_status, {
+    cascade: true,
+  })
+  localData: LocalData[];
 }

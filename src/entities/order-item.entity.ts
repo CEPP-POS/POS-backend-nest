@@ -6,6 +6,7 @@ import {
   JoinColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { Order } from './order.entity';
 import { Menu } from './menu.entity';
@@ -13,13 +14,17 @@ import { MenuType } from './menu-type.entity';
 import { AddOn } from './add-on.entity';
 import { Size } from './size.entity';
 import { SweetnessLevel } from './sweetness-level.entity';
+import { OrderItemAddOn } from './order-item-add-on.entity';
 
 @Entity()
 export class OrderItem {
   @PrimaryGeneratedColumn()
   order_item_id: number;
 
-  @ManyToOne(() => Order, (order) => order.order_item, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Order, (order) => order.order_item, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'order_id' })
   order: Order;
 
@@ -29,23 +34,11 @@ export class OrderItem {
 
   @ManyToOne(() => SweetnessLevel, { nullable: false })
   @JoinColumn({ name: 'sweetness_id' })
-  sweetness: SweetnessLevel;
+  sweetnessLevel: SweetnessLevel;
 
   @ManyToOne(() => MenuType, { nullable: false })
   @JoinColumn({ name: 'menu_type_id' })
   menuType: MenuType;
-
-  //remove unused entity
-  // @ManyToMany(() => AddOn, { cascade: true })
-  // @JoinTable({
-  //   name: 'order_item_add_ons',
-  //   joinColumn: {
-  //     name: 'order_item_id',
-  //     referencedColumnName: 'order_item_id',
-  //   },
-  //   inverseJoinColumn: { name: 'add_on_id', referencedColumnName: 'add_on_id' },
-  // })
-  // addOns: AddOn[];
 
   @ManyToOne(() => Size, { nullable: false })
   @JoinColumn({ name: 'size_id' })
@@ -56,4 +49,13 @@ export class OrderItem {
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
+
+  @OneToMany(
+    () => OrderItemAddOn,
+    (orderItemAddOn) => orderItemAddOn.orderItem,
+    {
+      cascade: true,
+    },
+  )
+  orderItem: OrderItemAddOn[];
 }

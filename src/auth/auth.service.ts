@@ -11,6 +11,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  // ENTITY
   async login(loginOwnerDto: LoginOwnerDto) {
     const user = await this.validateUser(loginOwnerDto);
 
@@ -21,7 +22,7 @@ export class AuthService {
     const payload = {
       owner_id: user.owner_id,
       email: user.email,
-      branch_id: user.branch_id || null,
+      // branch_id: user.branch_id || null,
       role: user.role || 'user',
     };
 

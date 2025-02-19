@@ -15,7 +15,7 @@ import { OwnerModule } from 'src/owner-side/owner/owner.module';
 import { BranchModule } from 'src/owner-side/branch/branch.module';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
-import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
+// import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
 import { MenuTypeGroup } from 'src/entities/menu-type-group.entity';
 import { SweetnessGroup } from 'src/entities/sweetness-group.entity';
 import { SizeGroup } from 'src/entities/size-group.entity';
@@ -33,7 +33,7 @@ import { SizeGroup } from 'src/entities/size-group.entity';
       SweetnessGroup,
       MenuIngredient,
       Ingredient,
-      IngredientMenuLink,
+      // IngredientMenuLink,
     ]),
     CategoryModule,
     OwnerModule,

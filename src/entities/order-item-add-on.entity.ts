@@ -17,12 +17,12 @@ export class OrderItemAddOn {
     @PrimaryColumn()
     order_item_id: number
 
+    @PrimaryColumn()
+    ingredient_id: number
+
     @ManyToOne(() => OrderItem, { nullable: true })
     @JoinColumn({ name: 'order_item_id' })
     orderItem: OrderItem;
-
-    @PrimaryColumn()
-    ingredient_id: number
 
     @ManyToOne(() => Ingredient, { nullable: true })
     @JoinColumn({ name: 'ingredient_id' })

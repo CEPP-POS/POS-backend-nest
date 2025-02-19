@@ -5,7 +5,7 @@ import { Category } from '../../entities/category.entity';
 import { Menu } from '../../entities/menu.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { IngredientCategory } from 'src/entities/ingredient-category.entity';
-import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
+// import { IngredientMenuLink } from 'src/entities/ingredient-menu-link.entity';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 
 @Injectable()
@@ -20,8 +20,8 @@ export class IngredientService {
         @InjectRepository(IngredientCategory)
         private readonly ingredientCategoryRepository: Repository<IngredientCategory>,
 
-        @InjectRepository(IngredientMenuLink)
-        private readonly ingredientMenuLinkRepository: Repository<IngredientMenuLink>,
+        // @InjectRepository(IngredientMenuLink)
+        // private readonly ingredientMenuLinkRepository: Repository<IngredientMenuLink>,
 
         @InjectRepository(MenuIngredient)
         private readonly menuIngredientRepository: Repository<MenuIngredient>
@@ -31,6 +31,7 @@ export class IngredientService {
         return this.ingredientRepository.find();
     }
 
+    // EDIT ENTITY INGREDIENT MENU LINK
     async findIngredientById(menuId: number) {
         const menu = await this.menuRepository.findOne({
             where: { menu_id: menuId },
@@ -44,30 +45,30 @@ export class IngredientService {
             };
         }
 
-        const ingredientLinks = await this.ingredientMenuLinkRepository.find({
-            where: { menu_id: menuId } as FindOptionsWhere<IngredientMenuLink>,
-            relations: ['ingredient_id'],
-        });
+        // const ingredientLinks = await this.ingredientMenuLinkRepository.find({
+        //     where: { menu_id: menuId } as FindOptionsWhere<IngredientMenuLink>,
+        //     relations: ['ingredient_id'],
+        // });
 
-        if (ingredientLinks.length === 0) {
-            return {
-                status: HttpStatus.NO_CONTENT,
-                message: `No ingredients linked to menu with ID ${menuId}`,
-                ingredients: [],
-            };
-        }
-        const ingredientIds = ingredientLinks.map(link => link.ingredient_id.ingredient_id);
+        // if (ingredientLinks.length === 0) {
+        //     return {
+        //         status: HttpStatus.NO_CONTENT,
+        //         message: `No ingredients linked to menu with ID ${menuId}`,
+        //         ingredients: [],
+        //     };
+        // }
+        // const ingredientIds = ingredientLinks.map(link => link.ingredient_id.ingredient_id);
 
-        const ingredients = await this.ingredientRepository.findByIds(ingredientIds);
+        // const ingredients = await this.ingredientRepository.findByIds(ingredientIds);
 
         return {
             status: HttpStatus.OK,
             message: `Ingredients found for menu with ID ${menuId}`,
-            ingredients: ingredients.map(ingredient => ({
-                ingredient_id: ingredient.ingredient_id,
-                ingredient_name: ingredient.ingredient_name,
-                ingredient_unit: ingredient.unit
-            })),
+            // ingredients: ingredients.map(ingredient => ({
+            //     ingredient_id: ingredient.ingredient_id,
+            //     ingredient_name: ingredient.ingredient_name,
+            //     ingredient_unit: ingredient.unit
+            // })),
         };
     }
 
