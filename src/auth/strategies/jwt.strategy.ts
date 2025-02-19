@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { OwnerService } from 'src/owner-side/owner/owner.service';
-import { IJwtPayload } from './jwt.interface';
-import { UserPayload } from './user.interface';
+import { IJwtPayload } from '../interfaces/jwt.interface';
+import { UserPayload } from '../interfaces/user.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -32,8 +32,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       owner_id: existingUser.owner_id,
       email: existingUser.email,
-      // branch_id: existingUser.branch_id || null,
-      role: existingUser.role || 'user',
+      branch_id: existingUser.branch_id || null,
+      roles: existingUser.roles,
     };
   }
 }

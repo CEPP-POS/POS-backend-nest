@@ -1,12 +1,12 @@
-### Register New Owner
+### Register Owner
 POST http://localhost:3000/owner/register
 Content-Type: application/json
 {
-  "owner_name": "Admin FluekFix",
+  "owner_name": "Owner FluekFix",
   "contact_info": "0840969769",
-  "email": "adminFluk@gmail.com",
-  "password": "AdminTest",
-  "role": "admin"
+  "email": "ownerFluk2@gmail.com",
+  "password": "OwnerTest",
+  "role": "owner"
 }
 
 ### Login Owner
@@ -17,18 +17,21 @@ Content-Type: application/json
   "password": "3gbwhqe8"
 }
 
-### Upload CSV with Owner Data
-POST http://localhost:3000/owner/upload-csv
-Content-Type: multipart/form-data
-file=@./uploads/owners.csv
+### Get Owner Profile
+GET http://localhost:3000/owner/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NSwiZW1haWwiOiJhZG1pbkZsdWtAZ21haWwuY29tIiwiYnJhbmNoX2lkIjpudWxsLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3Mzk4OTAxMDUsImV4cCI6MTczOTk3NjUwNX0.O5MsndiRjiuLLsqwtAq5duU6TzlwMIOiiLcjvIsXRas
 
-### Send OTP
+### Owner Dashboard
+GET http://localhost:3000/owner/dashboard
+Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NSwiZW1haWwiOiJhZG1pbkZsdWtAZ21haWwuY29tIiwiYnJhbmNoX2lkIjpudWxsLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3Mzk4ODY3NDksImV4cCI6MTczOTk3MzE0OX0.B0PWsLgofCubNILo-gzP3Fk8TY-wakR82lLeC82xHtE
+
+### Send OTP to Email
 POST http://localhost:3000/owner/forgot-password
 Content-Type: application/json
 {
   "usernameOrEmail": "adminFluk@gmail.com"
 }
-### Verify OTP
+### Verify OTP to Email
 POST http://localhost:3000/owner/verify-otp
 Content-Type: application/json
 {
@@ -36,7 +39,7 @@ Content-Type: application/json
   "otp": "790362"
 }
 
-### Reset Password
+### Reset Password Owner 
 PATCH http://localhost:3000/owner/reset-password/5
 Content-Type: application/json
 {

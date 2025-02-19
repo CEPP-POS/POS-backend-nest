@@ -23,13 +23,18 @@ import * as csvParser from 'csv-parser';
 import { ForgotPasswordDto } from './dto/forgot-owner/forgot-owner.dto';
 import { VerifyOtpDto } from './dto/verify-otp-owner/verify-otp-owner.dto';
 import { sendTemporaryPasswordEmail } from 'src/utils/send-email.util';
-import { Roles } from 'src/auth/common/roles.decorator';
-import { JwtGuard } from 'src/auth/common/jwt.guard';
-import { RolesGuard } from 'src/auth/common/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { AuthService } from '../../auth/auth.service';
+import { CreateEmployeeDto } from './dto/create-employee/create-employee.dto';
 
 @Controller('owner')
 export class OwnerController {
-  constructor(private readonly ownerService: OwnerService) { }
+  constructor(
+    private readonly ownerService: OwnerService,
+    private readonly authService: AuthService,
+  ) {}
   @Patch('reset-password/:id')
   async updatePassword(
     @Param('id') ownerId: string,
@@ -54,68 +59,9 @@ export class OwnerController {
   // * Function Login Owner
   @Post('login')
   async login(@Body() loginOwnerDto: LoginOwnerDto) {
-    return this.ownerService.login(loginOwnerDto);
+    return this.authService.login(loginOwnerDto);
   }
-
-  // * Function upload and read CSV with owner data
-  // @Post('upload-csv')
-  // @UseInterceptors(FileInterceptor('file'))
-  // async uploadCsv(@UploadedFile() file: Express.Multer.File) {
-  //   // * Create an array to store the owner data from the CSV file.
-  //   if (!file) {
-  //     throw new HttpException('No file provided', HttpStatus.BAD_REQUEST);
-  //   }
-
-  //   const owners: CreateOwnerDto[] = [];
-
-  //   // * Convert the uploaded file (buffer) to a readable stream and use csv-parser to read the CSV data.
-  //   const stream = Readable.from(file.buffer.toString());
-  //   return new Promise((resolve, reject) => {
-  //     stream
-  //       // * Read the CSV data
-  //       .pipe(csvParser())
-  //       .on('data', async (row) => {
-  //         // * Generate a random temporary password
-  //         const tempPassword = Math.random().toString(36).slice(-8);
-  //         // * Create a DTO for Owner from data in each row of the CSV file.
-  //         const createOwnerDto: CreateOwnerDto = {
-  //           owner_name: row.owner_name,
-  //           contact_info: row.contact_info,
-  //           email: row.email,
-  //           password: tempPassword,
-  //         };
-  //         // * Send temporary password to the user's email
-  //         await sendTemporaryPasswordEmail(createOwnerDto.email, tempPassword);
-  //         // * Add the owner data to the array for later processing
-  //         owners.push(createOwnerDto);
-  //       })
-  //       .on('end', async () => {
-  //         try {
-  //           // * Loop through each owner data into the database.
-  //           for (const owner of owners) {
-  //             await this.ownerService.create(owner);
-  //           }
-  //           resolve({ message: 'CSV data uploaded successfully' });
-  //         } catch (error) {
-  //           reject(
-  //             new HttpException(
-  //               'Error uploading CSV data',
-  //               HttpStatus.INTERNAL_SERVER_ERROR,
-  //             ),
-  //           );
-  //         }
-  //       })
-  //       .on('error', (error) => {
-  //         reject(
-  //           new HttpException(
-  //             `Error reading CSV file: ${error.message}`,
-  //             HttpStatus.BAD_REQUEST,
-  //           ),
-  //         );
-  //       });
-  //   });
-  // }
-
+ // * Function Upload CSV file 
   @Post('upload-csv')
   @UseInterceptors(FileInterceptor('file'))
   async uploadCsv(@UploadedFile() file: Express.Multer.File) {
@@ -149,9 +95,6 @@ export class OwnerController {
           try {
             // * Loop through each owner data into the database.
             console.log('OWNERS', owners);
-            // for (const owner of owners) {
-            //   await this.ownerService.create(owner);
-            // }
             resolve({ message: 'CSV data uploaded successfully' });
           } catch (error) {
             reject(
@@ -198,10 +141,19 @@ export class OwnerController {
     return { message: 'This is admin data' };
   }
 
+  // * Function Get Ingredients
   @Get('ingredients/:owner_id')
   async getIngredients(@Param('owner_id', ParseIntPipe) ownerId: number) {
-    console.log(ownerId)
-    console.log(typeof (ownerId))
+    console.log(ownerId);
+    console.log(typeof ownerId);
     return this.ownerService.getIngredientsByOwner(ownerId);
+  }
+
+  // * Function Create Employee
+  @Post('create-employee')
+  @Roles('owner')
+  @UseGuards(JwtGuard, RolesGuard)
+  async createEmployee(@Body() createEmployeeDto: CreateEmployeeDto) {
+    return this.ownerService.createEmployee(createEmployeeDto);
   }
 }
