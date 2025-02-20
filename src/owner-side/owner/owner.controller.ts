@@ -134,13 +134,20 @@ export class OwnerController {
   @UseGuards(JwtGuard, RolesGuard)
   async createEmployee(
     @Body() createEmployeeDto: CreateEmployeeDto,
-    @Req() req: Request, 
+    @Req() req: Request,
   ) {
-    const user = req.user as UserPayload; 
+    const user = req.user as UserPayload;
     return this.ownerService.createEmployee({
       ...createEmployeeDto,
       manager_id: user.owner_id,
     });
   }
-  
+  // * Dev only
+  @Post('create-employee-dev')
+  async createEmployeeWithoutAuth(
+    @Body() createEmployeeDto: CreateEmployeeDto,
+  ) {
+    console.log('🔍 Creating Employee (No Auth):', createEmployeeDto);
+    return this.ownerService.createEmployee(createEmployeeDto);
+  }
 }

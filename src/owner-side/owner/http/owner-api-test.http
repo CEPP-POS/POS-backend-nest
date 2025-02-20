@@ -64,6 +64,17 @@ Content-Type: application/json
   "password": "EmployeePass123!"
 }
 
+### Dev only สร้าง employee ใหม่
+POST http://localhost:3000/owner/create-employee-dev
+Content-Type: application/json
+
+{
+  "email": "employee@gmail.com",
+  "password": "EmployeePass123!",
+  "manager_id": 2
+}
+
+
 ### 8. Owner ดูข้อมูลตัวเอง
 GET http://localhost:3000/owner/profile
-Authorization: Bearer {{TOKEN}}
+Authorization:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MiwiZW1haWwiOiJvd25lckBnbWFpbC5jb20iLCJicmFuY2hfaWQiOm51bGwsInJvbGVzIjpbIm93bmVyIl0sImlhdCI6MTc0MDA3MjI2NSwiZXhwIjoxNzQwMTU4NjY1fQ.wcReQ-lK-S-aLXbAyneSE2LLDPEfcgS5XqQTS8zEw_0
