@@ -15,7 +15,7 @@ import { MenuType } from 'src/entities/menu-type.entity';
 import { OrderItemDto } from './dto/order-item/order-item.dto';
 
 import { Branch } from 'src/entities/branch.entity';
-import { Owner } from 'src/entities/owner.entity';
+import { Owner } from 'src/owner-side/owner/entity/owner.entity';
 import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
 import { Payment } from 'src/entities/payment.entity';
 import { SalesSummary } from 'src/entities/sales-summary.entity';

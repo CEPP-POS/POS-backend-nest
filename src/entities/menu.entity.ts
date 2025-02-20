@@ -8,13 +8,8 @@ import {
   JoinTable,
   ManyToMany,
 } from 'typeorm';
-import { Owner } from './owner.entity';
-import { Category } from './category.entity';
+import { Owner } from '../owner-side/owner/entity/owner.entity';
 import { Branch } from './branch.entity';
-import { Size } from './size.entity';
-import { AddOn } from 'src/entities/add-on.entity';
-import { SweetnessLevel } from './sweetness-level.entity';
-import { MenuType } from './menu-type.entity';
 import { MenuTypeGroup } from './menu-type-group.entity';
 import { SweetnessGroup } from './sweetness-group.entity';
 import { SizeGroup } from './size-group.entity';
@@ -50,15 +45,15 @@ export class Menu {
   @Column({ type: 'boolean', default: false })
   paused: boolean;
 
-  @ManyToOne(() => MenuTypeGroup, { nullable: false })
+  @ManyToOne(() => MenuTypeGroup, { nullable: true })
   @JoinColumn({ name: 'menu_type_group_id' })
   menuTypeGroup: MenuTypeGroup;
 
-  @ManyToOne(() => SweetnessGroup, { nullable: false })
+  @ManyToOne(() => SweetnessGroup, { nullable: true })
   @JoinColumn({ name: 'sweetness_group_id' })
   sweetnessGroup: SweetnessGroup;
 
-  @ManyToOne(() => SizeGroup, { nullable: false })
+  @ManyToOne(() => SizeGroup, { nullable: true })
   @JoinColumn({ name: 'size_group_id' })
   sizeGroup: SizeGroup;
 

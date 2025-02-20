@@ -10,5 +10,5 @@ export class CreateEmployeeDto {
   password: string;
 
   @IsNotEmpty()
-  owner_id: number; 
+  manager_id: number; 
 }

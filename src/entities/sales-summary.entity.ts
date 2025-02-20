@@ -6,7 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-import { Owner } from 'src/entities/owner.entity';
+import { Owner } from 'src/owner-side/owner/entity/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 
 @Entity()

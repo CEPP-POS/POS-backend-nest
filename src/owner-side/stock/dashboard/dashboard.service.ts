@@ -27,7 +27,7 @@ import { Ingredient } from 'src/entities/ingredient.entity';
 import { IngredientDto } from './dto/ingredients.dto';
 import { IngredientCategory } from 'src/entities/ingredient-category.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
-import { Owner } from 'src/entities/owner.entity';
+import { Owner } from 'src/owner-side/owner/entity/owner.entity';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import {
   IngredientDetailsDto,

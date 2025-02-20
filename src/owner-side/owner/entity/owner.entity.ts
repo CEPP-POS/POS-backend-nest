@@ -1,9 +1,15 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { MenuIngredient } from './menu-ingredient.entity';
-import { Branch } from './branch.entity';
-import { SalesSummary } from './sales-summary.entity';
-import { Menu } from './menu.entity';
-import { Category } from './category.entity';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  ManyToOne,
+} from 'typeorm';
+import { MenuIngredient } from '../../../entities/menu-ingredient.entity';
+import { Branch } from '../../../entities/branch.entity';
+import { SalesSummary } from '../../../entities/sales-summary.entity';
+import { Menu } from '../../../entities/menu.entity';
+import { Category } from '../../../entities/category.entity';
 
 @Entity()
 export class Owner {
@@ -25,8 +31,17 @@ export class Owner {
   @Column({ nullable: true })
   otp: string;
 
+  @Column({ type: 'timestamp', nullable: true })
+  otp_expiry: Date;
+
   @Column('text', { array: true, default: () => "ARRAY['owner']" })
   roles: string[];
+
+  @OneToMany(() => Owner, (employee) => employee.manager, { cascade: true })
+  employees: Owner[];
+
+  @ManyToOne(() => Owner, (owner) => owner.employees, { nullable: true })
+  manager: Owner;
 
   @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.owner, {
     cascade: true,
