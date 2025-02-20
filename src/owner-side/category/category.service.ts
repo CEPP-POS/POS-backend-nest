@@ -10,10 +10,10 @@ import { In, Repository } from 'typeorm';
 import { Category } from '../../entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category/create-category.dto';
 import { Menu } from '../../entities/menu.entity';
-import { Owner } from 'src/entities/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 import { MenuCategory } from 'src/entities/menu_category';
 import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
+import { Owner } from '../owner/entity/owner.entity';
 // import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 
 @Injectable()
