@@ -25,7 +25,7 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "category_name": "promation friday",
+  "category_name": "Drinks",
   "menu_id": [1, 2]
 }
 

@@ -20,6 +20,9 @@ export class CategoryService {
     @InjectRepository(Menu)
     private readonly menuRepository: Repository<Menu>,
 
+    @InjectRepository(MenuCategory)
+    private readonly menuCategoryRepository: Repository<MenuCategory>,
+
     @InjectRepository(Owner)
     private readonly ownerRepository: Repository<Owner>,
 
@@ -44,11 +47,13 @@ export class CategoryService {
   async create(createCategoryDto: CreateCategoryDto): Promise<any> {
     const { owner_id, branch_id, category_name, menu_id } = createCategoryDto;
 
+    // ✅ ดึง Owner จากฐานข้อมูล
     const owner = await this.ownerRepository.findOne({ where: { owner_id } });
     if (!owner) {
       throw new NotFoundException(`Owner with ID ${owner_id} not found`);
     }
 
+    // ✅ ดึง Branch จากฐานข้อมูล
     const branch = await this.branchRepository.findOne({
       where: { branch_id },
     });
@@ -56,24 +61,19 @@ export class CategoryService {
       throw new NotFoundException(`Branch with ID ${branch_id} not found`);
     }
 
-    let existingCategory = await this.categoryRepository
-      .createQueryBuilder('category')
-      .leftJoinAndSelect('category.menuCategory', 'menuCategory')
-      .leftJoinAndSelect('category.owner', 'owner')
-      .leftJoinAndSelect('category.branch', 'branch')
-      .where('category.category_name = :category_name', { category_name })
-      .andWhere('owner.owner_id = :owner_id', { owner_id })
-      .andWhere('branch.branch_id = :branch_id', { branch_id })
-      .getOne();
+    // ✅ ตรวจสอบว่ามี Category อยู่แล้วหรือไม่
+    let existingCategory = await this.categoryRepository.findOne({
+      where: { category_name, owner: { owner_id }, branch: { branch_id } },
+      relations: ['owner', 'branch', 'menuCategory'],
+    });
 
     // ✅ ถ้ายังไม่มี Category → ให้สร้างใหม่
     if (!existingCategory) {
       existingCategory = this.categoryRepository.create({
         category_name,
+        owner,
+        branch,
       });
-
-      existingCategory.owner = owner;
-      existingCategory.branch = branch;
 
       existingCategory = await this.categoryRepository.save(existingCategory);
     }
@@ -88,25 +88,24 @@ export class CategoryService {
       throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
     }
 
+    // ✅ บันทึก MenuCategory ให้สัมพันธ์กับ Category
     for (const menu of menus) {
-      if (!menu.menuCategory) {
-        menu.menuCategory = [];
-      }
+      const existingMenuCategory = await this.menuCategoryRepository.findOne({
+        where: {
+          category: { category_id: existingCategory.category_id },
+          menu,
+        },
+      });
 
-      const isAlreadyLinked = menu.menuCategory.some(
-        (cat) => cat.category.category_id === existingCategory.category_id,
-      );
+      if (!existingMenuCategory) {
+        const newMenuCategory = this.menuCategoryRepository.create({
+          category: existingCategory,
+          menu: [menu],
+        });
 
-      if (!isAlreadyLinked) {
-        const newMenuCategory = new MenuCategory();
-        newMenuCategory.menu = [menu];
-        newMenuCategory.category = existingCategory;
-
-        menu.menuCategory = [...menu.menuCategory, newMenuCategory];
+        await this.menuCategoryRepository.save(newMenuCategory);
       }
     }
-
-    await this.menuRepository.save(menus);
 
     return {
       message: 'Category created successfully',
