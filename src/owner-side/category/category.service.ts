@@ -33,7 +33,7 @@ export class CategoryService {
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
 
-  ) {}
+  ) { }
 
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find();
@@ -49,7 +49,7 @@ export class CategoryService {
     return category;
   }
 
-async create(createCategoryDto: CreateCategoryDto): Promise<any> {
+  async create(createCategoryDto: CreateCategoryDto): Promise<any> {
     const { owner_id, branch_id, category_name, menu_id } = createCategoryDto;
 
     // ✅ Validate Owner
@@ -66,49 +66,50 @@ async create(createCategoryDto: CreateCategoryDto): Promise<any> {
 
     // ✅ Retrieve or create category
     let category = await this.categoryRepository.findOne({
-        where: { category_name, owner: { owner_id }, branch: { branch_id } },
-        relations: ['owner', 'branch', 'menuCategory'],
+      where: { category_name, owner: { owner_id }, branch: { branch_id } },
+      relations: ['owner', 'branch', 'menuCategory'],
     });
 
     if (!category) {
-        category = this.categoryRepository.create({ category_name, owner, branch });
-        category = await this.categoryRepository.save(category);
+      category = this.categoryRepository.create({ category_name, owner, branch });
+      category = await this.categoryRepository.save(category);
     }
 
     // ✅ Validate Menus
     const menus = await this.menuRepository.find({
-        where: { menu_id: In(menu_id) },
-        relations: ['menuCategory'],
+      where: { menu_id: In(menu_id) },
+      relations: ['menuCategory'],
     });
+    // console.log(menus)
     if (menus.length !== menu_id.length) {
-        throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
+      throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
     }
 
     // ✅ Associate Menus with Category
     for (const menu of menus) {
-        const existingMenuCategory = await this.menuCategoryRepository.findOne({
-            where: { category: { category_id: category.category_id }, menu },
-        });
+      const existingMenuCategory = await this.menuCategoryRepository.findOne({
+        where: { category: { category_id: category.category_id }, menu },
+      });
 
-        if (!existingMenuCategory) {
-            const newMenuCategory = this.menuCategoryRepository.create({
-                category,
-                menu,
-                owner_id,
-                branch_id
-            });
-            await this.menuCategoryRepository.save(newMenuCategory);
-        }
+      if (!existingMenuCategory) {
+        const newMenuCategory = this.menuCategoryRepository.create({
+          category,
+          menu,
+          owner_id,
+          branch_id
+        });
+        await this.menuCategoryRepository.save(newMenuCategory);
+      }
     }
 
     return {
-        message: 'Category created successfully',
-        category: {
-            category_id: category.category_id,
-            category_name: category.category_name,
-        },
+      message: 'Category created successfully',
+      category: {
+        category_id: category.category_id,
+        category_name: category.category_name,
+      },
     };
-}
+  }
 
 
   async linkMenusToCategory(

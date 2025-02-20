@@ -8,18 +8,28 @@ import {
   Delete,
   HttpCode,
   Req,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
 import { CreateMenuDto } from './dto/create-menu/create-menu.dto';
 import { CreateSweetnessDto } from './dto/create-option/Sweetness.dto';
 import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('owner/menus')
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) {}
+  ) { }
+
+  // upload picture to local storage
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    return this.menuService.handleFileUpload(file);
+  }
 
   // * Create a new menu
   @Post()
@@ -95,8 +105,14 @@ export class MenuController {
 
   // * Delete a menu
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.menuService.remove(+id);
+  remove(@Req() request: Request, @Param('id') id: string) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    return this.menuService.remove(+id, +ownerId, +branchId);
   }
 
   @Post('options/sweetness')

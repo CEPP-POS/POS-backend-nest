@@ -45,6 +45,9 @@ export class Menu {
   @Column({ type: 'boolean', default: false })
   paused: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  is_delete: boolean;
+
   @ManyToOne(() => MenuTypeGroup, { nullable: true })
   @JoinColumn({ name: 'menu_type_group_id' })
   menuTypeGroup: MenuTypeGroup;
