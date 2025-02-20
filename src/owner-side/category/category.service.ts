@@ -14,7 +14,6 @@ import { Owner } from 'src/owner-side/owner/entity/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 import { MenuCategory } from 'src/entities/menu_category';
 import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
-import { Owner } from '../owner/entity/owner.entity';
 // import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 
 @Injectable()
