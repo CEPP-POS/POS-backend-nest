@@ -28,6 +28,9 @@ export class Owner {
   @Column('text', { array: true, default: () => "ARRAY['owner']" })
   roles: string[];
 
+  @Column({ default: 'user' })
+  role: string;
+
   @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.owner, {
     cascade: true,
   })

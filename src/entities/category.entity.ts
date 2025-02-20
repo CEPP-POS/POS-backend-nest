@@ -5,11 +5,10 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  ManyToMany,
 } from 'typeorm';
 import { Owner } from './owner.entity';
 import { MenuCategory } from './menu_category';
-import { Menu } from './menu.entity';
+import { Branch } from './branch.entity';
 
 @Entity()
 export class Category {
@@ -23,8 +22,12 @@ export class Category {
   @JoinColumn({ name: 'owner_id' })
   owner: Owner;
 
-  @OneToMany(() => MenuCategory, (menuCategory) => menuCategory.category, { cascade: true })
+  @ManyToOne(() => Branch, { nullable: true })
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
+
+  @OneToMany(() => MenuCategory, (menuCategory) => menuCategory.category, {
+    cascade: true,
+  })
   menuCategory: MenuCategory[];
-  // @ManyToMany(() => Menu, (menu) => menu.menuCategory)
-  // menus: Menu[];
 }
