@@ -32,7 +32,6 @@ export class Owner {
   @Column({ default: 'user' })
   role: string;
 
-
   @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.owner, {
     cascade: true,
   })

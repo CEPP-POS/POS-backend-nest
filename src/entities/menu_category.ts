@@ -26,7 +26,7 @@ export class MenuCategory {
   @PrimaryColumn()
   branch_id: number;
 
-  @ManyToOne(() => Category, { nullable: true })
+  @ManyToOne(() => Category, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
