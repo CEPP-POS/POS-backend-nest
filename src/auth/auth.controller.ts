@@ -9,29 +9,25 @@ import { LoginOwnerDto } from 'src/owner-side/owner/dto/login-owner/login-owner.
 
 @Controller('auth')
 export class AuthController {
-    constructor(
-        private readonly ownerService: OwnerService,
-        private readonly authService: AuthService,
-    ) { }
+  constructor(
+    private readonly ownerService: OwnerService,
+    private readonly authService: AuthService,
+  ) {}
 
-    //Function Register Owner
-    @Post('register')
-    async register(@Body() createOwnerDto: CreateOwnerDto) {
-        const existingOwner = await this.ownerService.findByEmail(
-            createOwnerDto.email,
-        );
+  @Post('register')
+  async register(@Body() createOwnerDto: CreateOwnerDto) {
+    const existingOwner = await this.ownerService.findByEmail(
+      createOwnerDto.email,
+    );
 
-        // * Check if there is already an email in the system.
-        if (existingOwner) {
-            throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
-        }
-        // * Create a new owner
-        return this.ownerService.create(createOwnerDto);
+    if (existingOwner) {
+      throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
     }
+    return this.ownerService.create(createOwnerDto);
+  }
 
-    // * Function Login Owner
-    @Post('login')
-    async login(@Body() loginOwnerDto: LoginOwnerDto) {
-        return this.authService.login(loginOwnerDto);
-    }
+  @Post('login')
+  async login(@Body() loginOwnerDto: LoginOwnerDto) {
+    return this.authService.login(loginOwnerDto);
+  }
 }

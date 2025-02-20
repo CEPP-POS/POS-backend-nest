@@ -5,6 +5,6 @@ export interface IJwtPayload {
   iat?: number;
   owner_id: number;
   owner_name: string;
-  role: string;
+  roles: string[];
   sub: string;
 }
