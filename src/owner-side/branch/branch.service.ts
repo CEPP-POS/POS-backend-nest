@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Branch } from '../../entities/branch.entity';
 import { CreateBranchDto } from './dto/create-branch/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch/update-branch.dto';
-import { Owner } from '../../entities/owner.entity';
+import { Owner } from '../owner/entity/owner.entity';
 
 @Injectable()
 export class BranchService {

@@ -6,7 +6,7 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { Owner } from './owner.entity';
+import { Owner } from '../owner-side/owner/entity/owner.entity';
 import { MenuCategory } from './menu_category';
 import { Branch } from './branch.entity';
 

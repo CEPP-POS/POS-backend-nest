@@ -4,7 +4,7 @@ import { CategoryService } from './category.service';
 import { Category } from '../../entities/category.entity';
 import { Menu } from 'src/entities/menu.entity';
 import { CategoryController } from './category.controller';
-import { Owner } from 'src/entities/owner.entity';
+import { Owner } from 'src/owner-side/owner/entity/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 import { MenuCategory } from 'src/entities/menu_category';
 

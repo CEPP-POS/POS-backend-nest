@@ -1,49 +1,80 @@
-### Register Owner
+### 1. Owner สมัครใช้งาน (Register)
 POST http://localhost:3000/owner/register
 Content-Type: application/json
+
 {
-  "owner_name": "Owner FluekFix",
-  "contact_info": "0840969769",
-  "email": "ownerFluk2@gmail.com",
-  "password": "OwnerTest",
-  "role": "owner"
+  "owner_name": "Owner",
+  "contact_info": "0123456789",
+  "email": "owner@gmail.com",
+  "password": "SecurePass123!"
 }
 
-### Login Owner
+### 2. Owner ล็อกอิน (Login)
 POST http://localhost:3000/owner/login
 Content-Type: application/json
+
 {
-  "email": "adminFluk@gmail.com",
-  "password": "3gbwhqe8"
+  "email": "owner@gmail.com",
+  "password": "SecurePass456!"
 }
 
-### Get Owner Profile
-GET http://localhost:3000/owner/profile
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NSwiZW1haWwiOiJhZG1pbkZsdWtAZ21haWwuY29tIiwiYnJhbmNoX2lkIjpudWxsLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3Mzk4OTAxMDUsImV4cCI6MTczOTk3NjUwNX0.O5MsndiRjiuLLsqwtAq5duU6TzlwMIOiiLcjvIsXRas
+POST http://localhost:3000/owner/upload-csv
+Content-Type: multipart/form-data; boundary=boundary
 
-### Owner Dashboard
-GET http://localhost:3000/owner/dashboard
-Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NSwiZW1haWwiOiJhZG1pbkZsdWtAZ21haWwuY29tIiwiYnJhbmNoX2lkIjpudWxsLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3Mzk4ODY3NDksImV4cCI6MTczOTk3MzE0OX0.B0PWsLgofCubNILo-gzP3Fk8TY-wakR82lLeC82xHtE
+--boundary
+Content-Disposition: form-data; name="file"; filename="owners.csv"
+Content-Type: text/csv
 
-### Send OTP to Email
+< /Users/watcharapolyotadee/Development/POS/POS-backend-nest/src/uploads/owners.csv
+--boundary--
+
+
+### 4. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน
 POST http://localhost:3000/owner/forgot-password
 Content-Type: application/json
+
 {
-  "usernameOrEmail": "adminFluk@gmail.com"
+  "usernameOrEmail": "owner@gmail.com"
 }
-### Verify OTP to Email
+
+### 5. Owner ยืนยัน OTP
 POST http://localhost:3000/owner/verify-otp
 Content-Type: application/json
+
 {
-  "usernameOrEmail": "adminFluk@gmail.com",
-  "otp": "790362"
+  "usernameOrEmail": "owner@gmail.com",
+  "otp": "413529"
 }
 
-### Reset Password Owner 
-PATCH http://localhost:3000/owner/reset-password/5
+### 6. Owner เปลี่ยนรหัสผ่านใหม่
+PATCH http://localhost:3000/owner/reset-password/2
 Content-Type: application/json
+
 {
-  "newPassword": "AdminTestNew"
+  "newPassword": "SecurePass456!"
 }
 
-GET http://localhost:3000/owner/ingredients/16
+### 7. Owner สร้าง Employee (ต้องแนบ Token)
+POST http://localhost:3000/owner/create-employee
+Authorization: Bearer {{TOKEN}}
+Content-Type: application/json
+
+{
+  "email": "employee@example.com",
+  "password": "EmployeePass123!"
+}
+
+### Dev only สร้าง employee ใหม่
+POST http://localhost:3000/owner/create-employee-dev
+Content-Type: application/json
+
+{
+  "email": "employee@gmail.com",
+  "password": "EmployeePass123!",
+  "manager_id": 2
+}
+
+
+### 8. Owner ดูข้อมูลตัวเอง
+GET http://localhost:3000/owner/profile
+Authorization:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MiwiZW1haWwiOiJvd25lckBnbWFpbC5jb20iLCJicmFuY2hfaWQiOm51bGwsInJvbGVzIjpbIm93bmVyIl0sImlhdCI6MTc0MDA3MjI2NSwiZXhwIjoxNzQwMTU4NjY1fQ.wcReQ-lK-S-aLXbAyneSE2LLDPEfcgS5XqQTS8zEw_0
