@@ -7,7 +7,7 @@ GET http://localhost:3000/owner/categories
 GET http://localhost:3000/owner/categories/15
 
 ### Delete a Category by ID
-DELETE http://localhost:3000/owner/categories/14
+DELETE http://localhost:3000/owner/categories/6
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
