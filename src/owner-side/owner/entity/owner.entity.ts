@@ -10,6 +10,7 @@ import { Branch } from '../../../entities/branch.entity';
 import { SalesSummary } from '../../../entities/sales-summary.entity';
 import { Menu } from '../../../entities/menu.entity';
 import { Category } from '../../../entities/category.entity';
+import { MenuCategory } from 'src/entities/menu_category';
 
 @Entity()
 export class Owner {

@@ -2,7 +2,7 @@ import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Menu } from './menu.entity';
 import { Category } from './category.entity';
 import { Branch } from './branch.entity';
-import { Owner } from './owner.entity';
+import { Owner } from 'src/owner-side/owner/entity/owner.entity';
 
 @Entity()
 export class MenuCategory {
