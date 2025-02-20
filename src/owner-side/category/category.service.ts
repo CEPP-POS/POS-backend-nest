@@ -32,7 +32,6 @@ export class CategoryService {
 
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
-
   ) {}
 
   async findAll(): Promise<Category[]> {
@@ -49,67 +48,80 @@ export class CategoryService {
     return category;
   }
 
-async create(createCategoryDto: CreateCategoryDto): Promise<any> {
+  async create(createCategoryDto: CreateCategoryDto): Promise<any> {
     const { owner_id, branch_id, category_name, menu_id } = createCategoryDto;
 
     // ✅ Validate Owner
     const owner = await this.ownerRepository.findOne({ where: { owner_id } });
-    if (!owner) throw new NotFoundException(`Owner with ID ${owner_id} not found`);
+    if (!owner)
+      throw new NotFoundException(`Owner with ID ${owner_id} not found`);
 
     // ✅ Validate Branch
-    const branch = await this.branchRepository.findOne({ where: { branch_id } });
-    if (!branch) throw new NotFoundException(`Branch with ID ${branch_id} not found`);
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id },
+    });
+    if (!branch)
+      throw new NotFoundException(`Branch with ID ${branch_id} not found`);
 
     // ✅ Check for duplicate category
-    const duplicateCategory = await this.categoryRepository.findOne({ where: { category_name } });
-    if (duplicateCategory) throw new ConflictException(`Category with name "${category_name}" already exists`);
+    const duplicateCategory = await this.categoryRepository.findOne({
+      where: { category_name },
+    });
+    if (duplicateCategory)
+      throw new ConflictException(
+        `Category with name "${category_name}" already exists`,
+      );
 
     // ✅ Retrieve or create category
     let category = await this.categoryRepository.findOne({
-        where: { category_name, owner: { owner_id }, branch: { branch_id } },
-        relations: ['owner', 'branch', 'menuCategory'],
+      where: { category_name, owner: { owner_id }, branch: { branch_id } },
+      relations: ['owner', 'branch', 'menuCategory'],
     });
 
     if (!category) {
-        category = this.categoryRepository.create({ category_name, owner, branch });
-        category = await this.categoryRepository.save(category);
+      category = this.categoryRepository.create({
+        category_name,
+        owner,
+        branch,
+      });
+      category = await this.categoryRepository.save(category);
     }
 
     // ✅ Validate Menus
     const menus = await this.menuRepository.find({
-        where: { menu_id: In(menu_id) },
-        relations: ['menuCategory'],
+      where: { menu_id: In(menu_id) },
+      relations: ['menuCategory'],
     });
+    console.log('Menus:', menus);
     if (menus.length !== menu_id.length) {
-        throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
+      throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
     }
 
     // ✅ Associate Menus with Category
     for (const menu of menus) {
-        const existingMenuCategory = await this.menuCategoryRepository.findOne({
-            where: { category: { category_id: category.category_id }, menu },
-        });
+      const existingMenuCategory = await this.menuCategoryRepository.findOne({
+        where: { category: { category_id: category.category_id }, menu },
+      });
 
-        if (!existingMenuCategory) {
-            const newMenuCategory = this.menuCategoryRepository.create({
-                category,
-                menu,
-                owner_id,
-                branch_id
-            });
-            await this.menuCategoryRepository.save(newMenuCategory);
-        }
+      if (!existingMenuCategory) {
+        const newMenuCategory = this.menuCategoryRepository.create({
+          category,
+          menu,
+          owner_id,
+          branch_id,
+        });
+        await this.menuCategoryRepository.save(newMenuCategory);
+      }
     }
 
     return {
-        message: 'Category created successfully',
-        category: {
-            category_id: category.category_id,
-            category_name: category.category_name,
-        },
+      message: 'Category created successfully',
+      category: {
+        category_id: category.category_id,
+        category_name: category.category_name,
+      },
     };
-}
-
+  }
 
   async linkMenusToCategory(
     linkMenuToCategoryDto: LinkMenuToCategoryDto,
@@ -171,8 +183,22 @@ async create(createCategoryDto: CreateCategoryDto): Promise<any> {
     };
   }
 
-  async remove(id: number): Promise<void> {
-    const category = await this.findOne(id);
+  async remove(id: number, owner_id: number, branch_id: number): Promise<void> {
+    const category = await this.categoryRepository.findOne({
+      where: {
+        category_id: id,
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+      relations: ['owner', 'branch'],
+    });
+
+    if (!category) {
+      throw new NotFoundException(
+        `Category with ID ${id} not found or does not belong to the specified owner/branch`,
+      );
+    }
+
     await this.categoryRepository.remove(category);
   }
 
@@ -197,8 +223,6 @@ async create(createCategoryDto: CreateCategoryDto): Promise<any> {
     updateCategoryDto: CreateCategoryDto,
   ): Promise<any> {
     const { category_name, menu_id } = updateCategoryDto;
-    console.log(`🔎 Request to update Category ID: ${categoryId}`);
-    console.log(`🔎 Headers -> Owner ID: ${owner_id}, Branch ID: ${branch_id}`);
 
     const category = await this.categoryRepository.findOne({
       where: {
@@ -212,11 +236,6 @@ async create(createCategoryDto: CreateCategoryDto): Promise<any> {
     if (!category) {
       throw new NotFoundException(`Category with ID ${categoryId} not found`);
     }
-
-    console.log(`🔎 Found in DB -> Category ID: ${category?.category_id}`);
-    console.log(
-      `🔎 Found in DB -> Owner ID: ${category?.owner?.owner_id}, Branch ID: ${category?.branch?.branch_id}`,
-    );
 
     // ✅ ตรวจสอบว่า Owner และ Branch ถูกต้อง
     if (
@@ -279,6 +298,8 @@ async create(createCategoryDto: CreateCategoryDto): Promise<any> {
       for (const menu of menus) {
         const newMenuCategory = this.menuCategoryRepository.create({
           category,
+          owner_id,
+          branch_id,
           menu: menu,
         });
 

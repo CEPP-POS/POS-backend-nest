@@ -22,7 +22,6 @@ GET http://localhost:3000/owner/menus/15
 ### Update a Menu by ID
 PATCH http://localhost:3000/owner/menus/1
 Content-Type: application/json
-
 {
   "menu_name": "latte milk",
   "price": 14.99,

@@ -87,8 +87,11 @@ export class CategoryController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    await this.categoryService.remove(+id);
+  async remove(@Param('id') id: string, @Req() request: Request) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    await this.categoryService.remove(+id, +ownerId, +branchId);
   }
 
   @Patch(':id')
