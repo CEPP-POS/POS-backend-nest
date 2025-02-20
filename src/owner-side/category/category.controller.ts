@@ -69,9 +69,9 @@ export class CategoryController {
     await this.categoryService.remove(+id);
   }
 
-  @Patch(':categoryId')
+  @Patch(':id')
   async updateCategory(
-    @Param('categoryId') categoryId: number,
+    @Param('id') categoryId: number,
     @Req() request: Request,
     @Body() updateCategoryDto: CreateCategoryDto,
   ) {
@@ -82,17 +82,16 @@ export class CategoryController {
       throw new Error('owner_id and branch_id must be provided in headers');
     }
 
-    const result = await this.categoryService.updateCategory(
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    await this.categoryService.updateCategory(
       categoryId,
-      ownerId,
-      branchId,
+      ownerIdNum,
+      branchIdNum,
       updateCategoryDto,
     );
 
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Category updated successfully',
-      category: result,
-    };
+    return HttpStatus.OK;
   }
 }

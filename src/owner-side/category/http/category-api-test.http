@@ -26,16 +26,16 @@ owner_id: 1
 branch_id: 1
 {
   "category_name": "Drinks",
-  "menu_id": [1, 2]
+  "menu_id": [1]
 }
 
 
-PATCH http://localhost:3000/owner/categories/10
+PATCH http://localhost:3000/owner/categories/12
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "category_name": "โปรโมชั่นพิเศษ",
-  "menu_id": [1]
+  "category_name": "promotion",
+  "menu_id": [1,2]
 }
 
