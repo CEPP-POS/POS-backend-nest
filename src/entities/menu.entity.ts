@@ -45,6 +45,9 @@ export class Menu {
   @Column({ type: 'boolean', default: false })
   paused: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  is_delete: boolean;
+
   @ManyToOne(() => MenuTypeGroup, { nullable: true })
   @JoinColumn({ name: 'menu_type_group_id' })
   menuTypeGroup: MenuTypeGroup;
@@ -67,14 +70,8 @@ export class Menu {
   })
   orderItem: OrderItem[];
 
-  @ManyToMany(() => MenuCategory, (menuCategory) => menuCategory.menu)
-  @JoinTable({
-    name: 'menu_menu_category',
-    joinColumn: { name: 'menu_id', referencedColumnName: 'menu_id' },
-    inverseJoinColumn: {
-      name: 'menu_category_id',
-      referencedColumnName: 'menu_category_id',
-    },
+  @OneToMany(() => MenuCategory, (menuCategory) => menuCategory.menu, {
+    cascade: true,
   })
   menuCategory: MenuCategory[];
 }

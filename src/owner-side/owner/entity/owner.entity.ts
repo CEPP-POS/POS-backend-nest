@@ -61,4 +61,9 @@ export class Owner {
 
   @OneToMany(() => Category, (category) => category.owner, { cascade: true })
   category: Category[];
+
+  @OneToMany(() => MenuCategory, (menuCategory) => menuCategory.owner, {
+    cascade: true,
+  })
+  menuCategory: MenuCategory[];
 }

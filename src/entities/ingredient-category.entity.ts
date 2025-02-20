@@ -10,7 +10,7 @@ export class IngredientCategory {
   ingredient_category_name: string;
 
   @OneToMany(() => Ingredient, (Ingredient) => Ingredient.ingredientCategory, {
-    cascade: true,
+    onDelete: 'CASCADE',
   })
   ingredient: Ingredient[]; // เพิ่มความสัมพันธ์กับ Ingredient_Category
 }

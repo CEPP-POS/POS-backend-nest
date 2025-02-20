@@ -1,5 +1,7 @@
 import {
+  BadRequestException,
   ConflictException,
+  HttpException,
   HttpStatus,
   Injectable,
   NotFoundException,
@@ -19,9 +21,14 @@ import { Size } from 'src/entities/size.entity';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
+import { join } from 'path';
 
 @Injectable()
 export class MenuService {
+
+  // upload local storage image
+  private uploadFolder = join(__dirname, '..', 'uploads')
+
   constructor(
     @InjectRepository(Menu)
     private readonly menuRepository: Repository<Menu>,
@@ -52,7 +59,29 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) {}
+  ) { }
+
+  // upload picture to local
+  handleFileUpload(file: Express.Multer.File) {
+    console.log("upload picture")
+    if (!file) {
+      throw new BadRequestException('no file uploaded');
+    }
+
+    // validate file type
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException('invalid file type');
+    }
+
+    // validate file size (e.g., max 5mb)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new BadRequestException('file is too large!');
+    }
+
+    return { message: 'File uploaded successfully', filePath: file.path };
+  }
 
   // * สร้างเมนูใหม่
   async create(createMenuDto: CreateMenuDto): Promise<any> {
@@ -95,6 +124,7 @@ export class MenuService {
       statusCode: HttpStatus.CREATED,
       message: 'Menu created successfully',
       menu: {
+        menu_id: savedMenu.menu_id,
         menu_name: savedMenu.menu_name,
         description: savedMenu.description,
         price: savedMenu.price,
@@ -105,6 +135,7 @@ export class MenuService {
 
   async findAll(): Promise<any[]> {
     const menus = await this.menuRepository.find({
+      where: { is_delete: false },
       relations: [
         'menuIngredient',
         'sweetnessGroup',
@@ -123,16 +154,19 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-            menu_id: menu.menu_id,
-            menu_name: menu.menu_name,
-          };
+          menu_id: menu.menu_id,
+          menu_name: menu.menu_name,
+          description: menu.description,
+          image_url: menu.image_url,
+          price: menu.price
+        };
     });
   }
 
   async findOne(menu_id: number): Promise<Menu> {
     const menu = await this.menuRepository.findOne({
       where: { menu_id },
-      relations: ['addOns', 'sweetnessLevels', 'sizes', 'menuTypes'],
+      relations: ['menuTypeGroup', 'sweetnessGroup', 'sizeGroup'],
     });
 
     if (!menu) {
@@ -150,9 +184,24 @@ export class MenuService {
   }
 
   // * ลบเมนู
-  async remove(menu_id: number): Promise<void> {
-    const menu = await this.findOne(menu_id);
-    await this.menuRepository.remove(menu);
+  async remove(menu_id: number, owner_id: number, branch_id: number): Promise<{ message: string }> {
+    const menu = await this.menuRepository.findOne({
+      where: { menu_id, owner: { owner_id }, branch: { branch_id } },
+      relations: ['owner', 'branch'], // Ensure relations are included
+    });
+
+    if (!menu) {
+      throw new NotFoundException(`Menu with ID ${menu_id} not found for the given owner and branch.`);
+    }
+
+    // Set soft delete
+    menu.is_delete = true;
+    await this.menuRepository.save(menu);
+
+    throw new HttpException(
+      { message: `Menu with ID ${menu_id} is now marked as deleted.` },
+      HttpStatus.OK, // Returns HTTP 200
+    );
   }
 
   // สร้าง option
