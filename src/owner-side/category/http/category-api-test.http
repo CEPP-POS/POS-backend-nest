@@ -40,7 +40,7 @@ owner_id: 1
 branch_id: 1
 {
   "category_name": "promotion",
-  "menu_id": [1,2]
+  "menu_id": [1,2,3]
 }
 
 ### Link menu to category
