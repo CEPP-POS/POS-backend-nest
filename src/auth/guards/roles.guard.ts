@@ -20,10 +20,8 @@ export class RolesGuard implements CanActivate {
       return false;
     }
 
-    // ✅ Owner เข้าถึงได้ทั้งหมด
     if (user.roles.includes('owner')) return true;
 
-    // ✅ ตรวจสอบสิทธิ์ของ Employee ตาม requiredRoles
     return requiredRoles.some((requiredRole) => user.roles.includes(requiredRole));
   }
 }

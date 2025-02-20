@@ -40,7 +40,7 @@ export class AuthService {
 
   async validateUser(loginOwnerDto: LoginOwnerDto) {
     const user = await this.userService.findByEmail(loginOwnerDto.email);
-    console.log('🔍 Found user:', user); // ✅ Debug ดูค่า user ที่ได้จาก DB
+    console.log('🔍 Found user:', user);
   
     if (user) {
       console.log('📌 Input Password:', loginOwnerDto.password);

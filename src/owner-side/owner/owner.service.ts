@@ -180,7 +180,7 @@ export class OwnerService {
   
   // * Count Employees under a Manager
   async countEmployees(manager_id: number): Promise<number> {
-    // ✅ หา Owner ที่เป็น Manager ก่อน
+    
     const manager = await this.ownerRepository.findOne({
       where: { owner_id: manager_id },
     });
@@ -191,7 +191,7 @@ export class OwnerService {
   
     return this.ownerRepository.count({
       where: {
-        manager, // ✅ ใช้ Owner entity แทน manager_id
+        manager, 
         roles: Raw((alias) => `:role = ANY(${alias})`, { role: 'employee' }),
       },
     });
