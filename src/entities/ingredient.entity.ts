@@ -36,6 +36,9 @@ export class Ingredient {
   @Column({ type: 'boolean', default: false })
   paused: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  is_delete: boolean;
+
   @OneToMany(
     () => IngredientUpdate,
     (ingredientUpdate) => ingredientUpdate.ingredient,

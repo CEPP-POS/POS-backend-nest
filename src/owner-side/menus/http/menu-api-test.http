@@ -17,7 +17,7 @@ owner_id: 1
 branch_id: 1
 
 ### Get a specific Menu by ID
-GET http://localhost:3000/owner/menus/15
+GET http://localhost:3000/owner/menus/1
 
 ### Update a Menu by ID
 PATCH http://localhost:3000/owner/menus/1
@@ -31,6 +31,8 @@ Content-Type: application/json
 
 ### Delete a Menu by ID
 DELETE http://localhost:3000/owner/menus/1
+owner_id: 1
+branch_id: 1
 
 
 ### link menu for auto cut stock

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   HttpStatus,
   Injectable,
   NotFoundException,
@@ -164,7 +165,7 @@ export class MenuService {
   async findOne(menu_id: number): Promise<Menu> {
     const menu = await this.menuRepository.findOne({
       where: { menu_id },
-      relations: ['addOns', 'sweetnessLevels', 'sizes', 'menuTypes'],
+      relations: ['menuTypeGroup', 'sweetnessGroup', 'sizeGroup'],
     });
 
     if (!menu) {
@@ -182,9 +183,24 @@ export class MenuService {
   }
 
   // * ลบเมนู
-  async remove(menu_id: number): Promise<void> {
-    const menu = await this.findOne(menu_id);
-    await this.menuRepository.remove(menu);
+  async remove(menu_id: number, owner_id: number, branch_id: number): Promise<{ message: string }> {
+    const menu = await this.menuRepository.findOne({
+      where: { menu_id, owner: { owner_id }, branch: { branch_id } }, 
+      relations: ['owner', 'branch'], // Ensure relations are included
+    });
+  
+    if (!menu) {
+      throw new NotFoundException(`Menu with ID ${menu_id} not found for the given owner and branch.`);
+    }
+  
+    // Set soft delete
+    menu.is_delete = true;
+    await this.menuRepository.save(menu);
+  
+    throw new HttpException(
+      { message: `Menu with ID ${menu_id} is now marked as deleted.` },
+      HttpStatus.OK, // Returns HTTP 200
+    );
   }
 
   // สร้าง option

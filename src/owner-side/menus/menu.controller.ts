@@ -22,7 +22,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) {}
+  ) { }
 
   // upload picture to local storage
   @Post('upload')
@@ -105,8 +105,14 @@ export class MenuController {
 
   // * Delete a menu
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.menuService.remove(+id);
+  remove(@Req() request: Request, @Param('id') id: string) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    return this.menuService.remove(+id, +ownerId, +branchId);
   }
 
   @Post('options/sweetness')

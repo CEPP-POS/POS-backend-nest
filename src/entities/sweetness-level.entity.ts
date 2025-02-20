@@ -18,6 +18,9 @@ export class SweetnessLevel {
   @Column({ nullable: false })
   level_name: string;
 
+  @Column({ type: 'boolean', default: false })
+  is_delete: boolean;
+
   @OneToMany(
     () => SweetnessGroup,
     (sweetnessGroup) => sweetnessGroup.sweetnessLevel,
