@@ -27,7 +27,7 @@ Content-Type: application/json
 }
 
 ### Delete a Menu by ID
-DELETE http://localhost:3000/owner/menus/32
+DELETE http://localhost:3000/owner/menus/1
 
 
 ### link menu for auto cut stock
