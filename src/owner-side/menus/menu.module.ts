@@ -19,6 +19,8 @@ import { Ingredient } from 'src/entities/ingredient.entity';
 import { MenuTypeGroup } from 'src/entities/menu-type-group.entity';
 import { SweetnessGroup } from 'src/entities/sweetness-group.entity';
 import { SizeGroup } from 'src/entities/size-group.entity';
+import { MulterModule } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Module({
   imports: [
@@ -38,6 +40,15 @@ import { SizeGroup } from 'src/entities/size-group.entity';
     CategoryModule,
     OwnerModule,
     BranchModule,
+    MulterModule.register({
+      storage: diskStorage({
+        destination: 'uploads/',
+        filename: (req, file, cb) => {
+          const filename = `${Date.now()}-${file.originalname}`;
+          cb(null, filename);
+        },
+      }),
+    }),
   ],
   controllers: [MenuController],
   providers: [MenuService],

@@ -12,8 +12,6 @@ export enum PaymentMethod {
 }
 
 export class CreateOrderDto {
-
-
   @IsDate()
   @Type(() => Date)
   order_date: Date;

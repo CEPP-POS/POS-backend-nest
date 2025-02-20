@@ -23,6 +23,9 @@ export class Size {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   size_price: number;
 
+  @Column({ type: 'boolean', default: false })
+  is_delete: boolean;
+
   @OneToMany(() => SizeGroup, (sizeGroup) => sizeGroup.size, {
     cascade: true,
   })

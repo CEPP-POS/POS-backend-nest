@@ -11,6 +11,9 @@ export class MenuType {
   @Column()
   type_name: string;
 
+  @Column({ type: 'boolean', default: false })
+  is_delete: boolean;
+
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   price_difference: number;
 

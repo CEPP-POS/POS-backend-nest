@@ -7,14 +7,16 @@ import {
   Param,
   Delete,
   HttpCode,
-  ValidationPipe,
-  UsePipes,
+  Req,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
 import { CreateMenuDto } from './dto/create-menu/create-menu.dto';
 import { CreateSweetnessDto } from './dto/create-option/Sweetness.dto';
 import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('owner/menus')
 export class MenuController {
@@ -22,11 +24,34 @@ export class MenuController {
     private readonly menuService: MenuService, // Inject MenuService
   ) { }
 
+  // upload picture to local storage
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    return this.menuService.handleFileUpload(file);
+  }
+
   // * Create a new menu
-  // @Post()
-  // async create(@Body() createMenuDto: CreateMenuDto) {
-  //   await this.menuService.create(createMenuDto);
-  // }
+  @Post()
+  async create(@Req() request: Request, @Body() createMenuDto: CreateMenuDto) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    const menuData = {
+      ...createMenuDto,
+      owner_id: ownerIdNum,
+      branch_id: branchIdNum,
+    };
+
+    return await this.menuService.create(menuData);
+  }
 
   @Patch('options/:type/:optionId')
   async updateOption(
@@ -45,10 +70,17 @@ export class MenuController {
   //   return this.menuService.updateOption(type, id, updateOptionDto);
   // }
 
-  // * Get all menus
-  @HttpCode(200)
+  // * เรียกดู ชื่อ ID Menu ทั้งหมด
   @Get()
-  findAll() {
+  async findAll(@Req() request: Request) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
     return this.menuService.findAll();
   }
 
@@ -73,8 +105,14 @@ export class MenuController {
 
   // * Delete a menu
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.menuService.remove(+id);
+  remove(@Req() request: Request, @Param('id') id: string) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    return this.menuService.remove(+id, +ownerId, +branchId);
   }
 
   @Post('options/sweetness')
@@ -101,7 +139,8 @@ export class MenuController {
   // @UsePipes(new ValidationPipe({ transform: true }))
   async updateStock(
     @Param('menu_id') menu_id: number,
-    @Body() body: {
+    @Body()
+    body: {
       owner_id: number;
       branch_id: number;
       menuData: LinkMenuToStockDto[];
@@ -110,7 +149,12 @@ export class MenuController {
     console.log('menu_id:', menu_id);
     console.log('Request Body:', body);
 
-    return this.menuService.updateStock(menu_id, body.owner_id, body.branch_id, body.menuData);
+    return this.menuService.updateStock(
+      menu_id,
+      body.owner_id,
+      body.branch_id,
+      body.menuData,
+    );
   }
 
   @Get('/options/:type/:id')
