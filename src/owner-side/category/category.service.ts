@@ -33,8 +33,6 @@ export class CategoryService {
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
 
-    @InjectRepository(MenuCategory)
-    private readonly menuCategoryRepository: Repository<MenuCategory>,
   ) {}
 
   async findAll(): Promise<Category[]> {
@@ -112,7 +110,7 @@ export class CategoryService {
       if (!existingMenuCategory) {
         const newMenuCategory = this.menuCategoryRepository.create({
           category: existingCategory,
-          menu: [menu],
+          menu: menu,
         });
 
         await this.menuCategoryRepository.save(newMenuCategory);
@@ -296,7 +294,7 @@ export class CategoryService {
       for (const menu of menus) {
         const newMenuCategory = this.menuCategoryRepository.create({
           category,
-          menu: [menu],
+          menu: menu,
         });
 
         await this.menuCategoryRepository.save(newMenuCategory);
