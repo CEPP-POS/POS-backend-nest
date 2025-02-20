@@ -54,15 +54,24 @@ export class CategoryService {
 
     // ✅ Validate Owner
     const owner = await this.ownerRepository.findOne({ where: { owner_id } });
-    if (!owner) throw new NotFoundException(`Owner with ID ${owner_id} not found`);
+    if (!owner)
+      throw new NotFoundException(`Owner with ID ${owner_id} not found`);
 
     // ✅ Validate Branch
-    const branch = await this.branchRepository.findOne({ where: { branch_id } });
-    if (!branch) throw new NotFoundException(`Branch with ID ${branch_id} not found`);
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id },
+    });
+    if (!branch)
+      throw new NotFoundException(`Branch with ID ${branch_id} not found`);
 
     // ✅ Check for duplicate category
-    const duplicateCategory = await this.categoryRepository.findOne({ where: { category_name } });
-    if (duplicateCategory) throw new ConflictException(`Category with name "${category_name}" already exists`);
+    const duplicateCategory = await this.categoryRepository.findOne({
+      where: { category_name },
+    });
+    if (duplicateCategory)
+      throw new ConflictException(
+        `Category with name "${category_name}" already exists`,
+      );
 
     // ✅ Retrieve or create category
     let category = await this.categoryRepository.findOne({
@@ -80,7 +89,7 @@ export class CategoryService {
       where: { menu_id: In(menu_id) },
       relations: ['menuCategory'],
     });
-    // console.log(menus)
+    console.log('Menus:', menus);
     if (menus.length !== menu_id.length) {
       throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
     }
@@ -96,7 +105,7 @@ export class CategoryService {
           category,
           menu,
           owner_id,
-          branch_id
+          branch_id,
         });
         await this.menuCategoryRepository.save(newMenuCategory);
       }
@@ -110,7 +119,6 @@ export class CategoryService {
       },
     };
   }
-
 
   async linkMenusToCategory(
     linkMenuToCategoryDto: LinkMenuToCategoryDto,
@@ -172,8 +180,22 @@ export class CategoryService {
     };
   }
 
-  async remove(id: number): Promise<void> {
-    const category = await this.findOne(id);
+  async remove(id: number, owner_id: number, branch_id: number): Promise<void> {
+    const category = await this.categoryRepository.findOne({
+      where: {
+        category_id: id,
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+      relations: ['owner', 'branch'],
+    });
+
+    if (!category) {
+      throw new NotFoundException(
+        `Category with ID ${id} not found or does not belong to the specified owner/branch`,
+      );
+    }
+
     await this.categoryRepository.remove(category);
   }
 

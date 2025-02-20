@@ -1,12 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  JoinColumn,
-  ManyToOne,
-  ManyToMany,
-  JoinTable,
-  PrimaryColumn,
-} from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Menu } from './menu.entity';
 import { Category } from './category.entity';
 import { Branch } from './branch.entity';
@@ -30,11 +22,11 @@ export class MenuCategory {
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  @ManyToOne(() => Menu, { nullable: true })
+  @ManyToOne(() => Menu, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'menu_id' })
   menu: Menu;
 
-  @ManyToOne(() => Owner, { nullable: true })
+  @ManyToOne(() => Owner, { nullable: false })
   @JoinColumn({ name: 'owner_id' })
   owner: Owner;
 
