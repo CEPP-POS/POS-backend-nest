@@ -18,22 +18,22 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  // ENTITY
-
+  
   async validate(payload: IJwtPayload): Promise<UserPayload> {
     console.log('Decoded JWT Payload:', payload);
-
+  
     const existingUser = await this.ownerService.findByEmail(payload.email);
-
+  
     if (!existingUser) throw new UnauthorizedException('Invalid token.');
-
+  
     console.log('User from DB:', existingUser);
-
+  
     return {
       owner_id: existingUser.owner_id,
       email: existingUser.email,
-      branch_id: existingUser.branch_id || null,
+      branch_id: existingUser.branch?.[0]?.branch_id || null,
       roles: existingUser.roles,
     };
   }
+  
 }
