@@ -11,7 +11,7 @@ import { Size } from './size.entity';
 import { SweetnessLevel } from './sweetness-level.entity';
 import { AddOn } from './add-on.entity';
 import { MenuType } from './menu-type.entity';
-import { Owner } from './owner.entity';
+import { Owner } from '../owner-side/owner/entity/owner.entity';
 
 @Entity()
 export class MenuIngredient {

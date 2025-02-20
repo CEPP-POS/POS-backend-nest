@@ -8,7 +8,7 @@ import {
   JoinTable,
   ManyToMany,
 } from 'typeorm';
-import { Owner } from './owner.entity';
+import { Owner } from '../owner-side/owner/entity/owner.entity';
 import { Branch } from './branch.entity';
 import { MenuTypeGroup } from './menu-type-group.entity';
 import { SweetnessGroup } from './sweetness-group.entity';

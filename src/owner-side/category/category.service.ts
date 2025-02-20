@@ -9,7 +9,7 @@ import { Category } from '../../entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category/create-category.dto';
 import { Menu } from '../../entities/menu.entity';
 import { MenuCategory } from 'src/entities/menu_category';
-import { Owner } from 'src/entities/owner.entity';
+import { Owner } from 'src/owner-side/owner/entity/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 
 @Injectable()

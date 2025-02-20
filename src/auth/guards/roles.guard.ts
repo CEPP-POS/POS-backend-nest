@@ -8,24 +8,23 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.get<string[]>(
-      'roles',
-      context.getHandler(),
-    );
+    const requiredRoles = this.reflector.get<string[]>('roles', context.getHandler());
     if (!requiredRoles) return true;
 
     const request = context.switchToHttp().getRequest<Request>();
     const user = request.user as UserPayload;
 
-    console.log('[File roles guard] User in RolesGuard:', user);
+    console.log('[RolesGuard] User in RolesGuard:', user);
     if (!user || !Array.isArray(user.roles)) {
-      console.warn('[File roles guard] User has no valid roles:', user);
+      console.warn('[RolesGuard] User has no valid roles:', user);
       return false;
     }
+
+    // ✅ Owner เข้าถึงได้ทั้งหมด
     if (user.roles.includes('owner')) return true;
 
-    return requiredRoles.some((requiredRole) =>
-      user.roles.includes(requiredRole),
-    );
+    // ✅ ตรวจสอบสิทธิ์ของ Employee ตาม requiredRoles
+    return requiredRoles.some((requiredRole) => user.roles.includes(requiredRole));
   }
 }
+

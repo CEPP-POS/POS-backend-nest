@@ -9,7 +9,7 @@ import { Equal, Repository } from 'typeorm';
 import { Menu } from '../../entities/menu.entity';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
 import { Category } from '../../entities/category.entity';
-import { Owner } from '../../entities/owner.entity';
+import { Owner } from '../owner/entity/owner.entity';
 import { Branch } from '../../entities/branch.entity';
 import { SweetnessLevel } from '../../entities/sweetness-level.entity';
 import { MenuType } from '../../entities/menu-type.entity';

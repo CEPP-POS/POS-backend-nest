@@ -6,7 +6,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
-import { Owner } from './owner.entity';
+import { Owner } from '../owner-side/owner/entity/owner.entity';
 import { Menu } from './menu.entity';
 import { Order } from './order.entity';
 import { SalesSummary } from './sales-summary.entity';

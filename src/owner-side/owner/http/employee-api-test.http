@@ -1,14 +1,22 @@
-### Create Employee
-POST http://localhost:3000/owner/create-employee
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NSwiZW1haWwiOiJhZG1pbkZsdWtAZ21haWwuY29tIiwiYnJhbmNoX2lkIjpudWxsLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3Mzk4ODY3NDksImV4cCI6MTczOTk3MzE0OX0.B0PWsLgofCubNILo-gzP3Fk8TY-wakR82lLeC82xHtE
+### 1. Employee ล็อกอิน
+POST http://localhost:3000/owner/login
 Content-Type: application/json
 
 {
-  "email": "employee2@example.com",
-  "password": "employee1234",
-  "owner_id": 1
+  "email": "employee@example.com",
+  "password": "EmployeePass123!"
 }
 
-### Count Employees
-GET http://localhost:3000/owner/count-employees?owner_id=1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NSwiZW1haWwiOiJhZG1pbkZsdWtAZ21haWwuY29tIiwiYnJhbmNoX2lkIjpudWxsLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3Mzk4ODY3NDksImV4cCI6MTczOTk3MzE0OX0.B0PWsLgofCubNILo-gzP3Fk8TY-wakR82lLeC82xHtE
+### 2. Employee ดูข้อมูลโปรไฟล์ตัวเอง
+GET http://localhost:3000/owner/profile
+Authorization: Bearer {{TOKEN}}
+
+### 3. Employee พยายามสร้าง Employee (ต้องห้าม)
+POST http://localhost:3000/owner/create-employee
+Authorization: Bearer {{TOKEN}}
+Content-Type: application/json
+
+{
+  "email": "new-employee@example.com",
+  "password": "AnotherPass123!"
+}
