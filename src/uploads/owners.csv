@@ -1,3 +1,4 @@
-owner_name,contact_info,email
-John Doe,123456789,john.doe@example.com
-Jane Smith,987654321,jane.smith@example.com
+owner_name,contact_info,email,password
+John Doe,0123456789,johndoe@example.com,SecurePass123!
+Alice Smith,0987654321,alicesmith@example.com,SecurePass456!
+Michael Johnson,0555555555,michaeljohnson@example.com,SecurePass789!

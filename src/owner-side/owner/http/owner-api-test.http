@@ -18,7 +18,6 @@ Content-Type: application/json
   "password": "SecurePass456!"
 }
 
-### 3. Owner อัปโหลด CSV
 POST http://localhost:3000/owner/upload-csv
 Content-Type: multipart/form-data; boundary=boundary
 
@@ -26,8 +25,9 @@ Content-Type: multipart/form-data; boundary=boundary
 Content-Disposition: form-data; name="file"; filename="owners.csv"
 Content-Type: text/csv
 
-< ./path/to/owners.csv
+< /Users/watcharapolyotadee/Development/POS/POS-backend-nest/src/uploads/owners.csv
 --boundary--
+
 
 ### 4. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน
 POST http://localhost:3000/owner/forgot-password
