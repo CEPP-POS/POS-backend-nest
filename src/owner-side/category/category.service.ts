@@ -49,82 +49,67 @@ export class CategoryService {
     return category;
   }
 
-  async create(createCategoryDto: CreateCategoryDto): Promise<any> {
+async create(createCategoryDto: CreateCategoryDto): Promise<any> {
     const { owner_id, branch_id, category_name, menu_id } = createCategoryDto;
 
-    // ✅ ดึง Owner จากฐานข้อมูล
+    // ✅ Validate Owner
     const owner = await this.ownerRepository.findOne({ where: { owner_id } });
-    if (!owner) {
-      throw new NotFoundException(`Owner with ID ${owner_id} not found`);
-    }
+    if (!owner) throw new NotFoundException(`Owner with ID ${owner_id} not found`);
 
-    // ✅ ดึง Branch จากฐานข้อมูล
-    const branch = await this.branchRepository.findOne({
-      where: { branch_id },
-    });
-    if (!branch) {
-      throw new NotFoundException(`Branch with ID ${branch_id} not found`);
-    }
-    const duplicateCategory = await this.categoryRepository.findOne({
-      where: { category_name },
-    });
-    if (duplicateCategory) {
-      throw new ConflictException(
-        `Menu with name "${category_name}" already exists`,
-      );
-    }
-    let existingCategory = await this.categoryRepository.findOne({
-      where: { category_name, owner: { owner_id }, branch: { branch_id } },
-      relations: ['owner', 'branch', 'menuCategory'],
+    // ✅ Validate Branch
+    const branch = await this.branchRepository.findOne({ where: { branch_id } });
+    if (!branch) throw new NotFoundException(`Branch with ID ${branch_id} not found`);
+
+    // ✅ Check for duplicate category
+    const duplicateCategory = await this.categoryRepository.findOne({ where: { category_name } });
+    if (duplicateCategory) throw new ConflictException(`Category with name "${category_name}" already exists`);
+
+    // ✅ Retrieve or create category
+    let category = await this.categoryRepository.findOne({
+        where: { category_name, owner: { owner_id }, branch: { branch_id } },
+        relations: ['owner', 'branch', 'menuCategory'],
     });
 
-    if (!existingCategory) {
-      existingCategory = this.categoryRepository.create({
-        category_name,
-        owner,
-        branch,
-      });
-
-      existingCategory = await this.categoryRepository.save(existingCategory);
+    if (!category) {
+        category = this.categoryRepository.create({ category_name, owner, branch });
+        category = await this.categoryRepository.save(category);
     }
 
-    // ✅ ตรวจสอบว่าเมนูที่ส่งมา มีอยู่จริงในฐานข้อมูล
+    // ✅ Validate Menus
     const menus = await this.menuRepository.find({
-      where: { menu_id: In(menu_id) },
-      relations: ['menuCategory'],
+        where: { menu_id: In(menu_id) },
+        relations: ['menuCategory'],
     });
-
     if (menus.length !== menu_id.length) {
-      throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
+        throw new NotFoundException(`Some menus with IDs ${menu_id} not found`);
     }
 
-    // ✅ บันทึก MenuCategory ให้สัมพันธ์กับ Category
+    // ✅ Associate Menus with Category
     for (const menu of menus) {
-      const existingMenuCategory = await this.menuCategoryRepository.findOne({
-        where: {
-          category: { category_id: existingCategory.category_id },
-          menu,
-        },
-      });
-
-      if (!existingMenuCategory) {
-        const newMenuCategory = this.menuCategoryRepository.create({
-          category: existingCategory,
-          menu: menu,
+        const existingMenuCategory = await this.menuCategoryRepository.findOne({
+            where: { category: { category_id: category.category_id }, menu },
         });
 
-        await this.menuCategoryRepository.save(newMenuCategory);
-      }
+        if (!existingMenuCategory) {
+            const newMenuCategory = this.menuCategoryRepository.create({
+                category,
+                menu,
+                owner_id,
+                branch_id
+            });
+            await this.menuCategoryRepository.save(newMenuCategory);
+        }
     }
 
     return {
-      message: 'Category created successfully',
-      category: {
-        category_id: existingCategory.category_id,
-        category_name: existingCategory.category_name,
-      },
+        message: 'Category created successfully',
+        category: {
+            category_id: category.category_id,
+            category_name: category.category_name,
+        },
     };
-  }
+}
+
 
   async linkMenusToCategory(
     linkMenuToCategoryDto: LinkMenuToCategoryDto,
