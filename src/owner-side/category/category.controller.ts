@@ -57,10 +57,37 @@ export class CategoryController {
   }
 
   // edit entity
-  // @Get(':id/menus')
-  // async getMenusByCategory(@Param('id') id: number) {
-  //   return this.categoryService.getMenusByCategory(id);
-  // }
+  @Get(':id/menus')
+  async getMenusByCategory(@Param('id') id: number, @Req() request: Request) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new HttpException(
+        'Missing required headers: owner_id or branch_id',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+    const categoryIdNum = Number(id);
+
+    if (isNaN(ownerIdNum) || isNaN(branchIdNum) || isNaN(categoryIdNum)) {
+      throw new HttpException(
+        'Invalid numeric values in headers or params',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const data = {
+      id: categoryIdNum,
+      owner_id: ownerIdNum,
+      branch_id: branchIdNum,
+    };
+
+    return this.categoryService.getMenusByCategory(data);
+  }
 
   @Post()
   async create(

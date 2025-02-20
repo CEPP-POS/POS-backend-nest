@@ -177,18 +177,23 @@ async create(createCategoryDto: CreateCategoryDto): Promise<any> {
   }
 
   // edit entity
-  // async getMenusByCategory(categoryId: number): Promise<Menu[]> {
-  //   const category = await this.categoryRepository.findOne({
-  //     where: { category_id: categoryId },
-  //     relations: ['menu'], // โหลดเมนูที่สัมพันธ์กับหมวดหมู่
-  //   });
-
-  //   if (!category) {
-  //     throw new NotFoundException(`Category with ID ${categoryId} not found`);
-  //   }
-
-  //   //return category.menu; // คืนค่ารายการเมนูในหมวดหมู่
-  // }
+  async getMenusByCategory(data): Promise<any> {
+    const category = await this.categoryRepository.findOne({
+      where: {
+        category_id: data.id, 
+        owner: { owner_id: data.owner_id },
+        branch: { branch_id: data.branch_id }
+      },
+      relations: ['menuCategory', 'menuCategory.menu'], // Ensure correct relation path
+    });
+  
+    if (!category) {
+      throw new NotFoundException(`Category with ID ${data.id} not found`);
+    }
+  
+    return category.menuCategory.map(mc => mc.menu.menu_name); // Return menus instead of MenuCategory objects
+  }
+  
 
   async updateCategory(
     categoryId: number,
