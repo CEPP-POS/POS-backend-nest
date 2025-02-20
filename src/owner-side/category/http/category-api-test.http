@@ -20,22 +20,32 @@ DELETE http://localhost:3000/owner/categories/1
 GET http://localhost:3000/owner/categories/10/menus
 Content-Type: application/json
 
+
 POST http://localhost:3000/owner/categories
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "category_name": "Drinks",
-  "menu_id": [1, 2]
+  "category_name": "ชา",
+  "menu_id": [1,2,4]
 }
 
 
-PATCH http://localhost:3000/owner/categories/10
+PATCH http://localhost:3000/owner/categories/12
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "category_name": "โปรโมชั่นพิเศษ",
-  "menu_id": [1]
+  "category_name": "promotion",
+  "menu_id": [1,2]
 }
 
+### Link menu to category
+POST http://localhost:3000/owner/categories/link-menus
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+{
+  "category_id": 1,
+  "menu_ids": [1,2,3]
+}

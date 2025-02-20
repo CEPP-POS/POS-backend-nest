@@ -8,21 +8,43 @@ import {
   Patch,
   Req,
   HttpStatus,
+  HttpException,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category/create-category.dto';
+import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 // import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 
 @Controller('owner/categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
-  // @Post('link-menus')
-  // async linkMenusToCategory(
-  //   @Body() linkMenuToCategoryDto: LinkMenuToCategoryDto,
-  // ) {
-  //   await this.categoryService.linkMenusToCategory(linkMenuToCategoryDto);
-  // }
+  @Post('link-menus')
+  async linkMenusToCategory(
+    @Req() request: Request,
+    @Body() linkMenuToCategoryDto: LinkMenuToCategoryDto,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new HttpException(
+        'Missing required headers: owner_id or branch_id',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    const categoryData = {
+      ...linkMenuToCategoryDto,
+      owner_id: ownerIdNum,
+      branch_id: branchIdNum,
+    };
+
+    return await this.categoryService.linkMenusToCategory(categoryData);
+  }
 
   @Get('')
   async findAll() {
@@ -69,9 +91,9 @@ export class CategoryController {
     await this.categoryService.remove(+id);
   }
 
-  @Patch(':categoryId')
+  @Patch(':id')
   async updateCategory(
-    @Param('categoryId') categoryId: number,
+    @Param('id') categoryId: number,
     @Req() request: Request,
     @Body() updateCategoryDto: CreateCategoryDto,
   ) {
@@ -82,17 +104,16 @@ export class CategoryController {
       throw new Error('owner_id and branch_id must be provided in headers');
     }
 
-    const result = await this.categoryService.updateCategory(
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    await this.categoryService.updateCategory(
       categoryId,
-      ownerId,
-      branchId,
+      ownerIdNum,
+      branchIdNum,
       updateCategoryDto,
     );
 
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Category updated successfully',
-      category: result,
-    };
+    return HttpStatus.OK;
   }
 }

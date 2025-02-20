@@ -4,6 +4,7 @@ import { Branch } from './branch.entity';
 import { SalesSummary } from './sales-summary.entity';
 import { Menu } from './menu.entity';
 import { Category } from './category.entity';
+import { MenuCategory } from './menu_category';
 
 @Entity()
 export class Owner {
@@ -31,7 +32,6 @@ export class Owner {
   @Column({ default: 'user' })
   role: string;
 
-
   @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.owner, {
     cascade: true,
   })
@@ -50,4 +50,9 @@ export class Owner {
 
   @OneToMany(() => Category, (category) => category.owner, { cascade: true })
   category: Category[];
+
+  @OneToMany(() => MenuCategory, (menuCategory) => menuCategory.owner, { cascade: true })
+  menuCategory: MenuCategory[];
+
+
 }
