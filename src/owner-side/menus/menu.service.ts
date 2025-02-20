@@ -153,6 +153,9 @@ export class MenuService {
         : {
           menu_id: menu.menu_id,
           menu_name: menu.menu_name,
+          description: menu.description,
+          image_url: menu.image_url,
+          price: menu.price
         };
     });
   }
