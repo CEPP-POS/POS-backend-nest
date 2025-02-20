@@ -63,8 +63,27 @@ export class CategoryController {
   // }
 
   @Post()
-  async create(@Body() createCategoryDto: CreateCategoryDto) {
-    await this.categoryService.create(createCategoryDto);
+  async create(
+    @Req() request: Request,
+    @Body() createCategoryDto: CreateCategoryDto,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    const CategoryData = {
+      ...createCategoryDto,
+      owner_id: ownerIdNum,
+      branch_id: branchIdNum,
+    };
+
+    return await this.categoryService.create(CategoryData), HttpStatus.CREATED;
   }
 
   @Delete(':id')
@@ -72,11 +91,30 @@ export class CategoryController {
     await this.categoryService.remove(+id);
   }
 
-  @Patch(':id')
+  @Patch(':categoryId')
   async updateCategory(
-    @Param('id') id: number,
+    @Param('categoryId') categoryId: number,
+    @Req() request: Request,
     @Body() updateCategoryDto: CreateCategoryDto,
   ) {
-    await this.categoryService.updateCategory(id, updateCategoryDto);
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('owner_id and branch_id must be provided in headers');
+    }
+
+    const result = await this.categoryService.updateCategory(
+      categoryId,
+      ownerId,
+      branchId,
+      updateCategoryDto,
+    );
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Category updated successfully',
+      category: result,
+    };
   }
 }

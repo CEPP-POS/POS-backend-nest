@@ -11,7 +11,7 @@ export class CreateMenuDto {
 
   @IsInt()
   price: number;
-  
+
   @IsOptional()
   @IsString()
   image_url?: string;
@@ -21,5 +21,4 @@ export class CreateMenuDto {
 
   @IsInt()
   branch_id: number;
-
 }

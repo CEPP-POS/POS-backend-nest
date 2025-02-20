@@ -17,23 +17,26 @@ DELETE http://localhost:3000/owner/categories/1
 #   "menu_ids": [6,7]
 # }
 
-GET http://localhost:3000/owner/categories/1/menus
+GET http://localhost:3000/owner/categories/10/menus
 Content-Type: application/json
 
 POST http://localhost:3000/owner/categories
 Content-Type: application/json
-
+owner_id: 1
+branch_id: 1
 {
-  "category_name": "flashsale",
-  "menu_id": [13]
+  "category_name": "promation friday",
+  "menu_id": [1, 2]
 }
 
-PATCH http://localhost:3000/owner/categories/16
-Content-Type: application/json
 
+PATCH http://localhost:3000/owner/categories/10
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 {
   "category_name": "โปรโมชั่นพิเศษ",
-  "menu_id": [13,14]
+  "menu_id": [1]
 }
 
 ### Link menu to category

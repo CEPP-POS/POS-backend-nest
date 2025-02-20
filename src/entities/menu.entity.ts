@@ -9,12 +9,7 @@ import {
   ManyToMany,
 } from 'typeorm';
 import { Owner } from './owner.entity';
-import { Category } from './category.entity';
 import { Branch } from './branch.entity';
-import { Size } from './size.entity';
-import { AddOn } from 'src/entities/add-on.entity';
-import { SweetnessLevel } from './sweetness-level.entity';
-import { MenuType } from './menu-type.entity';
 import { MenuTypeGroup } from './menu-type-group.entity';
 import { SweetnessGroup } from './sweetness-group.entity';
 import { SizeGroup } from './size-group.entity';

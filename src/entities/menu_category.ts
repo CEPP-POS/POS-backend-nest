@@ -1,6 +1,5 @@
 import {
   Entity,
-  Column,
   PrimaryGeneratedColumn,
   JoinColumn,
   ManyToOne,
@@ -9,9 +8,9 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { Menu } from './menu.entity';
-import { Owner } from './owner.entity';
 import { Category } from './category.entity';
 import { Branch } from './branch.entity';
+import { Owner } from './owner.entity';
 
 @Entity()
 export class MenuCategory {
