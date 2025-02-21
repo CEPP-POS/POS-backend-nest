@@ -5,6 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  PrimaryColumn,
 } from 'typeorm';
 import { SweetnessLevel } from './sweetness-level.entity';
 import { Menu } from './menu.entity';
@@ -18,7 +19,7 @@ export class SweetnessGroup {
 
   @Column()
   sweetness_group_name: string;
-
+  
   @ManyToOne(() => SweetnessLevel, { nullable: false })
   @JoinColumn({ name: 'sweetness_id' })
   sweetnessLevel: SweetnessLevel;

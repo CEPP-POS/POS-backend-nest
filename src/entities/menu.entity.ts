@@ -49,15 +49,15 @@ export class Menu {
   is_delete: boolean;
 
   @ManyToOne(() => MenuTypeGroup, { nullable: true })
-  @JoinColumn({ name: 'menu_type_group_id' })
+  @JoinColumn({ name: 'menu_type_group_name' })
   menuTypeGroup: MenuTypeGroup;
 
   @ManyToOne(() => SweetnessGroup, { nullable: true })
-  @JoinColumn({ name: 'sweetness_group_id' })
+  @JoinColumn({ name: 'sweetness_group_name' })
   sweetnessGroup: SweetnessGroup;
 
   @ManyToOne(() => SizeGroup, { nullable: true })
-  @JoinColumn({ name: 'size_group_id' })
+  @JoinColumn({ name: 'size_group_name' })
   sizeGroup: SizeGroup;
 
   @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.menu, {
