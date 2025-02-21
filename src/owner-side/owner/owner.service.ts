@@ -196,6 +196,10 @@ export class OwnerService {
     });
   }
 
+  async updatePasswordInDB(user: Owner): Promise<void> {
+    await this.ownerRepository.save(user);
+  }
+
   async getIngredientsByOwner(branchId: number) {
     return this.ingredientRepository.find({
       where: { branch: Equal(branchId) },
