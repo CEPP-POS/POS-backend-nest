@@ -9,15 +9,34 @@ Content-Type: application/json
   "password": "SecurePass123!"
 }
 
-### 2. Owner ล็อกอิน (Login)
+### 2. Owner ล็อกอินครั้งแรก (Request Temporary Password via Email)
+POST http://localhost:3000/owner/request-temp-password
+Content-Type: application/json
+
+{
+  "email": "owner@gmail.com"
+}
+
+### 3. Owner ใช้รหัสผ่านแบบใช้แล้วทิ้งเข้าสู่ระบบ
 POST http://localhost:3000/owner/login
 Content-Type: application/json
 
 {
   "email": "owner@gmail.com",
-  "password": "SecurePass456!"
+  "password": "TEMPORARY_PASSWORD"  # 🔹 รหัสที่ได้รับในอีเมล
 }
 
+### 4. Owner รีเซ็ตรหัสผ่านใหม่
+PATCH http://localhost:3000/owner/reset-password
+Content-Type: application/json
+
+{
+  "email": "owner@gmail.com",
+  "oldPassword": "TEMPORARY_PASSWORD",  # 🔹 รหัส OTP
+  "newPassword": "SecurePass456!"
+}
+
+### 5. Owner อัปโหลดไฟล์ CSV
 POST http://localhost:3000/owner/upload-csv
 Content-Type: multipart/form-data; boundary=boundary
 
@@ -28,8 +47,7 @@ Content-Type: text/csv
 < /Users/watcharapolyotadee/Development/POS/POS-backend-nest/src/uploads/owners.csv
 --boundary--
 
-
-### 4. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน
+### 6. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน (Forgot Password)
 POST http://localhost:3000/owner/forgot-password
 Content-Type: application/json
 
@@ -37,7 +55,7 @@ Content-Type: application/json
   "usernameOrEmail": "owner@gmail.com"
 }
 
-### 5. Owner ยืนยัน OTP
+### 7. Owner ยืนยัน OTP
 POST http://localhost:3000/owner/verify-otp
 Content-Type: application/json
 
@@ -46,15 +64,7 @@ Content-Type: application/json
   "otp": "413529"
 }
 
-### 6. Owner เปลี่ยนรหัสผ่านใหม่
-PATCH http://localhost:3000/owner/reset-password/2
-Content-Type: application/json
-
-{
-  "newPassword": "SecurePass456!"
-}
-
-### 7. Owner สร้าง Employee (ต้องแนบ Token)
+### 8. Owner สร้าง Employee (ต้องแนบ Token)
 POST http://localhost:3000/owner/create-employee
 Authorization: Bearer {{TOKEN}}
 Content-Type: application/json
@@ -63,6 +73,25 @@ Content-Type: application/json
   "email": "employee@example.com",
   "password": "EmployeePass123!"
 }
+
+### 9. Owner ตรวจสอบว่ามี Employee อย่างน้อย 1 คน
+GET http://localhost:3000/owner/check-employees
+Authorization: Bearer {{TOKEN}}
+
+### 10. Owner ดูข้อมูลตัวเอง
+GET http://localhost:3000/owner/profile
+Authorization: Bearer {{TOKEN}}
+
+
+### 11. Owner ล็อกอิน (Login)
+POST http://localhost:3000/owner/login
+Content-Type: application/json
+
+{
+  "email": "owner@gmail.com",
+  "password": "SecurePass456!"
+}
+
 
 ### Dev only สร้าง employee ใหม่
 POST http://localhost:3000/owner/create-employee-dev
@@ -73,8 +102,3 @@ Content-Type: application/json
   "password": "EmployeePass123!",
   "manager_id": 2
 }
-
-
-### 8. Owner ดูข้อมูลตัวเอง
-GET http://localhost:3000/owner/profile
-Authorization:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MiwiZW1haWwiOiJvd25lckBnbWFpbC5jb20iLCJicmFuY2hfaWQiOm51bGwsInJvbGVzIjpbIm93bmVyIl0sImlhdCI6MTc0MDA3MjI2NSwiZXhwIjoxNzQwMTU4NjY1fQ.wcReQ-lK-S-aLXbAyneSE2LLDPEfcgS5XqQTS8zEw_0

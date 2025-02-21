@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ArrayContains, Equal, Raw, Repository } from 'typeorm';
+import { Equal, Raw, Repository } from 'typeorm';
 import { Owner } from './entity/owner.entity';
 import { CreateOwnerDto } from './dto/create-owner/create-owner.dto';
 import * as bcrypt from 'bcrypt';
@@ -177,24 +177,24 @@ export class OwnerService {
 
     return this.ownerRepository.save(user);
   }
-  
   // * Count Employees under a Manager
   async countEmployees(manager_id: number): Promise<number> {
-    
     const manager = await this.ownerRepository.findOne({
       where: { owner_id: manager_id },
     });
-  
     if (!manager) {
       throw new BadRequestException('Manager (Owner) not found.');
     }
-  
     return this.ownerRepository.count({
       where: {
-        manager, 
+        manager,
         roles: Raw((alias) => `:role = ANY(${alias})`, { role: 'employee' }),
       },
     });
+  }
+
+  async updatePasswordInDB(user: Owner): Promise<void> {
+    await this.ownerRepository.save(user);
   }
 
   async getIngredientsByOwner(branchId: number) {
@@ -203,5 +203,4 @@ export class OwnerService {
       select: ['ingredient_id', 'ingredient_name'],
     });
   }
-  
 }
