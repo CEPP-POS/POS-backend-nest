@@ -24,6 +24,7 @@ import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 import { join } from 'path';
 import { CreateSizeDto } from './dto/create-option/create-size.dto';
 import { SizeGroup } from 'src/entities/size-group.entity';
+import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
 
 @Injectable()
 export class MenuService {
@@ -238,12 +239,12 @@ export class MenuService {
       throw new Error('Invalid option type');
     }
 
-    // Step 1: Insert sizes into the `size` table
+    // Step 1: Insert sizes name and size price into the size table
     const sizes = createSizeDto.options.map((option) => ({
-      size_name: Object.keys(option)[0], 
-      size_price: parseFloat(Object.values(option)[0].price), 
-      owner: { owner_id: ownerId }, 
-      branch: { branch_id: branchId }, 
+      size_name: Object.keys(option)[0],
+      size_price: parseFloat(Object.values(option)[0].price),
+      owner: { owner_id: ownerId },
+      branch: { branch_id: branchId },
     }));
 
     const savedSizes = await this.sizeRepository.save(sizes);
@@ -270,11 +271,11 @@ export class MenuService {
       throw new Error('Size Group not found');
     }
 
-    // Step 3: Link `size_group_name` (string) to all `menu_id`
+    // Step 3: Link size_group_id and name to all menu_id
     for (const menuId of createSizeDto.menu_id) {
       await this.menuRepository.update(
         { menu_id: menuId },
-        { sizeGroup: sizeGroup }  
+        { sizeGroup: sizeGroup }
       );
     }
 
@@ -284,6 +285,86 @@ export class MenuService {
     );
   }
 
+
+  //POST ADD ON OPTION
+  async createAddOn(
+    type: string,
+    createAddOnDto: CreateAddOnDto,
+    ownerId: number,
+    branchId: number,
+  ) {
+    const { options, menu_id, is_required, is_multipled } = createAddOnDto;
+
+    //save name in table ingredient
+    const ingredientIds = [];
+    for (const option of options) {
+      const [ingredientName, ingredientData] = Object.entries(option)[0];
+
+      let ingredient = await this.ingredientRepository.findOne({
+        where: { ingredient_name: ingredientName, branch: { branch_id: branchId }, owner: { owner_id: ownerId } },
+      });
+
+      if (!ingredient) {
+        ingredient = this.ingredientRepository.create({
+          ingredient_name: ingredientName,
+          unit: ingredientData.unit,
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId },
+        });
+        ingredient = await this.ingredientRepository.save(ingredient);
+      }
+
+      ingredientIds.push(ingredient.ingredient_id);
+
+      // save ingredient_id in table add on
+      const addOn = this.addOnRepository.create({
+        ingredient: ingredient,
+        add_on_price: parseFloat(ingredientData.price),
+        is_required: is_required,
+        is_multipled: is_multipled,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      });
+      await this.addOnRepository.save(addOn);
+
+      // Save menu id and ingredient id, quantity in table menu_ingredient
+      for (const menuId of menu_id) {
+        // Check if the menuIngredient already exists to avoid duplicates
+        const existingMenuIngredient = await this.menuIngredientRepository.findOne({
+          where: {
+            menu: { menu_id: menuId },
+            ingredient: { ingredient_id: ingredient.ingredient_id },
+            owner: { owner_id: ownerId },
+            branch: { branch_id: branchId },
+          },
+        });
+
+        if (!existingMenuIngredient) {
+          // Log ingredientId for debugging
+          console.log(`Processing ingredientId: ${ingredient.ingredient_id}`);
+
+          // Log the result of ingredientData lookup
+          console.log('Found ingredientData:', ingredientData);
+
+          if (!ingredientData) {
+            throw new Error(`Ingredient data not found for ingredient: ${ingredientName}`);
+          }
+
+          const menuIngredient = this.menuIngredientRepository.create({
+            menu: { menu_id: menuId },
+            ingredient: { ingredient_id: ingredient.ingredient_id },
+            is_addon: true,
+            quantity_used: parseFloat(ingredientData.quantity),
+            owner: { owner_id: ownerId },
+            branch: { branch_id: branchId },
+          });
+          await this.menuIngredientRepository.save(menuIngredient);
+        } else {
+          console.log(`MenuIngredient for menu_id ${menuId} and ingredient_id ${ingredient.ingredient_id} already exists.`);
+        }
+      }
+    }
+  }
 
   // * link menu for auto cut stock
   // async updateStock(

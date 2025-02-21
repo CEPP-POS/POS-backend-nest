@@ -18,12 +18,13 @@ import { CreateSweetnessDto } from './dto/create-option/Sweetness.dto';
 import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateSizeDto } from './dto/create-option/create-size.dto';
+import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
 
 @Controller('owner/menus')
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) {}
+  ) { }
 
   // upload picture to local storage
   @Post('upload')
@@ -135,11 +136,6 @@ export class MenuController {
     return this.menuService.remove(+id, +ownerId, +branchId);
   }
 
-  // @Post('options/sweetness')
-  // async createSweetness(@Body() createSweetnessDto: CreateSweetnessDto) {
-  //   await this.menuService.createOption('sweetness', createSweetnessDto);
-  // }
-
   @Post('options/size')
   async createSize(@Req() request: Request, @Body() createSizeDto: CreateSizeDto) {
     const ownerId = request.headers['owner_id'];
@@ -152,23 +148,23 @@ export class MenuController {
     const ownerIdNum = Number(ownerId);
     const branchIdNum = Number(branchId);
 
-    await this.menuService.createSize('size', createSizeDto,ownerIdNum,branchIdNum);
+    await this.menuService.createSize('size', createSizeDto, ownerIdNum, branchIdNum);
   }
 
-  // @Post('options/:type')
-  // async createOption(
-  //   @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
-  //   @Body() createOptionDto: any, // ใช้ any สำหรับ add-ons, size, menu-type
-  // ) {
-  //   if (type === 'sweetness') {
-  //     return this.menuService.createOption(
-  //       type,
-  //       createOptionDto as CreateSweetnessDto,
-  //     );
-  //   }
-  //   // await this.menuService.createOption(type, createOptionDto);
-  //   return await this.menuService.createOption(type, createOptionDto);
-  // }
+  @Post('options/add-ons')
+  async createAddOn(@Req() request: Request, @Body() createAddOnDto: CreateAddOnDto) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    await this.menuService.createAddOn('addOn', createAddOnDto, ownerIdNum, branchIdNum);
+  }
 
   @Patch('stock/:menu_id')
   // @UsePipes(new ValidationPipe({ transform: true }))

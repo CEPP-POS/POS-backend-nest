@@ -30,15 +30,17 @@ Content-Type: application/json
 
 POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
 {
   "options": [
-    { "ไข่มุกสีสันสดใสๆๆ": { "price": "10.00", "unit": 20 } },
-    { "ขนมปังกรอบฝุดๆๆๆ": { "price": "20.00", "unit": 50 } }
+    { "บุก": { "price": "10.00", "unit": "กรัม", "quantity":12 } },
+    { "ไข่มุก": { "price": "20.00", "unit": "กรัม", "quantity":15 } }
   ],
-  "menu_id": [16,15],
+  "menu_id": [1,2],
   "is_required":true,
   "is_multipled":true
-  
 }
 
 PATCH http://localhost:3000/owner/menus/options/add-ons/114
