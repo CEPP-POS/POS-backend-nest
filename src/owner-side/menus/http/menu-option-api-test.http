@@ -82,9 +82,9 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "menu_type_group_name": "ร้อนหรือเย็น",
+  "menu_type_group_name": "ปั่นสำหรับผลไม้",
   "options": [
-    { "hot": "5.00" },
+    { "ปั่น": "5.00" },
     { "ice": "20.00" }
   ],
   "menu_id": [1, 2]
