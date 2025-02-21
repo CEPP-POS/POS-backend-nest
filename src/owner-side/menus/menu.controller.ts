@@ -10,6 +10,7 @@ import {
   Req,
   UseInterceptors,
   UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
@@ -135,23 +136,37 @@ export class MenuController {
   }
 
   @Post('options/sweetness')
-  async createSweetness(@Body() createSweetnessDto: CreateSweetnessDto) {
-    await this.menuService.createOption('sweetness', createSweetnessDto);
-  }
-
-  @Post('options/:type')
-  async createOption(
-    @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
-    @Body() createOptionDto: any, // ใช้ any สำหรับ add-ons, size, menu-type
+  async createSweetness(
+    @Req() request: Request,
+    @Body() createSweetnessDto: CreateSweetnessDto,
   ) {
-    if (type === 'sweetness') {
-      return this.menuService.createOption(
-        type,
-        createOptionDto as CreateSweetnessDto,
+    console.log("Request received in createSweetness");
+    // console.log("Received DTO:", createSweetnessDto);
+
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
       );
     }
-    // await this.menuService.createOption(type, createOptionDto);
-    return await this.menuService.createOption(type, createOptionDto);
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    // Ensure options and menu IDs are valid
+    if (!createSweetnessDto.options || !createSweetnessDto.menu_id) {
+      throw new BadRequestException(
+        'Missing options or menu_id in request body',
+      );
+    }
+
+    await this.menuService.createSweetness(
+      ownerIdNum,
+      branchIdNum,
+      createSweetnessDto,
+    );
   }
 
   @Patch('stock/:menu_id')

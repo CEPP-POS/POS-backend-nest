@@ -3,7 +3,7 @@ POST http://localhost:3000/owner/register
 Content-Type: application/json
 
 {
-  "owner_name": "Owner",
+  "owner_name": "OwnerM",
   "contact_info": "0123456789",
   "email": "owner@gmail.com",
   "password": "SecurePass123!"

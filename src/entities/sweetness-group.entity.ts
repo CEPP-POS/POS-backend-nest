@@ -14,11 +14,14 @@ import { Branch } from './branch.entity';
 
 @Entity()
 export class SweetnessGroup {
-  @PrimaryGeneratedColumn()
-  sweetness_group_id: number;
+  // @PrimaryGeneratedColumn()
+  // sweetness_group_id: number;
 
-  @Column()
+  @PrimaryColumn()
   sweetness_group_name: string;
+
+  @PrimaryColumn()
+  sweetness_id: number;
   
   @ManyToOne(() => SweetnessLevel, { nullable: false })
   @JoinColumn({ name: 'sweetness_id' })

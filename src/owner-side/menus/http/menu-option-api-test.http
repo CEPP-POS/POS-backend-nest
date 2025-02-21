@@ -1,13 +1,15 @@
 POST http://localhost:3000/owner/menus/options/sweetness
 Content-Type: application/json
-
+owner_id: 1
+branch_id: 1
 {
-"options": [
-    "น้อยร้อยเปอร์999%",
-    "มากถวายชีวิต999%"
+  "sweetness_group_name": "ความหวานกาแฟ",
+  "options": [
+    "หวานน้อยกาแฟ",
+    "หวานกลางกาแฟ",
+    "หวานมากกาแฟ"
   ],
-  "menu_id": [1,15],
-  "is_required":true
+  "menu_id": [1, 2,3]
 }
 
 GET http://localhost:3000/owner/menus/15

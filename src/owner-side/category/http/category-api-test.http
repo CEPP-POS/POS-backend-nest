@@ -31,7 +31,7 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "category_name": "ชานมสด",
+  "category_name": "ชานม",
   "menu_id": [1,2,3]
 }
 
