@@ -1,7 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { OrderItem } from './order-item.entity';
 import { MenuTypeGroup } from './menu-type-group.entity';
 import { MenuIngredient } from './menu-ingredient.entity';
+import { Owner } from './owner.entity';
+import { Branch } from './branch.entity';
 
 @Entity()
 export class MenuType {
@@ -11,11 +20,19 @@ export class MenuType {
   @Column()
   type_name: string;
 
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  price_difference: number;
+
   @Column({ type: 'boolean', default: false })
   is_delete: boolean;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  price_difference: number;
+  @ManyToOne(() => Owner, { nullable: false })
+  @JoinColumn({ name: 'owner_id' })
+  owner: Owner;
+
+  @ManyToOne(() => Branch, { nullable: false })
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
 
   @OneToMany(() => OrderItem, (orderItem) => orderItem.menuType, {
     cascade: true,
@@ -27,8 +44,12 @@ export class MenuType {
   })
   menuTypeGroup: MenuTypeGroup[];
 
-  @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.menu_type, {
-    cascade: true,
-  })
+  @OneToMany(
+    () => MenuIngredient,
+    (menuIngredient) => menuIngredient.menu_type,
+    {
+      cascade: true,
+    },
+  )
   menuIngredient: MenuIngredient[];
 }

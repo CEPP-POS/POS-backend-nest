@@ -5,6 +5,22 @@ import { SalesSummary } from './sales-summary.entity';
 import { Menu } from './menu.entity';
 import { Category } from './category.entity';
 import { MenuCategory } from './menu_category';
+import { Payment } from './payment.entity';
+import { Order } from './order.entity';
+import { IngredientCategory } from './ingredient-category.entity';
+import { AddOn } from './add-on.entity';
+import { Ingredient } from './ingredient.entity';
+import { IngredientUpdate } from './ingredient-update.entity';
+import { OrderItemAddOn } from './order-item-add-on.entity';
+import { OrderItem } from './order-item.entity';
+import { SizeGroup } from './size-group.entity';
+import { Size } from './size.entity';
+import { SweetnessGroup } from './sweetness-group.entity';
+import { SweetnessLevel } from './sweetness-level.entity';
+import { MenuType } from './menu-type.entity';
+import { MenuTypeGroup } from './menu-type-group.entity';
+import { LocalData } from './local-data.entity';
+import { SyncStatus } from './sync-status.entity';
 
 @Entity()
 export class Owner {
@@ -55,4 +71,84 @@ export class Owner {
     cascade: true,
   })
   menuCategory: MenuCategory[];
+
+  @OneToMany(() => Payment, (payment) => payment.owner, { cascade: true })
+  payment: Payment[];
+
+  @OneToMany(() => Order, (order) => order.owner, { cascade: true })
+  order: Order[];
+
+  @OneToMany(
+    () => IngredientCategory,
+    (ingredientCategory) => ingredientCategory.owner,
+    { cascade: true },
+  )
+  ingredientCategory: IngredientCategory[];
+
+  @OneToMany(() => AddOn, (addOn) => addOn.owner, { cascade: true })
+  addOn: AddOn[];
+
+  @OneToMany(() => Ingredient, (ingredient) => ingredient.owner, {
+    cascade: true,
+  })
+  ingredient: Ingredient[];
+
+  @OneToMany(
+    () => IngredientUpdate,
+    (ingredientUpdate) => ingredientUpdate.owner,
+    {
+      cascade: true,
+    },
+  )
+  ingredientUpdate: IngredientUpdate[];
+
+  @OneToMany(() => OrderItemAddOn, (orderItemAddOn) => orderItemAddOn.owner, {
+    cascade: true,
+  })
+  orderItemAddOn: OrderItemAddOn[];
+
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.owner, {
+    cascade: true,
+  })
+  orderItem: OrderItem[];
+
+  @OneToMany(() => SizeGroup, (sizeGroup) => sizeGroup.owner, {
+    cascade: true,
+  })
+  sizeGroup: SizeGroup[];
+
+  @OneToMany(() => Size, (size) => size.owner, {
+    cascade: true,
+  })
+  size: Size[];
+
+  @OneToMany(() => SweetnessGroup, (sweetnessGroup) => sweetnessGroup.owner, {
+    cascade: true,
+  })
+  sweetnessGroup: SweetnessGroup[];
+
+  @OneToMany(() => SweetnessLevel, (sweetnessLevel) => sweetnessLevel.owner, {
+    cascade: true,
+  })
+  sweetnessLevel: SweetnessLevel[];
+
+  @OneToMany(() => MenuType, (menuType) => menuType.owner, {
+    cascade: true,
+  })
+  menuType: MenuType[];
+
+  @OneToMany(() => MenuTypeGroup, (menuTypeGroup) => menuTypeGroup.owner, {
+    cascade: true,
+  })
+  menuTypeGroup: MenuTypeGroup[];
+
+  @OneToMany(() => LocalData, (localData) => localData.owner, {
+    cascade: true,
+  })
+  localData: LocalData[];
+
+  @OneToMany(() => SyncStatus, (syncStatus) => syncStatus.owner, {
+    cascade: true,
+  })
+  syncStatus: SyncStatus[];
 }

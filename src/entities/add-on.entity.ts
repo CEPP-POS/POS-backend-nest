@@ -6,6 +6,8 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { Ingredient } from './ingredient.entity';
+import { Owner } from './owner.entity';
+import { Branch } from './branch.entity';
 
 @Entity()
 export class AddOn {
@@ -24,4 +26,12 @@ export class AddOn {
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   add_on_price: number;
+
+  @ManyToOne(() => Owner, { nullable: false })
+  @JoinColumn({ name: 'owner_id' })
+  owner: Owner;
+
+  @ManyToOne(() => Branch, { nullable: false })
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
 }

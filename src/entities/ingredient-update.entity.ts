@@ -7,6 +7,8 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { Ingredient } from './ingredient.entity';
+import { Owner } from './owner.entity';
+import { Branch } from './branch.entity';
 
 @Entity()
 export class IngredientUpdate {
@@ -28,4 +30,12 @@ export class IngredientUpdate {
 
   @CreateDateColumn()
   expiration_date: Date;
+
+  @ManyToOne(() => Owner, { nullable: false })
+  @JoinColumn({ name: 'owner_id' })
+  owner: Owner;
+
+  @ManyToOne(() => Branch, { nullable: false })
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
 }

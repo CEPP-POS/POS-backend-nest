@@ -9,6 +9,8 @@ import {
 import { Menu } from './menu.entity';
 import { SweetnessGroup } from './sweetness-group.entity';
 import { OrderItem } from './order-item.entity';
+import { Owner } from './owner.entity';
+import { Branch } from './branch.entity';
 
 @Entity()
 export class SweetnessLevel {
@@ -20,6 +22,14 @@ export class SweetnessLevel {
 
   @Column({ type: 'boolean', default: false })
   is_delete: boolean;
+
+  @ManyToOne(() => Owner, { nullable: false })
+  @JoinColumn({ name: 'owner_id' })
+  owner: Owner;
+
+  @ManyToOne(() => Branch, { nullable: false })
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
 
   @OneToMany(
     () => SweetnessGroup,

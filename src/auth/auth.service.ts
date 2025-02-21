@@ -18,13 +18,13 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials.');
     }
-    const hasEmployees = await this.userService.countEmployees(user.owner_id);
+    // const hasEmployees = await this.userService.countEmployees(user.owner_id);
 
     const payload = {
       owner_id: user.owner_id,
       email: user.email,
       branch_id: user.branch || null,
-      roles: user.roles && user.roles.length > 0 ? user.roles : ['employee'],
+      roles: user.role && user.role.length > 0 ? user.role : ['employee'],
     };
 
     const token = await this.jwtService.signAsync(payload);

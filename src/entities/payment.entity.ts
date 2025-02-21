@@ -8,6 +8,8 @@ import {
   OneToOne,
 } from 'typeorm';
 import { Order } from './order.entity';
+import { Owner } from './owner.entity';
+import { Branch } from './branch.entity';
 
 @Entity()
 export class Payment {
@@ -41,4 +43,12 @@ export class Payment {
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   change: number;
+
+  @ManyToOne(() => Owner, { nullable: false })
+  @JoinColumn({ name: 'owner_id' })
+  owner: Owner;
+
+  @ManyToOne(() => Branch, { nullable: false })
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
 }

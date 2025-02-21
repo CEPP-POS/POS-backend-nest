@@ -9,6 +9,8 @@ import {
 import { MenuType } from './menu-type.entity';
 import { OrderItem } from './order-item.entity';
 import { Ingredient } from './ingredient.entity';
+import { Owner } from './owner.entity';
+import { Branch } from './branch.entity';
 
 @Entity()
 export class OrderItemAddOn {
@@ -27,5 +29,12 @@ export class OrderItemAddOn {
     @ManyToOne(() => Ingredient, { nullable: true })
     @JoinColumn({ name: 'ingredient_id' })
     ingredient: Ingredient;
-}
 
+    @ManyToOne(() => Owner, { nullable: true })
+    @JoinColumn({ name: 'owner_id' })
+    owner: Owner;
+
+    @ManyToOne(() => Branch, { nullable: true })
+    @JoinColumn({ name: 'branch_id' })
+    branch: Branch;
+}

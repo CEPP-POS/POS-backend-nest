@@ -4,10 +4,10 @@
 GET http://localhost:3000/owner/categories
 
 ### Get a specific Category by ID
-GET http://localhost:3000/owner/categories/15
+GET http://localhost:3000/owner/categories/5
 
 ### Delete a Category by ID
-DELETE http://localhost:3000/owner/categories/6
+DELETE http://localhost:3000/owner/categories/7
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
@@ -31,18 +31,18 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "category_name": "ชานมไข่มุก",
+  "category_name": "ชานมสด",
   "menu_id": [1,2,3]
 }
 
 
-PATCH http://localhost:3000/owner/categories/13
+PATCH http://localhost:3000/owner/categories/7
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "category_name": "promotion",
-  "menu_id": [1,2,3]
+  "category_name": "ชานมเย็น",
+  "menu_id": [1,3]
 }
 
 ### Link menu to category

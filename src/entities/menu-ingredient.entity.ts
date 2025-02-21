@@ -12,6 +12,7 @@ import { SweetnessLevel } from './sweetness-level.entity';
 import { AddOn } from './add-on.entity';
 import { MenuType } from './menu-type.entity';
 import { Owner } from './owner.entity';
+import { Branch } from './branch.entity';
 
 @Entity()
 export class MenuIngredient {
@@ -43,4 +44,8 @@ export class MenuIngredient {
   @ManyToOne(() => Owner, { nullable: true })
   @JoinColumn({ name: 'owner_id' })
   owner: Owner;
+
+  @ManyToOne(() => Branch, { nullable: true })
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
 }

@@ -105,8 +105,8 @@ export class OwnerService {
         'contact_info',
         'email',
         'password',
-        'branch_id',
-        'roles',
+        // 'branch_id',
+        // 'roles',
       ],
     });
     
@@ -201,38 +201,40 @@ export class OwnerService {
     });
   }
   // * Create Employee
-  async createEmployee(createEmployeeDto: CreateEmployeeDto): Promise<Owner> {
-    const { email, password, owner_id } = createEmployeeDto;
+  //ENTITY
+  // async createEmployee(createEmployeeDto: CreateEmployeeDto): Promise<Owner> {
+  //   const { email, password, owner_id } = createEmployeeDto;
 
-   // * check if the email already exists
-    const existingUser = await this.findByEmail(email);
-    if (existingUser) {
-      throw new BadRequestException('Email already exists.');
-    }
+  //  // * check if the email already exists
+  //   const existingUser = await this.findByEmail(email);
+  //   if (existingUser) {
+  //     throw new BadRequestException('Email already exists.');
+  //   }
 
-    // * Hash the password before saving it to the database
-    const hashedPassword = await bcrypt.hash(password, 10);
+  //   // * Hash the password before saving it to the database
+  //   const hashedPassword = await bcrypt.hash(password, 10);
 
-   // * Create a new employee with the owner_id
-    const newEmployee = this.ownerRepository.create({
-      email,
-      password: hashedPassword,
-      roles: ['employee'],
-      branch_id: owner_id, 
-      owner_name: null,
-      contact_info: null,
-    });
+  //  // * Create a new employee with the owner_id
+  //   const newEmployee = this.ownerRepository.create({
+  //     email,
+  //     password: hashedPassword,
+  //     roles: ['employee'],
+  //     branch_id: owner_id, 
+  //     owner_name: null,
+  //     contact_info: null,
+  //   });
 
-    return this.ownerRepository.save(newEmployee);
-  }
+  //   return this.ownerRepository.save(newEmployee);
+  // }
   // * Count Employees
-  async countEmployees(ownerId: number): Promise<number> {
-    return this.ownerRepository.count({
-        where: {
-            branch_id: ownerId, 
-            roles: ArrayContains(['employee']),
-        }
-    });
-}
+  //ENTITY
+//   async countEmployees(ownerId: number): Promise<number> {
+//     return this.ownerRepository.count({
+//         where: {
+//             branch_id: ownerId, 
+//             roles: ArrayContains(['employee']),
+//         }
+//     });
+// }
 
 }

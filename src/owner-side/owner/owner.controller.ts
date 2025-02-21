@@ -150,10 +150,11 @@ export class OwnerController {
   }
 
   // * Function Create Employee
-  @Post('create-employee')
-  @Roles('owner')
-  @UseGuards(JwtGuard, RolesGuard)
-  async createEmployee(@Body() createEmployeeDto: CreateEmployeeDto) {
-    return this.ownerService.createEmployee(createEmployeeDto);
-  }
+  //Entity
+  // @Post('create-employee')
+  // @Roles('owner')
+  // @UseGuards(JwtGuard, RolesGuard)
+  // async createEmployee(@Body() createEmployeeDto: CreateEmployeeDto) {
+  //   return this.ownerService.createEmployee(createEmployeeDto);
+  // }
 }
