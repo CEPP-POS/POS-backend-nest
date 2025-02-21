@@ -12,6 +12,8 @@ import {
   UseGuards,
   UseInterceptors,
   Req,
+  BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateOwnerDto } from './dto/create-owner/create-owner.dto';
 import { Express, Request } from 'express';
@@ -30,6 +32,7 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { AuthService } from '../../auth/auth.service';
 import { CreateEmployeeDto } from './dto/create-employee/create-employee.dto';
 import { UserPayload } from '../../auth/interfaces/user.interface';
+import * as bcrypt from 'bcrypt';
 
 @Controller('owner')
 export class OwnerController {
@@ -44,6 +47,29 @@ export class OwnerController {
   ) {
     return this.ownerService.updatePassword(+ownerId, updatePasswordDto);
   }
+  // ใช้สำหรับการเปลี่ยนรหัสผ่านครั้งแรกหลังจากลงทะเบียน
+  @Post('reset-password')
+  async resetPassword(@Body() updatePasswordDto: UpdatePasswordDto) {
+    const { email, oldPassword, newPassword } = updatePasswordDto;
+
+    const user = await this.ownerService.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException('User not found.');
+    }
+
+    if (user.otp !== oldPassword) {
+      throw new UnauthorizedException('Invalid temporary password.');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedNewPassword;
+    user.otp = null;
+
+    await this.ownerService.updatePasswordInDB(user);
+
+    return { message: 'Password reset successful. You can now log in.' };
+  }
+
   // * Function Register Owner
   @Post('register')
   async register(@Body() createOwnerDto: CreateOwnerDto) {
@@ -142,6 +168,11 @@ export class OwnerController {
       manager_id: user.owner_id,
     });
   }
+  @Post('request-temp-password')
+  async requestTempPassword(@Body() { email }: { email: string }) {
+    return this.ownerService.requestTempPassword(email);
+  }
+
   // * Dev only
   @Post('create-employee-dev')
   async createEmployeeWithoutAuth(
