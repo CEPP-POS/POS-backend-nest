@@ -196,6 +196,19 @@ export class OwnerService {
   async updatePasswordInDB(user: Owner): Promise<void> {
     await this.ownerRepository.save(user);
   }
+  async requestTempPassword(email: string): Promise<{ message: string }> {
+    const user = await this.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException('User not found.');
+    }
+    const tempPassword = Math.random().toString(36).slice(-8);
+    user.otp = tempPassword;
+    user.otp_expiry = new Date();
+    user.otp_expiry.setMinutes(user.otp_expiry.getMinutes() + 15);
+    await this.ownerRepository.save(user);
+    await sendTemporaryPasswordEmail(user.email, tempPassword);
+    return { message: 'Temporary password sent to your email.' };
+  }
 
   async getIngredientsByOwner(branchId: number) {
     return this.ingredientRepository.find({

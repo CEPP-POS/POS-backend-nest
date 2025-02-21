@@ -168,6 +168,11 @@ export class OwnerController {
       manager_id: user.owner_id,
     });
   }
+  @Post('request-temp-password')
+  async requestTempPassword(@Body() { email }: { email: string }) {
+    return this.ownerService.requestTempPassword(email);
+  }
+
   // * Dev only
   @Post('create-employee-dev')
   async createEmployeeWithoutAuth(
