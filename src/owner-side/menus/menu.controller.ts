@@ -22,7 +22,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) { }
+  ) {}
 
   // upload picture to local storage
   @Post('upload')
@@ -97,10 +97,29 @@ export class MenuController {
     return this.menuService.getOptions(type);
   }
 
-  // * Update a menu
+  // * Update a menuname description price image
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto) {
-    await this.menuService.update(+id, updateMenuDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateMenuDto: UpdateMenuDto,
+    @Req() request: Request,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner_id or branch_id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    return await this.menuService.update(
+      +id,
+      ownerIdNum,
+      branchIdNum,
+      updateMenuDto,
+    );
   }
 
   // * Delete a menu

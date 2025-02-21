@@ -22,10 +22,13 @@ GET http://localhost:3000/owner/menus/1
 ### Update a Menu by ID
 PATCH http://localhost:3000/owner/menus/1
 Content-Type: application/json
+owner_id: 1
+branch_id: 1
 {
   "menu_name": "latte milk",
   "price": 14.99,
-  "description": "coffee with milk"
+  "description": "coffee with milk",
+  "image_url": "http://example.com/coffee.jpg"
 }
 
 ### Delete a Menu by ID

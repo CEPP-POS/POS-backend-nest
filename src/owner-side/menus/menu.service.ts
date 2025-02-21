@@ -176,9 +176,26 @@ export class MenuService {
   }
 
   // * อัปเดตเมนู
-  async update(menu_id: number, updateMenuDto: UpdateMenuDto): Promise<Menu> {
-    const menu = await this.findOne(menu_id);
+  async update(
+    menu_id: number,
+    owner_id: number,
+    branch_id: number,
+    updateMenuDto: Partial<Menu>,
+  ): Promise<Menu> {
+    const menu = await this.menuRepository.findOne({
+      where: { menu_id, owner: { owner_id }, branch: { branch_id } },
+      relations: ['owner', 'branch'], // Ensure we load the related entities
+    });
+
+    if (!menu) {
+      throw new Error(
+        `Menu with id ${menu_id} not found for owner_id ${owner_id} and branch_id ${branch_id}`,
+      );
+    }
+
+    // Assign new values
     Object.assign(menu, updateMenuDto);
+
     return this.menuRepository.save(menu);
   }
 
