@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ArrayContains, Equal, Raw, Repository } from 'typeorm';
+import { Equal, Raw, Repository } from 'typeorm';
 import { Owner } from '../../entities/owner.entity';
 import { CreateOwnerDto } from './dto/create-owner/create-owner.dto';
 import * as bcrypt from 'bcrypt';
