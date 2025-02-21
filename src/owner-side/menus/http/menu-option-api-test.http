@@ -77,12 +77,12 @@ Content-Type: application/json
 }
 
 
-POST http://localhost:3000/owner/menus/type-group
+POST http://localhost:3000/owner/menus/options/menu_type
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "menu_type_group_name": "ปั่นสำหรับเด็ก",
+  "menu_type_group_name": "ร้อนหรือเย็น",
   "options": [
     { "hot": "5.00" },
     { "ice": "20.00" }

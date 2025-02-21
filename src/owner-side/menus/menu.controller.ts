@@ -82,7 +82,7 @@ export class MenuController {
     return this.menuService.findAll();
   }
 
-  @Post('/type-group')
+  @Post('options/menu_type')
   async createMenuTypeGroup(
     @Body() dto: CreateMenuTypeGroupDto,
     @Req() request: Request,
