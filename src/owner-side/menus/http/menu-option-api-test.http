@@ -56,14 +56,16 @@ Content-Type: application/json
 
 POST http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 {
+  "size_group_name": "ขนาดแก้วสำหรับนม",
    "options": [
-    { "small mak":  { "price": "5.00" } },
-    { "mid mak":  { "price": "20.00" } }
+    { "s":  { "price": "0.00" } },
+    { "m":  { "price": "5.00" } }
   ],
-  "menu_id": [17, 16],
-  "is_required": true
+  "menu_id": [1,2]
 }
 PATCH http://localhost:3000/owner/menus/options/size/130
 Content-Type: application/json
