@@ -77,16 +77,19 @@ Content-Type: application/json
 }
 
 
-POST http://localhost:3000/owner/menus/options/menu-type
+POST http://localhost:3000/owner/menus/type-group
 Content-Type: application/json
+owner_id: 1
+branch_id: 1
 {
+  "menu_type_group_name": "ปั่นสำหรับเด็ก",
   "options": [
-    { "เย็นmakmak565": { "price": "5.00" } },
-    { "ร้อนทานร้านsudsud767": { "price": "20.00" } }
+    { "hot": "5.00" },
+    { "ice": "20.00" }
   ],
-  "menu_id": [15, 16],
-  "is_required":true
+  "menu_id": [1, 2]
 }
+
 
 PATCH http://localhost:3000/owner/menus/options/menu-type/98
 Content-Type: application/json

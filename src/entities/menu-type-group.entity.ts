@@ -19,7 +19,7 @@ export class MenuTypeGroup {
   @Column()
   menu_type_group_name: string;
 
-  @ManyToOne(() => MenuType, { nullable: false })
+  @ManyToOne(() => MenuType, { nullable: true })
   @JoinColumn({ name: 'menu_type_id' })
   menuType: MenuType;
 

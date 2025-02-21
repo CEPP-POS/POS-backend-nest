@@ -5,8 +5,6 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
-  JoinTable,
-  ManyToMany,
 } from 'typeorm';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
