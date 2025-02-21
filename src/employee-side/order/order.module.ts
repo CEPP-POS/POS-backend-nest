@@ -33,11 +33,11 @@ import { OrderItemAddOn } from 'src/entities/order-item-add-on.entity';
       Payment,
       MenuIngredient,
       IngredientUpdate,
-      OrderItemAddOn
+      OrderItemAddOn,
     ]),
   ],
 
   controllers: [OrderController],
   providers: [OrderService],
 })
-export class OrderModule { }
+export class OrderModule {}

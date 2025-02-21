@@ -11,24 +11,28 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  // ENTITY
   async login(loginOwnerDto: LoginOwnerDto) {
     const user = await this.validateUser(loginOwnerDto);
     console.log('[File auth service] USER FOUND:', user);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials.');
     }
-    // const hasEmployees = await this.userService.countEmployees(user.owner_id);
+    const hasEmployees = await this.userService.countEmployees(user.owner_id);
+    if (user.roles.includes('owner') && hasEmployees === 0) {
+      throw new UnauthorizedException(
+        'You must create at least one employee before accessing the system.',
+      );
+    }
 
     const payload = {
       owner_id: user.owner_id,
       email: user.email,
       branch_id: user.branch || null,
-      roles: user.role && user.role.length > 0 ? user.role : ['employee'],
+      roles: user.roles && user.roles.length > 0 ? user.roles : ['employee'],
     };
 
     const token = await this.jwtService.signAsync(payload);
-    console.log('[File auth service] GENERATED TOKEN:', token);
+    console.log('[Auth Service] GENERATED TOKEN:', token);
     return {
       token,
     };
@@ -36,11 +40,22 @@ export class AuthService {
 
   async validateUser(loginOwnerDto: LoginOwnerDto) {
     const user = await this.userService.findByEmail(loginOwnerDto.email);
-
-    if (user && (await compare(loginOwnerDto.password, user.password))) {
-      return user;
+    console.log('🔍 Found user:', user);
+  
+    if (user) {
+      console.log('📌 Input Password:', loginOwnerDto.password);
+      console.log('🔐 Hashed Password in DB:', user.password);
+  
+      const passwordValid = await compare(loginOwnerDto.password, user.password);
+      console.log('✅ Password Match:', passwordValid);
+  
+      if (passwordValid) {
+        return user;
+      }
     }
-
+  
     throw new UnauthorizedException('Username or password not correct.');
   }
+  
+  
 }

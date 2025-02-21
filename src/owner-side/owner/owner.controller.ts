@@ -11,9 +11,10 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  Req,
 } from '@nestjs/common';
 import { CreateOwnerDto } from './dto/create-owner/create-owner.dto';
-import { Express } from 'express';
+import { Express, Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { LoginOwnerDto } from './dto/login-owner/login-owner.dto';
 import { OwnerService } from './owner.service';
@@ -28,6 +29,7 @@ import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { AuthService } from '../../auth/auth.service';
 import { CreateEmployeeDto } from './dto/create-employee/create-employee.dto';
+import { UserPayload } from '../../auth/interfaces/user.interface';
 
 @Controller('owner')
 export class OwnerController {
@@ -45,14 +47,6 @@ export class OwnerController {
   // * Function Register Owner
   @Post('register')
   async register(@Body() createOwnerDto: CreateOwnerDto) {
-    const existingOwner = await this.ownerService.findByEmail(
-      createOwnerDto.email,
-    );
-    // * Check if there is already an email in the system.
-    if (existingOwner) {
-      throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
-    }
-    // * Create a new owner
     return this.ownerService.create(createOwnerDto);
   }
 
@@ -61,59 +55,44 @@ export class OwnerController {
   async login(@Body() loginOwnerDto: LoginOwnerDto) {
     return this.authService.login(loginOwnerDto);
   }
- // * Function Upload CSV file 
+  // * Function Upload CSV file
   @Post('upload-csv')
   @UseInterceptors(FileInterceptor('file'))
   async uploadCsv(@UploadedFile() file: Express.Multer.File) {
-    // * Create an array to store the owner data from the CSV file.
+    if (!file) {
+      throw new HttpException('No file provided', HttpStatus.BAD_REQUEST);
+    }
+
     const owners: CreateOwnerDto[] = [];
-    // * Convert the uploaded file (buffer) to a readable stream and use csv-parser to read the CSV data.
     const stream = Readable.from(file.buffer.toString());
-    return new Promise((resolve, reject) => {
-      stream
-        // * Read the CSV data
-        .pipe(csvParser())
-        .on('data', async (row) => {
-          // * Generate a random temporary password
-          const tempPassword = Math.random().toString(36).slice(-8);
-          // * Create a DTO for Owner from data in each row of the CSV file.
-          const createOwnerDto: CreateOwnerDto = {
-            owner_name: row.owner_name,
-            contact_info: row.contact_info,
-            email: row.email,
-            password: tempPassword,
-          };
-          console.log('createOwnerDto', createOwnerDto);
-          // * Send temporary password to the user's email
-          await sendTemporaryPasswordEmail(createOwnerDto.email, tempPassword);
-          // * Add the owner data to the array for later processing
-          owners.push(createOwnerDto);
-          await this.ownerService.create(createOwnerDto);
-          console.log('EACH OWNERS', owners);
-        })
-        .on('end', async () => {
-          try {
-            // * Loop through each owner data into the database.
-            console.log('OWNERS', owners);
-            resolve({ message: 'CSV data uploaded successfully' });
-          } catch (error) {
-            reject(
-              new HttpException(
-                'Error uploading CSV data',
-                HttpStatus.INTERNAL_SERVER_ERROR,
-              ),
-            );
-          }
-        })
-        .on('error', (error) => {
-          reject(
-            new HttpException(
-              `Error reading CSV file: ${error.message}`,
-              HttpStatus.BAD_REQUEST,
-            ),
-          );
-        });
-    });
+
+    try {
+      for await (const row of stream.pipe(csvParser())) {
+        const tempPassword = Math.random().toString(36).slice(-8);
+        const createOwnerDto: CreateOwnerDto = {
+          owner_name: row.owner_name,
+          contact_info: row.contact_info,
+          email: row.email,
+          password: tempPassword,
+        };
+
+        owners.push(createOwnerDto);
+        await sendTemporaryPasswordEmail(createOwnerDto.email, tempPassword);
+        await this.ownerService.create(createOwnerDto);
+      }
+
+      if (owners.length === 0) {
+        throw new HttpException('CSV file is empty', HttpStatus.BAD_REQUEST);
+      }
+
+      return { message: 'CSV data uploaded successfully' };
+    } catch (error) {
+      console.error('Error uploading CSV data:', error);
+      throw new HttpException(
+        'Error processing CSV file',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Post('forgot-password')
@@ -130,8 +109,8 @@ export class OwnerController {
 
   @Get('profile')
   @UseGuards(JwtGuard)
-  getProfile() {
-    return { message: 'This is owner profile' };
+  getProfile(@Req() req: Request) {
+    return { message: 'This is owner profile', user: req.user };
   }
 
   @Get('admin')
@@ -150,11 +129,25 @@ export class OwnerController {
   }
 
   // * Function Create Employee
-  //Entity
-  // @Post('create-employee')
-  // @Roles('owner')
-  // @UseGuards(JwtGuard, RolesGuard)
-  // async createEmployee(@Body() createEmployeeDto: CreateEmployeeDto) {
-  //   return this.ownerService.createEmployee(createEmployeeDto);
-  // }
+  @Post('create-employee')
+  @Roles('owner')
+  @UseGuards(JwtGuard, RolesGuard)
+  async createEmployee(
+    @Body() createEmployeeDto: CreateEmployeeDto,
+    @Req() req: Request,
+  ) {
+    const user = req.user as UserPayload;
+    return this.ownerService.createEmployee({
+      ...createEmployeeDto,
+      manager_id: user.owner_id,
+    });
+  }
+  // * Dev only
+  @Post('create-employee-dev')
+  async createEmployeeWithoutAuth(
+    @Body() createEmployeeDto: CreateEmployeeDto,
+  ) {
+    console.log('🔍 Creating Employee (No Auth):', createEmployeeDto);
+    return this.ownerService.createEmployee(createEmployeeDto);
+  }
 }

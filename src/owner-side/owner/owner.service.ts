@@ -24,175 +24,177 @@ export class OwnerService {
 
     @InjectRepository(Ingredient)
     private ingredientRepository: Repository<Ingredient>,
-  ) { }
+  ) {}
 
-  // * Check for duplicate email before creating Owner
+  // * Register Owner (Owner Only)
   async create(createOwnerDto: CreateOwnerDto): Promise<Owner> {
     const existingOwner = await this.findByEmail(createOwnerDto.email);
-    // * Check if there is already an email in the system.
     if (existingOwner) {
       throw new BadRequestException('Email already exists');
     }
 
-    // * Generate a temporary password
     const tempPassword = Math.random().toString(36).slice(-8); // ? Generate a random temporary password
-    // * Hash the password before saving it to the database.
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
-    // * Create a new owner
+
     const newOwner = this.ownerRepository.create({
       ...createOwnerDto,
       password: hashedPassword, // ? Save the hashed password
+      roles: ['owner'],
     });
 
-    // * Save the new owner to the database
     const savedOwner = await this.ownerRepository.save(newOwner);
-    // * Send the temporary password to the owner's email
     try {
       await sendTemporaryPasswordEmail(savedOwner.email, tempPassword);
     } catch (error) {
-      console.error('Failed to send temporary password email:', error);
+      console.error('Failed to send email:', error);
       throw new BadRequestException(
         'Failed to send email. Please try again later.',
       );
     }
     return savedOwner;
   }
-  // * Create multiple Owners
-  async createMany(owners: CreateOwnerDto[]): Promise<Owner[]> {
-    const createdOwners: Owner[] = [];
+  // * Create Employee
+  async createEmployee(createEmployeeDto: CreateEmployeeDto): Promise<Owner> {
+    const { email, password, manager_id } = createEmployeeDto;
 
-    for (const createOwnerDto of owners) {
-      const existingOwner = await this.findByEmail(createOwnerDto.email);
-      if (existingOwner) {
-        console.warn(`
-          Owner with email ${createOwnerDto.email} already exists. Skipping.
-          Continuing to the next record.
-      `);
-        continue; // ? Skip to the next record
-      }
-      // * Generate a temporary password for each new owner
-      const tempPassword = Math.random().toString(36).slice(-8);
-
-      // * Hash the temporary password before saving it
-      const hashedPassword = await bcrypt.hash(tempPassword, 10);
-
-      const newOwner = this.ownerRepository.create({
-        ...createOwnerDto,
-        password: hashedPassword,
-      });
-      // * Save the new owner to the database
-      const savedOwner = await this.ownerRepository.save(newOwner);
-      createdOwners.push(savedOwner);
-      // * Send the temporary password to the owner's email
-      try {
-        await sendTemporaryPasswordEmail(savedOwner.email, tempPassword);
-      } catch (error) {
-        console.error(`Failed to send email to ${savedOwner.email}:`, error);
-      }
+    const existingUser = await this.findByEmail(email);
+    if (existingUser) {
+      throw new BadRequestException('Email already exists.');
     }
 
-    return createdOwners;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const manager = await this.ownerRepository.findOne({
+      where: { owner_id: manager_id },
+    });
+
+    if (!manager) {
+      throw new BadRequestException('Manager (Owner) not found.');
+    }
+
+    const newEmployee = this.ownerRepository.create({
+      email,
+      password: hashedPassword,
+      roles: ['employee'],
+      manager,
+    });
+
+    return this.ownerRepository.save(newEmployee);
   }
 
-  // * Find Owner by email
-  // ENTITY
+  // * Find Owner or Employee by email
   async findByEmail(email: string): Promise<Owner | undefined> {
     return this.ownerRepository.findOne({
       where: { email },
+      relations: ['manager'],
       select: [
         'owner_id',
         'owner_name',
         'contact_info',
         'email',
         'password',
-        // 'branch_id',
-        // 'roles',
+        'branch',
+        'roles',
       ],
     });
-    
   }
 
-  // * Login Owner
+  // * Login Owner or Employee
   async login(loginOwnerDto: LoginOwnerDto): Promise<Owner> {
-    const owner = await this.findByEmail(loginOwnerDto.email);
-    console.log('LOGIN');
-    if (!owner) {
+    const user = await this.findByEmail(loginOwnerDto.email);
+    if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
     const passwordValid = await bcrypt.compare(
       loginOwnerDto.password,
-      owner.password,
+      user.password,
     );
     if (!passwordValid) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    return owner;
+    return user;
   }
 
+  // * Forgot Password (Generate OTP)
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
     const { usernameOrEmail } = forgotPasswordDto;
 
-    const owner = await this.ownerRepository.findOne({
+    const user = await this.ownerRepository.findOne({
       where: { email: usernameOrEmail },
     });
 
-    if (!owner) {
-      throw new BadRequestException('not found');
+    if (!user) {
+      throw new BadRequestException('User not found.');
     }
 
-    // * Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // * save OTP and expiry time 5 minutes
-    owner.otp = otp;
-    owner.otp_expiry = new Date();
-    owner.otp_expiry.setMinutes(owner.otp_expiry.getMinutes() + 15);
+    user.otp = otp;
+    user.otp_expiry = new Date();
+    user.otp_expiry.setMinutes(user.otp_expiry.getMinutes() + 15);
 
-    await this.ownerRepository.save(owner);
-
-    await this.sendOtpEmail(owner.email, otp);
+    await this.ownerRepository.save(user);
+    await this.sendOtpEmail(user.email, otp);
   }
 
   async sendOtpEmail(email: string, otp: string) {
-    console.log(`ส่ง OTP ${otp} to this email ${email}`);
+    console.log(`OTP Sent: ${otp} to ${email}`);
   }
 
   async verifyOtp(verifyOtpDto: VerifyOtpDto): Promise<void> {
     const { usernameOrEmail, otp } = verifyOtpDto;
 
-    const owner = await this.ownerRepository.findOne({
+    const user = await this.ownerRepository.findOne({
       where: { email: usernameOrEmail },
     });
 
-    if (!owner || owner.otp !== otp || owner.otp_expiry < new Date()) {
+    if (!user || user.otp !== otp || user.otp_expiry < new Date()) {
       throw new BadRequestException('OTP expired or invalid');
     }
 
-    owner.otp = null; // ลบ OTP after verify
-    owner.otp_expiry = null;
+    user.otp = null;
+    user.otp_expiry = null;
 
-    await this.ownerRepository.save(owner);
+    await this.ownerRepository.save(user);
   }
 
   async updatePassword(
     ownerId: number,
     updatePasswordDto: UpdatePasswordDto,
   ): Promise<Owner> {
-    const owner = await this.ownerRepository.findOne({
+    const user = await this.ownerRepository.findOne({
       where: { owner_id: ownerId },
     });
-    if (!owner) {
-      throw new BadRequestException('Owner not found');
-    }
-    const hashedPassword = await bcrypt.hash(updatePasswordDto.newPassword, 10);
-    owner.password = hashedPassword;
 
-    return this.ownerRepository.save(owner);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const hashedPassword = await bcrypt.hash(updatePasswordDto.newPassword, 10);
+    user.password = hashedPassword;
+
+    return this.ownerRepository.save(user);
   }
 
-  // EDIT ENTITY TO BRANCH ID
+  // * Count Employees under a Manager
+  async countEmployees(manager_id: number): Promise<number> {
+    const manager = await this.ownerRepository.findOne({
+      where: { owner_id: manager_id },
+    });
+
+    if (!manager) {
+      throw new BadRequestException('Manager (Owner) not found.');
+    }
+
+    return this.ownerRepository.count({
+      where: {
+        manager,
+        roles: Raw((alias) => `:role = ANY(${alias})`, { role: 'employee' }),
+      },
+    });
+  }
 
   async getIngredientsByOwner(branchId: number) {
     return this.ingredientRepository.find({
@@ -200,41 +202,4 @@ export class OwnerService {
       select: ['ingredient_id', 'ingredient_name'],
     });
   }
-  // * Create Employee
-  //ENTITY
-  // async createEmployee(createEmployeeDto: CreateEmployeeDto): Promise<Owner> {
-  //   const { email, password, owner_id } = createEmployeeDto;
-
-  //  // * check if the email already exists
-  //   const existingUser = await this.findByEmail(email);
-  //   if (existingUser) {
-  //     throw new BadRequestException('Email already exists.');
-  //   }
-
-  //   // * Hash the password before saving it to the database
-  //   const hashedPassword = await bcrypt.hash(password, 10);
-
-  //  // * Create a new employee with the owner_id
-  //   const newEmployee = this.ownerRepository.create({
-  //     email,
-  //     password: hashedPassword,
-  //     roles: ['employee'],
-  //     branch_id: owner_id, 
-  //     owner_name: null,
-  //     contact_info: null,
-  //   });
-
-  //   return this.ownerRepository.save(newEmployee);
-  // }
-  // * Count Employees
-  //ENTITY
-//   async countEmployees(ownerId: number): Promise<number> {
-//     return this.ownerRepository.count({
-//         where: {
-//             branch_id: ownerId, 
-//             roles: ArrayContains(['employee']),
-//         }
-//     });
-// }
-
 }

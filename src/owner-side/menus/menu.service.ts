@@ -25,9 +25,8 @@ import { join } from 'path';
 
 @Injectable()
 export class MenuService {
-
   // upload local storage image
-  private uploadFolder = join(__dirname, '..', 'uploads')
+  private uploadFolder = join(__dirname, '..', 'uploads');
 
   constructor(
     @InjectRepository(Menu)
@@ -59,11 +58,11 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) { }
+  ) {}
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
-    console.log("upload picture")
+    console.log('upload picture');
     if (!file) {
       throw new BadRequestException('no file uploaded');
     }
@@ -154,12 +153,12 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-          menu_id: menu.menu_id,
-          menu_name: menu.menu_name,
-          description: menu.description,
-          image_url: menu.image_url,
-          price: menu.price
-        };
+            menu_id: menu.menu_id,
+            menu_name: menu.menu_name,
+            description: menu.description,
+            image_url: menu.image_url,
+            price: menu.price,
+          };
     });
   }
 
@@ -184,14 +183,20 @@ export class MenuService {
   }
 
   // * ลบเมนู
-  async remove(menu_id: number, owner_id: number, branch_id: number): Promise<{ message: string }> {
+  async remove(
+    menu_id: number,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<{ message: string }> {
     const menu = await this.menuRepository.findOne({
       where: { menu_id, owner: { owner_id }, branch: { branch_id } },
       relations: ['owner', 'branch'], // Ensure relations are included
     });
 
     if (!menu) {
-      throw new NotFoundException(`Menu with ID ${menu_id} not found for the given owner and branch.`);
+      throw new NotFoundException(
+        `Menu with ID ${menu_id} not found for the given owner and branch.`,
+      );
     }
 
     // Set soft delete

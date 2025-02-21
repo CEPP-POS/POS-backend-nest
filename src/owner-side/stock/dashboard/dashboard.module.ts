@@ -29,4 +29,4 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
   controllers: [DashboardController],
   providers: [DashboardService],
 })
-export class DashboardModule { }
+export class DashboardModule {}

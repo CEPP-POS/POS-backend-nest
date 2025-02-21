@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { SyncStatus } from './sync-status.entity';
 import { Order } from './order.entity';
-import { Owner } from './owner.entity';
+import { Owner } from './owner.entity'; 
 import { Branch } from './branch.entity';
 
 export enum OperationType {

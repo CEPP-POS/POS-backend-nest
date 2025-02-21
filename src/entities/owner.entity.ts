@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne } from 'typeorm';
 import { MenuIngredient } from './menu-ingredient.entity';
 import { Branch } from './branch.entity';
 import { SalesSummary } from './sales-summary.entity';
@@ -45,8 +45,14 @@ export class Owner {
   @Column({ type: 'timestamp', nullable: true })
   otp_expiry: Date;
 
-  @Column({ default: 'user' })
-  role: string;
+  @Column('text', { array: true, default: () => "ARRAY['owner']" })
+  roles: string[];
+
+  @OneToMany(() => Owner, (employee) => employee.manager, { cascade: true })
+  employees: Owner[];
+
+  @ManyToOne(() => Owner, (owner) => owner.employees, { nullable: true })
+  manager: Owner;
 
   @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.owner, {
     cascade: true,

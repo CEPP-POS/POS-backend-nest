@@ -345,8 +345,10 @@ export class DashboardService {
         unit: ingredient.unit || '',
         quantity_in_stock: latestUpdate?.quantity_in_stock || 0,
         total_volume: latestUpdate?.total_volume || 0,
-        category_id: ingredient.ingredientCategory?.ingredient_category_id || null,
-        category_name: ingredient.ingredientCategory?.ingredient_category_name || '',
+        category_id:
+          ingredient.ingredientCategory?.ingredient_category_id || null,
+        category_name:
+          ingredient.ingredientCategory?.ingredient_category_name || '',
         expiration_date: latestUpdate?.expiration_date || null,
       };
     });
@@ -444,10 +446,8 @@ export class DashboardService {
     // };
   }
 
-  // ENTITY 
-  async createCategory(
-    createCategoryDto: CreateCategoryDto,
-  ): Promise<any> {
+  // ENTITY
+  async createCategory(createCategoryDto: CreateCategoryDto): Promise<any> {
     // const { category_name } = createCategoryDto;
     // const existingCategory = await this.ingredientCategoryRepository.findOne({
     //   where: { category_name },
@@ -631,7 +631,8 @@ export class DashboardService {
     return {
       ingredient_id: ingredient.ingredient_id,
       ingredient_name: ingredient.ingredient_name,
-      category_name: ingredient.ingredientCategory?.ingredient_category_name || 'Unknown',
+      category_name:
+        ingredient.ingredientCategory?.ingredient_category_name || 'Unknown',
       stock_data: groupedStockData, // Store grouped stock data (excluding expired/zero quantity)
     };
   }

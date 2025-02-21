@@ -32,8 +32,7 @@ export class CategoryService {
 
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
-
-  ) { }
+  ) {}
 
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find();
@@ -80,7 +79,11 @@ export class CategoryService {
     });
 
     if (!category) {
-      category = this.categoryRepository.create({ category_name, owner, branch });
+      category = this.categoryRepository.create({
+        category_name,
+        owner,
+        branch,
+      });
       category = await this.categoryRepository.save(category);
     }
 
@@ -203,20 +206,19 @@ export class CategoryService {
   async getMenusByCategory(data): Promise<any> {
     const category = await this.categoryRepository.findOne({
       where: {
-        category_id: data.id, 
+        category_id: data.id,
         owner: { owner_id: data.owner_id },
-        branch: { branch_id: data.branch_id }
+        branch: { branch_id: data.branch_id },
       },
       relations: ['menuCategory', 'menuCategory.menu'], // Ensure correct relation path
     });
-  
+
     if (!category) {
       throw new NotFoundException(`Category with ID ${data.id} not found`);
     }
-  
-    return category.menuCategory.map(mc => mc.menu.menu_name); // Return menus instead of MenuCategory objects
+
+    return category.menuCategory.map((mc) => mc.menu.menu_name); // Return menus instead of MenuCategory objects
   }
-  
 
   async updateCategory(
     categoryId: number,
@@ -225,8 +227,7 @@ export class CategoryService {
     updateCategoryDto: CreateCategoryDto,
   ): Promise<any> {
     const { category_name, menu_id } = updateCategoryDto;
-  
-  
+
     // ✅ Find the Category
     const category = await this.categoryRepository.findOne({
       where: {
@@ -236,49 +237,59 @@ export class CategoryService {
       },
       relations: ['owner', 'branch'],
     });
-  
+
     if (!category) {
       throw new NotFoundException(`Category with ID ${categoryId} not found`);
     }
-  
-  
+
     // ✅ Validate Owner and Branch
-    if (!category.owner || Number(category.owner.owner_id) !== Number(owner_id)) {
-      throw new ConflictException(`Category does not belong to the specified owner`);
+    if (
+      !category.owner ||
+      Number(category.owner.owner_id) !== Number(owner_id)
+    ) {
+      throw new ConflictException(
+        `Category does not belong to the specified owner`,
+      );
     }
-  
-    if (category.branch && Number(category.branch.branch_id) !== Number(branch_id)) {
-      throw new ConflictException(`Category does not belong to the specified branch`);
+
+    if (
+      category.branch &&
+      Number(category.branch.branch_id) !== Number(branch_id)
+    ) {
+      throw new ConflictException(
+        `Category does not belong to the specified branch`,
+      );
     }
-  
+
     // ✅ Update Category Name (if changed)
     if (category_name) {
-
-  
       category.category_name = category_name;
     }
-  
+
     // ✅ Fetch existing MenuCategory relations for this category
     const existingMenuCategories = await this.menuCategoryRepository.find({
       where: { category_id: categoryId },
     });
-  
+
     const existingMenuIds = existingMenuCategories.map((mc) => mc.menu_id);
     const newMenuIds = menu_id || [];
-  
-  
+
     // ✅ Find menus from new menu_id array
     const menus = await this.menuRepository.find({
       where: { menu_id: In(newMenuIds) },
     });
-  
+
     if (menus.length !== newMenuIds.length) {
-      throw new NotFoundException(`Some menus with IDs ${newMenuIds} not found`);
+      throw new NotFoundException(
+        `Some menus with IDs ${newMenuIds} not found`,
+      );
     }
-  
+
     // ✅ Delete menu categories that are NOT in the new menu_id array
-    const menusToRemove = existingMenuIds.filter((id) => !newMenuIds.includes(id));
-  
+    const menusToRemove = existingMenuIds.filter(
+      (id) => !newMenuIds.includes(id),
+    );
+
     if (menusToRemove.length > 0) {
       await this.menuCategoryRepository
         .createQueryBuilder()
@@ -286,12 +297,11 @@ export class CategoryService {
         .where('category_id = :categoryId', { categoryId })
         .andWhere('menu_id IN (:...menusToRemove)', { menusToRemove })
         .execute();
-  
     }
-  
+
     // ✅ Insert new menu categories that are NOT in the database
     const menusToAdd = newMenuIds.filter((id) => !existingMenuIds.includes(id));
-  
+
     if (menusToAdd.length > 0) {
       const newMenuCategories = menusToAdd.map((menu_id) =>
         this.menuCategoryRepository.create({
@@ -301,14 +311,13 @@ export class CategoryService {
           branch: { branch_id },
         }),
       );
-  
+
       await this.menuCategoryRepository.save(newMenuCategories);
-  
     }
-  
+
     // ✅ Save updated category
     await this.categoryRepository.save(category);
-  
+
     return {
       message: 'Category updated successfully',
       category: {
@@ -317,5 +326,4 @@ export class CategoryService {
       },
     };
   }
-  
 }
