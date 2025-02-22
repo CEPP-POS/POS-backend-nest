@@ -286,4 +286,26 @@ export class MenuController {
       branchIdNum,
     );
   }
+
+  @Get('stock/:menu_id')
+  async getMenuIngredients(
+    @Param('menu_id') menu_id: number,
+    @Req() request: Request,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    return this.menuService.getMenuIngredients(
+      menu_id,
+      ownerIdNum,
+      branchIdNum,
+    );
+  }
 }

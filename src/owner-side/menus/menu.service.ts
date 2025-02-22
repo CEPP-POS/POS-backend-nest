@@ -1113,4 +1113,67 @@ export class MenuService {
       statusCode: HttpStatus.OK,
     };
   }
+
+  async getMenuIngredients(
+    menu_id: number,
+    owner_id: number,
+    branch_id: number,
+  ) {
+    // ตรวจสอบว่ามี menu, owner, branch อยู่จริง
+    const menu = await this.menuRepository.findOne({ where: { menu_id } });
+    if (!menu) {
+      throw new NotFoundException(`Menu with ID ${menu_id} not found`);
+    }
+
+    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+    if (!owner) {
+      throw new NotFoundException(`Owner with ID ${owner_id} not found`);
+    }
+
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id },
+    });
+    if (!branch) {
+      throw new NotFoundException(`Branch with ID ${branch_id} not found`);
+    }
+
+    // ดึงข้อมูล menu_ingredient ทั้งหมดที่เชื่อมกับ menu นี้
+    const menuIngredients = await this.menuIngredientRepository.find({
+      where: {
+        menu: { menu_id },
+        owner: { owner_id },
+        branch: { branch_id },
+        is_addon: false,
+      },
+      relations: ['ingredient', 'size', 'menu_type'],
+    });
+
+    // จัดกลุ่มข้อมูลตาม ingredient
+    const ingredientGroups = new Map<string, any>();
+
+    menuIngredients.forEach((mi) => {
+      const ingredientName = mi.ingredient.ingredient_name;
+
+      if (!ingredientGroups.has(ingredientName)) {
+        ingredientGroups.set(ingredientName, {
+          ingredient_name: ingredientName,
+          unit: mi.ingredient.unit,
+          ingredientListForStock: [],
+        });
+      }
+
+      ingredientGroups.get(ingredientName).ingredientListForStock.push({
+        size_id: mi.size.size_id,
+        menu_type_id: mi.menu_type.menu_type_id,
+        quantity_used: mi.quantity_used,
+      });
+    });
+
+    // แปลงข้อมูลให้อยู่ในรูปแบบที่ต้องการ
+    const menuData = Array.from(ingredientGroups.values());
+
+    return {
+      menuData,
+    };
+  }
 }

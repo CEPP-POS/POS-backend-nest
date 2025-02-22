@@ -20,7 +20,8 @@ branch_id: 1
   "old_sweetness_group_name": "ความหวานกาแฟนม",
   "new_sweetness_group_name": "ความหวานกาแฟนม",
   "options": [
-    { "sweetness_id": 67, "level_name": "ความหวานกลางกาแฟgg" }
+    { "sweetness_id": 67, "level_name": "ความหวานกลางกาแฟgg" },
+    { "sweetness_id": null, "level_name": "ความหวานกลางกาแฟaa" }
 
   ],
   "menu_id": [2]
