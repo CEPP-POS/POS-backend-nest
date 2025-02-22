@@ -91,17 +91,20 @@ branch_id: 1
 }
 
 
-PATCH http://localhost:3000/owner/menus/options/menu-type/98
+PATCH http://localhost:3000/owner/menus/options/menu_type/6
 Content-Type: application/json
-
+owner_id: 1
+branch_id: 1
 {
+  "menu_type_group_name": "ร้อนเย็นปั่น",
   "options": [
-    { "เย็นmakmak565": { "price": "5.00" } },
-    { "ร้อนทานร้านsudsud767": { "price": "20.00" } }
+    { "ร้อน": "5.00" },
+    { "เย็น": "5.00" },
+    { "ปั่น": "5.00" }
   ],
-  "menu_id": [15, 16],
-  "is_required":true
+  "menu_id": [1,2]
 }
+
 
 
 GET http://localhost:3000/owner/menus/14

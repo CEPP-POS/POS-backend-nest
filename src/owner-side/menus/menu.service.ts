@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, Repository } from 'typeorm';
+import { Equal, In, Repository } from 'typeorm';
 import { Menu } from '../../entities/menu.entity';
 import { Category } from '../../entities/category.entity';
 import { Owner } from '../../entities/owner.entity';
@@ -21,8 +21,9 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 import { join } from 'path';
-import { CreateMenuTypeGroupDto } from './dto/create-menu-type-group/create-menu-type-group.dto';
+import { CreateMenuTypeGroupDto } from './dto/menu-type/create-menu-type-group.dto';
 import { MenuTypeGroup } from 'src/entities/menu-type-group.entity';
+import { UpdateMenuTypeGroupDto } from './dto/menu-type/update-menu-type-group.dto';
 
 @Injectable()
 export class MenuService {
@@ -686,6 +687,89 @@ export class MenuService {
       message: 'Menu Type Group created successfully',
       menu_type_group_name: menuTypeGroup.menu_type_group_name,
       menu_types: savedMenuTypes,
+      linked_menus: dto.menu_id,
+    };
+  }
+  async updateMenuTypeGroup(
+    menu_type_id: number,
+    dto: UpdateMenuTypeGroupDto,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<any> {
+    // 1. Find existing menu type group by ID
+    const existingMenuTypeGroup = await this.menuTypeGroupRepository.findOne({
+      where: { menu_type_group_id: menu_type_id },
+      relations: ['menuType', 'owner', 'branch'],
+    });
+
+    if (!existingMenuTypeGroup) {
+      throw new NotFoundException('Menu Type Group not found');
+    }
+
+    // Verify owner and branch
+    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+    if (!owner) throw new NotFoundException('Owner not found');
+
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id },
+    });
+    if (!branch) throw new NotFoundException('Branch not found');
+
+    // 2. Update menu type group name
+    existingMenuTypeGroup.menu_type_group_name = dto.menu_type_group_name;
+    await this.menuTypeGroupRepository.save(existingMenuTypeGroup);
+
+    // 3. & 4. Update or create new menu types
+    if (!dto.options || dto.options.length === 0) {
+      throw new Error('Options cannot be empty');
+    }
+
+    // Get existing menu types
+    const existingMenuTypes = await this.menuTypeRepository.find({
+      where: { menuTypeGroup: { menu_type_group_id: menu_type_id } },
+    });
+
+    // Create a map of existing menu types for easy lookup
+    const existingMenuTypeMap = new Map(
+      existingMenuTypes.map((type) => [type.type_name, type]),
+    );
+
+    // Process each option
+    const updatedMenuTypes = [];
+    for (const option of dto.options) {
+      const typeName = Object.keys(option)[0];
+      const priceDifference = parseFloat(Object.values(option)[0]);
+
+      if (existingMenuTypeMap.has(typeName)) {
+        // Update existing menu type
+        const menuType = existingMenuTypeMap.get(typeName);
+        menuType.price_difference = priceDifference;
+        updatedMenuTypes.push(await this.menuTypeRepository.save(menuType));
+      } else {
+        // Create new menu type
+        const newMenuType = this.menuTypeRepository.create({
+          type_name: typeName,
+          price_difference: priceDifference,
+          is_delete: false,
+          owner,
+          branch,
+        });
+        updatedMenuTypes.push(await this.menuTypeRepository.save(newMenuType));
+      }
+    }
+
+    // 5. Update menu associations
+    if (dto.menu_id && dto.menu_id.length > 0) {
+      await this.menuRepository.update(
+        { menu_id: In(dto.menu_id) },
+        { menuTypeGroup: existingMenuTypeGroup },
+      );
+    }
+
+    return {
+      message: 'Menu Type Group updated successfully',
+      menu_type_group_name: existingMenuTypeGroup.menu_type_group_name,
+      menu_types: updatedMenuTypes,
       linked_menus: dto.menu_id,
     };
   }
