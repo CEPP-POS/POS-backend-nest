@@ -58,6 +58,45 @@ export class OwnerService {
     return this.ownerRepository.count(); // 🔹 นับจำนวน Owner ทั้งหมด
   }
   // * Create Employee
+  // async createEmployee(
+  //   createEmployeeDto: CreateEmployeeDto,
+  //   owner_id: number,
+  //   branch_id: number,
+  // ): Promise<Owner> {
+  //   const { email, password } = createEmployeeDto;
+
+  //   const existingUser = await this.findByEmail(email);
+  //   if (existingUser) {
+  //     throw new BadRequestException('Email already exists.');
+  //   }
+
+  //   const hashedPassword = await bcrypt.hash(password, 10);
+
+  //   const manager = await this.ownerRepository.findOne({
+  //     where: { owner_id: owner_id },
+  //     relations: ['branch'],
+  //   });
+
+  //   if (!manager) {
+  //     throw new BadRequestException('Manager (Owner) not found.');
+  //   }
+
+  //   const branch = await this.branchRepository.findOne({
+  //     where: { branch_id: branch_id, owner: { owner_id: owner_id } },
+  //   });
+  //   if (!branch) {
+  //     throw new BadRequestException('Branch not found for this Owner.');
+  //   }
+  //   const newEmployee = this.ownerRepository.create({
+  //     email,
+  //     password: hashedPassword,
+  //     roles: ['employee'],
+  //     manager,
+  //     branch,
+  //   });
+
+  //   return this.ownerRepository.save(newEmployee);
+  // }
   async createEmployee(createEmployeeDto: CreateEmployeeDto): Promise<Owner> {
     const { email, password, manager_id } = createEmployeeDto;
 
@@ -90,7 +129,7 @@ export class OwnerService {
   async findByEmail(email: string): Promise<Owner | undefined> {
     return this.ownerRepository.findOne({
       where: { email },
-      relations: ['manager'],
+      relations: ['branch', 'manager'],
       select: [
         'owner_id',
         'owner_name',
@@ -123,11 +162,19 @@ export class OwnerService {
   }
 
   // * Forgot Password (Generate OTP)
-  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
+  async forgotPassword(
+    forgotPasswordDto: ForgotPasswordDto,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<void> {
     const { usernameOrEmail } = forgotPasswordDto;
 
     const user = await this.ownerRepository.findOne({
-      where: { email: usernameOrEmail },
+      where: {
+        email: usernameOrEmail,
+        owner_id,
+        branch: { branch_id },
+      },
     });
 
     if (!user) {
@@ -148,11 +195,20 @@ export class OwnerService {
     console.log(`OTP Sent: ${otp} to ${email}`);
   }
 
-  async verifyOtp(verifyOtpDto: VerifyOtpDto): Promise<void> {
+  async verifyOtp(
+    verifyOtpDto: VerifyOtpDto,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<void> {
     const { usernameOrEmail, otp } = verifyOtpDto;
 
     const user = await this.ownerRepository.findOne({
-      where: { email: usernameOrEmail },
+      where: {
+        email: usernameOrEmail,
+        owner_id,
+        branch: { branch_id },
+      },
+      relations: ['branch'],
     });
 
     if (!user || user.otp !== otp || user.otp_expiry < new Date()) {
@@ -167,22 +223,27 @@ export class OwnerService {
   }
   async resetPassword(
     updatePasswordDto: UpdatePasswordDto,
+    ownerId: number,
+    branchId: number,
   ): Promise<{ message: string }> {
-    const { email, oldPassword, newPassword } = updatePasswordDto;
+    const { email, newPassword } = updatePasswordDto;
+    const user = await this.ownerRepository.findOne({
+      where: { email, owner_id: ownerId, branch: { branch_id: branchId } },
+      relations: ['branch'],
+    });
 
-    const user = await this.findByEmail(email);
-    if (!user) {
-      throw new BadRequestException('User not found.');
-    }
+    // const user = await this.findByEmail(email);
+    // if (!user) {
+    //   throw new BadRequestException('User not found.');
+    // }
 
-    console.log('📌 [DEBUG] Old Password (Received):', oldPassword);
     console.log('📌 [DEBUG] Hashed Password in DB:', user.password);
 
     // ✅ เปรียบเทียบ `oldPassword` กับรหัสผ่านที่ถูกเข้ารหัส (OTP)
-    const isOtpValid = await bcrypt.compare(oldPassword, user.password);
-    if (!isOtpValid) {
-      throw new UnauthorizedException('Invalid temporary password.');
-    }
+    // const isOtpValid = await bcrypt.compare(user.password);
+    // if (!isOtpValid) {
+    //   throw new UnauthorizedException('Invalid temporary password.');
+    // }
 
     // 🔐 เปลี่ยนรหัสผ่านใหม่
     user.password = await bcrypt.hash(newPassword, 10);

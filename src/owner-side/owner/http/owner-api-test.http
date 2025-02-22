@@ -5,7 +5,7 @@ Content-Type: application/json
 {
   "owner_name": "Owner",
   "contact_info": "0123456789",
-  "email": "owner@gmail.com",
+  "email": "owner1@gmail.com",
   "password": "SecurePass123!"
 }
 ### 2. Owner ใช้รหัสผ่านแบบใช้แล้วทิ้งเข้าสู่ระบบ
@@ -13,45 +13,46 @@ POST http://localhost:3000/owner/login
 Content-Type: application/json
 
 {
-  "email": "owner@gmail.com",
-  "password": "SecurePass456!"  
+  "email": "owner1@gmail.com",
+  "password": "SecurePass4567!"
 }
 
 ### 3. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน (Forgot Password)
 POST http://localhost:3000/owner/forgot-password
 Content-Type: application/json
-
+owner_id: 16
+branch_id: 2
 {
-  "usernameOrEmail": "owner@gmail.com"
+  "usernameOrEmail": "owner1@gmail.com"
 }
 
 ### 4. Owner ยืนยัน OTP
 POST http://localhost:3000/owner/verify-otp
 Content-Type: application/json
-
+owner_id: 16
+branch_id: 2
 {
-  "usernameOrEmail": "owner@gmail.com",
-  "otp": "103642"
+  "usernameOrEmail": "owner1@gmail.com",
+  "otp": "155693"
 }
 
 
 ### 5. Owner รีเซ็ตรหัสผ่านใหม่
 PATCH http://localhost:3000/owner/reset-password
 Content-Type: application/json
-
+owner_id: 16
+branch_id: 2
 {
-  "email": "owner@gmail.com",
-  "oldPassword": "103642", 
-  "newPassword": "SecurePass456!"
+  "email": "owner1@gmail.com",
+  "newPassword": "SecurePass4567!"
 }
 
 ### 6. Owner สร้าง Employee (ต้องแนบ Token)
 POST http://localhost:3000/owner/create-employee
-Authorization: Bearer {{TOKEN}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MTYsImVtYWlsIjoib3duZXIxQGdtYWlsLmNvbSIsImJyYW5jaF9pZCI6Miwicm9sZXMiOlsib3duZXIiXSwiaWF0IjoxNzQwMjM2MjI1LCJleHAiOjE3NDAzMjI2MjV9.0JQ245uWUHzJ52D36-QCu2TPuQuknA1_ZpcZGTDvI9U
 Content-Type: application/json
-
 {
-  "email": "employee@example.com",
+  "email": "employeeoneoneone@example.com",
   "password": "EmployeePass123!"
 }
 

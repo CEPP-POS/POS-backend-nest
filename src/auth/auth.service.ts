@@ -32,11 +32,12 @@ export class AuthService {
         'You must create at least one employee before accessing the system.',
       );
     }
-
+    const branchId = user.branch ? user.branch[0].branch_id : null;
+    // const branchId = user.branch ? user.branch[0].branch_id : null;
     const payload = {
       owner_id: user.owner_id,
       email: user.email,
-      branch_id: user.branch || null,
+      branch_id: branchId,
       roles: user.roles && user.roles.length > 0 ? user.roles : ['employee'],
     };
 
@@ -44,6 +45,8 @@ export class AuthService {
     console.log('[Auth Service] GENERATED TOKEN:', token);
     return {
       token,
+      owner_id: user.owner_id,
+      branch_id: branchId,
     };
   }
 
