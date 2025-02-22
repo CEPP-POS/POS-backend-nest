@@ -18,12 +18,14 @@ import { CreateMenuDto } from './dto/create-menu/create-menu.dto';
 import { CreateSweetnessDto } from './dto/create-option/Sweetness.dto';
 import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateSizeDto } from './dto/create-option/create-size.dto';
+import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
 
 @Controller('owner/menus')
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) {}
+  ) { }
 
   // upload picture to local storage
   @Post('upload')
@@ -135,38 +137,34 @@ export class MenuController {
     return this.menuService.remove(+id, +ownerId, +branchId);
   }
 
-  @Post('options/sweetness')
-  async createSweetness(
-    @Req() request: Request,
-    @Body() createSweetnessDto: CreateSweetnessDto,
-  ) {
-    console.log("Request received in createSweetness");
-    // console.log("Received DTO:", createSweetnessDto);
-
+  @Post('options/size')
+  async createSize(@Req() request: Request, @Body() createSizeDto: CreateSizeDto) {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
     if (!ownerId || !branchId) {
-      throw new BadRequestException(
-        'Missing required headers: owner_id or branch_id',
-      );
+      throw new Error('Missing required headers: owner-id or branch-id');
     }
 
     const ownerIdNum = Number(ownerId);
     const branchIdNum = Number(branchId);
 
-    // Ensure options and menu IDs are valid
-    if (!createSweetnessDto.options || !createSweetnessDto.menu_id) {
-      throw new BadRequestException(
-        'Missing options or menu_id in request body',
-      );
+    await this.menuService.createSize('size', createSizeDto, ownerIdNum, branchIdNum);
+  }
+
+  @Post('options/add-ons')
+  async createAddOn(@Req() request: Request, @Body() createAddOnDto: CreateAddOnDto) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    await this.menuService.createSweetness(
-      ownerIdNum,
-      branchIdNum,
-      createSweetnessDto,
-    );
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    await this.menuService.createAddOn('addOn', createAddOnDto, ownerIdNum, branchIdNum);
   }
 
   @Patch('stock/:menu_id')
