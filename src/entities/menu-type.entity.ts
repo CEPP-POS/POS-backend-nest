@@ -26,11 +26,11 @@ export class MenuType {
   @Column({ type: 'boolean', default: false })
   is_delete: boolean;
 
-  @ManyToOne(() => Owner, { nullable: false })
+  @ManyToOne(() => Owner, { nullable: true })
   @JoinColumn({ name: 'owner_id' })
   owner: Owner;
 
-  @ManyToOne(() => Branch, { nullable: false })
+  @ManyToOne(() => Branch, { nullable: true })
   @JoinColumn({ name: 'branch_id' })
   branch: Branch;
 

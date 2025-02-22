@@ -23,11 +23,11 @@ export class MenuTypeGroup {
   @JoinColumn({ name: 'menu_type_id' })
   menuType: MenuType;
 
-  @ManyToOne(() => Owner, { nullable: false })
+  @ManyToOne(() => Owner, { nullable: true })
   @JoinColumn({ name: 'owner_id' })
   owner: Owner;
 
-  @ManyToOne(() => Branch, { nullable: false })
+  @ManyToOne(() => Branch, { nullable: true })
   @JoinColumn({ name: 'branch_id' })
   branch: Branch;
 
