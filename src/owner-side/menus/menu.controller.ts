@@ -15,7 +15,7 @@ import {
 import { MenuService } from './menu.service';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
 import { CreateMenuDto } from './dto/create-menu/create-menu.dto';
-import { CreateSweetnessDto } from './dto/create-option/Sweetness.dto';
+import { CreateSweetnessDto } from './dto/create-option/create-sweetness-dto';
 import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateSizeDto } from './dto/create-option/create-size.dto';
@@ -25,7 +25,7 @@ import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) { }
+  ) {}
 
   // upload picture to local storage
   @Post('upload')
@@ -137,8 +137,11 @@ export class MenuController {
     return this.menuService.remove(+id, +ownerId, +branchId);
   }
 
-  @Post('options/size')
-  async createSize(@Req() request: Request, @Body() createSizeDto: CreateSizeDto) {
+  @Post('options/sweetness')
+  async createSweetness(
+    @Req() request: Request,
+    @Body() createSweetnessDto: CreateSweetnessDto,
+  ) {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
@@ -149,11 +152,42 @@ export class MenuController {
     const ownerIdNum = Number(ownerId);
     const branchIdNum = Number(branchId);
 
-    await this.menuService.createSize('size', createSizeDto, ownerIdNum, branchIdNum);
+    await this.menuService.createSweetness(
+      'sweetness',
+      createSweetnessDto,
+      ownerIdNum,
+      branchIdNum,
+    );
+  }
+
+  @Post('options/size')
+  async createSize(
+    @Req() request: Request,
+    @Body() createSizeDto: CreateSizeDto,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    await this.menuService.createSize(
+      'size',
+      createSizeDto,
+      ownerIdNum,
+      branchIdNum,
+    );
   }
 
   @Post('options/add-ons')
-  async createAddOn(@Req() request: Request, @Body() createAddOnDto: CreateAddOnDto) {
+  async createAddOn(
+    @Req() request: Request,
+    @Body() createAddOnDto: CreateAddOnDto,
+  ) {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
@@ -164,7 +198,12 @@ export class MenuController {
     const ownerIdNum = Number(ownerId);
     const branchIdNum = Number(branchId);
 
-    await this.menuService.createAddOn('addOn', createAddOnDto, ownerIdNum, branchIdNum);
+    await this.menuService.createAddOn(
+      'addOn',
+      createAddOnDto,
+      ownerIdNum,
+      branchIdNum,
+    );
   }
 
   @Patch('stock/:menu_id')

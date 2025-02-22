@@ -3,11 +3,11 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "sweetness_group_name": "ความหวานกาแฟ",
+  "sweetness_group_name": "ความหวานนม",
   "options": [
-    "หวานน้อยกาแฟ",
-    "หวานกลางกาแฟ",
-    "หวานมากกาแฟ"
+    "หวานน้อยนม",
+    "หวานกลางนม",
+    "หวานมากนม"
   ],
   "menu_id": [1, 2,3]
 }

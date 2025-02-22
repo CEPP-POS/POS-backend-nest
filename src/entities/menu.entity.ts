@@ -52,14 +52,8 @@ export class Menu {
   @JoinColumn({ name: 'menu_type_group_name' })
   menuTypeGroup: MenuTypeGroup;
 
-  @ManyToOne(() => SweetnessGroup, (sweetnessGroup) => sweetnessGroup.menu)
-  @JoinColumn([
-    {
-      name: 'sweetness_group_name',
-      referencedColumnName: 'sweetness_group_name',
-    },
-    { name: 'sweetness_id', referencedColumnName: 'sweetness_id' },
-  ])
+  @ManyToOne(() => SweetnessGroup, { nullable: true })
+  @JoinColumn({ name: 'sweetness_group_name' })
   sweetnessGroup: SweetnessGroup;
 
   @ManyToOne(() => SizeGroup, { nullable: true })

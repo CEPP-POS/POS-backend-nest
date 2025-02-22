@@ -26,6 +26,8 @@ import { SweetnessGroup } from 'src/entities/sweetness-group.entity';
 import { SizeGroup } from 'src/entities/size-group.entity';
 import { MenuTypeGroup } from 'src/entities/menu-type-group.entity';
 import { CreateSizeDto } from './dto/create-option/create-size.dto';
+import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
+import { CreateSweetnessDto } from './dto/create-option/create-sweetness-dto';
 
 @Injectable()
 export class MenuService {
@@ -241,6 +243,62 @@ export class MenuService {
       HttpStatus.OK, // Returns HTTP 200
     );
   }
+
+  // POST SWEETNESS
+async createSweetness(
+  type: string,
+  createSweetnessDto: CreateSweetnessDto,
+  ownerId: number,
+  branchId: number
+) {
+  if (type !== 'sweetness') {
+    throw new Error('Invalid option type');
+  }
+
+  // Step 1: Insert sweetness levels
+  const sweetnessLevels = createSweetnessDto.options.map((option) => ({
+    level_name: option,
+    owner: { owner_id: ownerId },
+    branch: { branch_id: branchId },
+  }));
+
+  const savedSweetnessLevels = await this.sweetnessLevelRepository.save(sweetnessLevels);
+
+  // Step 2: Create sweetness groups
+  const sweetnessGroups = savedSweetnessLevels.map((sweetness) => ({
+    sweetness_group_name: createSweetnessDto.sweetness_group_name,
+    sweetnessLevel: sweetness, // Correct reference
+    owner: { owner_id: ownerId },
+    branch: { branch_id: branchId },
+  }));
+
+  const savedSweetnessGroups = await this.sweetnessGroupRepository.save(sweetnessGroups);
+
+  // Ensure the sweetness group exists
+  const sweetnessGroup = await this.sweetnessGroupRepository.findOne({
+    where: { sweetness_group_name: createSweetnessDto.sweetness_group_name },
+  });
+
+  if (!sweetnessGroup) {
+    throw new Error('Sweetness Group not found');
+  }
+
+  // Step 3: Link sweetness group to menu items
+  for (const menuId of createSweetnessDto.menu_id) {
+    await this.menuRepository.update(
+      { menu_id: menuId },
+      { sweetnessGroup: sweetnessGroup }
+    );
+  }
+
+  throw new HttpException(
+    { message: `All sweetness options and groups created successfully` },
+    HttpStatus.OK
+  );
+}
+
+
+
 
   // POST OPTION SIZE
   async createSize(type: string, createSizeDto: CreateSizeDto, ownerId: number, branchId: number) {
