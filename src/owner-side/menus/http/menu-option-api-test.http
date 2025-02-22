@@ -80,22 +80,31 @@ owner_id: 1
 branch_id: 1
 
 {
-  "size_group_name": "ขนาดแก้วสำหรับนม",
+  "size_group_name": "ขนาดแก้วสำหรับชา",
    "options": [
-    { "s":  { "price": "0.00" } },
-    { "m":  { "price": "5.00" } }
+    { "เล็กน้อย":  { "price": "5.00" } },
+    { "กลางหน่อย":  { "price": "10.00" } }
   ],
-  "menu_id": [1,2]
+  "menu_id": [4]
 }
-PATCH http://localhost:3000/owner/menus/options/size/130
+
+# edit size option
+PATCH http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
 {
-  "options": [
-    { "biggg": { "price": "20.00"} },
-    { "so small": { "price": "20.00" } }
+  "old_size_group_name": "ขนาดแก้วสำหรับชาไข่มุก",
+  "new_size_group_name": "ขนาดแก้วสำหรับชาไข่มุก",
+   "options": [
+    { "size_id": "17", "size_name":"เล็กน้อย",  "price": "7.00" },
+    { "size_id": "18", "size_name":"กลางหน่อย",  "price": "12.00" },
+    { "size_id": "19", "size_name":"ใหญ่มาก",  "price": "14.00" },
+    { "size_id": "20", "size_name":"ใหญ่มากขึ้นอีก",  "price": "16.00" },
+    { "size_id": "null", "size_name":"ใหญ่มากขึ้นอีกกกก",  "price": "18.00" }
   ],
-  "menu_id": [16, 15],
-  "is_required":true
+  "menu_id": [4]
 }
 
 

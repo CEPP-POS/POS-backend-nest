@@ -29,6 +29,7 @@ import { CreateSizeDto } from './dto/create-option/create-size.dto';
 import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
 import { CreateSweetnessDto } from './dto/create-option/create-sweetness-dto';
 import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
+import { UpdateSizeDto } from './dto/update-option/update-size.dto';
 
 @Injectable()
 export class MenuService {
@@ -74,7 +75,7 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) {}
+  ) { }
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
@@ -169,12 +170,12 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-            menu_id: menu.menu_id,
-            menu_name: menu.menu_name,
-            description: menu.description,
-            image_url: menu.image_url,
-            price: menu.price,
-          };
+          menu_id: menu.menu_id,
+          menu_name: menu.menu_name,
+          description: menu.description,
+          image_url: menu.image_url,
+          price: menu.price,
+        };
     });
   }
 
@@ -988,4 +989,116 @@ export class MenuService {
         throw new Error('Invalid option type');
     }
   }
+
+  async updateSize(
+    ownerId: number,
+    branchId: number,
+    updateSizeDto: UpdateSizeDto
+  ) {
+    // 1. Find all size groups with the old name
+    const existingSizeGroups = await this.sizeGroupRepository.find({
+      where: {
+        size_group_name: updateSizeDto.old_size_group_name,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['size'],
+    });
+
+    if (existingSizeGroups.length === 0) {
+      throw new HttpException(
+        { message: 'Size group not found' },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // 2. Update or create sizes
+    const sizes = await Promise.all(
+      updateSizeDto.options.map(async (option) => {
+        let size = await this.sizeRepository.findOne({
+          where: {
+            size_name: option.size_name,
+            owner: { owner_id: ownerId },
+            branch: { branch_id: branchId },
+          },
+        });
+
+        if (!size) {
+          // Create new size if it doesn't exist
+          size = await this.sizeRepository.save({
+            size_name: option.size_name,
+            size_price: parseFloat(String(option.price)),
+            owner: { owner_id: ownerId },
+            branch: { branch_id: branchId },
+          });
+        } else {
+          // Update existing size price
+          size.size_price = parseFloat(String(option.price));
+          await this.sizeRepository.save(size);
+        }
+
+        return size;
+      })
+    );
+
+    // 3. Update all size groups with the new name and link to the new sizes
+    await Promise.all(
+      existingSizeGroups.map(async (group, index) => {
+        // Update group name
+        group.size_group_name = updateSizeDto.new_size_group_name;
+
+        // Link to the corresponding new size
+        if (sizes[index]) {
+          group.size = sizes[index];
+        }
+
+        return this.sizeGroupRepository.save(group);
+      })
+    );
+
+    // 4. Soft delete sizes not in the new options list
+    const allOptionNames = updateSizeDto.options.map(option => option.size_name);
+    const sizesToDelete = await this.sizeRepository.find({
+      where: {
+        size_name: Not(In(allOptionNames)),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+    });
+
+    await Promise.all(
+      sizesToDelete.map(async (size) => {
+        // Perform soft delete (you can update a `deleted_at` or `is_deleted` field)
+        size.is_delete = true;
+        await this.sizeRepository.save(size);
+
+        // Update menu relationships for this size (you can now correctly reference the sizeGroup)
+        await this.menuRepository.update(
+          { sizeGroup: size.sizeGroup }, // Corrected this line
+          { sizeGroup: null } // Set the sizeGroup to null in the menu
+        );
+      })
+    );
+
+    // 5. Update menu relations for new sizes
+    if (updateSizeDto.menu_id && updateSizeDto.menu_id.length > 0) {
+      await this.menuRepository.update(
+        {
+          menu_id: In(updateSizeDto.menu_id),
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId },
+        },
+        {
+          sizeGroup: existingSizeGroups[0], // Use the first group as reference
+        }
+      );
+    }
+
+    return {
+      message: 'Size options and groups updated successfully',
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+
 }

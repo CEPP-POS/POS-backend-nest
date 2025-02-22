@@ -21,6 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateSizeDto } from './dto/create-option/create-size.dto';
 import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
 import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
+import { UpdateSizeDto } from './dto/update-option/update-size.dto';
 
 @Controller('owner/menus')
 export class MenuController {
@@ -275,4 +276,24 @@ export class MenuController {
 
     return await this.menuService.deleteSizeGroup(sizeGroupName, ownerIdNum, branchIdNum);
   }
+
+  @Patch('options/size')
+  async updateSizeGroup(
+    @Req() request: Request,
+    @Body() updateSizeDto: UpdateSizeDto
+  ) {
+
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    return this.menuService.updateSize(ownerIdNum, branchIdNum, updateSizeDto);
+  }
+
 }
