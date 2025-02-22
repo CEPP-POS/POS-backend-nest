@@ -690,6 +690,56 @@ export class MenuService {
       linked_menus: dto.menu_id,
     };
   }
+
+  async deleteMenuTypeGroup(
+    menuTypeGroupName: string,
+    ownerId: number,
+    branchId: number,
+  ): Promise<any> {
+    const menuTypeGroups = await this.menuTypeGroupRepository.find({
+      where: {
+        menu_type_group_name: menuTypeGroupName,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['menuType', 'owner', 'branch'],
+    });
+
+    if (!menuTypeGroups.length) {
+      throw new NotFoundException(
+        `MenuTypeGroup '${menuTypeGroupName}' not found.`,
+      );
+    }
+
+    const menuTypesToUpdate = menuTypeGroups.flatMap((group) => group.menuType);
+    if (menuTypesToUpdate.length) {
+      await this.menuTypeRepository.update(
+        {
+          menu_type_id: In(menuTypesToUpdate.map((type) => type.menu_type_id)),
+        },
+        { is_delete: true },
+      );
+    }
+
+    await this.menuRepository.update(
+      {
+        menuTypeGroup: In(
+          menuTypeGroups.map((group) => group.menu_type_group_id),
+        ),
+      },
+      { menuTypeGroup: null },
+    );
+
+    // ✅ Step 4: ลบ `MenuTypeGroup`
+    await this.menuTypeGroupRepository.delete({
+      menu_type_group_name: menuTypeGroupName,
+    });
+
+    return {
+      message: `MenuTypeGroup '${menuTypeGroupName}' deleted and related menu types marked as deleted.`,
+    };
+  }
+
   async updateMenuTypeGroup(
     menu_type_id: number,
     dto: UpdateMenuTypeGroupDto,

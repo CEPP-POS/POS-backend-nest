@@ -41,6 +41,7 @@ export class MenuType {
 
   @OneToMany(() => MenuTypeGroup, (menuTypeGroup) => menuTypeGroup.menuType, {
     cascade: true,
+    onDelete: 'CASCADE',
   })
   menuTypeGroup: MenuTypeGroup[];
 

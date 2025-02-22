@@ -82,14 +82,17 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "menu_type_group_name": "ปั่นสำหรับผลไม้",
+  "menu_type_group_name": "ปั่นสำหรับนม",
   "options": [
-    { "ปั่น": "5.00" },
-    { "ice": "20.00" }
+    { "ปั่นเย็น": "5.00" },
+    { "iceน้อย": "20.00" }
   ],
   "menu_id": [1, 2]
 }
-
+DELETE http://localhost:3000/owner/menus/options/menu_type/ปั่นรักสุขภาพ
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 PATCH http://localhost:3000/owner/menus/options/menu_type/6
 Content-Type: application/json

@@ -100,6 +100,21 @@ export class MenuController {
     await this.menuService.createMenuTypeGroup(dto, ownerIdNum, branchIdNum);
     return HttpStatus.CREATED;
   }
+  @Delete('options/menu_type/:menuTypeGroupName')
+  // @UseGuards(JwtGuard, RolesGuard) // ✅ ต้องใช้ Token และต้องเป็น Owner
+  // @Roles('owner')
+  async deleteMenuTypeGroup(
+    @Param('menuTypeGroupName') menuTypeGroupName: string,
+    @Req() request: Request,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+    return this.menuService.deleteMenuTypeGroup(
+      menuTypeGroupName,
+      ownerId,
+      branchId,
+    );
+  }
 
   @Patch('options/menu_type/:menu_type_id')
   async updateMenuTypeGroup(
