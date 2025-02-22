@@ -3,13 +3,13 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "sweetness_group_name": "ความหวานนมม",
+  "sweetness_group_name": "ความหวานวัว",
   "options": [
-    "หวานน้อยนม",
-    "หวานกลางนม",
-    "หวานมากนม"
+    "หวานน้อยนมวัว",
+    "หวานกลางนมวัว",
+    "หวานมากนมวัว"
   ],
-  "menu_id": [1, 2,3]
+  "menu_id": [3,4]
 }
 
 PATCH http://localhost:3000/owner/menus/options/sweetness
@@ -26,6 +26,12 @@ branch_id: 1
   ],
   "menu_id": [1, 2]
 }
+
+DELETE http://localhost:3000/owner/menus/options/sweetness/ความหวาน coffee นม y
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
 
 GET http://localhost:3000/owner/menus/15
 PATCH http://localhost:3000/owner/menus/options/sweetness/104

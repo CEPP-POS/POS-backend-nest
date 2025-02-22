@@ -954,4 +954,72 @@ export class MenuService {
         throw new Error('Invalid option type');
     }
   }
+
+  async deleteSweetness(
+    sweetness_group_name: string,
+    ownerId: number,
+    branchId: number,
+  ) {
+    // 1. Find all sweetness groups with the given name and get their sweetness levels
+    const sweetnessGroups = await this.sweetnessGroupRepository.find({
+      where: {
+        sweetness_group_name,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['sweetnessLevel'],
+    });
+
+    if (!sweetnessGroups.length) {
+      throw new NotFoundException(
+        `Sweetness group "${sweetness_group_name}" not found`,
+      );
+    }
+
+    // Get all sweetness level IDs from the groups
+    const sweetnessLevelIds = sweetnessGroups.map(
+      (group) => group.sweetnessLevel.sweetness_id,
+    );
+
+    // 1. Soft delete the sweetness levels
+    await this.sweetnessLevelRepository.update(
+      {
+        sweetness_id: In(sweetnessLevelIds),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      { is_delete: true },
+    );
+
+    // 2. Find menus that use this sweetness group and set to null
+    const menusToUpdate = await this.menuRepository.find({
+      where: {
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['sweetnessGroup'],
+    });
+
+    const menusWithThisSweetnessGroup = menusToUpdate.filter(
+      (menu) =>
+        menu.sweetnessGroup?.sweetness_group_name === sweetness_group_name,
+    );
+
+    for (const menu of menusWithThisSweetnessGroup) {
+      menu.sweetnessGroup = null;
+      await this.menuRepository.save(menu);
+    }
+
+    // 3. Delete the sweetness groups
+    await this.sweetnessGroupRepository.delete({
+      sweetness_group_name,
+      owner: { owner_id: ownerId },
+      branch: { branch_id: branchId },
+    });
+
+    return {
+      message: `Sweetness group "${sweetness_group_name}" and its levels have been deleted`,
+      statusCode: HttpStatus.OK,
+    };
+  }
 }

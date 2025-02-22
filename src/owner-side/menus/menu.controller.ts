@@ -257,4 +257,26 @@ export class MenuController {
     const menuId = +id; //change type str to number
     return this.menuService.findOptionById(type, menuId);
   }
+
+  @Delete('options/sweetness/:sweetness_group_name')
+  async deleteSweetness(
+    @Param('sweetness_group_name') sweetness_group_name: string,
+    @Req() request: Request,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    return await this.menuService.deleteSweetness(
+      sweetness_group_name,
+      ownerIdNum,
+      branchIdNum,
+    );
+  }
 }
