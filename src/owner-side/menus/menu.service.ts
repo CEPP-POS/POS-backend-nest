@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, In, Repository } from 'typeorm';
+import { Equal, In, Not, Repository } from 'typeorm';
 import { Menu } from '../../entities/menu.entity';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
 import { Category } from '../../entities/category.entity';
@@ -28,6 +28,7 @@ import { MenuTypeGroup } from 'src/entities/menu-type-group.entity';
 import { CreateSizeDto } from './dto/create-option/create-size.dto';
 import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
 import { CreateSweetnessDto } from './dto/create-option/create-sweetness-dto';
+import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
 
 @Injectable()
 export class MenuService {
@@ -73,10 +74,7 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-
-
-
-  ) { }
+  ) {}
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
@@ -171,12 +169,12 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-          menu_id: menu.menu_id,
-          menu_name: menu.menu_name,
-          description: menu.description,
-          image_url: menu.image_url,
-          price: menu.price,
-        };
+            menu_id: menu.menu_id,
+            menu_name: menu.menu_name,
+            description: menu.description,
+            image_url: menu.image_url,
+            price: menu.price,
+          };
     });
   }
 
@@ -249,7 +247,7 @@ export class MenuService {
     type: string,
     createSweetnessDto: CreateSweetnessDto,
     ownerId: number,
-    branchId: number
+    branchId: number,
   ) {
     if (type !== 'sweetness') {
       throw new Error('Invalid option type');
@@ -262,7 +260,8 @@ export class MenuService {
       branch: { branch_id: branchId },
     }));
 
-    const savedSweetnessLevels = await this.sweetnessLevelRepository.save(sweetnessLevels);
+    const savedSweetnessLevels =
+      await this.sweetnessLevelRepository.save(sweetnessLevels);
 
     // Step 2: Create sweetness groups
     const sweetnessGroups = savedSweetnessLevels.map((sweetness) => ({
@@ -272,7 +271,8 @@ export class MenuService {
       branch: { branch_id: branchId },
     }));
 
-    const savedSweetnessGroups = await this.sweetnessGroupRepository.save(sweetnessGroups);
+    const savedSweetnessGroups =
+      await this.sweetnessGroupRepository.save(sweetnessGroups);
 
     // Ensure the sweetness group exists
     const sweetnessGroup = await this.sweetnessGroupRepository.findOne({
@@ -287,18 +287,120 @@ export class MenuService {
     for (const menuId of createSweetnessDto.menu_id) {
       await this.menuRepository.update(
         { menu_id: menuId },
-        { sweetnessGroup: sweetnessGroup }
+        { sweetnessGroup: sweetnessGroup },
       );
     }
 
     throw new HttpException(
       { message: `All sweetness options and groups created successfully` },
-      HttpStatus.OK
+      HttpStatus.OK,
     );
   }
 
+  async updateSweetness(
+    type: string,
+    updateSweetnessDto: UpdateSweetnessDto,
+    ownerId: number,
+    branchId: number,
+  ) {
+    if (type !== 'sweetness') {
+      throw new Error('Invalid option type');
+    }
+
+    // Find all sweetness groups with the old name
+    const existingSweetnessGroups = await this.sweetnessGroupRepository.find({
+      where: {
+        sweetness_group_name: updateSweetnessDto.old_sweetness_group_name,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['sweetnessLevel'],
+    });
+
+    if (existingSweetnessGroups.length === 0) {
+      throw new HttpException(
+        { message: 'Sweetness group not found' },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // Update or create sweetness levels
+    const sweetnessLevels = await Promise.all(
+      updateSweetnessDto.options.map(async (levelName) => {
+        let sweetnessLevel = await this.sweetnessLevelRepository.findOne({
+          where: {
+            level_name: levelName,
+            owner: { owner_id: ownerId },
+            branch: { branch_id: branchId },
+            is_delete: false,
+          },
+        });
+
+        if (!sweetnessLevel) {
+          // Create new sweetness level if it doesn't exist
+          sweetnessLevel = await this.sweetnessLevelRepository.save({
+            level_name: levelName,
+            owner: { owner_id: ownerId },
+            branch: { branch_id: branchId },
+          });
+        }
+
+        return sweetnessLevel;
+      }),
+    );
+
+    // Update all sweetness groups with the new name and link to the new sweetness levels
+    await Promise.all(
+      existingSweetnessGroups.map(async (group, index) => {
+        // Update the group name
+        group.sweetness_group_name =
+          updateSweetnessDto.new_sweetness_group_name;
+        // Link to the corresponding new sweetness level
+        if (sweetnessLevels[index]) {
+          group.sweetnessLevel = sweetnessLevels[index];
+        }
+        return this.sweetnessGroupRepository.save(group);
+      }),
+    );
+
+    // Update menu relations if menu_ids are provided
+    if (updateSweetnessDto.menu_id && updateSweetnessDto.menu_id.length > 0) {
+      await this.menuRepository.update(
+        {
+          menu_id: In(updateSweetnessDto.menu_id),
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId },
+        },
+        {
+          sweetnessGroup: existingSweetnessGroups[0], // Use the first group as reference
+        },
+      );
+    }
+
+    // Soft delete unused sweetness levels
+    await this.sweetnessLevelRepository.update(
+      {
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+        level_name: Not(In(updateSweetnessDto.options)),
+        is_delete: false,
+      },
+      { is_delete: false },
+    );
+
+    return {
+      message: 'Sweetness options and groups updated successfully',
+      statusCode: HttpStatus.OK,
+    };
+  }
+
   // POST OPTION SIZE
-  async createSize(type: string, createSizeDto: CreateSizeDto, ownerId: number, branchId: number) {
+  async createSize(
+    type: string,
+    createSizeDto: CreateSizeDto,
+    ownerId: number,
+    branchId: number,
+  ) {
     if (type !== 'size') {
       throw new Error('Invalid option type');
     }
@@ -312,7 +414,7 @@ export class MenuService {
     }));
 
     const savedSizes = await this.sizeRepository.save(sizes);
-    console.log("SAVE SIZE:", savedSizes)
+    console.log('SAVE SIZE:', savedSizes);
 
     // Step 2: Create size groups for each size
     const sizeGroups = savedSizes.map((size) => ({
@@ -323,13 +425,13 @@ export class MenuService {
     }));
 
     const savedSizeGroups = await this.sizeGroupRepository.save(sizeGroups);
-    console.log("SAVE SIZE GROUP:", savedSizeGroups)
+    console.log('SAVE SIZE GROUP:', savedSizeGroups);
 
     const sizeGroup = await this.sizeGroupRepository.findOne({
       where: { size_group_name: createSizeDto.size_group_name },
     });
 
-    console.log("size group:", sizeGroup.size_group_name);
+    console.log('size group:', sizeGroup.size_group_name);
 
     if (!sizeGroup) {
       throw new Error('Size Group not found');
@@ -339,7 +441,7 @@ export class MenuService {
     for (const menuId of createSizeDto.menu_id) {
       await this.menuRepository.update(
         { menu_id: menuId },
-        { sizeGroup: sizeGroup }
+        { sizeGroup: sizeGroup },
       );
     }
 
@@ -364,7 +466,11 @@ export class MenuService {
       const [ingredientName, ingredientData] = Object.entries(option)[0];
 
       let ingredient = await this.ingredientRepository.findOne({
-        where: { ingredient_name: ingredientName, branch: { branch_id: branchId }, owner: { owner_id: ownerId } },
+        where: {
+          ingredient_name: ingredientName,
+          branch: { branch_id: branchId },
+          owner: { owner_id: ownerId },
+        },
       });
 
       if (!ingredient) {
@@ -393,14 +499,15 @@ export class MenuService {
       // Save menu id and ingredient id, quantity in table menu_ingredient
       for (const menuId of menu_id) {
         // Check if the menuIngredient already exists to avoid duplicates
-        const existingMenuIngredient = await this.menuIngredientRepository.findOne({
-          where: {
-            menu: { menu_id: menuId },
-            ingredient: { ingredient_id: ingredient.ingredient_id },
-            owner: { owner_id: ownerId },
-            branch: { branch_id: branchId },
-          },
-        });
+        const existingMenuIngredient =
+          await this.menuIngredientRepository.findOne({
+            where: {
+              menu: { menu_id: menuId },
+              ingredient: { ingredient_id: ingredient.ingredient_id },
+              owner: { owner_id: ownerId },
+              branch: { branch_id: branchId },
+            },
+          });
 
         if (!existingMenuIngredient) {
           // Log ingredientId for debugging
@@ -410,7 +517,9 @@ export class MenuService {
           console.log('Found ingredientData:', ingredientData);
 
           if (!ingredientData) {
-            throw new Error(`Ingredient data not found for ingredient: ${ingredientName}`);
+            throw new Error(
+              `Ingredient data not found for ingredient: ${ingredientName}`,
+            );
           }
 
           const menuIngredient = this.menuIngredientRepository.create({
@@ -423,7 +532,9 @@ export class MenuService {
           });
           await this.menuIngredientRepository.save(menuIngredient);
         } else {
-          console.log(`MenuIngredient for menu_id ${menuId} and ingredient_id ${ingredient.ingredient_id} already exists.`);
+          console.log(
+            `MenuIngredient for menu_id ${menuId} and ingredient_id ${ingredient.ingredient_id} already exists.`,
+          );
         }
       }
     }
