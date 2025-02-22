@@ -22,6 +22,7 @@ import { CreateSizeDto } from './dto/create-option/create-size.dto';
 import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
 import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
 import { UpdateSizeDto } from './dto/update-option/update-size.dto';
+import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
 
 @Controller('owner/menus')
 export class MenuController {
@@ -308,6 +309,21 @@ export class MenuController {
     }
 
     return this.menuService.deleteAllAddOns(+ownerId, +branchId);
+  }
+
+  @Patch('options/add-on')
+  async updateAddOn(
+    @Req() request: Request,
+    @Body() updateAddOnDto: UpdateAddOnDto
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    return this.menuService.updateAddOn(+ownerId, +branchId, updateAddOnDto);
   }
 
 }

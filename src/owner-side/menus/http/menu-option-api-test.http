@@ -53,8 +53,7 @@ branch_id: 1
 {
   "options": [
     { "บุก": { "price": "10.00", "unit": "กรัม", "quantity":12 } },
-    { "ไข่มุก": { "
-    price": "20.00", "unit": "กรัม", "quantity":15 } }
+    { "ไข่มุก": { "price": "20.00", "unit": "กรัม", "quantity":15 } }
   ],
   "menu_id": [1,2],
   "is_required":true,
@@ -152,3 +151,36 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 
+# edit add on option
+PATCH http://localhost:3000/owner/menus/options/add-on
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+{
+  "options": [
+    { 
+      "add_on_id": "26",
+      "add_on_name": "บุก",
+      "price": "10.00",
+      "quantity": 20,
+      "unit": "กรัม"
+    },
+    { 
+      "add_on_id": "27",
+      "add_on_name": "ไข่มุก",
+      "price": "25.00",
+      "quantity": 12,
+      "unit": "กรัม"
+    },
+    { 
+      "add_on_id": "28",
+      "add_on_name": "ว่านบุกใส",
+      "price": "20.00",
+      "quantity": 30,
+      "unit": "มิลลิลิตร"
+    }
+  ],
+  "menu_id": [1,2],
+  "is_require": false,
+  "is_multiple": true
+}

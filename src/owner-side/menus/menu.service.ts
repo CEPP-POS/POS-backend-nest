@@ -30,6 +30,7 @@ import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
 import { CreateSweetnessDto } from './dto/create-option/create-sweetness-dto';
 import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
 import { UpdateSizeDto } from './dto/update-option/update-size.dto';
+import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
 
 @Injectable()
 export class MenuService {
@@ -1143,6 +1144,172 @@ export class MenuService {
         deletedAddOnsCount: addOns.length,
         deletedIngredientsCount: ingredientIds.length
       };
+
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async updateAddOn(owner_id: number, branch_id: number, updateAddOnDto: UpdateAddOnDto) {
+    try {
+      const { options, menu_id, is_require, is_multiple } = updateAddOnDto;
+
+      // Get all existing menu_ingredients for these add-ons
+      const existingMenuIngredients = await this.menuIngredientRepository.find({
+        where: {
+          owner: { owner_id },
+          branch: { branch_id },
+          is_addon: true
+        },
+        relations: ['menu', 'ingredient']
+      });
+
+      // Find menu IDs that were removed
+      const existingMenuIds = [...new Set(
+        existingMenuIngredients.map(mi => mi.menu.menu_id)
+      )];
+      const removedMenuIds = existingMenuIds.filter(id => !menu_id.includes(id));
+
+      // Remove menu_ingredient entries for removed menus
+      if (removedMenuIds.length > 0) {
+        await this.menuIngredientRepository.delete({
+          menu: { menu_id: In(removedMenuIds) },
+          owner: { owner_id },
+          branch: { branch_id },
+          is_addon: true
+        });
+      }
+
+      // 1. Get all existing add-ons
+      const existingAddOns = await this.addOnRepository.find({
+        where: {
+          owner: { owner_id },
+          branch: { branch_id }
+        },
+        relations: ['ingredient']
+      });
+
+      // Get IDs that will remain
+      const keepAddOnIds = options
+        .filter(opt => opt.add_on_id !== 'null')
+        .map(opt => parseInt(opt.add_on_id));
+
+      // 2. Handle deleted add-ons
+      const addOnsToRemove = existingAddOns.filter(
+        addOn => !keepAddOnIds.includes(addOn.add_on_id)
+      );
+
+      if (addOnsToRemove.length > 0) {
+        const ingredientIds = addOnsToRemove.map(addOn => addOn.ingredient.ingredient_id);
+
+        // Mark ingredients as deleted
+        await this.ingredientRepository.update(
+          { ingredient_id: In(ingredientIds) },
+          { is_delete: true }
+        );
+      }
+
+      // 3. Process each option
+      for (const option of options) {
+        if (option.add_on_id !== 'null') {
+          // Update existing add-on
+          await this.addOnRepository.update(
+            { add_on_id: parseInt(option.add_on_id) },
+            {
+              add_on_price: parseFloat(option.price),
+              is_required: is_require,
+              is_multipled: is_multiple
+            }
+          );
+
+          // Get ingredient_id for this add-on
+          const addOn = await this.addOnRepository.findOne({
+            where: { add_on_id: parseInt(option.add_on_id) },
+            relations: ['ingredient']
+          });
+
+          if (addOn?.ingredient) {
+            // Update ingredient
+            await this.ingredientRepository.update(
+              { ingredient_id: addOn.ingredient.ingredient_id },
+              { unit: option.unit }
+            );
+
+            // Update or create menu ingredient
+            for (const menuId of menu_id) {
+              const menuIngredient = await this.menuIngredientRepository.findOne({
+                where: {
+                  menu: { menu_id: menuId },
+                  ingredient: { ingredient_id: addOn.ingredient.ingredient_id }
+                }
+              });
+
+              if (menuIngredient) {
+                await this.menuIngredientRepository.update(
+                  { menu_ingredient_id: menuIngredient.menu_ingredient_id },
+                  { quantity_used: option.quantity }
+                );
+              } else {
+                await this.menuIngredientRepository.save({
+                  menu: { menu_id: menuId },
+                  ingredient: { ingredient_id: addOn.ingredient.ingredient_id },
+                  quantity_used: option.quantity,
+                  is_addon: true,
+                  owner: { owner_id },
+                  branch: { branch_id }
+                });
+              }
+            }
+          }
+        } else {
+          // Handle new add-on
+          // First check if ingredient exists
+          let ingredient = await this.ingredientRepository.findOne({
+            where: {
+              ingredient_name: option.add_on_name,
+              owner: { owner_id },
+              branch: { branch_id }
+            }
+          });
+
+          if (!ingredient) {
+            // Create new ingredient
+            ingredient = await this.ingredientRepository.save({
+              ingredient_name: option.add_on_name,
+              unit: option.unit,
+              owner: { owner_id },
+              branch: { branch_id }
+            });
+          }
+
+          // Create new add-on
+          const newAddOn = await this.addOnRepository.save({
+            ingredient: ingredient,
+            add_on_price: parseFloat(option.price),
+            is_required: is_require,
+            is_multipled: is_multiple,
+            owner: { owner_id },
+            branch: { branch_id }
+          });
+
+          // Create menu ingredients
+          for (const menuId of menu_id) {
+            await this.menuIngredientRepository.save({
+              menu: { menu_id: menuId },
+              ingredient: ingredient,
+              quantity_used: option.quantity,
+              is_addon: true,
+              owner: { owner_id },
+              branch: { branch_id }
+            });
+          }
+        }
+      }
+
+      return { message: 'Add-on options updated successfully' };
 
     } catch (error) {
       throw new HttpException(
