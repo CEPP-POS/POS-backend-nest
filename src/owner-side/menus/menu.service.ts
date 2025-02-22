@@ -245,60 +245,57 @@ export class MenuService {
   }
 
   // POST SWEETNESS
-async createSweetness(
-  type: string,
-  createSweetnessDto: CreateSweetnessDto,
-  ownerId: number,
-  branchId: number
-) {
-  if (type !== 'sweetness') {
-    throw new Error('Invalid option type');
-  }
+  async createSweetness(
+    type: string,
+    createSweetnessDto: CreateSweetnessDto,
+    ownerId: number,
+    branchId: number
+  ) {
+    if (type !== 'sweetness') {
+      throw new Error('Invalid option type');
+    }
 
-  // Step 1: Insert sweetness levels
-  const sweetnessLevels = createSweetnessDto.options.map((option) => ({
-    level_name: option,
-    owner: { owner_id: ownerId },
-    branch: { branch_id: branchId },
-  }));
+    // Step 1: Insert sweetness levels
+    const sweetnessLevels = createSweetnessDto.options.map((option) => ({
+      level_name: option,
+      owner: { owner_id: ownerId },
+      branch: { branch_id: branchId },
+    }));
 
-  const savedSweetnessLevels = await this.sweetnessLevelRepository.save(sweetnessLevels);
+    const savedSweetnessLevels = await this.sweetnessLevelRepository.save(sweetnessLevels);
 
-  // Step 2: Create sweetness groups
-  const sweetnessGroups = savedSweetnessLevels.map((sweetness) => ({
-    sweetness_group_name: createSweetnessDto.sweetness_group_name,
-    sweetnessLevel: sweetness, // Correct reference
-    owner: { owner_id: ownerId },
-    branch: { branch_id: branchId },
-  }));
+    // Step 2: Create sweetness groups
+    const sweetnessGroups = savedSweetnessLevels.map((sweetness) => ({
+      sweetness_group_name: createSweetnessDto.sweetness_group_name,
+      sweetnessLevel: sweetness, // Correct reference
+      owner: { owner_id: ownerId },
+      branch: { branch_id: branchId },
+    }));
 
-  const savedSweetnessGroups = await this.sweetnessGroupRepository.save(sweetnessGroups);
+    const savedSweetnessGroups = await this.sweetnessGroupRepository.save(sweetnessGroups);
 
-  // Ensure the sweetness group exists
-  const sweetnessGroup = await this.sweetnessGroupRepository.findOne({
-    where: { sweetness_group_name: createSweetnessDto.sweetness_group_name },
-  });
+    // Ensure the sweetness group exists
+    const sweetnessGroup = await this.sweetnessGroupRepository.findOne({
+      where: { sweetness_group_name: createSweetnessDto.sweetness_group_name },
+    });
 
-  if (!sweetnessGroup) {
-    throw new Error('Sweetness Group not found');
-  }
+    if (!sweetnessGroup) {
+      throw new Error('Sweetness Group not found');
+    }
 
-  // Step 3: Link sweetness group to menu items
-  for (const menuId of createSweetnessDto.menu_id) {
-    await this.menuRepository.update(
-      { menu_id: menuId },
-      { sweetnessGroup: sweetnessGroup }
+    // Step 3: Link sweetness group to menu items
+    for (const menuId of createSweetnessDto.menu_id) {
+      await this.menuRepository.update(
+        { menu_id: menuId },
+        { sweetnessGroup: sweetnessGroup }
+      );
+    }
+
+    throw new HttpException(
+      { message: `All sweetness options and groups created successfully` },
+      HttpStatus.OK
     );
   }
-
-  throw new HttpException(
-    { message: `All sweetness options and groups created successfully` },
-    HttpStatus.OK
-  );
-}
-
-
-
 
   // POST OPTION SIZE
   async createSize(type: string, createSizeDto: CreateSizeDto, ownerId: number, branchId: number) {
@@ -351,7 +348,6 @@ async createSweetness(
       HttpStatus.OK,
     );
   }
-
 
   //POST ADD ON OPTION
   async createAddOn(
@@ -432,6 +428,40 @@ async createSweetness(
       }
     }
   }
+
+  async deleteSizeGroup(sizeGroupName: string, ownerId: number, branchId: number) {
+    // find all size group name
+    const sizeGroups = await this.sizeGroupRepository.find({
+      where: { size_group_name: sizeGroupName, owner: { owner_id: ownerId }, branch: { branch_id: branchId } },
+      relations: ['size', 'menu'], // Include related sizes and menus
+    });
+
+    if (!sizeGroups.length) {
+      throw new Error(`Size group '${sizeGroupName}' not found.`);
+    }
+
+    // find size id by size group name to change status is_delete
+    const sizesToUpdate = sizeGroups.map(group => group.size);
+
+    if (sizesToUpdate.length) {
+      await this.sizeRepository.update(
+        { size_id: In(sizesToUpdate.map(size => size.size_id)) },
+        { is_delete: true }
+      );
+    }
+
+    // remove size group references in the menu table
+    await this.menuRepository.update(
+      { sizeGroup: In(sizeGroups.map(group => group.size_group_id)) },
+      { sizeGroup: null }
+    );
+
+    // delete all size group name in table size group 
+    await this.sizeGroupRepository.delete({ size_group_name: sizeGroupName });
+
+    return { message: `Size group '${sizeGroupName}' deleted and related sizes marked as deleted.` };
+  }
+
 
   // * link menu for auto cut stock
   // async updateStock(

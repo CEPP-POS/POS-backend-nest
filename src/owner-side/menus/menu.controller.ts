@@ -25,7 +25,7 @@ import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) {}
+  ) { }
 
   // upload picture to local storage
   @Post('upload')
@@ -232,5 +232,23 @@ export class MenuController {
   async findOptionById(@Param('type') type: string, @Param('id') id: string) {
     const menuId = +id; //change type str to number
     return this.menuService.findOptionById(type, menuId);
+  }
+
+  @Delete('options/size/:sizeGroupName')
+  async deleteSizeGroup(
+    @Req() request: Request,
+    @Param('sizeGroupName') sizeGroupName: string,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    return await this.menuService.deleteSizeGroup(sizeGroupName, ownerIdNum, branchIdNum);
   }
 }

@@ -38,7 +38,8 @@ branch_id: 1
 {
   "options": [
     { "บุก": { "price": "10.00", "unit": "กรัม", "quantity":12 } },
-    { "ไข่มุก": { "price": "20.00", "unit": "กรัม", "quantity":15 } }
+    { "ไข่มุก": { "
+    price": "20.00", "unit": "กรัม", "quantity":15 } }
   ],
   "menu_id": [1,2],
   "is_required":true,
@@ -116,3 +117,9 @@ GET http://localhost:3000/owner/menus/options/size
 GET http://localhost:3000/owner/menus/options/sweetness
 
 GET http://localhost:3000/owner/menus/options/menu-type
+
+# delete size group
+DELETE http://localhost:3000/owner/menus/options/size/ขนาดแก้วสำหรับนม
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
