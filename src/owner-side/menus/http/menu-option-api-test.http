@@ -3,13 +3,28 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "sweetness_group_name": "ความหวานนม",
+  "sweetness_group_name": "ความหวานนมม",
   "options": [
     "หวานน้อยนม",
     "หวานกลางนม",
     "หวานมากนม"
   ],
   "menu_id": [1, 2,3]
+}
+
+PATCH http://localhost:3000/owner/menus/options/sweetness
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+{
+  "old_sweetness_group_name": "ความหวาน coffee นม y",
+  "new_sweetness_group_name": "ความหวาน coffee นม y",
+  "options": [
+    "หวานน้อย coffee นม a",
+    "หวานกลาง coffee นม a",
+    "หวานมาก coffee นม a"
+  ],
+  "menu_id": [1, 2]
 }
 
 GET http://localhost:3000/owner/menus/15

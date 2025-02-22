@@ -20,6 +20,7 @@ import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateSizeDto } from './dto/create-option/create-size.dto';
 import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
+import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
 
 @Controller('owner/menus')
 export class MenuController {
@@ -155,6 +156,29 @@ export class MenuController {
     await this.menuService.createSweetness(
       'sweetness',
       createSweetnessDto,
+      ownerIdNum,
+      branchIdNum,
+    );
+  }
+
+  @Patch('options/sweetness')
+  async updateSweetness(
+    @Req() request: Request,
+    @Body() updateSweetnessDto: UpdateSweetnessDto,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    await this.menuService.updateSweetness(
+      'sweetness',
+      updateSweetnessDto,
       ownerIdNum,
       branchIdNum,
     );
