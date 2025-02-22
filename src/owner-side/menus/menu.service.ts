@@ -990,134 +990,166 @@ export class MenuService {
     }
   }
 
-  async updateSize(
-    ownerId: number,
-    branchId: number,
-    updateSizeDto: UpdateSizeDto
-  ) {
-    // 1. Find existing size group
-    const existingSizeGroups = await this.sizeGroupRepository.find({
+  async updateSize(owner_id: number, branch_id: number, updateSizeDto: UpdateSizeDto) {
+    const { old_size_group_name, new_size_group_name, options, menu_id } = updateSizeDto;
+
+    // 1. Find all existing size groups
+    const sizeGroups = await this.sizeGroupRepository.find({
       where: {
-        size_group_name: updateSizeDto.old_size_group_name,
-        owner: { owner_id: ownerId },
-        branch: { branch_id: branchId }
+        size_group_name: old_size_group_name,
+        owner: { owner_id },
+        branch: { branch_id }
       },
-      relations: ['size', 'menu']
+      relations: ['size']
     });
 
-    if (existingSizeGroups.length === 0) {
-      throw new HttpException(
-        { message: 'Size group not found' },
-        HttpStatus.NOT_FOUND
-      );
+    if (sizeGroups.length === 0) {
+      throw new NotFoundException('Old size group not found');
     }
 
-    // If group name changed, update it
-    if (updateSizeDto.old_size_group_name !== updateSizeDto.new_size_group_name) {
+    // 2. Rename the size groups if necessary
+    if (old_size_group_name !== new_size_group_name) {
       await this.sizeGroupRepository.update(
-        { size_group_name: updateSizeDto.old_size_group_name },
-        { size_group_name: updateSizeDto.new_size_group_name }
+        {
+          size_group_name: old_size_group_name,
+          owner: { owner_id },
+          branch: { branch_id }
+        },
+        { size_group_name: new_size_group_name }
       );
     }
 
-    // 2. Handle existing and new sizes
-    for (const option of updateSizeDto.options) {
-      if (option.size_id === 'null') {
-        // Create new size
-        const newSize = await this.sizeRepository.save({
-          size_name: option.size_name,
-          size_price: option.price,
-          owner: { owner_id: ownerId },
-          branch: { branch_id: branchId }
-        });
-
-        // Create new size group entry for this size
-        const owner = await this.ownerRepository.findOne({ where: { owner_id: ownerId } });
-        const branch = await this.branchRepository.findOne({ where: { branch_id: branchId } });
-
-        await this.sizeGroupRepository.save({
-          size_group_name: updateSizeDto.new_size_group_name,
-          size: newSize,
-          owner,
-          branch
-        });
-      } else {
-        // Update existing size
+    // 3. Process each option
+    for (const option of options) {
+      if (option.size_id !== 'null') {
+        // Existing size: Update name and price
         await this.sizeRepository.update(
           { size_id: parseInt(option.size_id) },
           {
             size_name: option.size_name,
-            size_price: option.price
+            size_price: option.price,
+            is_delete: false // Ensure it's not deleted
           }
         );
+      } else {
+        // New size: Insert and link to size_group
+        const newSize = await this.sizeRepository.save({
+          size_name: option.size_name,
+          size_price: option.price,
+          owner: { owner_id },
+          branch: { branch_id }
+        });
+
+        // Create new size group entry
+        await this.sizeGroupRepository.save({
+          size_group_name: new_size_group_name,
+          size: newSize,
+          owner: { owner_id },
+          branch: { branch_id }
+        });
       }
     }
 
-    // 3. Handle sizes to be removed
-    const keepSizeIds = updateSizeDto.options
+    // 4. Handle deleted sizes
+    const existingSizeIds = sizeGroups.map(group => group.size.size_id.toString());
+    const receivedSizeIds = options
       .filter(opt => opt.size_id !== 'null')
-      .map(opt => parseInt(opt.size_id));
+      .map(opt => opt.size_id);
 
-    const sizesToRemove = await this.sizeRepository.find({
-      where: {
-        size_id: Not(In(keepSizeIds)),
-        owner: { owner_id: ownerId },
-        branch: { branch_id: branchId },
-        is_delete: false
-      },
-      relations: ['sizeGroup']
-    });
+    for (const existingSizeId of existingSizeIds) {
+      if (!receivedSizeIds.includes(existingSizeId)) {
+        // Mark size as deleted
+        await this.sizeRepository.update(
+          { size_id: parseInt(existingSizeId) },
+          { is_delete: true }
+        );
 
-    for (const size of sizesToRemove) {
-      // Mark size as deleted
-      size.is_delete = true;
-      await this.sizeRepository.save(size);
-
-      // Remove size group entries
-      if (size.sizeGroup && Array.isArray(size.sizeGroup) && size.sizeGroup.length > 0) {
-        const sizeGroupIds = size.sizeGroup.map(group => group.size_group_id);
-        if (sizeGroupIds.length > 0) {
-          // First update any menus using these size groups
-          await this.menuRepository.update(
-            { sizeGroup: In(sizeGroupIds) },
-            { sizeGroup: null }
-          );
-          
-          // Then delete the size groups
-          await this.sizeGroupRepository.delete(sizeGroupIds);
-        }
+        // Remove size group entry
+        await this.sizeGroupRepository.delete({
+          size: { size_id: parseInt(existingSizeId) }
+        });
       }
     }
 
-    // 4. Update menu relationships
-    // First, set sizeGroup to null for menus not in menu_id list
+    // 5. Update menu relationships
+    // First clear any old relationships for menus not in menu_id
     await this.menuRepository.update(
       {
-        menu_id: Not(In(updateSizeDto.menu_id)),
-        sizeGroup: In(existingSizeGroups.map(group => group.size_group_id))
+        sizeGroup: { size_group_name: new_size_group_name },
+        menu_id: Not(In(menu_id))
       },
       { sizeGroup: null }
     );
 
-    // Then set the new sizeGroup for specified menus
-    if (updateSizeDto.menu_id.length > 0) {
-      const firstGroup = await this.sizeGroupRepository.findOne({
-        where: { size_group_name: updateSizeDto.new_size_group_name }
+    // Then set new relationships for menus in menu_id
+    if (menu_id.length > 0) {
+      const validSizeGroup = await this.sizeGroupRepository.findOne({
+        where: { size_group_name: new_size_group_name }
       });
 
-      if (firstGroup) {
+      if (validSizeGroup) {
         await this.menuRepository.update(
-          { menu_id: In(updateSizeDto.menu_id) },
-          { sizeGroup: firstGroup }
+          { menu_id: In(menu_id) },
+          { sizeGroup: validSizeGroup }
         );
       }
     }
 
-    return {
-      message: 'Size options and groups updated successfully',
-      statusCode: HttpStatus.OK
-    };
+    return { message: 'Size update successful' };
   }
 
+  async deleteAllAddOns(ownerId: number, branchId: number) {
+    try {
+      // 1. Find all add-ons for this owner/branch
+      const addOns = await this.addOnRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId }
+        },
+        relations: ['ingredient']
+      });
+
+      if (addOns.length === 0) {
+        return { message: 'No add-ons found' };
+      }
+
+      // 2. Get unique ingredient IDs
+      const ingredientIds = [...new Set(
+        addOns
+          .filter(addOn => addOn.ingredient) // Filter out any null ingredients
+          .map(addOn => addOn.ingredient.ingredient_id)
+      )];
+
+      // 3. Mark all related ingredients as deleted
+      if (ingredientIds.length > 0) {
+        await this.ingredientRepository.update(
+          {
+            ingredient_id: In(ingredientIds),
+            owner: { owner_id: ownerId },
+            branch: { branch_id: branchId }
+          },
+          { is_delete: true }
+        );
+      }
+
+      // 4. Delete the add-ons
+      await this.addOnRepository.delete({
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId }
+      });
+
+      return {
+        message: 'Successfully deleted all add-ons and marked ingredients as deleted',
+        deletedAddOnsCount: addOns.length,
+        deletedIngredientsCount: ingredientIds.length
+      };
+
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 
 }

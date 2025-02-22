@@ -296,4 +296,18 @@ export class MenuController {
     return this.menuService.updateSize(ownerIdNum, branchIdNum, updateSizeDto);
   }
 
+  @Delete('options/add-ons')
+  async deleteAllAddOns(
+    @Req() request: Request
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    return this.menuService.deleteAllAddOns(+ownerId, +branchId);
+  }
+
 }

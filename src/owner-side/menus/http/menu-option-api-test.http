@@ -82,11 +82,11 @@ branch_id: 1
 {
   "size_group_name": "ขนาดแก้วสำหรับนม",
    "options": [
-    { "เล็กน้อย":  { "price": "5.00" } },
-    { "กลางหน่อย":  { "price": "10.00" } },
-    { "ใหญ่หน่อย":  { "price": "15.00" } }
+    { "s":  { "price": "5.00" } },
+    { "m":  { "price": "10.00" } },
+    { "l":  { "price": "15.00" } }
   ],
-  "menu_id": [4]
+  "menu_id": [3]
 }
 
 # edit size option
@@ -96,15 +96,15 @@ owner_id: 1
 branch_id: 1
 
 {
-  "old_size_group_name": "ขนาดแก้วสำหรับนมใหม่",
-  "new_size_group_name": "ขนาดแก้วสำหรับนมใหม่",
+  "old_size_group_name": "ขนาดแก้วสำหรับนม",
+  "new_size_group_name": "ขนาดแก้วสำหรับนม",
    "options": [
-    { "size_id": "47", "size_name":"โคตรja",  "price": "14.00" },
-    { "size_id": "null", "size_name":"hiii",  "price": "14.00" }
+    { "size_id": "67", "size_name":"m",  "price": "15.00" },
+    { "size_id": "68", "size_name":"l",  "price": "55.00" },
+    { "size_id": "null", "size_name":"xl",  "price": "65.00" }
   ],
-  "menu_id": [1,4]
+  "menu_id": [3]
 }
-
 
 POST http://localhost:3000/owner/menus/options/menu-type
 Content-Type: application/json
@@ -145,3 +145,10 @@ DELETE http://localhost:3000/owner/menus/options/size/ขนาดแก้ว�
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
+
+# Delete all add-ons
+DELETE http://localhost:3000/owner/menus/options/add-ons
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
