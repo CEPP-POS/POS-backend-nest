@@ -53,6 +53,10 @@ export class OwnerService {
     }
     return savedOwner;
   }
+
+  async countTotalOwners(): Promise<number> {
+    return this.ownerRepository.count(); // 🔹 นับจำนวน Owner ทั้งหมด
+  }
   // * Create Employee
   async createEmployee(createEmployeeDto: CreateEmployeeDto): Promise<Owner> {
     const { email, password, manager_id } = createEmployeeDto;
@@ -94,6 +98,7 @@ export class OwnerService {
         'email',
         'password',
         'branch',
+        'otp',
         'roles',
       ],
     });
@@ -156,8 +161,35 @@ export class OwnerService {
 
     user.otp = null;
     user.otp_expiry = null;
+    user.password = await bcrypt.hash(otp, 10);
 
     await this.ownerRepository.save(user);
+  }
+  async resetPassword(
+    updatePasswordDto: UpdatePasswordDto,
+  ): Promise<{ message: string }> {
+    const { email, oldPassword, newPassword } = updatePasswordDto;
+
+    const user = await this.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException('User not found.');
+    }
+
+    console.log('📌 [DEBUG] Old Password (Received):', oldPassword);
+    console.log('📌 [DEBUG] Hashed Password in DB:', user.password);
+
+    // ✅ เปรียบเทียบ `oldPassword` กับรหัสผ่านที่ถูกเข้ารหัส (OTP)
+    const isOtpValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isOtpValid) {
+      throw new UnauthorizedException('Invalid temporary password.');
+    }
+
+    // 🔐 เปลี่ยนรหัสผ่านใหม่
+    user.password = await bcrypt.hash(newPassword, 10);
+
+    await this.ownerRepository.save(user);
+
+    return { message: 'Password reset successful. You can now log in.' };
   }
 
   async updatePassword(
@@ -171,7 +203,6 @@ export class OwnerService {
     if (!user) {
       throw new BadRequestException('User not found');
     }
-
     const hashedPassword = await bcrypt.hash(updatePasswordDto.newPassword, 10);
     user.password = hashedPassword;
 

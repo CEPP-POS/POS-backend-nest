@@ -8,35 +8,54 @@ Content-Type: application/json
   "email": "owner@gmail.com",
   "password": "SecurePass123!"
 }
-
-### 2. Owner ล็อกอินครั้งแรก (Request Temporary Password via Email)
-POST http://localhost:3000/owner/request-temp-password
-Content-Type: application/json
-
-{
-  "email": "owner@gmail.com"
-}
-
-### 3. Owner ใช้รหัสผ่านแบบใช้แล้วทิ้งเข้าสู่ระบบ
+### 2. Owner ใช้รหัสผ่านแบบใช้แล้วทิ้งเข้าสู่ระบบ
 POST http://localhost:3000/owner/login
 Content-Type: application/json
 
 {
   "email": "owner@gmail.com",
-  "password": "TEMPORARY_PASSWORD"  # 🔹 รหัสที่ได้รับในอีเมล
+  "password": "SecurePass456!"  
 }
 
-### 4. Owner รีเซ็ตรหัสผ่านใหม่
+### 3. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน (Forgot Password)
+POST http://localhost:3000/owner/forgot-password
+Content-Type: application/json
+
+{
+  "usernameOrEmail": "owner@gmail.com"
+}
+
+### 4. Owner ยืนยัน OTP
+POST http://localhost:3000/owner/verify-otp
+Content-Type: application/json
+
+{
+  "usernameOrEmail": "owner@gmail.com",
+  "otp": "103642"
+}
+
+
+### 5. Owner รีเซ็ตรหัสผ่านใหม่
 PATCH http://localhost:3000/owner/reset-password
 Content-Type: application/json
 
 {
   "email": "owner@gmail.com",
-  "oldPassword": "TEMPORARY_PASSWORD",  # 🔹 รหัส OTP
+  "oldPassword": "103642", 
   "newPassword": "SecurePass456!"
 }
 
-### 5. Owner อัปโหลดไฟล์ CSV
+### 6. Owner สร้าง Employee (ต้องแนบ Token)
+POST http://localhost:3000/owner/create-employee
+Authorization: Bearer {{TOKEN}}
+Content-Type: application/json
+
+{
+  "email": "employee@example.com",
+  "password": "EmployeePass123!"
+}
+
+### Owner อัปโหลดไฟล์ CSV
 POST http://localhost:3000/owner/upload-csv
 Content-Type: multipart/form-data; boundary=boundary
 
@@ -47,50 +66,16 @@ Content-Type: text/csv
 < /Users/watcharapolyotadee/Development/POS/POS-backend-nest/src/uploads/owners.csv
 --boundary--
 
-### 6. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน (Forgot Password)
-POST http://localhost:3000/owner/forgot-password
-Content-Type: application/json
 
-{
-  "usernameOrEmail": "owner@gmail.com"
-}
 
-### 7. Owner ยืนยัน OTP
-POST http://localhost:3000/owner/verify-otp
-Content-Type: application/json
 
-{
-  "usernameOrEmail": "owner@gmail.com",
-  "otp": "413529"
-}
-
-### 8. Owner สร้าง Employee (ต้องแนบ Token)
-POST http://localhost:3000/owner/create-employee
-Authorization: Bearer {{TOKEN}}
-Content-Type: application/json
-
-{
-  "email": "employee@example.com",
-  "password": "EmployeePass123!"
-}
-
-### 9. Owner ตรวจสอบว่ามี Employee อย่างน้อย 1 คน
+###  Owner ตรวจสอบว่ามี Employee อย่างน้อย 1 คน
 GET http://localhost:3000/owner/check-employees
 Authorization: Bearer {{TOKEN}}
 
-### 10. Owner ดูข้อมูลตัวเอง
+###  Owner ดูข้อมูลตัวเอง
 GET http://localhost:3000/owner/profile
 Authorization: Bearer {{TOKEN}}
-
-
-### 11. Owner ล็อกอิน (Login)
-POST http://localhost:3000/owner/login
-Content-Type: application/json
-
-{
-  "email": "owner@gmail.com",
-  "password": "SecurePass456!"
-}
 
 
 ### Dev only สร้าง employee ใหม่

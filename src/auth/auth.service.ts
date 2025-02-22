@@ -22,8 +22,12 @@ export class AuthService {
         'You must reset your password before accessing the system.',
       );
     }
+    const totalOwners = await this.userService.countTotalOwners();
+    // ✅ นับจำนวน Employee ของ Owner
     const hasEmployees = await this.userService.countEmployees(user.owner_id);
-    if (user.roles.includes('owner') && hasEmployees === 0) {
+
+    // 🛑 แก้ไขตรงนี้: อนุญาตให้ Owner คนแรกเข้าได้เลย
+    if (user.roles.includes('owner') && hasEmployees === 0 && totalOwners > 3) {
       throw new UnauthorizedException(
         'You must create at least one employee before accessing the system.',
       );
