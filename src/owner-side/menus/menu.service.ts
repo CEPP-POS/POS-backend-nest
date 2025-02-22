@@ -307,7 +307,7 @@ export class MenuService {
       throw new Error('Invalid option type');
     }
 
-    // Find all sweetness groups with the old name
+    // 1. Find all sweetness groups with the old name
     const existingSweetnessGroups = await this.sweetnessGroupRepository.find({
       where: {
         sweetness_group_name: updateSweetnessDto.old_sweetness_group_name,
@@ -324,69 +324,153 @@ export class MenuService {
       );
     }
 
-    // Update or create sweetness levels
-    const sweetnessLevels = await Promise.all(
-      updateSweetnessDto.options.map(async (levelName) => {
-        let sweetnessLevel = await this.sweetnessLevelRepository.findOne({
-          where: {
-            level_name: levelName,
-            owner: { owner_id: ownerId },
-            branch: { branch_id: branchId },
-            is_delete: false,
-          },
-        });
-
-        if (!sweetnessLevel) {
-          // Create new sweetness level if it doesn't exist
-          sweetnessLevel = await this.sweetnessLevelRepository.save({
-            level_name: levelName,
-            owner: { owner_id: ownerId },
-            branch: { branch_id: branchId },
+    // 2. Update existing sweetness levels and create new ones
+    const updatedSweetnessLevels = await Promise.all(
+      updateSweetnessDto.options.map(async (option) => {
+        if (option.sweetness_id) {
+          // Update existing level name
+          const existingLevel = await this.sweetnessLevelRepository.findOne({
+            where: {
+              sweetness_id: option.sweetness_id,
+              owner: { owner_id: ownerId },
+              branch: { branch_id: branchId },
+              is_delete: false,
+            },
           });
+
+          if (existingLevel) {
+            existingLevel.level_name = option.level_name;
+            return await this.sweetnessLevelRepository.save(existingLevel);
+          }
         }
 
-        return sweetnessLevel;
-      }),
-    );
-
-    // Update all sweetness groups with the new name and link to the new sweetness levels
-    await Promise.all(
-      existingSweetnessGroups.map(async (group, index) => {
-        // Update the group name
-        group.sweetness_group_name =
-          updateSweetnessDto.new_sweetness_group_name;
-        // Link to the corresponding new sweetness level
-        if (sweetnessLevels[index]) {
-          group.sweetnessLevel = sweetnessLevels[index];
-        }
-        return this.sweetnessGroupRepository.save(group);
-      }),
-    );
-
-    // Update menu relations if menu_ids are provided
-    if (updateSweetnessDto.menu_id && updateSweetnessDto.menu_id.length > 0) {
-      await this.menuRepository.update(
-        {
-          menu_id: In(updateSweetnessDto.menu_id),
+        // Create new sweetness level if id is null
+        return await this.sweetnessLevelRepository.save({
+          level_name: option.level_name,
           owner: { owner_id: ownerId },
           branch: { branch_id: branchId },
-        },
-        {
-          sweetnessGroup: existingSweetnessGroups[0], // Use the first group as reference
-        },
-      );
-    }
+        });
+      }),
+    );
 
-    // Soft delete unused sweetness levels
-    await this.sweetnessLevelRepository.update(
-      {
+    // 3. Update group names and handle deleted levels
+    await Promise.all(
+      existingSweetnessGroups.map(async (group) => {
+        // Check if this group's level is still in options
+        const levelStillExists = updateSweetnessDto.options.some(
+          (option) => option.sweetness_id === group.sweetnessLevel.sweetness_id,
+        );
+
+        if (!levelStillExists) {
+          // Mark the level as deleted
+          await this.sweetnessLevelRepository.update(
+            { sweetness_id: group.sweetnessLevel.sweetness_id },
+            { is_delete: true },
+          );
+
+          // Find menus using this group and update them to use first available group
+          const menusUsingThisGroup = await this.menuRepository.find({
+            where: {
+              sweetnessGroup: { sweetness_group_id: group.sweetness_group_id },
+            },
+          });
+
+          if (menusUsingThisGroup.length > 0) {
+            const availableGroup = existingSweetnessGroups.find((g) =>
+              updateSweetnessDto.options.some(
+                (opt) => opt.sweetness_id === g.sweetnessLevel.sweetness_id,
+              ),
+            );
+
+            if (availableGroup) {
+              await this.menuRepository.update(
+                {
+                  menu_id: In(menusUsingThisGroup.map((m) => m.menu_id)),
+                },
+                { sweetnessGroup: availableGroup },
+              );
+            } else {
+              // If no available group, set to null
+              await this.menuRepository.update(
+                {
+                  menu_id: In(menusUsingThisGroup.map((m) => m.menu_id)),
+                },
+                { sweetnessGroup: null },
+              );
+            }
+          }
+
+          // Remove the group
+          await this.sweetnessGroupRepository.remove(group);
+        } else {
+          // Just update the group name
+          group.sweetness_group_name =
+            updateSweetnessDto.new_sweetness_group_name;
+          await this.sweetnessGroupRepository.save(group);
+        }
+      }),
+    );
+
+    // 4. Create new groups for new levels
+    const newSweetnessGroups = updatedSweetnessLevels
+      .filter(
+        (level) =>
+          !existingSweetnessGroups.find(
+            (group) =>
+              group.sweetnessLevel?.sweetness_id === level.sweetness_id,
+          ),
+      )
+      .map((level) => ({
+        sweetness_group_name: updateSweetnessDto.new_sweetness_group_name,
+        sweetnessLevel: level,
         owner: { owner_id: ownerId },
         branch: { branch_id: branchId },
-        level_name: Not(In(updateSweetnessDto.options)),
-        is_delete: false,
+      }));
+
+    if (newSweetnessGroups.length > 0) {
+      await this.sweetnessGroupRepository.save(newSweetnessGroups);
+    }
+
+    // 5. Update menu relations
+    // Find menus that need to be updated
+    const menusToUpdate = await this.menuRepository.find({
+      where: {
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
       },
-      { is_delete: false },
-    );
+      relations: ['sweetnessGroup'],
+    });
+
+    // Get the group to use for new assignments
+    const groupToUse = await this.sweetnessGroupRepository.findOne({
+      where: {
+        sweetness_group_name: updateSweetnessDto.new_sweetness_group_name,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+    });
+
+    // Update each menu
+    for (const menu of menusToUpdate) {
+      if (
+        menu.sweetnessGroup?.sweetness_group_name ===
+        updateSweetnessDto.old_sweetness_group_name
+      ) {
+        if (updateSweetnessDto.menu_id.includes(menu.menu_id)) {
+          // Update to new group
+          await this.menuRepository.update(
+            { menu_id: menu.menu_id },
+            { sweetnessGroup: groupToUse },
+          );
+        } else {
+          // Set to null if not in menu_id list
+          await this.menuRepository.update(
+            { menu_id: menu.menu_id },
+            { sweetnessGroup: null },
+          );
+        }
+      }
+    }
 
     return {
       message: 'Sweetness options and groups updated successfully',

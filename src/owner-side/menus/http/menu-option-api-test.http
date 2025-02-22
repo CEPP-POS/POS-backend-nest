@@ -3,13 +3,13 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "sweetness_group_name": "ความหวานวัว",
+  "sweetness_group_name": "ความหวานกาแฟ",
   "options": [
-    "หวานน้อยนมวัว",
-    "หวานกลางนมวัว",
-    "หวานมากนมวัว"
+    "หวานน้อยกาแฟ",
+    "หวานกลางกาแฟ",
+    "หวานมากกาแฟ"
   ],
-  "menu_id": [3,4]
+  "menu_id": [1,2]
 }
 
 PATCH http://localhost:3000/owner/menus/options/sweetness
@@ -17,14 +17,13 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "old_sweetness_group_name": "ความหวาน coffee นม y",
-  "new_sweetness_group_name": "ความหวาน coffee นม y",
+  "old_sweetness_group_name": "ความหวานกาแฟนม",
+  "new_sweetness_group_name": "ความหวานกาแฟนม",
   "options": [
-    "หวานน้อย coffee นม a",
-    "หวานกลาง coffee นม a",
-    "หวานมาก coffee นม a"
+    { "sweetness_id": 67, "level_name": "ความหวานกลางกาแฟgg" }
+
   ],
-  "menu_id": [1, 2]
+  "menu_id": [2]
 }
 
 DELETE http://localhost:3000/owner/menus/options/sweetness/ความหวาน coffee นม y
