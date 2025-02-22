@@ -80,10 +80,11 @@ owner_id: 1
 branch_id: 1
 
 {
-  "size_group_name": "ขนาดแก้วสำหรับชา",
+  "size_group_name": "ขนาดแก้วสำหรับนม",
    "options": [
     { "เล็กน้อย":  { "price": "5.00" } },
-    { "กลางหน่อย":  { "price": "10.00" } }
+    { "กลางหน่อย":  { "price": "10.00" } },
+    { "ใหญ่หน่อย":  { "price": "15.00" } }
   ],
   "menu_id": [4]
 }
@@ -95,16 +96,13 @@ owner_id: 1
 branch_id: 1
 
 {
-  "old_size_group_name": "ขนาดแก้วสำหรับชาไข่มุก",
-  "new_size_group_name": "ขนาดแก้วสำหรับชาไข่มุก",
+  "old_size_group_name": "ขนาดแก้วสำหรับนมใหม่",
+  "new_size_group_name": "ขนาดแก้วสำหรับนมใหม่",
    "options": [
-    { "size_id": "17", "size_name":"เล็กน้อย",  "price": "7.00" },
-    { "size_id": "18", "size_name":"กลางหน่อย",  "price": "12.00" },
-    { "size_id": "19", "size_name":"ใหญ่มาก",  "price": "14.00" },
-    { "size_id": "20", "size_name":"ใหญ่มากขึ้นอีก",  "price": "16.00" },
-    { "size_id": "null", "size_name":"ใหญ่มากขึ้นอีกกกก",  "price": "18.00" }
+    { "size_id": "47", "size_name":"โคตรja",  "price": "14.00" },
+    { "size_id": "null", "size_name":"hiii",  "price": "14.00" }
   ],
-  "menu_id": [4]
+  "menu_id": [1,4]
 }
 
 
