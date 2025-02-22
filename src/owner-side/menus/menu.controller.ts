@@ -230,10 +230,10 @@ export class MenuController {
     );
   }
 
-  @Patch('stock/:menu_id')
-  // @UsePipes(new ValidationPipe({ transform: true }))
-  async updateStock(
+  @Post('stock/:menu_id')
+  async linkIngredientToStock(
     @Param('menu_id') menu_id: number,
+    @Req() request: Request,
     @Body()
     body: {
       owner_id: number;
@@ -241,13 +241,20 @@ export class MenuController {
       menuData: LinkMenuToStockDto[];
     },
   ) {
-    console.log('menu_id:', menu_id);
-    console.log('Request Body:', body);
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
 
-    return this.menuService.updateStock(
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    return this.menuService.linkIngredientToStock(
       menu_id,
-      body.owner_id,
-      body.branch_id,
+      ownerIdNum,
+      branchIdNum,
       body.menuData,
     );
   }

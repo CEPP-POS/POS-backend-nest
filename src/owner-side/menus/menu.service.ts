@@ -734,105 +734,112 @@ export class MenuService {
   // }
 
   // EDIT ENTITY INGREDIENT_MENULINK
-  async updateStock(
+  async linkIngredientToStock(
     menu_id: number,
     owner_id: number,
     branch_id: number,
     linkMenuToStockDtoList: LinkMenuToStockDto[],
   ) {
+    // ตรวจสอบว่ามี menu, owner, branch อยู่จริง
+    const menu = await this.menuRepository.findOne({ where: { menu_id } });
+    if (!menu) {
+      throw new NotFoundException(`Menu with ID ${menu_id} not found`);
+    }
+
+    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+    if (!owner) {
+      throw new NotFoundException(`Owner with ID ${owner_id} not found`);
+    }
+
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id },
+    });
+    if (!branch) {
+      throw new NotFoundException(`Branch with ID ${branch_id} not found`);
+    }
+
     for (const linkMenuToStockDto of linkMenuToStockDtoList) {
       const { ingredient_name, unit, ingredientListForStock } =
         linkMenuToStockDto;
 
-      const menu = await this.menuRepository.findOne({ where: { menu_id } });
-      if (!menu) {
-        throw new NotFoundException(`Menu with ID ${menu_id} not found`);
-      }
-
-      const owner = await this.ownerRepository.findOne({ where: { owner_id } });
-      if (!owner) {
-        throw new NotFoundException(`Owner with ID ${owner_id} not found`);
-      }
-
-      // check size, menu type id from each table
-      for (const property of ingredientListForStock) {
-        const size = await this.sizeRepository.findOne({
-          where: { size_id: property.size_id },
-        });
-        if (!size) {
-          throw new NotFoundException(
-            `Size with ID ${property.size_id} not found`,
-          );
-        }
-
-        const menuType = await this.menuTypeRepository.findOne({
-          where: { menu_type_id: property.menu_type_id },
-        });
-        if (!menuType) {
-          throw new NotFoundException(
-            `MenuType with ID ${property.menu_type_id} not found`,
-          );
-        }
-      }
-
-      // EDIT ENTITY
-      // Find by ingredient name or create ingredient => if not have in ingredient table
+      // ค้นหา ingredient จากชื่อ
       let ingredient = await this.ingredientRepository.findOne({
-        where: { ingredient_name },
+        where: {
+          ingredient_name,
+          owner: { owner_id },
+          branch: { branch_id },
+        },
       });
+
+      // ถ้าไม่มี ingredient ให้สร้างใหม่
       if (!ingredient) {
         ingredient = this.ingredientRepository.create({
           ingredient_name,
           unit,
-          // owner_id: owner,
+          owner,
+          branch,
         });
         ingredient = await this.ingredientRepository.save(ingredient);
       }
 
-      // Save the MenuIngredient records
-      // Process the ingredient list for stock and link them
-      for (const property of ingredientListForStock) {
+      // วนลูปจัดการแต่ละ size และ menu type
+      for (const stockItem of ingredientListForStock) {
+        const { size_id, menu_type_id, quantity_used } = stockItem;
+
+        // ตรวจสอบว่ามี size และ menu type อยู่จริง
+        const size = await this.sizeRepository.findOne({
+          where: { size_id, owner: { owner_id }, branch: { branch_id } },
+        });
+        if (!size) {
+          throw new NotFoundException(`Size with ID ${size_id} not found`);
+        }
+
+        const menuType = await this.menuTypeRepository.findOne({
+          where: { menu_type_id, owner: { owner_id }, branch: { branch_id } },
+        });
+        if (!menuType) {
+          throw new NotFoundException(
+            `MenuType with ID ${menu_type_id} not found`,
+          );
+        }
+
+        // ค้นหา menu_ingredient ที่มีอยู่
         let menuIngredient = await this.menuIngredientRepository.findOne({
           where: {
-            menu: Equal(menu.menu_id),
-            ingredient: Equal(ingredient.ingredient_id),
-            size: Equal(property.size_id),
-            menu_type: Equal(property.menu_type_id),
+            menu: { menu_id },
+            ingredient: { ingredient_id: ingredient.ingredient_id },
+            size: { size_id },
+            menu_type: { menu_type_id },
+            owner: { owner_id },
+            branch: { branch_id },
           },
         });
 
         if (menuIngredient) {
-          // If the ingredient already exists, update quantity_used
-          menuIngredient.quantity_used = property.quantity_used;
+          // ถ้ามีอยู่แล้วให้อัพเดท quantity_used
+          menuIngredient.quantity_used = quantity_used;
           await this.menuIngredientRepository.save(menuIngredient);
         } else {
-          // Create a new menu ingredient if it doesn't exist
+          // ถ้าไม่มีให้สร้างใหม่
           menuIngredient = this.menuIngredientRepository.create({
-            menu: menu,
-            ingredient: ingredient,
-            size: { size_id: property.size_id },
-            menu_type: { menu_type_id: property.menu_type_id },
-            quantity_used: property.quantity_used,
+            menu,
+            ingredient,
+            size,
+            menu_type: menuType,
+            quantity_used,
+            is_addon: false,
+            owner,
+            branch,
           });
           await this.menuIngredientRepository.save(menuIngredient);
         }
-        console.log('menuIngredient:', menuIngredient);
       }
-
-      console.log('ingredientListForStock:', ingredientListForStock);
-
-      // link menu id and ingredient id in ingredient menu link
-      const ingredientMenuLinkToSave = {
-        menu_id: { menu_id: menu.menu_id },
-        ingredient_id: { ingredient_id: ingredient.ingredient_id },
-      };
-
-      console.log('ingredientMenuLinkToSave:', ingredientMenuLinkToSave);
-
-      // await this.ingredientMenuLinkRepository.save(ingredientMenuLinkToSave);
     }
 
-    return { message: 'Link Stock successfully' };
+    return {
+      message: 'Link Stock successfully',
+      statusCode: HttpStatus.OK,
+    };
   }
 
   async updateOption(type: string, optionId: number, updateOptionDto: any) {

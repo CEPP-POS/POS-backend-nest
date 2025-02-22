@@ -38,17 +38,17 @@ branch_id: 1
 
 
 ### link menu for auto cut stock
-PATCH http://localhost:3000/owner/menus/stock/16
+POST http://localhost:3000/owner/menus/stock/1
 Content-Type: application/json
+owner_id: 1
+branch_id: 1
 {
-  "owner_id": 2,
-  "branch_id": 2,
   "menuData": [
     {
       "ingredient_name": "น้ำเชื่อม",
       "unit": "ml",
       "ingredientListForStock": [
-        { "size_id": 1, "menu_type_id": 1, "quantity_used": 10 },
+        { "size_id": 1, "menu_type_id": 1, "quantity_used": 11 },
         { "size_id": 1, "menu_type_id": 2, "quantity_used": 20 },
         { "size_id": 1, "menu_type_id": 3, "quantity_used": 30 },
         { "size_id": 2, "menu_type_id": 1, "quantity_used": 5 },
