@@ -59,41 +59,75 @@ export class MenuCustomerService {
   ) {}
 
   async getCustomerMenus(ownerId: number, branchId: number) {
-    // ดึงข้อมูล categories ทั้งหมดพร้อมความสัมพันธ์ที่เกี่ยวข้อง
-    const categories = await this.categoryRepository
-      .createQueryBuilder('category')
-      .leftJoinAndSelect('category.menuCategory', 'menuCategory')
-      .leftJoinAndSelect('menuCategory.menu', 'menu')
+    // ดึงข้อมูลเมนูทั้งหมดที่เกี่ยวข้อง
+    const menus = await this.menuRepository
+      .createQueryBuilder('menu')
+      .leftJoinAndSelect('menu.menuCategory', 'menuCategory')
+      .leftJoinAndSelect('menuCategory.category', 'category')
       .where('menu.is_delete = :isDelete', { isDelete: false })
       .andWhere('menu.paused = :paused', { paused: false })
       .andWhere('menu.owner_id = :ownerId', { ownerId })
       .andWhere('menu.branch_id = :branchId', { branchId })
-      .orderBy('category.category_id', 'ASC')
       .getMany();
 
-    // แปลงข้อมูลให้อยู่ในรูปแบบที่ต้องการ
-    const formattedCategories = categories
-      .map((category) => {
-        const menus = category.menuCategory
-          .filter((mc) => mc.menu) // กรองเฉพาะ menuCategory ที่มีเมนู
-          .map((mc) => ({
-            menu_id: mc.menu.menu_id,
-            menu_name: mc.menu.menu_name,
-            description: mc.menu.description,
-            price: Number(mc.menu.price),
-            image_url: mc.menu.image_url,
-          }));
+    // สร้าง Map เพื่อจัดกลุ่มเมนูตามหมวดหมู่
+    const categoryMap = new Map<string, any>();
 
-        return {
-          category_id: category.category_id,
-          category_name: category.category_name,
-          menus: menus,
+    // เพิ่มกลุ่มสำหรับเมนูที่ไม่มีหมวดหมู่
+    categoryMap.set('no_category', {
+      category_id: null,
+      category_name: null,
+      menus: [],
+    });
+
+    // จัดกลุ่มเมนูตามหมวดหมู่
+    menus.forEach((menu) => {
+      if (menu.menuCategory.length === 0) {
+        // ถ้าเมนูไม่มีหมวดหมู่
+        const menuData = {
+          menu_id: menu.menu_id,
+          menu_name: menu.menu_name,
+          description: menu.description,
+          price: Number(menu.price),
+          image_url: menu.image_url,
         };
-      })
-      .filter((category) => category.menus.length > 0); // กรองเฉพาะหมวดหมู่ที่มีเมนู
+        categoryMap.get('no_category').menus.push(menuData);
+      } else {
+        // จัดกลุ่มตามหมวดหมู่ที่มี
+        menu.menuCategory.forEach((mc) => {
+          const categoryKey = mc.category
+            ? mc.category.category_id.toString()
+            : 'no_category';
+          const categoryName = mc.category ? mc.category.category_name : null;
+          const categoryId = mc.category ? mc.category.category_id : null;
+
+          if (!categoryMap.has(categoryKey)) {
+            categoryMap.set(categoryKey, {
+              category_id: categoryId,
+              category_name: categoryName,
+              menus: [],
+            });
+          }
+
+          const menuData = {
+            menu_id: menu.menu_id,
+            menu_name: menu.menu_name,
+            description: menu.description,
+            price: Number(menu.price),
+            image_url: menu.image_url,
+          };
+          categoryMap.get(categoryKey).menus.push(menuData);
+        });
+      }
+    });
+
+    // แปลง Map เป็น Array และกรองเอาเฉพาะหมวดหมู่ที่มีเมนู
+    const categories = Array.from(categoryMap.values()).filter(
+      (category) => category.menus.length > 0,
+    );
 
     return {
-      categories: formattedCategories,
+      categories: categories,
     };
   }
 
