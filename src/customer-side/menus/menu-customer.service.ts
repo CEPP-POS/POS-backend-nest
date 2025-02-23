@@ -3,6 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Menu } from 'src/entities/menu.entity';
 import { Category } from 'src/entities/category.entity';
+import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
+import { MenuType } from 'src/entities/menu-type.entity';
+import { MenuTypeGroup } from 'src/entities/menu-type-group.entity';
+import { SweetnessLevel } from 'src/entities/sweetness-level.entity';
+import { Size } from 'src/entities/size.entity';
+import { SweetnessGroup } from 'src/entities/sweetness-group.entity';
+import { SizeGroup } from 'src/entities/size-group.entity';
+import { AddOn } from 'src/entities/add-on.entity';
+import { Ingredient } from 'src/entities/ingredient.entity';
 
 @Injectable()
 export class MenuCustomerService {
@@ -12,7 +21,34 @@ export class MenuCustomerService {
 
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-  ) { }
+
+    @InjectRepository(MenuIngredient)
+    private readonly menuIngredientRepository: Repository<MenuIngredient>,
+
+    @InjectRepository(MenuType)
+    private readonly menuTypeRepository: Repository<MenuType>,
+
+    @InjectRepository(MenuTypeGroup)
+    private readonly menuTypeGroupRepository: Repository<MenuTypeGroup>,
+
+    @InjectRepository(SweetnessLevel)
+    private readonly sweetnessLevelRepository: Repository<SweetnessLevel>,
+
+    @InjectRepository(SweetnessGroup)
+    private readonly sweetnessGroupRepository: Repository<SweetnessGroup>,
+
+    @InjectRepository(Size)
+    private readonly sizeRepository: Repository<Size>,
+
+    @InjectRepository(SizeGroup)
+    private readonly sizeGroupRepository: Repository<SizeGroup>,
+
+    @InjectRepository(AddOn)
+    private readonly addOnRepository: Repository<AddOn>,
+
+    @InjectRepository(Ingredient)
+    private readonly ingredientRepository: Repository<Ingredient>,
+  ) {}
 
   async getCustomerMenus() {
     // ดึงเมนูทั้งหมดพร้อม category
@@ -80,7 +116,7 @@ export class MenuCustomerService {
   //   });
 
   //   return map;
-  // }, 
+  // },
   //   new Map<number, any>());
 
   //   // Convert Map to Array
@@ -92,15 +128,61 @@ export class MenuCustomerService {
   //   };
   // }
 
-// EDIT ENTITY
-  async getMenuDetails(menuId: number) {
+  // EDIT ENTITY
+  async getMenuDetails(menuId: number, ownerId: number, branchId: number) {
     const menu = await this.menuRepository.findOne({
-      where: { menu_id: menuId },
-      relations: ['menuTypes', 'sweetnessLevels', 'sizes', 'addOns'], // ✅ โหลดข้อมูลที่เกี่ยวข้อง
+      where: {
+        menu_id: menuId,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: [
+        'menuTypeGroup',
+        'menuTypeGroup.menuType',
+        'sweetnessGroup',
+        'sweetnessGroup.sweetnessLevel',
+        'sizeGroup',
+        'sizeGroup.size',
+        'menuIngredient',
+        'menuIngredient.ingredient',
+      ],
     });
+
     if (!menu) {
       throw new NotFoundException(`Menu with ID ${menuId} not found`);
     }
+
+    // หา add-ons จาก MenuIngredient
+    const addOns = await this.menuIngredientRepository.find({
+      where: {
+        menu: { menu_id: menuId },
+        is_addon: true,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['ingredient'],
+    });
+
+    // ดึงข้อมูล AddOn เพิ่มเติม
+    const addOnDetails = await Promise.all(
+      addOns.map(async (addon) => {
+        const addOnInfo = await this.addOnRepository.findOne({
+          where: {
+            ingredient: { ingredient_id: addon.ingredient.ingredient_id },
+            owner: { owner_id: ownerId },
+            branch: { branch_id: branchId },
+          },
+        });
+
+        return {
+          add_on_id: addon.menu_ingredient_id,
+          name: addon.ingredient.ingredient_name,
+          price_addition: addOnInfo?.add_on_price || 0,
+          is_required: addOnInfo?.is_required || false,
+          is_multiple: addOnInfo?.is_multipled || false,
+        };
+      }),
+    );
 
     return {
       menu_id: menu.menu_id,
@@ -108,32 +190,37 @@ export class MenuCustomerService {
       price: menu.price,
       description: menu.description,
       image_url: menu.image_url,
-      
-      // edit entity
-      // type_name: menu.menuTypes.map((type) => ({
-      //   menu_type_id: type.menu_type_id,
-      //   menu_type_name: type.type_name,
-      //   menu_type_price_addition: type.price_difference,
-      //   menu_type_is_required: type.is_required
-      // })),
-      // level_name: menu.sweetnessLevels.map((level) => ({
-      //   sweetness_level_id: level.sweetness_id,
-      //   sweetness_level_name: level.level_name,
-      //   sweetness_level_is_required: level.is_required
-      // })),
-      // size_name: menu.sizes.map((size) => ({
-      //   size_id: size.size_id,
-      //   size_name: size.size_name,
-      //   size_price_addition: size.size_price,
-      //   size_is_required: size.is_required
-      // })),
-      // add_on_name: menu.addOns.map((addOn) => ({
-      //   add_on_id: addOn.add_on_id,
-      //   add_on_name: addOn.add_on_name,
-      //   add_on_name_price_addition: addOn.add_on_price,
-      //   add_on_is_required: addOn.is_required,
-      //   add_on_is_multiple: addOn.is_multipled,
-      // })),
+
+      type_name: menu.menuTypeGroup?.menuType
+        ? [
+            {
+              menu_type_id: menu.menuTypeGroup.menuType.menu_type_id,
+              name: menu.menuTypeGroup.menuType.type_name,
+              price_addition: menu.menuTypeGroup.menuType.price_difference,
+            },
+          ]
+        : [],
+
+      level_name: menu.sweetnessGroup?.sweetnessLevel
+        ? [
+            {
+              sweetness_id: menu.sweetnessGroup.sweetnessLevel.sweetness_id,
+              level_name: menu.sweetnessGroup.sweetnessLevel.level_name,
+            },
+          ]
+        : [],
+
+      size_name: menu.sizeGroup?.size
+        ? [
+            {
+              size_id: menu.sizeGroup.size.size_id,
+              name: menu.sizeGroup.size.size_name,
+              price_addition: menu.sizeGroup.size.size_price,
+            },
+          ]
+        : [],
+
+      add_on_name: addOnDetails,
     };
   }
 

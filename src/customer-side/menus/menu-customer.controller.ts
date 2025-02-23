@@ -1,9 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Headers } from '@nestjs/common';
 import { MenuCustomerService } from './menu-customer.service';
 
 @Controller('customer/menus')
 export class MenuCustomerController {
-  constructor(private readonly menuCustomerService: MenuCustomerService) { }
+  constructor(private readonly menuCustomerService: MenuCustomerService) {}
 
   // @Get()
   // async getCustomerMenus() {
@@ -17,7 +17,11 @@ export class MenuCustomerController {
   // }
 
   @Get(':id')
-  async getMenuDetails(@Param('id') id: number) {
-    return this.menuCustomerService.getMenuDetails(id);
+  async getMenuDetails(
+    @Param('id') id: number,
+    @Headers('owner_id') ownerId: number,
+    @Headers('branch_id') branchId: number,
+  ) {
+    return this.menuCustomerService.getMenuDetails(id, ownerId, branchId);
   }
 }
