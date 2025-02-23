@@ -102,7 +102,7 @@ branch_id: 1
     { "size_id": "72", "size_name":"l",  "price": "35.00" },
     { "size_id": "75", "size_name":"xl",  "price": "45.00" }
   ],
-  "menu_id": [1,2]
+  "menu_id": [1]
 }
 
 POST http://localhost:3000/owner/menus/options/menu-type
