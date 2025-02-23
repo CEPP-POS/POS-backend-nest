@@ -84,6 +84,24 @@ export class OwnerController {
       throw new BadRequestException('Something went wrong. Please try again.');
     }
   }
+  @Get('employees')
+  @Roles('owner') // ✅ เฉพาะ Owner เท่านั้นที่เข้าถึงได้
+  @UseGuards(JwtGuard, RolesGuard)
+  async getEmployees(@Req() req: Request) {
+    try {
+      const owner = req.user as { owner_id: number };
+      if (!owner || !owner.owner_id) {
+        throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+      }
+
+      return await this.ownerService.getEmployeesByOwner(owner.owner_id);
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to get employees',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
   // async resetPassword(@Body() updatePasswordDto: UpdatePasswordDto) {
   //   const { email, oldPassword, newPassword } = updatePasswordDto;
@@ -235,6 +253,19 @@ export class OwnerController {
   }
 
   // * Function Create Employee
+  // @Post('create-employee')
+  // @Roles('owner')
+  // @UseGuards(JwtGuard, RolesGuard)
+  // async createEmployee(
+  //   @Body() createEmployeeDto: CreateEmployeeDto,
+  //   @Req() req: Request,
+  // ) {
+  //   const user = req.user as UserPayload;
+  //   return this.ownerService.createEmployee({
+  //     ...createEmployeeDto,
+  //     manager_id: user.owner_id,
+  //   });
+  // }
   @Post('create-employee')
   @Roles('owner')
   @UseGuards(JwtGuard, RolesGuard)
@@ -242,12 +273,31 @@ export class OwnerController {
     @Body() createEmployeeDto: CreateEmployeeDto,
     @Req() req: Request,
   ) {
+    // ✅ ดึง `owner_id` และ `branch_id` จาก Headers
+    const ownerId = req.headers['owner_id'];
+    const branchId = req.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    // ✅ แปลง `owner_id` และ `branch_id` ให้เป็นตัวเลข
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
     const user = req.user as UserPayload;
-    return this.ownerService.createEmployee({
+
+    await this.ownerService.createEmployee({
       ...createEmployeeDto,
-      manager_id: user.owner_id,
+      manager_id: user.owner_id, // ✅ ใช้ owner ที่ล็อกอินเป็น manager
+      owner_id: ownerIdNum,
+      branch_id: branchIdNum,
     });
+    return { message: 'Employee created successfully' };
   }
+
   @Post('request-temp-password')
   async requestTempPassword(@Body() { email }: { email: string }) {
     return this.ownerService.requestTempPassword(email);

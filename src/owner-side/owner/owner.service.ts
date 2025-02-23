@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, Raw, Repository } from 'typeorm';
@@ -15,12 +16,16 @@ import { ForgotPasswordDto } from './dto/forgot-owner/forgot-owner.dto';
 import { VerifyOtpDto } from './dto/verify-otp-owner/verify-otp-owner.dto';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { CreateEmployeeDto } from './dto/create-employee/create-employee.dto';
+import { Branch } from 'src/entities/branch.entity';
 
 @Injectable()
 export class OwnerService {
   constructor(
     @InjectRepository(Owner)
     private readonly ownerRepository: Repository<Owner>,
+
+    @InjectRepository(Branch)
+    private readonly branchRepository: Repository<Branch>,
 
     @InjectRepository(Ingredient)
     private ingredientRepository: Repository<Ingredient>,
@@ -98,7 +103,8 @@ export class OwnerService {
   //   return this.ownerRepository.save(newEmployee);
   // }
   async createEmployee(createEmployeeDto: CreateEmployeeDto): Promise<Owner> {
-    const { email, password, manager_id } = createEmployeeDto;
+    const { email, password, manager_id, owner_id, branch_id } =
+      createEmployeeDto;
 
     const existingUser = await this.findByEmail(email);
     if (existingUser) {
@@ -115,11 +121,23 @@ export class OwnerService {
       throw new BadRequestException('Manager (Owner) not found.');
     }
 
+    // ✅ ดึง `branch` จากฐานข้อมูล
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id },
+    });
+
+    if (!branch) {
+      throw new BadRequestException('Branch not found.');
+    }
+
+    // ✅ สร้างพนักงานและเชื่อมกับ `owner` และ `branch`
     const newEmployee = this.ownerRepository.create({
       email,
       password: hashedPassword,
       roles: ['employee'],
       manager,
+      owner_id,
+      branch: [branch], // ✅ เชื่อมกับ branch
     });
 
     return this.ownerRepository.save(newEmployee);
@@ -220,6 +238,19 @@ export class OwnerService {
     user.password = await bcrypt.hash(otp, 10);
 
     await this.ownerRepository.save(user);
+  }
+  async getEmployeesByOwner(owner_id: number): Promise<Owner[]> {
+    const employees = await this.ownerRepository.find({
+      where: { manager: { owner_id } },
+      relations: ['branch'],
+      select: ['owner_id', 'email', 'roles', 'branch'],
+    });
+
+    if (!employees || employees.length === 0) {
+      throw new NotFoundException('No employees found for this owner.');
+    }
+
+    return employees;
   }
   async resetPassword(
     updatePasswordDto: UpdatePasswordDto,
