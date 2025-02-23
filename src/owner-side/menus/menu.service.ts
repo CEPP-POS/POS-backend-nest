@@ -753,7 +753,6 @@ export class MenuService {
         menu_id,
       } = updateMenuTypeGroupDto;
 
-      // ✅ 1. ค้นหา `MenuTypeGroup` ที่มีอยู่แล้ว
       const existingMenuTypeGroups = await this.menuTypeGroupRepository.find({
         where: {
           menu_type_group_name: old_menu_type_group_name,
@@ -767,7 +766,6 @@ export class MenuService {
         throw new NotFoundException('Menu Type Group not found');
       }
 
-      // ✅ 2. ถ้าชื่อของ Menu Type Group เปลี่ยนไป ให้ทำการอัปเดต
       if (old_menu_type_group_name !== new_menu_type_group_name) {
         await this.menuTypeGroupRepository.update(
           {
@@ -779,17 +777,14 @@ export class MenuService {
         );
       }
 
-      // ✅ 3. ค้นหา ID ของประเภทเมนูที่มีอยู่แล้ว
       const existingMenuTypeIds = existingMenuTypeGroups.map((group) =>
         group.menuType.menu_type_id.toString(),
       );
 
-      // ✅ 4. ดึง ID ที่ต้องการคงไว้
       const keepMenuTypeIds = options
         .filter((opt) => opt.menu_type_id && opt.menu_type_id !== 'null')
         .map((opt) => opt.menu_type_id);
 
-      // ✅ 5. อัปเดตประเภทเมนูที่มีอยู่แล้ว
       for (const option of options) {
         if (option.menu_type_id && option.menu_type_id !== 'null') {
           await this.menuTypeRepository.update(
@@ -803,18 +798,15 @@ export class MenuService {
         }
       }
 
-      // ✅ 6. จัดการประเภทเมนูที่ถูกลบออก
       for (const existingMenuTypeId of existingMenuTypeIds) {
         if (!keepMenuTypeIds.includes(existingMenuTypeId)) {
           const menuTypeIdNum = parseInt(existingMenuTypeId);
 
-          // 1. ทำเครื่องหมายว่า `menu_type` ถูกลบ
           await this.menuTypeRepository.update(
             { menu_type_id: menuTypeIdNum },
             { is_delete: true },
           );
 
-          // 2. ค้นหา `MenuTypeGroup` ที่ใช้ `menu_type` นี้
           const affectedMenuTypeGroups =
             await this.menuTypeGroupRepository.find({
               where: {
@@ -826,7 +818,6 @@ export class MenuService {
             });
 
           for (const menuTypeGroup of affectedMenuTypeGroups) {
-            // ค้นหาเมนูที่ใช้ `MenuTypeGroup` นี้
             const menusUsingGroup = await this.menuRepository.find({
               where: {
                 menuTypeGroup: {
@@ -836,7 +827,6 @@ export class MenuService {
             });
 
             if (menusUsingGroup.length > 0) {
-              // หาทางเลือกของ `MenuTypeGroup` ที่ยังไม่ได้ลบ
               const alternativeMenuTypeGroup =
                 await this.menuTypeGroupRepository.findOne({
                   where: {
@@ -848,14 +838,12 @@ export class MenuService {
                   },
                 });
 
-              // อัปเดตเมนูให้ใช้ `MenuTypeGroup` ที่เหลืออยู่ หรือไม่ใช้เลย
               await this.menuRepository.update(
                 { menu_id: In(menusUsingGroup.map((m) => m.menu_id)) },
                 { menuTypeGroup: alternativeMenuTypeGroup || null },
               );
             }
 
-            // ลบ `MenuTypeGroup` นี้
             await this.menuTypeGroupRepository.delete(
               menuTypeGroup.menu_type_group_id,
             );
@@ -863,12 +851,10 @@ export class MenuService {
         }
       }
 
-      // ✅ 7. เพิ่มประเภทเมนูใหม่
       const newMenuTypeOptions = options.filter(
         (opt) => opt.menu_type_id === 'null',
       );
       for (const newOption of newMenuTypeOptions) {
-        // 1. สร้าง `MenuType` ใหม่
         const newMenuType = await this.menuTypeRepository.save({
           type_name: newOption.type_name,
           price_difference: parseFloat(String(newOption.price_difference)),
@@ -876,7 +862,6 @@ export class MenuService {
           branch: { branch_id },
         });
 
-        // 2. ตรวจสอบว่ามี `MenuTypeGroup` ที่เชื่อมโยงกับ `menu_type` หรือไม่
         const existingLink = await this.menuTypeGroupRepository.findOne({
           where: {
             menu_type_group_name: new_menu_type_group_name,
@@ -885,7 +870,6 @@ export class MenuService {
         });
 
         if (!existingLink) {
-          // 3. ถ้ายังไม่มีให้สร้างใหม่
           await this.menuTypeGroupRepository.save({
             menu_type_group_name: new_menu_type_group_name,
             menuType: newMenuType,
@@ -895,7 +879,6 @@ export class MenuService {
         }
       }
 
-      // ✅ 8. อัปเดตการเชื่อมโยง `menu_id`
       const menuTypeGroup = await this.menuTypeGroupRepository.findOne({
         where: {
           menu_type_group_name: new_menu_type_group_name,
@@ -910,13 +893,11 @@ export class MenuService {
         );
       }
 
-      // ✅ อัปเดต `menu_id`
       await this.menuRepository.update(
         { menu_id: In(menu_id) },
         { menuTypeGroup: menuTypeGroup },
       );
 
-      // ✅ ลบ `menuTypeGroup` ออกจากเมนูที่ไม่ควรมี
       await this.menuRepository.update(
         {
           menu_id: Not(In(menu_id)),
@@ -925,9 +906,11 @@ export class MenuService {
         { menuTypeGroup: null },
       );
 
-      return { message: 'Menu Type Group updated successfully' };
+      return {
+        message: 'Menu Type Group updated successfully',
+        HttpStatus: HttpStatus.OK,
+      };
     } catch (error) {
-      console.error('❌ [ERROR] Failed to update MenuTypeGroup:', error);
       throw new HttpException(
         { message: error.message || 'Something went wrong.' },
         HttpStatus.INTERNAL_SERVER_ERROR,
