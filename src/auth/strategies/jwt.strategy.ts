@@ -18,16 +18,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  
   async validate(payload: IJwtPayload): Promise<UserPayload> {
     console.log('Decoded JWT Payload:', payload);
-  
+
     const existingUser = await this.ownerService.findByEmail(payload.email);
-  
+
     if (!existingUser) throw new UnauthorizedException('Invalid token.');
-  
+
     console.log('User from DB:', existingUser);
-  
+
     return {
       owner_id: existingUser.owner_id,
       email: existingUser.email,
@@ -35,5 +34,4 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       roles: existingUser.roles,
     };
   }
-  
 }

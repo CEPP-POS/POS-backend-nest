@@ -12,6 +12,8 @@ import {
   UseGuards,
   UseInterceptors,
   Req,
+  BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateOwnerDto } from './dto/create-owner/create-owner.dto';
 import { Express, Request } from 'express';
@@ -30,6 +32,7 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { AuthService } from '../../auth/auth.service';
 import { CreateEmployeeDto } from './dto/create-employee/create-employee.dto';
 import { UserPayload } from '../../auth/interfaces/user.interface';
+// import * as bcrypt from 'bcrypt';
 
 @Controller('owner')
 export class OwnerController {
@@ -44,6 +47,83 @@ export class OwnerController {
   ) {
     return this.ownerService.updatePassword(+ownerId, updatePasswordDto);
   }
+  // ใช้สำหรับการเปลี่ยนรหัสผ่านครั้งแรกหลังจากลงทะเบียน
+  @Patch('reset-password')
+  async resetPassword(
+    @Body() updatePasswordDto: UpdatePasswordDto,
+    @Req() request: Request, // ✅ เพิ่ม request เพื่อดึง header
+  ) {
+    try {
+      // ✅ ดึง `owner_id` และ `branch_id` จาก Header
+      const ownerId = request.headers['owner_id'];
+      const branchId = request.headers['branch_id'];
+
+      if (!ownerId || !branchId) {
+        throw new BadRequestException(
+          'Missing required headers: owner_id or branch_id',
+        );
+      }
+      const ownerIdNum = Number(ownerId);
+      const branchIdNum = Number(branchId);
+
+      console.log('📌 [DEBUG] Headers:', { ownerId, branchId });
+
+      // ✅ ส่งค่า `ownerId`, `branchId` ไปที่ Service
+      return await this.ownerService.resetPassword(
+        updatePasswordDto,
+        ownerIdNum,
+        branchIdNum,
+      );
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof UnauthorizedException
+      ) {
+        throw error;
+      }
+      throw new BadRequestException('Something went wrong. Please try again.');
+    }
+  }
+  @Get('employees')
+  @Roles('owner') // ✅ เฉพาะ Owner เท่านั้นที่เข้าถึงได้
+  @UseGuards(JwtGuard, RolesGuard)
+  async getEmployees(@Req() req: Request) {
+    try {
+      const owner = req.user as { owner_id: number };
+      if (!owner || !owner.owner_id) {
+        throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+      }
+
+      return await this.ownerService.getEmployeesByOwner(owner.owner_id);
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to get employees',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // async resetPassword(@Body() updatePasswordDto: UpdatePasswordDto) {
+  //   const { email, oldPassword, newPassword } = updatePasswordDto;
+
+  //   const user = await this.ownerService.findByEmail(email);
+  //   if (!user) {
+  //     throw new BadRequestException('User not found.');
+  //   }
+
+  //   if (user.otp !== oldPassword) {
+  //     throw new UnauthorizedException('Invalid temporary password.');
+  //   }
+
+  //   const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+  //   user.password = hashedNewPassword;
+  //   user.otp = null;
+
+  //   await this.ownerService.updatePasswordInDB(user);
+
+  //   return { message: 'Password reset successful. You can now log in.' };
+  // }
+
   // * Function Register Owner
   @Post('register')
   async register(@Body() createOwnerDto: CreateOwnerDto) {
@@ -96,17 +176,61 @@ export class OwnerController {
   }
 
   @Post('forgot-password')
-  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    await this.ownerService.forgotPassword(forgotPasswordDto);
+  async forgotPassword(
+    @Body() forgotPasswordDto: ForgotPasswordDto,
+    @Req() request: Request,
+  ) {
+    // ✅ ดึงค่า owner_id และ branch_id จาก headers
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    // ✅ ตรวจสอบว่ามีค่า owner_id และ branch_id หรือไม่
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    // ✅ แปลงค่าเป็น number
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    // ✅ ส่งค่าไปยัง service
+    await this.ownerService.forgotPassword(
+      forgotPasswordDto,
+      ownerIdNum,
+      branchIdNum,
+    );
+
     return { message: 'OTP ถูกส่งไปยังอีเมลของคุณแล้ว' };
   }
 
   @Post('verify-otp')
-  async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
-    await this.ownerService.verifyOtp(verifyOtpDto);
+  async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto, @Req() request: Request) {
+    // ✅ ดึงค่า owner_id และ branch_id จาก headers
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    console.log('📌 [DEBUG] Received Headers:', ownerId, branchId);
+
+    // ✅ ตรวจสอบว่ามีค่า owner_id และ branch_id หรือไม่
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    // ✅ แปลงค่าเป็น number
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    console.log('📌 [DEBUG] Converted IDs:', ownerIdNum, branchIdNum);
+
+    // ✅ ส่งค่าไปยัง service
+    await this.ownerService.verifyOtp(verifyOtpDto, ownerIdNum, branchIdNum);
+
     return { message: 'OTP ถูกต้อง สามารถตั้งรหัสผ่านใหม่ได้' };
   }
-
   @Get('profile')
   @UseGuards(JwtGuard)
   getProfile(@Req() req: Request) {
@@ -129,6 +253,19 @@ export class OwnerController {
   }
 
   // * Function Create Employee
+  // @Post('create-employee')
+  // @Roles('owner')
+  // @UseGuards(JwtGuard, RolesGuard)
+  // async createEmployee(
+  //   @Body() createEmployeeDto: CreateEmployeeDto,
+  //   @Req() req: Request,
+  // ) {
+  //   const user = req.user as UserPayload;
+  //   return this.ownerService.createEmployee({
+  //     ...createEmployeeDto,
+  //     manager_id: user.owner_id,
+  //   });
+  // }
   @Post('create-employee')
   @Roles('owner')
   @UseGuards(JwtGuard, RolesGuard)
@@ -136,18 +273,42 @@ export class OwnerController {
     @Body() createEmployeeDto: CreateEmployeeDto,
     @Req() req: Request,
   ) {
+    // ✅ ดึง `owner_id` และ `branch_id` จาก Headers
+    const ownerId = req.headers['owner_id'];
+    const branchId = req.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    // ✅ แปลง `owner_id` และ `branch_id` ให้เป็นตัวเลข
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
     const user = req.user as UserPayload;
-    return this.ownerService.createEmployee({
+
+    await this.ownerService.createEmployee({
       ...createEmployeeDto,
-      manager_id: user.owner_id,
+      manager_id: user.owner_id, // ✅ ใช้ owner ที่ล็อกอินเป็น manager
+      owner_id: ownerIdNum,
+      branch_id: branchIdNum,
     });
+    return { message: 'Employee created successfully' };
   }
-  // * Dev only
-  @Post('create-employee-dev')
-  async createEmployeeWithoutAuth(
-    @Body() createEmployeeDto: CreateEmployeeDto,
-  ) {
-    console.log('🔍 Creating Employee (No Auth):', createEmployeeDto);
-    return this.ownerService.createEmployee(createEmployeeDto);
+
+  @Post('request-temp-password')
+  async requestTempPassword(@Body() { email }: { email: string }) {
+    return this.ownerService.requestTempPassword(email);
   }
+
+  // // * Dev only
+  // @Post('create-employee-dev')
+  // async createEmployeeWithoutAuth(
+  //   @Body() createEmployeeDto: CreateEmployeeDto,
+  // ) {
+  //   console.log('🔍 Creating Employee (No Auth):', createEmployeeDto);
+  //   return this.ownerService.createEmployee(createEmployeeDto);
+  // }
 }

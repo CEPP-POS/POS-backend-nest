@@ -17,17 +17,27 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials.');
     }
+    if (user.otp && user.otp === loginOwnerDto.password) {
+      throw new UnauthorizedException(
+        'You must reset your password before accessing the system.',
+      );
+    }
+    const totalOwners = await this.userService.countTotalOwners();
+    // ✅ นับจำนวน Employee ของ Owner
     const hasEmployees = await this.userService.countEmployees(user.owner_id);
-    if (user.roles.includes('owner') && hasEmployees === 0) {
+
+    // 🛑 แก้ไขตรงนี้: อนุญาตให้ Owner คนแรกเข้าได้เลย
+    if (user.roles.includes('owner') && hasEmployees === 0 && totalOwners > 3) {
       throw new UnauthorizedException(
         'You must create at least one employee before accessing the system.',
       );
     }
-
+    const branchId = user.branch ? user.branch[0].branch_id : null;
+    // const branchId = user.branch ? user.branch[0].branch_id : null;
     const payload = {
       owner_id: user.owner_id,
       email: user.email,
-      branch_id: user.branch || null,
+      branch_id: branchId,
       roles: user.roles && user.roles.length > 0 ? user.roles : ['employee'],
     };
 
@@ -35,27 +45,26 @@ export class AuthService {
     console.log('[Auth Service] GENERATED TOKEN:', token);
     return {
       token,
+      owner_id: user.owner_id,
+      branch_id: branchId,
     };
   }
 
   async validateUser(loginOwnerDto: LoginOwnerDto) {
     const user = await this.userService.findByEmail(loginOwnerDto.email);
     console.log('🔍 Found user:', user);
-  
     if (user) {
       console.log('📌 Input Password:', loginOwnerDto.password);
       console.log('🔐 Hashed Password in DB:', user.password);
-  
-      const passwordValid = await compare(loginOwnerDto.password, user.password);
+      const passwordValid = await compare(
+        loginOwnerDto.password,
+        user.password,
+      );
       console.log('✅ Password Match:', passwordValid);
-  
       if (passwordValid) {
         return user;
       }
     }
-  
     throw new UnauthorizedException('Username or password not correct.');
   }
-  
-  
 }

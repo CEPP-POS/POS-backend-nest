@@ -9,7 +9,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, In, Not, Repository } from 'typeorm';
 import { Menu } from '../../entities/menu.entity';
-import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
 import { Category } from '../../entities/category.entity';
 import { Owner } from '../../entities/owner.entity';
 import { Branch } from '../../entities/branch.entity';
@@ -73,6 +72,9 @@ export class MenuService {
 
     @InjectRepository(MenuIngredient)
     private readonly menuIngredientRepository: Repository<MenuIngredient>,
+
+    @InjectRepository(MenuTypeGroup)
+    private readonly menuTypeGroupRepository: Repository<MenuTypeGroup>,
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
@@ -1064,8 +1066,297 @@ export class MenuService {
         : {}),
     }));
   }
-  // EDIT ENTITY
-  async findOptionById(type: string, menuId: number) {
+  async createMenuTypeGroup(
+    dto: CreateMenuTypeGroupDto,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<any> {
+    if (!dto.options || dto.options.length === 0) {
+      throw new Error('Options cannot be empty');
+    }
+
+    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+    if (!owner) throw new NotFoundException('Owner not found');
+
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id },
+    });
+    if (!branch) throw new NotFoundException('Branch not found');
+
+    const menuTypes = dto.options.map((option) => ({
+      type_name: Object.keys(option)[0],
+      price_difference: parseFloat(Object.values(option)[0]),
+      is_delete: false,
+      owner,
+      branch,
+    }));
+
+    const savedMenuTypes = await this.menuTypeRepository.save(menuTypes);
+
+    const newMenuTypeGroup = this.menuTypeGroupRepository.create({
+      menu_type_group_name: dto.menu_type_group_name,
+      owner,
+      branch,
+    });
+
+    await this.menuTypeGroupRepository.save(newMenuTypeGroup);
+
+    const menuTypeGroup = await this.menuTypeGroupRepository.findOne({
+      where: { menu_type_group_name: dto.menu_type_group_name },
+    });
+
+    if (!menuTypeGroup) {
+      throw new Error('Menu Type Group not found');
+    }
+
+    for (const menuType of savedMenuTypes) {
+      menuTypeGroup.menuType = menuType;
+      await this.menuTypeGroupRepository.save(menuTypeGroup);
+    }
+
+    for (const menuId of dto.menu_id) {
+      await this.menuRepository.update(
+        { menu_id: menuId },
+        { menuTypeGroup: menuTypeGroup },
+      );
+    }
+
+    return {
+      message: 'Menu Type Group created successfully',
+      menu_type_group_name: menuTypeGroup.menu_type_group_name,
+      menu_types: savedMenuTypes,
+      linked_menus: dto.menu_id,
+    };
+  }
+
+  async deleteMenuTypeGroup(
+    menuTypeGroupName: string,
+    ownerId: number,
+    branchId: number,
+  ): Promise<any> {
+    const menuTypeGroups = await this.menuTypeGroupRepository.find({
+      where: {
+        menu_type_group_name: menuTypeGroupName,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['menuType', 'owner', 'branch'],
+    });
+
+    if (!menuTypeGroups.length) {
+      throw new NotFoundException(
+        `MenuTypeGroup '${menuTypeGroupName}' not found.`,
+      );
+    }
+
+    const menuTypesToUpdate = menuTypeGroups.flatMap((group) => group.menuType);
+    if (menuTypesToUpdate.length) {
+      await this.menuTypeRepository.update(
+        {
+          menu_type_id: In(menuTypesToUpdate.map((type) => type.menu_type_id)),
+        },
+        { is_delete: true },
+      );
+    }
+
+    await this.menuRepository.update(
+      {
+        menuTypeGroup: In(
+          menuTypeGroups.map((group) => group.menu_type_group_id),
+        ),
+      },
+      { menuTypeGroup: null },
+    );
+
+    // ✅ Step 4: ลบ `MenuTypeGroup`
+    await this.menuTypeGroupRepository.delete({
+      menu_type_group_name: menuTypeGroupName,
+    });
+
+    return {
+      message: `MenuTypeGroup '${menuTypeGroupName}' deleted and related menu types marked as deleted.`,
+    };
+  }
+
+  async updateMenuTypeGroup(
+    owner_id: number,
+    branch_id: number,
+    updateMenuTypeGroupDto: UpdateMenuTypeGroupDto,
+  ): Promise<any> {
+    try {
+      const {
+        old_menu_type_group_name,
+        new_menu_type_group_name,
+        options,
+        menu_id,
+      } = updateMenuTypeGroupDto;
+
+      const existingMenuTypeGroups = await this.menuTypeGroupRepository.find({
+        where: {
+          menu_type_group_name: old_menu_type_group_name,
+          owner: { owner_id },
+          branch: { branch_id },
+        },
+        relations: ['menuType'],
+      });
+
+      if (existingMenuTypeGroups.length === 0) {
+        throw new NotFoundException('Menu Type Group not found');
+      }
+
+      if (old_menu_type_group_name !== new_menu_type_group_name) {
+        await this.menuTypeGroupRepository.update(
+          {
+            menu_type_group_name: old_menu_type_group_name,
+            owner: { owner_id },
+            branch: { branch_id },
+          },
+          { menu_type_group_name: new_menu_type_group_name },
+        );
+      }
+
+      const existingMenuTypeIds = existingMenuTypeGroups.map((group) =>
+        group.menuType.menu_type_id.toString(),
+      );
+
+      const keepMenuTypeIds = options
+        .filter((opt) => opt.menu_type_id && opt.menu_type_id !== 'null')
+        .map((opt) => opt.menu_type_id);
+
+      for (const option of options) {
+        if (option.menu_type_id && option.menu_type_id !== 'null') {
+          await this.menuTypeRepository.update(
+            { menu_type_id: parseInt(option.menu_type_id) },
+            {
+              type_name: option.type_name,
+              price_difference: parseFloat(String(option.price_difference)),
+              is_delete: false,
+            },
+          );
+        }
+      }
+
+      for (const existingMenuTypeId of existingMenuTypeIds) {
+        if (!keepMenuTypeIds.includes(existingMenuTypeId)) {
+          const menuTypeIdNum = parseInt(existingMenuTypeId);
+
+          await this.menuTypeRepository.update(
+            { menu_type_id: menuTypeIdNum },
+            { is_delete: true },
+          );
+
+          const affectedMenuTypeGroups =
+            await this.menuTypeGroupRepository.find({
+              where: {
+                menuType: { menu_type_id: menuTypeIdNum },
+                owner: { owner_id },
+                branch: { branch_id },
+              },
+              relations: ['menuType'],
+            });
+
+          for (const menuTypeGroup of affectedMenuTypeGroups) {
+            const menusUsingGroup = await this.menuRepository.find({
+              where: {
+                menuTypeGroup: {
+                  menu_type_group_id: menuTypeGroup.menu_type_group_id,
+                },
+              },
+            });
+
+            if (menusUsingGroup.length > 0) {
+              const alternativeMenuTypeGroup =
+                await this.menuTypeGroupRepository.findOne({
+                  where: {
+                    menu_type_group_name: menuTypeGroup.menu_type_group_name,
+                    owner: { owner_id },
+                    branch: { branch_id },
+                    menuType: { is_delete: false },
+                    menu_type_group_id: Not(menuTypeGroup.menu_type_group_id),
+                  },
+                });
+
+              await this.menuRepository.update(
+                { menu_id: In(menusUsingGroup.map((m) => m.menu_id)) },
+                { menuTypeGroup: alternativeMenuTypeGroup || null },
+              );
+            }
+
+            await this.menuTypeGroupRepository.delete(
+              menuTypeGroup.menu_type_group_id,
+            );
+          }
+        }
+      }
+
+      const newMenuTypeOptions = options.filter(
+        (opt) => opt.menu_type_id === 'null',
+      );
+      for (const newOption of newMenuTypeOptions) {
+        const newMenuType = await this.menuTypeRepository.save({
+          type_name: newOption.type_name,
+          price_difference: parseFloat(String(newOption.price_difference)),
+          owner: { owner_id },
+          branch: { branch_id },
+        });
+
+        const existingLink = await this.menuTypeGroupRepository.findOne({
+          where: {
+            menu_type_group_name: new_menu_type_group_name,
+            menuType: { menu_type_id: newMenuType.menu_type_id },
+          },
+        });
+
+        if (!existingLink) {
+          await this.menuTypeGroupRepository.save({
+            menu_type_group_name: new_menu_type_group_name,
+            menuType: newMenuType,
+            owner: { owner_id },
+            branch: { branch_id },
+          });
+        }
+      }
+
+      const menuTypeGroup = await this.menuTypeGroupRepository.findOne({
+        where: {
+          menu_type_group_name: new_menu_type_group_name,
+          owner: { owner_id },
+          branch: { branch_id },
+        },
+      });
+
+      if (!menuTypeGroup) {
+        throw new NotFoundException(
+          `Menu Type Group "${new_menu_type_group_name}" not found`,
+        );
+      }
+
+      await this.menuRepository.update(
+        { menu_id: In(menu_id) },
+        { menuTypeGroup: menuTypeGroup },
+      );
+
+      await this.menuRepository.update(
+        {
+          menu_id: Not(In(menu_id)),
+          menuTypeGroup: menuTypeGroup,
+        },
+        { menuTypeGroup: null },
+      );
+
+      return {
+        message: 'Menu Type Group updated successfully',
+        HttpStatus: HttpStatus.OK,
+      };
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message || 'Something went wrong.' },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async findOptionById(type: string) {
     switch (type) {
       // edit entity
       // case 'add-ons':

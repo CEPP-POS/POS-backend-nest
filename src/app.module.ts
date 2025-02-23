@@ -45,4 +45,4 @@ import { JwtModule } from '@nestjs/jwt';
     PauseModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}

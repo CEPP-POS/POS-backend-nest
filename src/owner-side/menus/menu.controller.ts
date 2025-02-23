@@ -6,10 +6,10 @@ import {
   Patch,
   Param,
   Delete,
-  HttpCode,
   Req,
   UseInterceptors,
   UploadedFile,
+  HttpStatus,
   BadRequestException,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
@@ -18,6 +18,8 @@ import { CreateMenuDto } from './dto/create-menu/create-menu.dto';
 import { CreateSweetnessDto } from './dto/create-option/create-sweetness-dto';
 import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateMenuTypeGroupDto } from './dto/menu-type/create-menu-type-group.dto';
+import { UpdateMenuTypeGroupDto } from './dto/menu-type/update-menu-type-group.dto';
 import { CreateSizeDto } from './dto/create-option/create-size.dto';
 import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
 import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
@@ -85,9 +87,63 @@ export class MenuController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
+    return this.menuService.findAll();
+  }
+
+  @Post('options/menu_type')
+  async createMenuTypeGroup(
+    @Body() dto: CreateMenuTypeGroupDto,
+    @Req() request: Request,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+    if (!ownerId || !branchId) {
+      throw new Error('Missing required headers: owner-id or branch-id');
+    }
+
     const ownerIdNum = Number(ownerId);
     const branchIdNum = Number(branchId);
-    return this.menuService.findAll();
+    await this.menuService.createMenuTypeGroup(dto, ownerIdNum, branchIdNum);
+    return HttpStatus.CREATED;
+  }
+  @Delete('options/menu_type/:menuTypeGroupName')
+  // @UseGuards(JwtGuard, RolesGuard) // ✅ ต้องใช้ Token และต้องเป็น Owner
+  // @Roles('owner')
+  async deleteMenuTypeGroup(
+    @Param('menuTypeGroupName') menuTypeGroupName: string,
+    @Req() request: Request,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+    return this.menuService.deleteMenuTypeGroup(
+      menuTypeGroupName,
+      ownerId,
+      branchId,
+    );
+  }
+
+  @Patch('options/menu_type')
+  async updateMenuTypeGroup(
+    @Req() request: Request,
+    @Body() updateMenuTypeGroupDto: UpdateMenuTypeGroupDto,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    const ownerIdNum = Number(ownerId);
+    const branchIdNum = Number(branchId);
+
+    return this.menuService.updateMenuTypeGroup(
+      ownerIdNum,
+      branchIdNum,
+      updateMenuTypeGroupDto,
+    );
   }
 
   // * Get a single menu

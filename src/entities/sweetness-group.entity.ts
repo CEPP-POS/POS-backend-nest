@@ -5,7 +5,6 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
-  PrimaryColumn,
 } from 'typeorm';
 import { SweetnessLevel } from './sweetness-level.entity';
 import { Menu } from './menu.entity';

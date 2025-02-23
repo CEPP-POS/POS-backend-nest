@@ -6,7 +6,6 @@ import {
   JoinColumn,
   OneToMany,
 } from 'typeorm';
-import { Menu } from './menu.entity';
 import { SweetnessGroup } from './sweetness-group.entity';
 import { OrderItem } from './order-item.entity';
 import { Owner } from './owner.entity';

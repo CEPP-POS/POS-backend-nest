@@ -6,34 +6,22 @@ import {
   IsBoolean,
 } from 'class-validator';
 
-export class CreateMenuDto {
-  @IsNotEmpty()
-  @IsString()
-  menu_name: string;
-
+export class CreateMenuTypeDto {
   @IsOptional()
   @IsString()
-  description?: string;
+  menu_type_id?: string;
 
   @IsNotEmpty()
+  @IsString()
+  type_name: string;
+
+  @IsOptional()
   @IsNumber()
-  price: number;
-
-  @IsOptional()
-  @IsString()
-  image_url?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  paused?: boolean;
+  price_difference?: number;
 
   @IsOptional()
   @IsBoolean()
   is_delete?: boolean;
-
-  @IsNotEmpty()
-  @IsString()
-  menu_type_group_name: string;
 
   @IsNotEmpty()
   @IsNumber()
