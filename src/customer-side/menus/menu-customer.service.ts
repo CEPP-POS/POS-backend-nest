@@ -179,6 +179,10 @@ export class MenuCustomerService {
           })
           .setParameter('groupId', menu.menuTypeGroup.menu_type_group_id)
           .andWhere('mt.is_delete = :isDelete', { isDelete: false })
+          .andWhere('mt.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
+          .andWhere('mt.branch_id = :branchId', {
+            branchId: menu.branch.branch_id,
+          })
           .distinct()
           .select([
             'mt.menu_type_id as menu_type_id',
@@ -208,6 +212,10 @@ export class MenuCustomerService {
           })
           .setParameter('groupId', menu.sweetnessGroup.sweetness_group_id)
           .andWhere('sl.is_delete = :isDelete', { isDelete: false })
+          .andWhere('sl.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
+          .andWhere('sl.branch_id = :branchId', {
+            branchId: menu.branch.branch_id,
+          })
           .distinct()
           .select([
             'sl.sweetness_id as sweetness_id',
@@ -232,6 +240,10 @@ export class MenuCustomerService {
           })
           .setParameter('groupId', menu.sizeGroup.size_group_id)
           .andWhere('s.is_delete = :isDelete', { isDelete: false })
+          .andWhere('s.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
+          .andWhere('s.branch_id = :branchId', {
+            branchId: menu.branch.branch_id,
+          })
           .distinct()
           .select([
             's.size_id as size_id',
@@ -251,6 +263,8 @@ export class MenuCustomerService {
       .andWhere('mi.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
       .andWhere('mi.branch_id = :branchId', { branchId: menu.branch.branch_id })
       .andWhere('i.is_delete = :isDelete', { isDelete: false })
+      .andWhere('ao.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
+      .andWhere('ao.branch_id = :branchId', { branchId: menu.branch.branch_id })
       .select([
         'ao.add_on_id as add_on_id',
         'i.ingredient_name as ingredient_name',
