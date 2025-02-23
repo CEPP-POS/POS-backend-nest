@@ -11,10 +11,21 @@ import { MenuCustomerService } from './menu-customer.service';
 export class MenuCustomerController {
   constructor(private readonly menuCustomerService: MenuCustomerService) {}
 
-  // @Get()
-  // async getCustomerMenus() {
-  //   return this.menuCustomerService.getCustomerMenus();
-  // }
+  @Get()
+  async getCustomerMenus(
+    @Headers('owner_id') ownerId: string,
+    @Headers('branch_id') branchId: string,
+  ) {
+    // ตรวจสอบและแปลงค่า
+    const ownerIdNum = parseInt(ownerId);
+    const branchIdNum = parseInt(branchId);
+
+    if (isNaN(ownerIdNum) || isNaN(branchIdNum)) {
+      throw new BadRequestException('Invalid owner_id or branch_id format');
+    }
+
+    return this.menuCustomerService.getCustomerMenus(ownerIdNum, branchIdNum);
+  }
 
   // edit entity
   // @Get()

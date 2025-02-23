@@ -13,11 +13,12 @@ import { SweetnessGroup } from 'src/entities/sweetness-group.entity';
 import { SizeGroup } from 'src/entities/size-group.entity';
 import { AddOn } from 'src/entities/add-on.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
-
+import { MenuCategory } from 'src/entities/menu_category';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Menu,
+      MenuCategory,
       Category,
       MenuIngredient,
       MenuType,

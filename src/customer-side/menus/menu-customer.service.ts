@@ -16,6 +16,7 @@ import { SweetnessGroup } from 'src/entities/sweetness-group.entity';
 import { SizeGroup } from 'src/entities/size-group.entity';
 import { AddOn } from 'src/entities/add-on.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
+import { MenuCategory } from 'src/entities/menu_category';
 
 @Injectable()
 export class MenuCustomerService {
@@ -25,6 +26,9 @@ export class MenuCustomerService {
 
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+
+    @InjectRepository(MenuCategory)
+    private readonly menuCategoryRepository: Repository<MenuCategory>,
 
     @InjectRepository(MenuIngredient)
     private readonly menuIngredientRepository: Repository<MenuIngredient>,
@@ -54,33 +58,42 @@ export class MenuCustomerService {
     private readonly ingredientRepository: Repository<Ingredient>,
   ) {}
 
-  async getCustomerMenus() {
-    // ดึงเมนูทั้งหมดพร้อม category
-    const menus = await this.menuRepository.find({
-      relations: ['category'], // ✅ โหลด category ให้ menu
-    });
-
-    // แปลงข้อมูลเมนูให้อยู่ในรูปแบบที่ต้องการ
-    const available_menus = menus.map((menu) => ({
-      menu_name: menu.menu_name,
-      description: menu.description,
-      price: menu.price,
-      // category: [menu.category.category_name], // ✅ ดึง category เป็น array
-    }));
-
-    // ดึงหมวดหมู่ทั้งหมดที่มีเมนู
+  async getCustomerMenus(ownerId: number, branchId: number) {
+    // ดึงข้อมูล categories ทั้งหมดพร้อมความสัมพันธ์ที่เกี่ยวข้อง
     const categories = await this.categoryRepository
       .createQueryBuilder('category')
-      .innerJoin('category.menus', 'menu') // ✅ ใช้ category.menus
-      .select('category.category_name')
-      .distinct()
-      .getRawMany();
+      .leftJoinAndSelect('category.menuCategory', 'menuCategory')
+      .leftJoinAndSelect('menuCategory.menu', 'menu')
+      .where('menu.is_delete = :isDelete', { isDelete: false })
+      .andWhere('menu.paused = :paused', { paused: false })
+      .andWhere('menu.owner_id = :ownerId', { ownerId })
+      .andWhere('menu.branch_id = :branchId', { branchId })
+      .orderBy('category.category_id', 'ASC')
+      .getMany();
 
-    const available_category = categories.map((c) => c.category_category_name); // ✅ แก้ชื่อฟิลด์ให้ถูกต้อง
+    // แปลงข้อมูลให้อยู่ในรูปแบบที่ต้องการ
+    const formattedCategories = categories
+      .map((category) => {
+        const menus = category.menuCategory
+          .filter((mc) => mc.menu) // กรองเฉพาะ menuCategory ที่มีเมนู
+          .map((mc) => ({
+            menu_id: mc.menu.menu_id,
+            menu_name: mc.menu.menu_name,
+            description: mc.menu.description,
+            price: Number(mc.menu.price),
+            image_url: mc.menu.image_url,
+          }));
+
+        return {
+          category_id: category.category_id,
+          category_name: category.category_name,
+          menus: menus,
+        };
+      })
+      .filter((category) => category.menus.length > 0); // กรองเฉพาะหมวดหมู่ที่มีเมนู
 
     return {
-      available_category,
-      available_menus,
+      categories: formattedCategories,
     };
   }
 
