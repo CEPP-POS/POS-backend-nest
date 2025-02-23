@@ -89,23 +89,24 @@ branch_id: 1
   ],
   "menu_id": [1, 2]
 }
+
 DELETE http://localhost:3000/owner/menus/options/menu_type/ปั่นรักสุขภาพ
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
 
-PATCH http://localhost:3000/owner/menus/options/menu_type/6
+PATCH http://localhost:3000/owner/menus/options/menu_type
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "menu_type_group_name": "ร้อนเย็นปั่น",
+  "old_menu_type_group_name": "ปั่นเย็น",
+  "new_menu_type_group_name": "เครื่องดื่มเย็นและร้อน",
   "options": [
-    { "ร้อน": "5.00" },
-    { "เย็น": "5.00" },
-    { "ปั่น": "5.00" }
+    { "menu_type_id": "32", "type_name": "น้ำแยก", "price_difference": 10.00 },
+    { "menu_type_id": "5", "type_name": "ปั่น", "price_difference": 5.00 }
   ],
-  "menu_id": [1,2]
+  "menu_id": [1, 2]
 }
 
 

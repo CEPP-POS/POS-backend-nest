@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, In, Repository } from 'typeorm';
+import { Equal, In, Not, Repository } from 'typeorm';
 import { Menu } from '../../entities/menu.entity';
 import { Category } from '../../entities/category.entity';
 import { Owner } from '../../entities/owner.entity';
@@ -741,87 +741,198 @@ export class MenuService {
   }
 
   async updateMenuTypeGroup(
-    menu_type_id: number,
-    dto: UpdateMenuTypeGroupDto,
     owner_id: number,
     branch_id: number,
+    updateMenuTypeGroupDto: UpdateMenuTypeGroupDto,
   ): Promise<any> {
-    // 1. Find existing menu type group by ID
-    const existingMenuTypeGroup = await this.menuTypeGroupRepository.findOne({
-      where: { menu_type_group_id: menu_type_id },
-      relations: ['menuType', 'owner', 'branch'],
-    });
+    try {
+      const {
+        old_menu_type_group_name,
+        new_menu_type_group_name,
+        options,
+        menu_id,
+      } = updateMenuTypeGroupDto;
 
-    if (!existingMenuTypeGroup) {
-      throw new NotFoundException('Menu Type Group not found');
-    }
+      // ✅ 1. ค้นหา `MenuTypeGroup` ที่มีอยู่แล้ว
+      const existingMenuTypeGroups = await this.menuTypeGroupRepository.find({
+        where: {
+          menu_type_group_name: old_menu_type_group_name,
+          owner: { owner_id },
+          branch: { branch_id },
+        },
+        relations: ['menuType'],
+      });
 
-    // Verify owner and branch
-    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
-    if (!owner) throw new NotFoundException('Owner not found');
-
-    const branch = await this.branchRepository.findOne({
-      where: { branch_id },
-    });
-    if (!branch) throw new NotFoundException('Branch not found');
-
-    // 2. Update menu type group name
-    existingMenuTypeGroup.menu_type_group_name = dto.menu_type_group_name;
-    await this.menuTypeGroupRepository.save(existingMenuTypeGroup);
-
-    // 3. & 4. Update or create new menu types
-    if (!dto.options || dto.options.length === 0) {
-      throw new Error('Options cannot be empty');
-    }
-
-    // Get existing menu types
-    const existingMenuTypes = await this.menuTypeRepository.find({
-      where: { menuTypeGroup: { menu_type_group_id: menu_type_id } },
-    });
-
-    // Create a map of existing menu types for easy lookup
-    const existingMenuTypeMap = new Map(
-      existingMenuTypes.map((type) => [type.type_name, type]),
-    );
-
-    // Process each option
-    const updatedMenuTypes = [];
-    for (const option of dto.options) {
-      const typeName = Object.keys(option)[0];
-      const priceDifference = parseFloat(Object.values(option)[0]);
-
-      if (existingMenuTypeMap.has(typeName)) {
-        // Update existing menu type
-        const menuType = existingMenuTypeMap.get(typeName);
-        menuType.price_difference = priceDifference;
-        updatedMenuTypes.push(await this.menuTypeRepository.save(menuType));
-      } else {
-        // Create new menu type
-        const newMenuType = this.menuTypeRepository.create({
-          type_name: typeName,
-          price_difference: priceDifference,
-          is_delete: false,
-          owner,
-          branch,
-        });
-        updatedMenuTypes.push(await this.menuTypeRepository.save(newMenuType));
+      if (existingMenuTypeGroups.length === 0) {
+        throw new NotFoundException('Menu Type Group not found');
       }
-    }
 
-    // 5. Update menu associations
-    if (dto.menu_id && dto.menu_id.length > 0) {
+      // ✅ 2. ถ้าชื่อของ Menu Type Group เปลี่ยนไป ให้ทำการอัปเดต
+      if (old_menu_type_group_name !== new_menu_type_group_name) {
+        await this.menuTypeGroupRepository.update(
+          {
+            menu_type_group_name: old_menu_type_group_name,
+            owner: { owner_id },
+            branch: { branch_id },
+          },
+          { menu_type_group_name: new_menu_type_group_name },
+        );
+      }
+
+      // ✅ 3. ค้นหา ID ของประเภทเมนูที่มีอยู่แล้ว
+      const existingMenuTypeIds = existingMenuTypeGroups.map((group) =>
+        group.menuType.menu_type_id.toString(),
+      );
+
+      // ✅ 4. ดึง ID ที่ต้องการคงไว้
+      const keepMenuTypeIds = options
+        .filter((opt) => opt.menu_type_id && opt.menu_type_id !== 'null')
+        .map((opt) => opt.menu_type_id);
+
+      // ✅ 5. อัปเดตประเภทเมนูที่มีอยู่แล้ว
+      for (const option of options) {
+        if (option.menu_type_id && option.menu_type_id !== 'null') {
+          await this.menuTypeRepository.update(
+            { menu_type_id: parseInt(option.menu_type_id) },
+            {
+              type_name: option.type_name,
+              price_difference: parseFloat(String(option.price_difference)),
+              is_delete: false,
+            },
+          );
+        }
+      }
+
+      // ✅ 6. จัดการประเภทเมนูที่ถูกลบออก
+      for (const existingMenuTypeId of existingMenuTypeIds) {
+        if (!keepMenuTypeIds.includes(existingMenuTypeId)) {
+          const menuTypeIdNum = parseInt(existingMenuTypeId);
+
+          // 1. ทำเครื่องหมายว่า `menu_type` ถูกลบ
+          await this.menuTypeRepository.update(
+            { menu_type_id: menuTypeIdNum },
+            { is_delete: true },
+          );
+
+          // 2. ค้นหา `MenuTypeGroup` ที่ใช้ `menu_type` นี้
+          const affectedMenuTypeGroups =
+            await this.menuTypeGroupRepository.find({
+              where: {
+                menuType: { menu_type_id: menuTypeIdNum },
+                owner: { owner_id },
+                branch: { branch_id },
+              },
+              relations: ['menuType'],
+            });
+
+          for (const menuTypeGroup of affectedMenuTypeGroups) {
+            // ค้นหาเมนูที่ใช้ `MenuTypeGroup` นี้
+            const menusUsingGroup = await this.menuRepository.find({
+              where: {
+                menuTypeGroup: {
+                  menu_type_group_id: menuTypeGroup.menu_type_group_id,
+                },
+              },
+            });
+
+            if (menusUsingGroup.length > 0) {
+              // หาทางเลือกของ `MenuTypeGroup` ที่ยังไม่ได้ลบ
+              const alternativeMenuTypeGroup =
+                await this.menuTypeGroupRepository.findOne({
+                  where: {
+                    menu_type_group_name: menuTypeGroup.menu_type_group_name,
+                    owner: { owner_id },
+                    branch: { branch_id },
+                    menuType: { is_delete: false },
+                    menu_type_group_id: Not(menuTypeGroup.menu_type_group_id),
+                  },
+                });
+
+              // อัปเดตเมนูให้ใช้ `MenuTypeGroup` ที่เหลืออยู่ หรือไม่ใช้เลย
+              await this.menuRepository.update(
+                { menu_id: In(menusUsingGroup.map((m) => m.menu_id)) },
+                { menuTypeGroup: alternativeMenuTypeGroup || null },
+              );
+            }
+
+            // ลบ `MenuTypeGroup` นี้
+            await this.menuTypeGroupRepository.delete(
+              menuTypeGroup.menu_type_group_id,
+            );
+          }
+        }
+      }
+
+      // ✅ 7. เพิ่มประเภทเมนูใหม่
+      const newMenuTypeOptions = options.filter(
+        (opt) => opt.menu_type_id === 'null',
+      );
+      for (const newOption of newMenuTypeOptions) {
+        // 1. สร้าง `MenuType` ใหม่
+        const newMenuType = await this.menuTypeRepository.save({
+          type_name: newOption.type_name,
+          price_difference: parseFloat(String(newOption.price_difference)),
+          owner: { owner_id },
+          branch: { branch_id },
+        });
+
+        // 2. ตรวจสอบว่ามี `MenuTypeGroup` ที่เชื่อมโยงกับ `menu_type` หรือไม่
+        const existingLink = await this.menuTypeGroupRepository.findOne({
+          where: {
+            menu_type_group_name: new_menu_type_group_name,
+            menuType: { menu_type_id: newMenuType.menu_type_id },
+          },
+        });
+
+        if (!existingLink) {
+          // 3. ถ้ายังไม่มีให้สร้างใหม่
+          await this.menuTypeGroupRepository.save({
+            menu_type_group_name: new_menu_type_group_name,
+            menuType: newMenuType,
+            owner: { owner_id },
+            branch: { branch_id },
+          });
+        }
+      }
+
+      // ✅ 8. อัปเดตการเชื่อมโยง `menu_id`
+      const menuTypeGroup = await this.menuTypeGroupRepository.findOne({
+        where: {
+          menu_type_group_name: new_menu_type_group_name,
+          owner: { owner_id },
+          branch: { branch_id },
+        },
+      });
+
+      if (!menuTypeGroup) {
+        throw new NotFoundException(
+          `Menu Type Group "${new_menu_type_group_name}" not found`,
+        );
+      }
+
+      // ✅ อัปเดต `menu_id`
       await this.menuRepository.update(
-        { menu_id: In(dto.menu_id) },
-        { menuTypeGroup: existingMenuTypeGroup },
+        { menu_id: In(menu_id) },
+        { menuTypeGroup: menuTypeGroup },
+      );
+
+      // ✅ ลบ `menuTypeGroup` ออกจากเมนูที่ไม่ควรมี
+      await this.menuRepository.update(
+        {
+          menu_id: Not(In(menu_id)),
+          menuTypeGroup: menuTypeGroup,
+        },
+        { menuTypeGroup: null },
+      );
+
+      return { message: 'Menu Type Group updated successfully' };
+    } catch (error) {
+      console.error('❌ [ERROR] Failed to update MenuTypeGroup:', error);
+      throw new HttpException(
+        { message: error.message || 'Something went wrong.' },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
-    return {
-      message: 'Menu Type Group updated successfully',
-      menu_type_group_name: existingMenuTypeGroup.menu_type_group_name,
-      menu_types: updatedMenuTypes,
-      linked_menus: dto.menu_id,
-    };
   }
 
   async findOptionById(type: string) {

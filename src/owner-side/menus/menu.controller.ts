@@ -10,7 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   HttpStatus,
-  ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
@@ -116,28 +116,30 @@ export class MenuController {
     );
   }
 
-  @Patch('options/menu_type/:menu_type_id')
+  @Patch('options/menu_type')
   async updateMenuTypeGroup(
-    @Param('menu_type_id', ParseIntPipe) menu_type_id: number,
     @Req() request: Request,
-    @Body() dto: UpdateMenuTypeGroupDto,
+    @Body() updateMenuTypeGroupDto: UpdateMenuTypeGroupDto,
   ) {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
+
     if (!ownerId || !branchId) {
-      throw new Error('Missing required headers: owner-id or branch-id');
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
     }
 
     const ownerIdNum = Number(ownerId);
     const branchIdNum = Number(branchId);
-    await this.menuService.updateMenuTypeGroup(
-      menu_type_id,
-      dto,
+
+    return this.menuService.updateMenuTypeGroup(
       ownerIdNum,
       branchIdNum,
+      updateMenuTypeGroupDto,
     );
-    return HttpStatus.OK;
   }
+
   // * Get a single menu
   @Get(':id')
   findOne(@Param('id') id: string) {

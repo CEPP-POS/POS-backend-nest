@@ -7,6 +7,10 @@ import {
 } from 'class-validator';
 
 export class CreateMenuTypeDto {
+  @IsOptional()
+  @IsString()
+  menu_type_id?: string;
+
   @IsNotEmpty()
   @IsString()
   type_name: string;
