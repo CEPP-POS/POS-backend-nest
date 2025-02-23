@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Menu } from 'src/entities/menu.entity';
@@ -130,6 +134,11 @@ export class MenuCustomerService {
 
   // EDIT ENTITY
   async getMenuDetails(menuId: number, ownerId: number, branchId: number) {
+    // ตรวจสอบค่าก่อนใช้งาน
+    if (!menuId || !ownerId || !branchId) {
+      throw new BadRequestException('Missing required parameters');
+    }
+
     // 1. ค้นหาข้อมูลพื้นฐานของเมนู
     const menu = await this.menuRepository.findOne({
       where: {
@@ -137,7 +146,13 @@ export class MenuCustomerService {
         owner: { owner_id: ownerId },
         branch: { branch_id: branchId },
       },
-      relations: ['menuTypeGroup', 'sizeGroup', 'sweetnessGroup'], // เพิ่ม sweetnessGroup
+      relations: [
+        'menuTypeGroup',
+        'sizeGroup',
+        'sweetnessGroup',
+        'owner',
+        'branch',
+      ],
     });
 
     if (!menu) {
@@ -172,9 +187,6 @@ export class MenuCustomerService {
           ])
           .getRawMany()
       : [];
-
-    // เพิ่ม log เพื่อดูผลลัพธ์
-    console.log('All menu types:', menuTypes);
 
     // 3. ค้นหา sweetness levels จาก sweetness group
     const sweetnessLevels = menu.sweetnessGroup
@@ -230,14 +242,15 @@ export class MenuCustomerService {
       : [];
 
     // 5. ค้นหา add-ons
-    const addOns = await this.addOnRepository
-      .createQueryBuilder('ao')
-      .innerJoin('menu_ingredient', 'mi', 'mi.ingredient_id = ao.ingredient_id')
-      .innerJoin('ingredient', 'i', 'i.ingredient_id = ao.ingredient_id')
-      .where('mi.menu_id = :menuId', { menuId })
+    const addOns = await this.menuIngredientRepository
+      .createQueryBuilder('mi')
+      .leftJoin('mi.ingredient', 'i')
+      .leftJoin('add_on', 'ao', 'ao.ingredient_id = i.ingredient_id')
+      .where('mi.menu_id = :menuId', { menuId: menu.menu_id })
       .andWhere('mi.is_addon = :isAddon', { isAddon: true })
-      .andWhere('mi.owner_id = :ownerId', { ownerId })
-      .andWhere('mi.branch_id = :branchId', { branchId })
+      .andWhere('mi.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
+      .andWhere('mi.branch_id = :branchId', { branchId: menu.branch.branch_id })
+      .andWhere('i.is_delete = :isDelete', { isDelete: false })
       .select([
         'ao.add_on_id as add_on_id',
         'i.ingredient_name as ingredient_name',
@@ -246,6 +259,16 @@ export class MenuCustomerService {
         'ao.is_multipled as is_multiple',
       ])
       .getRawMany();
+
+    // เพิ่ม log เพื่อดู SQL query
+    console.log('Menu ID:', menu.menu_id);
+    console.log('Owner ID:', menu.owner.owner_id);
+    console.log('Branch ID:', menu.branch.branch_id);
+    console.log(
+      'Raw SQL:',
+      this.menuIngredientRepository.createQueryBuilder('mi').getSql(),
+    );
+    console.log('Add-ons Result:', addOns);
 
     // 6. รวมข้อมูลและส่งกลับ
     return {
@@ -257,7 +280,7 @@ export class MenuCustomerService {
       menu_type_group: menuTypes,
       sweetness_group: sweetnessLevels,
       size_group: sizes,
-      add_on_name: addOns,
+      add_on: addOns,
     };
   }
 
