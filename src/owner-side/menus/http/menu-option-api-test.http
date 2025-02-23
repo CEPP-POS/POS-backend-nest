@@ -200,3 +200,21 @@ branch_id: 1
   "is_require": false,
   "is_multiple": true
 }
+
+### Get sweetness group data
+GET http://localhost:3000/owner/menus/options/sweetness/ความหวานกาแฟ
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+### Get size group data
+GET http://localhost:3000/owner/menus/options/size/ขนาดแก้วสำหรับนม
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+### Get menu type group data
+GET http://localhost:3000/owner/menus/options/menu-type/ปั่นสำหรับนม
+Content-Type: application/json
+owner_id: 1
+branch_id: 1

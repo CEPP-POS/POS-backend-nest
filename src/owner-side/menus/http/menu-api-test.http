@@ -13,8 +13,8 @@ branch_id: 1
 ### Get all Menus
 GET http://localhost:3000/owner/menus
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
 
 ### Get a specific Menu by ID
 GET http://localhost:3000/owner/menus/1
