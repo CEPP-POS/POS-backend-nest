@@ -29,6 +29,8 @@ import { CreateSizeDto } from './dto/create-option/create-size.dto';
 import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
 import { CreateSweetnessDto } from './dto/create-option/create-sweetness-dto';
 import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
+import { UpdateSizeDto } from './dto/update-option/update-size.dto';
+import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
 
 @Injectable()
 export class MenuService {
@@ -74,7 +76,7 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) {}
+  ) { }
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
@@ -169,12 +171,12 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-            menu_id: menu.menu_id,
-            menu_name: menu.menu_name,
-            description: menu.description,
-            image_url: menu.image_url,
-            price: menu.price,
-          };
+          menu_id: menu.menu_id,
+          menu_name: menu.menu_name,
+          description: menu.description,
+          image_url: menu.image_url,
+          price: menu.price,
+        };
     });
   }
 
@@ -624,6 +626,40 @@ export class MenuService {
     }
   }
 
+  async deleteSizeGroup(sizeGroupName: string, ownerId: number, branchId: number) {
+    // find all size group name
+    const sizeGroups = await this.sizeGroupRepository.find({
+      where: { size_group_name: sizeGroupName, owner: { owner_id: ownerId }, branch: { branch_id: branchId } },
+      relations: ['size', 'menu'], // Include related sizes and menus
+    });
+
+    if (!sizeGroups.length) {
+      throw new Error(`Size group '${sizeGroupName}' not found.`);
+    }
+
+    // find size id by size group name to change status is_delete
+    const sizesToUpdate = sizeGroups.map(group => group.size);
+
+    if (sizesToUpdate.length) {
+      await this.sizeRepository.update(
+        { size_id: In(sizesToUpdate.map(size => size.size_id)) },
+        { is_delete: true }
+      );
+    }
+
+    // remove size group references in the menu table
+    await this.menuRepository.update(
+      { sizeGroup: In(sizeGroups.map(group => group.size_group_id)) },
+      { sizeGroup: null }
+    );
+
+    // delete all size group name in table size group 
+    await this.sizeGroupRepository.delete({ size_group_name: sizeGroupName });
+
+    return { message: `Size group '${sizeGroupName}' deleted and related sizes marked as deleted.` };
+  }
+
+
   // * link menu for auto cut stock
   // async updateStock(
   //   menu_id: number,
@@ -1045,6 +1081,395 @@ export class MenuService {
         throw new Error('Invalid option type');
     }
   }
+
+  async updateSize(owner_id: number, branch_id: number, updateSizeDto: UpdateSizeDto) {
+    try {
+      const { old_size_group_name, new_size_group_name, options, menu_id } = updateSizeDto;
+
+      // 1. Get existing size groups and their sizes
+      const existingSizeGroups = await this.sizeGroupRepository.find({
+        where: {
+          size_group_name: old_size_group_name,
+          owner: { owner_id },
+          branch: { branch_id }
+        },
+        relations: ['size']
+      });
+
+      if (existingSizeGroups.length === 0) {
+        throw new NotFoundException('Size group not found');
+      }
+
+      // 2. Handle group name change if needed
+      if (old_size_group_name !== new_size_group_name) {
+        await this.sizeGroupRepository.update(
+          {
+            size_group_name: old_size_group_name,
+            owner: { owner_id },
+            branch: { branch_id }
+          },
+          { size_group_name: new_size_group_name }
+        );
+      }
+
+      // 3. Process size updates and deletions
+      const existingSizeIds = existingSizeGroups.map(group => group.size.size_id.toString());
+      const keepSizeIds = options
+        .filter(opt => opt.size_id !== 'null')
+        .map(opt => opt.size_id);
+
+      // Update existing sizes
+      for (const option of options) {
+        if (option.size_id !== 'null') {
+          await this.sizeRepository.update(
+            { size_id: parseInt(option.size_id) },
+            {
+              size_name: option.size_name,
+              size_price: parseFloat(String(option.price)),
+              is_delete: false
+            }
+          );
+        }
+      }
+
+      // Handle deleted sizes
+      for (const existingSizeId of existingSizeIds) {
+        if (!keepSizeIds.includes(existingSizeId)) {
+          const sizeIdNum = parseInt(existingSizeId);
+
+          // 1. Mark size as deleted
+          await this.sizeRepository.update(
+            { size_id: sizeIdNum },
+            { is_delete: true }
+          );
+
+          // 2. Find all size groups using this size
+          const affectedSizeGroups = await this.sizeGroupRepository.find({
+            where: {
+              size: { size_id: sizeIdNum },
+              owner: { owner_id },
+              branch: { branch_id }
+            },
+            relations: ['size']
+          });
+
+          for (const sizeGroup of affectedSizeGroups) {
+            // Find menus using this size group
+            const menusUsingGroup = await this.menuRepository.find({
+              where: { sizeGroup: { size_group_id: sizeGroup.size_group_id } }
+            });
+
+            if (menusUsingGroup.length > 0) {
+              // Try to find another size group in the same name group that has non-deleted sizes
+              const alternativeSizeGroup = await this.sizeGroupRepository.findOne({
+                where: {
+                  size_group_name: sizeGroup.size_group_name,
+                  owner: { owner_id },
+                  branch: { branch_id },
+                  size: { is_delete: false },
+                  size_group_id: Not(sizeGroup.size_group_id)
+                }
+              });
+
+              // Update menus to use alternative size group or null
+              await this.menuRepository.update(
+                { menu_id: In(menusUsingGroup.map(m => m.menu_id)) },
+                { sizeGroup: alternativeSizeGroup || null }
+              );
+            }
+
+            // Remove this size group entry
+            await this.sizeGroupRepository.delete(sizeGroup.size_group_id);
+          }
+        }
+      }
+
+      // 4. Add new sizes
+      const newSizeOptions = options.filter(opt => opt.size_id === 'null');
+      for (const newOption of newSizeOptions) {
+        // Create new size
+        const newSize = await this.sizeRepository.save({
+          size_name: newOption.size_name,
+          size_price: parseFloat(String(newOption.price)),
+          owner: { owner_id },
+          branch: { branch_id }
+        });
+
+        // Link to size group if not already linked
+        const existingLink = await this.sizeGroupRepository.findOne({
+          where: {
+            size_group_name: new_size_group_name,
+            size: { size_id: newSize.size_id }
+          }
+        });
+
+        if (!existingLink) {
+          await this.sizeGroupRepository.save({
+            size_group_name: new_size_group_name,
+            size: newSize,
+            owner: { owner_id },
+            branch: { branch_id }
+          });
+        }
+      }
+
+      // 5. Update menu relationships
+      const sizeGroup = await this.sizeGroupRepository.findOne({
+        where: {
+          size_group_name: new_size_group_name,
+          owner: { owner_id },
+          branch: { branch_id }
+        }
+      });
+
+      if (!sizeGroup) {
+        throw new NotFoundException(`Size group "${new_size_group_name}" not found`);
+      }
+
+      // Update menus to use this size group
+      await this.menuRepository.update(
+        { menu_id: In(menu_id) },
+        { sizeGroup: sizeGroup }
+      );
+
+      // Clear size group for menus that shouldn't use it anymore
+      await this.menuRepository.update(
+        {
+          menu_id: Not(In(menu_id)),
+          sizeGroup: sizeGroup
+        },
+        { sizeGroup: null }
+      );
+
+      return { message: 'Size options updated successfully' };
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async deleteAllAddOns(ownerId: number, branchId: number) {
+    try {
+      // 1. Find all add-ons for this owner/branch
+      const addOns = await this.addOnRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId }
+        },
+        relations: ['ingredient']
+      });
+
+      if (addOns.length === 0) {
+        return { message: 'No add-ons found' };
+      }
+
+      // 2. Get unique ingredient IDs
+      const ingredientIds = [...new Set(
+        addOns
+          .filter(addOn => addOn.ingredient) // Filter out any null ingredients
+          .map(addOn => addOn.ingredient.ingredient_id)
+      )];
+
+      // 3. Mark all related ingredients as deleted
+      if (ingredientIds.length > 0) {
+        await this.ingredientRepository.update(
+          {
+            ingredient_id: In(ingredientIds),
+            owner: { owner_id: ownerId },
+            branch: { branch_id: branchId }
+          },
+          { is_delete: true }
+        );
+      }
+
+      // 4. Delete the add-ons
+      await this.addOnRepository.delete({
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId }
+      });
+
+      return {
+        message: 'Successfully deleted all add-ons and marked ingredients as deleted',
+        deletedAddOnsCount: addOns.length,
+        deletedIngredientsCount: ingredientIds.length
+      };
+
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async updateAddOn(owner_id: number, branch_id: number, updateAddOnDto: UpdateAddOnDto) {
+    try {
+      const { options, menu_id, is_require, is_multiple } = updateAddOnDto;
+
+      // Get all existing menu_ingredients for these add-ons
+      const existingMenuIngredients = await this.menuIngredientRepository.find({
+        where: {
+          owner: { owner_id },
+          branch: { branch_id },
+          is_addon: true
+        },
+        relations: ['menu', 'ingredient']
+      });
+
+      // Find menu IDs that were removed
+      const existingMenuIds = [...new Set(
+        existingMenuIngredients.map(mi => mi.menu.menu_id)
+      )];
+      const removedMenuIds = existingMenuIds.filter(id => !menu_id.includes(id));
+
+      // Remove menu_ingredient entries for removed menus
+      if (removedMenuIds.length > 0) {
+        await this.menuIngredientRepository.delete({
+          menu: { menu_id: In(removedMenuIds) },
+          owner: { owner_id },
+          branch: { branch_id },
+          is_addon: true
+        });
+      }
+
+      // 1. Get all existing add-ons
+      const existingAddOns = await this.addOnRepository.find({
+        where: {
+          owner: { owner_id },
+          branch: { branch_id }
+        },
+        relations: ['ingredient']
+      });
+
+      // Get IDs that will remain
+      const keepAddOnIds = options
+        .filter(opt => opt.add_on_id !== 'null')
+        .map(opt => parseInt(opt.add_on_id));
+
+      // 2. Handle deleted add-ons
+      const addOnsToRemove = existingAddOns.filter(
+        addOn => !keepAddOnIds.includes(addOn.add_on_id)
+      );
+
+      if (addOnsToRemove.length > 0) {
+        const ingredientIds = addOnsToRemove.map(addOn => addOn.ingredient.ingredient_id);
+
+        // Mark ingredients as deleted
+        await this.ingredientRepository.update(
+          { ingredient_id: In(ingredientIds) },
+          { is_delete: true }
+        );
+      }
+
+      // 3. Process each option
+      for (const option of options) {
+        if (option.add_on_id !== 'null') {
+          // Update existing add-on
+          await this.addOnRepository.update(
+            { add_on_id: parseInt(option.add_on_id) },
+            {
+              add_on_price: parseFloat(option.price),
+              is_required: is_require,
+              is_multipled: is_multiple
+            }
+          );
+
+          // Get ingredient_id for this add-on
+          const addOn = await this.addOnRepository.findOne({
+            where: { add_on_id: parseInt(option.add_on_id) },
+            relations: ['ingredient']
+          });
+
+          if (addOn?.ingredient) {
+            // Update ingredient
+            await this.ingredientRepository.update(
+              { ingredient_id: addOn.ingredient.ingredient_id },
+              { unit: option.unit }
+            );
+
+            // Update or create menu ingredient
+            for (const menuId of menu_id) {
+              const menuIngredient = await this.menuIngredientRepository.findOne({
+                where: {
+                  menu: { menu_id: menuId },
+                  ingredient: { ingredient_id: addOn.ingredient.ingredient_id }
+                }
+              });
+
+              if (menuIngredient) {
+                await this.menuIngredientRepository.update(
+                  { menu_ingredient_id: menuIngredient.menu_ingredient_id },
+                  { quantity_used: option.quantity }
+                );
+              } else {
+                await this.menuIngredientRepository.save({
+                  menu: { menu_id: menuId },
+                  ingredient: { ingredient_id: addOn.ingredient.ingredient_id },
+                  quantity_used: option.quantity,
+                  is_addon: true,
+                  owner: { owner_id },
+                  branch: { branch_id }
+                });
+              }
+            }
+          }
+        } else {
+          // Handle new add-on
+          // First check if ingredient exists
+          let ingredient = await this.ingredientRepository.findOne({
+            where: {
+              ingredient_name: option.add_on_name,
+              owner: { owner_id },
+              branch: { branch_id }
+            }
+          });
+
+          if (!ingredient) {
+            // Create new ingredient
+            ingredient = await this.ingredientRepository.save({
+              ingredient_name: option.add_on_name,
+              unit: option.unit,
+              owner: { owner_id },
+              branch: { branch_id }
+            });
+          }
+
+          // Create new add-on
+          const newAddOn = await this.addOnRepository.save({
+            ingredient: ingredient,
+            add_on_price: parseFloat(option.price),
+            is_required: is_require,
+            is_multipled: is_multiple,
+            owner: { owner_id },
+            branch: { branch_id }
+          });
+
+          // Create menu ingredients
+          for (const menuId of menu_id) {
+            await this.menuIngredientRepository.save({
+              menu: { menu_id: menuId },
+              ingredient: ingredient,
+              quantity_used: option.quantity,
+              is_addon: true,
+              owner: { owner_id },
+              branch: { branch_id }
+            });
+          }
+        }
+      }
+
+      return { message: 'Add-on options updated successfully' };
+
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
 
   async deleteSweetness(
     sweetness_group_name: string,
