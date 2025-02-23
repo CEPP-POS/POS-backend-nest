@@ -30,6 +30,8 @@ import { CreateSweetnessDto } from './dto/create-option/create-sweetness-dto';
 import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
 import { UpdateSizeDto } from './dto/update-option/update-size.dto';
 import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
+import { CreateMenuTypeGroupDto } from './dto/menu-type/create-menu-type-group.dto';
+import { UpdateMenuTypeGroupDto } from './dto/menu-type/update-menu-type-group.dto';
 
 @Injectable()
 export class MenuService {
@@ -72,9 +74,6 @@ export class MenuService {
 
     @InjectRepository(MenuIngredient)
     private readonly menuIngredientRepository: Repository<MenuIngredient>,
-
-    @InjectRepository(MenuTypeGroup)
-    private readonly menuTypeGroupRepository: Repository<MenuTypeGroup>,
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
@@ -1356,18 +1355,9 @@ export class MenuService {
     }
   }
 
-  async findOptionById(type: string) {
+  async findOptionById(type: string, menuId: number) {
     switch (type) {
-      // edit entity
-      // case 'add-ons':
-      //   return this.addOnRepository.find({ where: { menu: { menu_id: menuId } } });
-      // case 'size':
-      //   return this.sizeRepository.find({ where: { menu: { menu_id: menuId } } });
-      // edit entity
-      // case 'sweetness':
-      //   return this.sweetnessRepository.find({ where: { menu: { menu_id: menuId } } });
-      // case 'menu-type':
-      // return this.menuTypeRepository.find({ where: { menu: { menu_id: menuId } } });
+      // Add your cases here
       default:
         throw new Error('Invalid option type');
     }
@@ -1804,8 +1794,8 @@ export class MenuService {
         owner: { owner_id: ownerId },
         branch: { branch_id: branchId },
       },
-      relations: ['sweetnessGroup'],
-    });
+        relations: ['sweetnessGroup'],
+      });
 
     const menusWithThisSweetnessGroup = menusToUpdate.filter(
       (menu) =>
