@@ -137,7 +137,7 @@ export class MenuCustomerService {
         owner: { owner_id: ownerId },
         branch: { branch_id: branchId },
       },
-      relations: ['menuTypeGroup'], // เพิ่ม relation นี้
+      relations: ['menuTypeGroup', 'sizeGroup', 'sweetnessGroup'], // เพิ่ม sweetnessGroup
     });
 
     if (!menu) {
@@ -177,31 +177,57 @@ export class MenuCustomerService {
     console.log('All menu types:', menuTypes);
 
     // 3. ค้นหา sweetness levels จาก sweetness group
-    const sweetnessLevels = await this.sweetnessLevelRepository
-      .createQueryBuilder('sl')
-      .innerJoin('sweetness_group', 'sg', 'sg.sweetness_id = sl.sweetness_id')
-      .where('sg.sweetness_group_name = :groupName', {
-        groupName: menu.sweetnessGroup,
-      })
-      .andWhere('sl.is_delete = :isDelete', { isDelete: false })
-      .select([
-        'sl.sweetness_id as sweetness_id',
-        'sl.level_name as level_name',
-      ])
-      .getRawMany();
+    const sweetnessLevels = menu.sweetnessGroup
+      ? await this.sweetnessLevelRepository
+          .createQueryBuilder('sl')
+          .innerJoin(
+            'sweetness_group',
+            'sg',
+            'sg.sweetness_id = sl.sweetness_id',
+          )
+          .where((qb) => {
+            const subQuery = qb
+              .subQuery()
+              .select('sweetness_group_name')
+              .from('sweetness_group', 'sg2')
+              .where('sg2.sweetness_group_id = :groupId')
+              .getQuery();
+            return 'sg.sweetness_group_name = ' + subQuery;
+          })
+          .setParameter('groupId', menu.sweetnessGroup.sweetness_group_id)
+          .andWhere('sl.is_delete = :isDelete', { isDelete: false })
+          .distinct()
+          .select([
+            'sl.sweetness_id as sweetness_id',
+            'sl.level_name as level_name',
+          ])
+          .getRawMany()
+      : [];
 
     // 4. ค้นหา sizes จาก size group
-    const sizes = await this.sizeRepository
-      .createQueryBuilder('s')
-      .innerJoin('size_group', 'sg', 'sg.size_id = s.size_id')
-      .where('sg.size_group_name = :groupName', { groupName: menu.sizeGroup })
-      .andWhere('s.is_delete = :isDelete', { isDelete: false })
-      .select([
-        's.size_id as size_id',
-        's.size_name as size_name',
-        's.size_price as size_price',
-      ])
-      .getRawMany();
+    const sizes = menu.sizeGroup
+      ? await this.sizeRepository
+          .createQueryBuilder('s')
+          .innerJoin('size_group', 'sg', 'sg.size_id = s.size_id')
+          .where((qb) => {
+            const subQuery = qb
+              .subQuery()
+              .select('size_group_name')
+              .from('size_group', 'sg2')
+              .where('sg2.size_group_id = :groupId')
+              .getQuery();
+            return 'sg.size_group_name = ' + subQuery;
+          })
+          .setParameter('groupId', menu.sizeGroup.size_group_id)
+          .andWhere('s.is_delete = :isDelete', { isDelete: false })
+          .distinct()
+          .select([
+            's.size_id as size_id',
+            's.size_name as size_name',
+            's.size_price as size_price',
+          ])
+          .getRawMany()
+      : [];
 
     // 5. ค้นหา add-ons
     const addOns = await this.addOnRepository
