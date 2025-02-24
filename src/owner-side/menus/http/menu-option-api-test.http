@@ -17,11 +17,13 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "old_sweetness_group_name": "ความหวานp",
-  "new_sweetness_group_name": "ความหวานp",
+  "old_sweetness_group_name": "ความหวานกาแฟ",
+  "new_sweetness_group_name": "ความหวานกาแฟss",
   "options": [
-    { "sweetness_id": 64, "level_name": "ความหวานมาก da" },
-    { "sweetness_id": null, "level_name": "new" }
+    { "sweetness_id": 87, "level_name": "level 87" },
+    { "sweetness_id": 88, "level_name": "level 88" },
+    { "sweetness_id": null, "level_name": "level new" },
+    { "sweetness_id": 89, "level_name": "level 89" }
 
   ],
   "menu_id": [1,2]
