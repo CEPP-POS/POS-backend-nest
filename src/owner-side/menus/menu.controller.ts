@@ -85,7 +85,9 @@ export class MenuController {
     const branchId = request.headers['branch_id'];
 
     if (!ownerId || !branchId) {
-      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
     }
 
     return this.menuService.findAll(+ownerId, +branchId);
@@ -438,45 +440,66 @@ export class MenuController {
   @Get('options/sweetness/:groupName')
   async getSweetnessGroup(
     @Param('groupName') groupName: string,
-    @Req() request: Request
+    @Req() request: Request,
   ) {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
     if (!ownerId || !branchId) {
-      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
     }
 
-    return this.menuService.getGroupData('sweetness', groupName, +ownerId, +branchId);
+    return this.menuService.getGroupData(
+      'sweetness',
+      groupName,
+      +ownerId,
+      +branchId,
+    );
   }
 
   @Get('options/size/:groupName')
   async getSizeGroup(
     @Param('groupName') groupName: string,
-    @Req() request: Request
+    @Req() request: Request,
   ) {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
     if (!ownerId || !branchId) {
-      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
     }
 
-    return this.menuService.getGroupData('size', groupName, +ownerId, +branchId);
+    return this.menuService.getGroupData(
+      'size',
+      groupName,
+      +ownerId,
+      +branchId,
+    );
   }
 
   @Get('options/menu-type/:groupName')
   async getMenuTypeGroup(
     @Param('groupName') groupName: string,
-    @Req() request: Request
+    @Req() request: Request,
   ) {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
     if (!ownerId || !branchId) {
-      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
     }
 
-    return this.menuService.getGroupData('menu-type', groupName, +ownerId, +branchId);
+    return this.menuService.getGroupData(
+      'menu-type',
+      groupName,
+      +ownerId,
+      +branchId,
+    );
   }
 }

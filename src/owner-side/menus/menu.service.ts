@@ -32,8 +32,6 @@ import { CreateSweetnessDto } from './dto/create-option/create-sweetness-dto';
 import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
 import { UpdateSizeDto } from './dto/update-option/update-size.dto';
 import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
-import { CreateMenuTypeGroupDto } from './dto/menu-type/create-menu-type-group.dto';
-import { UpdateMenuTypeGroupDto } from './dto/menu-type/update-menu-type-group.dto';
 
 @Injectable()
 export class MenuService {
@@ -106,7 +104,7 @@ export class MenuService {
   // * สร้างเมนูใหม่
   async create(createMenuDto: CreateMenuDto): Promise<any> {
     const { owner_id, branch_id, menu_name, ...menuData } = createMenuDto;
-    
+
     // Check if Owner exists
     const owner = await this.ownerRepository.findOne({ where: { owner_id } });
     if (!owner) {
@@ -123,16 +121,16 @@ export class MenuService {
 
     // Check for duplicate menu name within owner and branch scope
     const duplicateMenu = await this.menuRepository.findOne({
-      where: { 
+      where: {
         menu_name,
         owner: { owner_id },
-        branch: { branch_id }
-      }
+        branch: { branch_id },
+      },
     });
-    
+
     if (duplicateMenu) {
       throw new ConflictException(
-        `Menu with name "${menu_name}" already exists in this branch`
+        `Menu with name "${menu_name}" already exists in this branch`,
       );
     }
 
@@ -165,9 +163,16 @@ export class MenuService {
         where: {
           owner: { owner_id },
           branch: { branch_id },
-          is_delete: false
+          is_delete: false,
         },
-        select: ['menu_id', 'menu_name', 'price', 'description', 'image_url', 'paused']
+        select: [
+          'menu_id',
+          'menu_name',
+          'price',
+          'description',
+          'image_url',
+          'paused',
+        ],
       });
 
       if (!menus.length) {
@@ -178,7 +183,7 @@ export class MenuService {
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to get menus',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -671,7 +676,6 @@ export class MenuService {
       message: `Size group '${sizeGroupName}' deleted and related sizes marked as deleted.`,
     };
   }
-
 
   // * link menu for auto cut stock
   // async updateStock(
@@ -1370,7 +1374,7 @@ export class MenuService {
   async findOptionById(type: string, menuId: number) {
     const menu = await this.menuRepository.findOne({
       where: { menu_id: menuId },
-      relations: ['menuTypeGroup', 'sweetnessGroup', 'sizeGroup']
+      relations: ['menuTypeGroup', 'sweetnessGroup', 'sizeGroup'],
     });
 
     if (!menu) {
@@ -1388,9 +1392,9 @@ export class MenuService {
         const addOns = await this.menuIngredientRepository.find({
           where: {
             menu: { menu_id: menuId },
-            is_addon: true
+            is_addon: true,
           },
-          relations: ['ingredient']
+          relations: ['ingredient'],
         });
         return addOns;
       default:
@@ -1939,7 +1943,12 @@ export class MenuService {
     };
   }
 
-  async getGroupData(type: string, groupName: string, ownerId: number, branchId: number) {
+  async getGroupData(
+    type: string,
+    groupName: string,
+    ownerId: number,
+    branchId: number,
+  ) {
     try {
       switch (type) {
         case 'sweetness':
@@ -1947,18 +1956,18 @@ export class MenuService {
             where: {
               sweetness_group_name: groupName,
               owner: { owner_id: ownerId },
-              branch: { branch_id: branchId }
+              branch: { branch_id: branchId },
             },
-            relations: ['sweetnessLevel', 'menu']
+            relations: ['sweetnessLevel', 'menu'],
           });
           return {
             group_name: groupName,
-            levels: sweetnessGroups.map(group => ({
+            levels: sweetnessGroups.map((group) => ({
               sweetness_id: group.sweetnessLevel.sweetness_id,
               level_name: group.sweetnessLevel.level_name,
-              is_delete: group.sweetnessLevel.is_delete
+              is_delete: group.sweetnessLevel.is_delete,
             })),
-            menus: sweetnessGroups[0]?.menu || []
+            menus: sweetnessGroups[0]?.menu || [],
           };
 
         case 'size':
@@ -1966,19 +1975,19 @@ export class MenuService {
             where: {
               size_group_name: groupName,
               owner: { owner_id: ownerId },
-              branch: { branch_id: branchId }
+              branch: { branch_id: branchId },
             },
-            relations: ['size', 'menu']
+            relations: ['size', 'menu'],
           });
           return {
             group_name: groupName,
-            sizes: sizeGroups.map(group => ({
+            sizes: sizeGroups.map((group) => ({
               size_id: group.size.size_id,
               size_name: group.size.size_name,
               size_price: group.size.size_price,
-              is_delete: group.size.is_delete
+              is_delete: group.size.is_delete,
             })),
-            menus: sizeGroups[0]?.menu || []
+            menus: sizeGroups[0]?.menu || [],
           };
 
         case 'menu-type':
@@ -1986,19 +1995,19 @@ export class MenuService {
             where: {
               menu_type_group_name: groupName,
               owner: { owner_id: ownerId },
-              branch: { branch_id: branchId }
+              branch: { branch_id: branchId },
             },
-            relations: ['menuType', 'menu']
+            relations: ['menuType', 'menu'],
           });
           return {
             group_name: groupName,
-            types: menuTypeGroups.map(group => ({
+            types: menuTypeGroups.map((group) => ({
               menu_type_id: group.menuType.menu_type_id,
               type_name: group.menuType.type_name,
               price_difference: group.menuType.price_difference,
-              is_delete: group.menuType.is_delete
+              is_delete: group.menuType.is_delete,
             })),
-            menus: menuTypeGroups[0]?.menu || []
+            menus: menuTypeGroups[0]?.menu || [],
           };
 
         default:
@@ -2007,7 +2016,7 @@ export class MenuService {
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to get group data',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

@@ -18,7 +18,7 @@ import { UpdateOrderDto } from './dto/update-order/update-order.dto';
 import { CancelOrderDto } from './dto/cancel-order/Cancel-order.dto';
 import { OrderItemDto } from './dto/order-item/order-item.dto';
 import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
-import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
+// import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 
 @Controller('employee/orders')
 export class OrderController {

@@ -13,21 +13,12 @@ branch_id: 1
   "items": [
     {
       "menu_id": 1,
-      "sweetness_id": 69,
+      "sweetness_id": 1,
       "size_id": 1,
-      "add_on_id": [3,4],  
-      "menu_type_id": 2,
+      "add_on_id": [1,2],  
+      "menu_type_id": 39,
       "quantity": 1,
       "price": 100
-    },
-    {
-      "menu_id": 2,
-      "sweetness_id": 68,
-      "size_id": 1,
-      "add_on_id": [],  
-      "menu_type_id": 1,
-      "quantity": 1,
-      "price": 60
     }
   ]
 }

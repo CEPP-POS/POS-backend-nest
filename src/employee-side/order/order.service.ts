@@ -19,7 +19,7 @@ import { Owner } from 'src/entities/owner.entity';
 import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
 import { Payment } from 'src/entities/payment.entity';
 import { SalesSummary } from 'src/entities/sales-summary.entity';
-import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
+// import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
 import { OrderItemAddOn } from 'src/entities/order-item-add-on.entity';
