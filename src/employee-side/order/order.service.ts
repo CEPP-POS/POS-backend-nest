@@ -22,6 +22,7 @@ import { SalesSummary } from 'src/entities/sales-summary.entity';
 import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
+import { OrderItemAddOn } from 'src/entities/order-item-add-on.entity';
 
 @Injectable()
 export class OrderService {
@@ -31,6 +32,9 @@ export class OrderService {
 
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
+
+    @InjectRepository(OrderItemAddOn)
+    private readonly orderItemAddOnRepository: Repository<OrderItemAddOn>,
 
     @InjectRepository(AddOn)
     private readonly addOnRepository: Repository<AddOn>,
@@ -200,13 +204,21 @@ export class OrderService {
     sizeId: number,
     orderQuantity: number,
     orderDate: any,
+    addOnIds: number[] = [],
   ) {
     // 1. Find all ingredients for the menu and size combination
     const menuIngredients = await this.menuIngredientRepository.find({
-      where: {
-        menu: Equal(menuId),
-        size: Equal(sizeId),
-      },
+      where: [
+        {
+          menu: Equal(menuId),
+          size: Equal(sizeId),
+          is_addon: false,
+        },
+        {
+          ingredient: In(addOnIds),
+          is_addon: true,
+        },
+      ],
       relations: {
         ingredient: true,
         menu: true,
@@ -275,128 +287,147 @@ export class OrderService {
     }
   }
 
-  // EDIT ENTITY
   async createOrder(
     createOrderDto: CreateOrderDto,
     items: OrderItemDto[],
+    owner_id: number,
+    branch_id: number,
   ): Promise<any> {
+    // Verify owner and branch
+    const owner = await this.ownerRepository.findOne({
+      where: { owner_id },
+    });
+
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id, owner: { owner_id } },
+    });
+
+    if (!owner || !branch) {
+      throw new NotFoundException('Invalid owner or branch');
+    }
+
     const newOrder = this.orderRepository.create({
       ...createOrderDto,
       is_paid: false,
+      owner,
+      branch,
     });
 
     const savedOrder = await this.orderRepository.save(newOrder);
 
-    // const allAddOns = await this.addOnRepository.findBy({
-    //   add_on_id: In(items.flatMap((item) => item.add_on_id || [])),
-    // });
-
     const orderItems = await Promise.all(
       items.map(async (item) => {
-        const menu = await this.menuRepository.findOneBy({
-          menu_id: item.menu_id,
-        });
-        const sweetness = await this.sweetnessRepository.findOneBy({
-          sweetness_id: item.sweetness_id,
-        });
-        const size = await this.sizeRepository.findOneBy({
-          size_id: item.size_id,
-        });
-        const menuType = await this.menuTypeRepository.findOneBy({
-          menu_type_id: item.menu_type_id,
+        const menu = await this.menuRepository.findOne({
+          where: {
+            menu_id: item.menu_id,
+            owner: { owner_id },
+            branch: { branch_id },
+          },
         });
 
+        const sweetness = await this.sweetnessRepository.findOne({
+          where: {
+            sweetness_id: item.sweetness_id,
+            owner: { owner_id },
+            branch: { branch_id },
+          },
+        });
+
+        const size = await this.sizeRepository.findOne({
+          where: {
+            size_id: item.size_id,
+            owner: { owner_id },
+            branch: { branch_id },
+          },
+        });
+
+        const menuType = await this.menuTypeRepository.findOne({
+          where: {
+            menu_type_id: item.menu_type_id,
+            owner: { owner_id },
+            branch: { branch_id },
+          },
+        });
+        console.log(menu);
+        console.log(sweetness);
+        console.log(size);
+        console.log(menuType);
+
         if (!menu || !sweetness || !size || !menuType) {
-          console.warn(
-            `⚠️ Skipping invalid OrderItem: ${JSON.stringify(item)}`,
+          throw new NotFoundException(
+            'One or more order item components not found',
           );
-          return null;
         }
 
         try {
-          // Update ingredient stock levels
           await this.updateIngredientStock(
             item.menu_id,
             item.size_id,
             item.quantity,
             savedOrder.order_date,
+            item.add_on_id,
           );
         } catch (error) {
           console.error(`Failed to update ingredient stock: ${error.message}`);
-          // You might want to handle this error differently
+          throw error;
         }
 
-        // const relatedAddOns = allAddOns.filter((addon) =>
-        //   item.add_on_id.includes(addon.add_on_id),
-        // );
+        // Create order item first
+        const orderItem = this.orderItemRepository.create({
+          quantity: item.quantity,
+          price: item.price,
+          menu,
+          sweetnessLevel: sweetness,
+          size,
+          menuType,
+          owner,
+          branch,
+          order: savedOrder,
+        });
 
-        // edit entity
-        // return this.orderItemRepository.create({
-        //   quantity: item.quantity,
-        //   price: item.price,
-        //   menu,
-        //   sweetness,
-        //   size,
-        //   menu_type: menuType,
-        //   addOns: relatedAddOns,
-        //   order: savedOrder,
-        // });
+        const savedOrderItem = await this.orderItemRepository.save(orderItem);
+
+        // Create order item add-ons with reference to saved order item
+        const orderItemAddOns = await Promise.all(
+          item.add_on_id.map(async (addon_id) => {
+            const addon = this.orderItemAddOnRepository.create({
+              order_item_id: savedOrderItem.order_item_id,
+              ingredient_id: addon_id,
+              owner,
+              branch,
+            });
+            return await this.orderItemAddOnRepository.save(addon);
+          }),
+        );
+
+        return {
+          ...savedOrderItem,
+          orderItem: orderItemAddOns,
+        };
       }),
     );
 
-    // Filter out null items and save valid order items
-    const validOrderItems = orderItems.filter((item) => item !== null);
-    await this.orderItemRepository.save(validOrderItems);
-
-    return savedOrder;
+    return this.findOrderById(savedOrder.order_id);
   }
-  // EDIT ENTITY
+
   async findAllOrders(): Promise<Order[]> {
     return this.orderRepository.find({
       relations: [
         'order_item',
         'order_item.menu',
-        'order_item.sweetness',
+        'order_item.sweetnessLevel',
         'order_item.size',
-        'order_item.addOns',
-        'order_item.menu_type',
+        'order_item.orderItem',
+        'order_item.menuType',
       ],
       select: {
         order_id: true,
         order_date: true,
-        // total_price: true,
         queue_number: true,
         status: true,
         customer_name: true,
         customer_contact: true,
         cancel_status: true,
-        // edit entity
-        // order_item: {
-        //   order_item_id: true,
-        //   quantity: true,
-        //   price: true,
-        //   menu: {
-        //     menu_id: true,
-        //     menu_name: true, // ✅ เอาเฉพาะ `menu_id` และ `menu_name`
-        //   },
-        // sweetness: {
-        //   sweetness_id: true,
-        //   level_name: true,
-        // },
-        // size: {
-        //   size_id: true,
-        //   size_name: true,
-        // },
-        // edit entity
-        // addOns: {
-        //   add_on_id: true,
-        //   add_on_name: true,
-        // },
-        // menuType: {
-        //   menu_type_id: true,
-        //   type_name: true,
-        // },
-        // },
       },
     });
   }
@@ -407,10 +438,10 @@ export class OrderService {
       relations: [
         'order_item',
         'order_item.menu',
-        'order_item.sweetness',
+        'order_item.sweetnessLevel',
         'order_item.size',
-        'order_item.addOns',
-        'order_item.menu_type',
+        'order_item.orderItem',
+        'order_item.menuType',
       ],
     });
 
@@ -421,11 +452,7 @@ export class OrderService {
     return order;
   }
 
-  //--------- change status to complete order --------//
-  async completeOrder(
-    order_id: number,
-    completeOrderDto: CompleteOrderDto,
-  ): Promise<Order> {
+  async completeOrder(order_id: number): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { order_id: order_id },
     });
@@ -444,7 +471,6 @@ export class OrderService {
     return this.orderRepository.findOne({ where: { order_id: order_id } });
   }
 
-  //--------- pay with cash --------//
   async payWithCash(
     order_id: number,
     payWithCashDto: PayWithCashDto,
