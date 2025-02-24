@@ -20,11 +20,11 @@ branch_id: 1
   "old_sweetness_group_name": "ความหวานกาแฟนม",
   "new_sweetness_group_name": "ความหวานกาแฟนม",
   "options": [
-    { "sweetness_id": 67, "level_name": "ความหวานกลางกาแฟgg" },
-    { "sweetness_id": null, "level_name": "ความหวานกลางกาแฟaa" }
+    { "sweetness_id": 77, "level_name": "ความหวานน้อยมาd" },
+    { "sweetness_id": null, "level_name": "ความหวานน้อยมาda" }
 
   ],
-  "menu_id": [2]
+  "menu_id": [1]
 }
 
 DELETE http://localhost:3000/owner/menus/options/sweetness/ความหวาน coffee นม y
