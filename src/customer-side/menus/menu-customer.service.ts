@@ -64,15 +64,35 @@ export class MenuCustomerService {
       .createQueryBuilder('menu')
       .leftJoinAndSelect('menu.menuCategory', 'menuCategory')
       .leftJoinAndSelect('menuCategory.category', 'category')
+      .leftJoinAndSelect('menu.menuIngredient', 'menuIngredient')
+      .leftJoinAndSelect('menuIngredient.ingredient', 'ingredient')
       .where('menu.is_delete = :isDelete', { isDelete: false })
       .andWhere('menu.paused = :paused', { paused: false })
       .andWhere('menu.owner_id = :ownerId', { ownerId })
       .andWhere('menu.branch_id = :branchId', { branchId })
       .getMany();
 
+    // กรองเมนูที่มีส่วนประกอบไม่พร้อมใช้งาน
+    const filteredMenus = menus.filter((menu) => {
+      // ถ้าเมนูไม่มีส่วนประกอบใดๆ ให้แสดงเมนูนั้น
+      if (!menu.menuIngredient || menu.menuIngredient.length === 0) {
+        return true;
+      }
+
+      // ตรวจสอบว่ามีส่วนประกอบที่ไม่ใช่ addon และถูก paused หรือ is_delete หรือไม่
+      const hasUnavailableIngredient = menu.menuIngredient.some(
+        (mi) =>
+          !mi.is_addon &&
+          mi.ingredient &&
+          (mi.ingredient.paused || mi.ingredient.is_delete),
+      );
+
+      return !hasUnavailableIngredient;
+    });
+
     // สร้าง Map เพื่อจัดกลุ่มเมนูตามหมวดหมู่
     const categoryMap = new Map<string, any>();
-    console.log('menus', menus);
+
     // เพิ่มกลุ่มสำหรับเมนูที่ไม่มีหมวดหมู่
     categoryMap.set('no_category', {
       category_id: null,
@@ -81,7 +101,7 @@ export class MenuCustomerService {
     });
 
     // จัดกลุ่มเมนูตามหมวดหมู่
-    menus.forEach((menu) => {
+    filteredMenus.forEach((menu) => {
       if (menu.menuCategory.length === 0) {
         // ถ้าเมนูไม่มีหมวดหมู่
         const menuData = {
