@@ -342,45 +342,92 @@ export class MenuService {
         );
       }
 
-      // 3. อัพเดท sweetness levels และสร้างใหม่ถ้าจำเป็น
-      const updatedSweetnessLevels = await Promise.all(
-        updateSweetnessDto.options.map(async (option) => {
-          if (option.sweetness_id) {
-            const existingLevel = await this.sweetnessLevelRepository.findOne({
+      // แยกตัวเลือกเป็นที่มี ID และไม่มี ID
+      const existingOptions = updateSweetnessDto.options.filter(
+        (opt) => opt.sweetness_id !== null && opt.sweetness_id !== undefined,
+      );
+      const newOptions = updateSweetnessDto.options.filter(
+        (opt) => opt.sweetness_id === null || opt.sweetness_id === undefined,
+      );
+
+      // รวบรวม sweetness IDs ที่ยังคงอยู่
+      const keepSweetnessIds = existingOptions.map((opt) => opt.sweetness_id);
+
+      // หา sweetness levels ที่จะถูกลบ
+      const existingSweetnessLevels = existingSweetnessGroups.map(
+        (group) => group.sweetnessLevel.sweetness_id,
+      );
+      const sweetnessIdsToDelete = existingSweetnessLevels.filter(
+        (id) => !keepSweetnessIds.includes(id),
+      );
+
+      // จัดการกับ sweetness levels ที่จะถูกลบ
+      if (sweetnessIdsToDelete.length > 0) {
+        await this.sweetnessLevelRepository.update(
+          { sweetness_id: In(sweetnessIdsToDelete) },
+          { is_delete: true },
+        );
+
+        // หาเมนูที่ใช้ sweetness levels ที่จะถูกลบและอัพเดท
+        const affectedMenus = await this.menuRepository.find({
+          where: {
+            sweetnessGroup: {
+              sweetness_group_name: updateSweetnessDto.old_sweetness_group_name,
+              sweetnessLevel: { sweetness_id: In(sweetnessIdsToDelete) },
+            },
+          },
+          relations: ['sweetnessGroup'],
+        });
+
+        for (const menu of affectedMenus) {
+          const alternativeSweetnessGroup =
+            await this.sweetnessGroupRepository.findOne({
               where: {
-                sweetness_id: option.sweetness_id,
-                owner: { owner_id: ownerId },
-                branch: { branch_id: branchId },
-                is_delete: false,
+                sweetness_group_name:
+                  updateSweetnessDto.new_sweetness_group_name,
+                sweetnessLevel: {
+                  sweetness_id: In(keepSweetnessIds),
+                  is_delete: false,
+                },
               },
             });
 
-            if (existingLevel) {
-              existingLevel.level_name = option.level_name;
-              return await this.sweetnessLevelRepository.save(existingLevel);
-            }
-          }
+          menu.sweetnessGroup = alternativeSweetnessGroup || null;
+          await this.menuRepository.save(menu);
+        }
 
-          // สร้าง sweetness level ใหม่
-          const newLevel = await this.sweetnessLevelRepository.save({
-            level_name: option.level_name,
-            owner: { owner_id: ownerId },
-            branch: { branch_id: branchId },
-          });
+        await this.sweetnessGroupRepository.delete({
+          sweetnessLevel: { sweetness_id: In(sweetnessIdsToDelete) },
+        });
+      }
 
-          // สร้าง sweetness group ใหม่สำหรับ level ใหม่
-          await this.sweetnessGroupRepository.save({
-            sweetness_group_name: updateSweetnessDto.new_sweetness_group_name,
-            sweetnessLevel: newLevel,
-            owner: { owner_id: ownerId },
-            branch: { branch_id: branchId },
-          });
+      // อัพเดทชื่อของ sweetness levels ที่มีอยู่
+      for (const option of existingOptions) {
+        await this.sweetnessLevelRepository.update(
+          { sweetness_id: option.sweetness_id },
+          { level_name: option.level_name },
+        );
+      }
 
-          return newLevel;
-        }),
-      );
+      // สร้าง sweetness levels ใหม่และ link กับ group
+      for (const option of newOptions) {
+        // สร้าง sweetness level ใหม่
+        const newLevel = await this.sweetnessLevelRepository.save({
+          level_name: option.level_name,
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId },
+        });
 
-      // 4. อัพเดทความสัมพันธ์กับเมนู
+        // สร้าง sweetness group ใหม่และ link กับ level
+        await this.sweetnessGroupRepository.save({
+          sweetness_group_name: updateSweetnessDto.new_sweetness_group_name,
+          sweetnessLevel: newLevel,
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId },
+        });
+      }
+
+      // อัพเดทความสัมพันธ์กับเมนู
       const menusToUpdate = await this.menuRepository.find({
         where: {
           menu_id: In(updateSweetnessDto.menu_id),
@@ -390,7 +437,6 @@ export class MenuService {
         relations: ['sweetnessGroup'],
       });
 
-      // หา sweetness group ที่จะใช้
       const sweetnessGroup = await this.sweetnessGroupRepository.findOne({
         where: {
           sweetness_group_name: updateSweetnessDto.new_sweetness_group_name,
@@ -403,27 +449,8 @@ export class MenuService {
         throw new NotFoundException('Sweetness group not found');
       }
 
-      // อัพเดทแต่ละเมนู
       for (const menu of menusToUpdate) {
         menu.sweetnessGroup = sweetnessGroup;
-        await this.menuRepository.save(menu);
-      }
-
-      // ลบความสัมพันธ์สำหรับเมนูที่ไม่ได้เลือก
-      const menusToRemoveRelation = await this.menuRepository.find({
-        where: {
-          menu_id: Not(In(updateSweetnessDto.menu_id)),
-          owner: { owner_id: ownerId },
-          branch: { branch_id: branchId },
-          sweetnessGroup: {
-            sweetness_group_name: updateSweetnessDto.old_sweetness_group_name,
-          },
-        },
-        relations: ['sweetnessGroup'],
-      });
-
-      for (const menu of menusToRemoveRelation) {
-        menu.sweetnessGroup = null;
         await this.menuRepository.save(menu);
       }
 
