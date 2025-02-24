@@ -93,27 +93,6 @@ export class OwnerController {
     return this.ownerService.findEmployeesByManager(user.owner_id);
   }
 
-  // async resetPassword(@Body() updatePasswordDto: UpdatePasswordDto) {
-  //   const { email, oldPassword, newPassword } = updatePasswordDto;
-
-  //   const user = await this.ownerService.findByEmail(email);
-  //   if (!user) {
-  //     throw new BadRequestException('User not found.');
-  //   }
-
-  //   if (user.otp !== oldPassword) {
-  //     throw new UnauthorizedException('Invalid temporary password.');
-  //   }
-
-  //   const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-  //   user.password = hashedNewPassword;
-  //   user.otp = null;
-
-  //   await this.ownerService.updatePasswordInDB(user);
-
-  //   return { message: 'Password reset successful. You can now log in.' };
-  // }
-
   // * Function Register Owner
   @Post('register')
   async register(@Body() createOwnerDto: CreateOwnerDto) {
@@ -243,19 +222,6 @@ export class OwnerController {
   }
 
   // * Function Create Employee
-  // @Post('create-employee')
-  // @Roles('owner')
-  // @UseGuards(JwtGuard, RolesGuard)
-  // async createEmployee(
-  //   @Body() createEmployeeDto: CreateEmployeeDto,
-  //   @Req() req: Request,
-  // ) {
-  //   const user = req.user as UserPayload;
-  //   return this.ownerService.createEmployee({
-  //     ...createEmployeeDto,
-  //     manager_id: user.owner_id,
-  //   });
-  // }
   @Post('create-employee')
   @Roles('owner')
   @UseGuards(JwtGuard, RolesGuard)
@@ -263,28 +229,20 @@ export class OwnerController {
     @Body() createEmployeeDto: CreateEmployeeDto,
     @Req() req: Request,
   ) {
-    // ✅ ดึง `owner_id` และ `branch_id` จาก Headers
-    const ownerId = req.headers['owner_id'];
-    const branchId = req.headers['branch_id'];
-
-    if (!ownerId || !branchId) {
-      throw new BadRequestException(
-        'Missing required headers: owner_id or branch_id',
-      );
+    const user = req.user as UserPayload; // ✅ ดึง Owner จาก JWT Token
+    if (!user.owner_id) {
+      throw new UnauthorizedException('Invalid owner credentials.');
     }
 
-    // ✅ แปลง `owner_id` และ `branch_id` ให้เป็นตัวเลข
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
+    console.log('🔍 Owner creating employee:', user);
 
-    const user = req.user as UserPayload;
-
+    // ✅ เรียก Service พร้อมส่ง `manager_id` และ `branch_id`
     await this.ownerService.createEmployee({
       ...createEmployeeDto,
       manager_id: user.owner_id, // ✅ ใช้ owner ที่ล็อกอินเป็น manager
-      owner_id: ownerIdNum,
-      branch_id: branchIdNum,
+      branch_id: user.branch_id || createEmployeeDto.branch_id, // ✅ ถ้าไม่มีให้ใช้จาก Body
     });
+
     return { message: 'Employee created successfully' };
   }
 
@@ -293,7 +251,7 @@ export class OwnerController {
     return this.ownerService.requestTempPassword(email);
   }
 
-  // // * Dev only
+  // * Dev only
   // @Post('create-employee-dev')
   // async createEmployeeWithoutAuth(
   //   @Body() createEmployeeDto: CreateEmployeeDto,

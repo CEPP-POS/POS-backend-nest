@@ -8,7 +8,7 @@ Content-Type: application/json
   "email": "ownername12@gmail.com",
   "password": "SecurePass123!"
 }
-### 2. Owner
+### 2. Owner เข้าสู่ระบบ (Login)
 POST http://localhost:3000/owner/login
 Content-Type: application/json
 
@@ -20,8 +20,8 @@ Content-Type: application/json
 ### 3. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน (Forgot Password)
 POST http://localhost:3000/owner/forgot-password
 Content-Type: application/json
-owner_id: 24
-branch_id: 7
+owner_id: 10
+branch_id: 1
 {
   "usernameOrEmail": "ownername12@gmail.com"
 }
@@ -29,19 +29,19 @@ branch_id: 7
 ### 4. Owner ยืนยัน OTP
 POST http://localhost:3000/owner/verify-otp
 Content-Type: application/json
-owner_id: 24
-branch_id: 7
+owner_id: 10
+branch_id: 1
 {
   "usernameOrEmail": "ownername12@gmail.com",
-  "otp": "214233"
+  "otp": "698314"
 }
 
 
 ### 5. Owner รีเซ็ตรหัสผ่านใหม่
 PATCH http://localhost:3000/owner/reset-password
 Content-Type: application/json
-owner_id: 24
-branch_id: 7
+owner_id: 10
+branch_id: 1
 {
   "email": "ownername12@gmail.com",
   "newPassword": "SecurePass4567!"
@@ -49,14 +49,15 @@ branch_id: 7
 
 ### 6. Owner สร้าง Employee (ต้องแนบ Token)
 POST http://localhost:3000/owner/create-employee
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MjQsImVtYWlsIjoib3duZXJuYW1lMTJAZ21haWwuY29tIiwiYnJhbmNoX2lkIjo3LCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3NDAzNzY5MDgsImV4cCI6MTc0MDQ2MzMwOH0.Twc-H_P53IQqUaHcnUh3xwlytz9mtuwRsoP1PXVGpRc
-owner_id: 24
-branch_id: 7
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MTAsImVtYWlsIjoib3duZXJuYW1lMTJAZ21haWwuY29tIiwiYnJhbmNoX2lkIjoxLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3NDAzODg3NTUsImV4cCI6MTc0MDQ3NTE1NX0.rdaGOv96Bo0vTaLmpf8FdW59UmXR-860sXh7WTKG0eE
+Content-Type: application/json
+
 {
-  "email": "12123121221woeo@example.com",
+  "email": "employeeMemee@example.com",
   "password": "EmployeePass123e!",
-  "manager_id": 24
+  "branch_id": 1
 }
+
 
 ### Owner อัปโหลดไฟล์ CSV
 POST http://localhost:3000/owner/upload-csv
@@ -78,7 +79,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MjAsI
 
 ###  Owner ดูข้อมูลตัวเอง
 GET http://localhost:3000/owner/profile
-Authorization: Bearer {{TOKEN}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MTAsImVtYWlsIjoib3duZXJuYW1lMTJAZ21haWwuY29tIiwiYnJhbmNoX2lkIjoxLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3NDAzODg3NTUsImV4cCI6MTc0MDQ3NTE1NX0.rdaGOv96Bo0vTaLmpf8FdW59UmXR-860sXh7WTKG0eE
+
 
 
 ### Dev only สร้าง employee ใหม่
@@ -88,5 +90,5 @@ Content-Type: application/json
 {
   "email": "employee@gmail.com",
   "password": "EmployeePass123!",
-  "manager_id": 2
+  "manager_id": 4
 }

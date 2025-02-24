@@ -63,102 +63,47 @@ export class OwnerService {
     return this.ownerRepository.count(); // 🔹 นับจำนวน Owner ทั้งหมด
   }
   // * Create Employee
-  // async createEmployee(
-  //   createEmployeeDto: CreateEmployeeDto,
-  //   owner_id: number,
-  //   branch_id: number,
-  // ): Promise<Owner> {
-  //   const { email, password } = createEmployeeDto;
-
-  //   const existingUser = await this.findByEmail(email);
-  //   if (existingUser) {
-  //     throw new BadRequestException('Email already exists.');
-  //   }
-
-  //   const hashedPassword = await bcrypt.hash(password, 10);
-
-  //   const manager = await this.ownerRepository.findOne({
-  //     where: { owner_id: owner_id },
-  //     relations: ['branch'],
-  //   });
-
-  //   if (!manager) {
-  //     throw new BadRequestException('Manager (Owner) not found.');
-  //   }
-
-  //   const branch = await this.branchRepository.findOne({
-  //     where: { branch_id: branch_id, owner: { owner_id: owner_id } },
-  //   });
-  //   if (!branch) {
-  //     throw new BadRequestException('Branch not found for this Owner.');
-  //   }
-  //   const newEmployee = this.ownerRepository.create({
-  //     email,
-  //     password: hashedPassword,
-  //     roles: ['employee'],
-  //     manager,
-  //     branch,
-  //   });
-
-  //   return this.ownerRepository.save(newEmployee);
-  // }
   async createEmployee(createEmployeeDto: CreateEmployeeDto): Promise<Owner> {
-    const { email, password, manager_id, owner_id, branch_id } =
-      createEmployeeDto;
-
+    const { email, password, manager_id, branch_id } = createEmployeeDto;
+  
+    console.log(`🔍 Creating Employee:`, { email, manager_id, branch_id });
+  
     const existingUser = await this.findByEmail(email);
     if (existingUser) {
-      // throw new BadRequestException('Email already exists.');
-      throw console.log('Create Employee DTO:', existingUser);
+      throw new BadRequestException('Email already exists.');
     }
-
+  
     const hashedPassword = await bcrypt.hash(password, 10);
-
+  
     const manager = await this.ownerRepository.findOne({
       where: { owner_id: manager_id },
-      relations: ['employees'],
+      relations: ['branch'],
     });
-
+  
     if (!manager) {
       throw new BadRequestException('Manager (Owner) not found.');
     }
-    const owner = await this.ownerRepository.findOne({
-      where: { owner_id: owner_id },
-    });
-    if (!owner) throw new NotFoundException('Owner not found.');
-
-    // ✅ ดึง `branch` จากฐานข้อมูล
+  
     const branch = await this.branchRepository.findOne({
       where: { branch_id },
     });
-
+  
     if (!branch) {
       throw new BadRequestException('Branch not found.');
     }
-
-    // ✅ สร้างพนักงานและเชื่อมกับ `owner` และ `branch`
+  
     const newEmployee = this.ownerRepository.create({
       email,
       password: hashedPassword,
       roles: ['employee'],
-      manager: owner,
-      branch: [branch], // ✅ เชื่อมกับ branch
+      manager,
+      branch,
     });
-    manager.employees.push(newEmployee);
-    // const newEmployee = new Owner(); // ✅ สร้าง Entity ใหม่
-    // newEmployee.email = email;
-    // newEmployee.password = hashedPassword;
-    // newEmployee.roles = ['employee'];
-    // newEmployee.manager = manager;
-    // newEmployee.owner_id = owner_id;
-    // newEmployee.branch = [branch]; // ✅ เชื่อมกับ branch
-    console.log('New Employee:', newEmployee);
-
-    await this.ownerRepository.save(manager);
-    this.ownerRepository.save(newEmployee);
-
-    return newEmployee;
+  
+    return this.ownerRepository.save(newEmployee);
   }
+  
+
 
   // * Find Owner or Employee by email
   async findByEmail(email: string): Promise<Owner | undefined> {
@@ -176,7 +121,7 @@ export class OwnerService {
         'roles',
       ],
     });
-  }
+}
 
   async login(loginOwnerDto: LoginOwnerDto): Promise<Owner> {
     const user = await this.findByEmail(loginOwnerDto.email);
@@ -273,15 +218,6 @@ export class OwnerService {
       where: { email, owner_id: ownerId, branch: { branch_id: branchId } },
       relations: ['branch'],
     });
-    // const user = await this.findByEmail(email);
-    // if (!user) {
-    //   throw new BadRequestException('User not found.');
-    // }
-    // เปรียบเทียบ `oldPassword` กับรหัสผ่านที่ถูกเข้ารหัส (OTP)
-    // const isOtpValid = await bcrypt.compare(user.password);
-    // if (!isOtpValid) {
-    //   throw new UnauthorizedException('Invalid temporary password.');
-    // }
     user.password = await bcrypt.hash(newPassword, 10);
     await this.ownerRepository.save(user);
     return { message: 'Password reset successful. You can now log in.' };

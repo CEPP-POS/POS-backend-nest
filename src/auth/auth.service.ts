@@ -14,33 +14,30 @@ export class AuthService {
   async login(loginOwnerDto: LoginOwnerDto) {
     const user = await this.validateUser(loginOwnerDto);
     console.log('[File auth service] USER FOUND:', user);
+  
     if (!user) {
       throw new UnauthorizedException('Invalid credentials.');
     }
+  
     if (user.otp && user.otp === loginOwnerDto.password) {
       throw new UnauthorizedException(
         'You must reset your password before accessing the system.',
       );
     }
-    const totalOwners = await this.userService.countTotalOwners();
-    // ✅ นับจำนวน Employee ของ Owner
-    const hasEmployees = await this.userService.countEmployees(user.owner_id);
-
-    // 🛑 แก้ไขตรงนี้: อนุญาตให้ Owner คนแรกเข้าได้เลย
-    if (user.roles.includes('owner') && hasEmployees === 0 && totalOwners > 3) {
-      throw new UnauthorizedException(
-        'You must create at least one employee before accessing the system.',
-      );
-    }
-    const branchId = user.branch ? user.branch[0].branch_id : null;
-    // const branchId = user.branch ? user.branch[0].branch_id : null;
+  
+    console.log('🔍 Checking user.branch:', user.branch);
+  
+    const branchId = user.branch ? user.branch.branch_id : null;
+  
+    console.log('✅ Extracted branch_id:', branchId);
+  
     const payload = {
       owner_id: user.owner_id,
       email: user.email,
       branch_id: branchId,
       roles: user.roles && user.roles.length > 0 ? user.roles : ['employee'],
     };
-
+  
     const token = await this.jwtService.signAsync(payload);
     console.log('[Auth Service] GENERATED TOKEN:', token);
     return {
@@ -49,6 +46,7 @@ export class AuthService {
       branch_id: branchId,
     };
   }
+  
 
   async validateUser(loginOwnerDto: LoginOwnerDto) {
     const user = await this.userService.findByEmail(loginOwnerDto.email);
