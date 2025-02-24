@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   Res,
+  Headers,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { OrderService } from './order.service';
@@ -21,27 +22,12 @@ import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 
 @Controller('employee/orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) { }
-
-  // @Post()
-  // @HttpCode(HttpStatus.CREATED)
-  // async create(@Body() createOrderDto: CreateOrderDto) {
-  //   return this.orderService.create(createOrderDto);
-  // }
-  // @Get()
-  // @HttpCode(HttpStatus.OK)
-  // async findAll() {
-  //   return this.orderService.findAll();
-  // }
-
-  // @Post()
-  // @HttpCode(HttpStatus.CREATED)
-  // async create(@Body() createOrderDto: CreateOrderDto) {
-  //   return this.orderService.create(createOrderDto);
-  // }
+  constructor(private readonly orderService: OrderService) {}
 
   @Post()
   async createOrder(
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
     @Body()
     {
       createOrderDto,
@@ -51,22 +37,13 @@ export class OrderController {
       items: OrderItemDto[];
     },
   ) {
-    return this.orderService.createOrder(createOrderDto, items);
+    return this.orderService.createOrder(
+      createOrderDto,
+      items,
+      owner_id,
+      branch_id,
+    );
   }
-
-  // @Post()
-  // async createOrderItem(
-  //   @Body()
-  //   {
-  //     createOrderDto,
-  //     items,
-  //   }: {
-  //     createOrderDto: CreateOrderDto;
-  //     items: OrderItemDto[];
-  //   },
-  // ) {
-  //   return this.orderService.createOrder(createOrderDto, items);
-  // }
 
   @Get()
   async findAllOrders() {
@@ -122,11 +99,8 @@ export class OrderController {
   }
 
   @Patch(':id/complete')
-  async completeOrder(
-    @Param('id') id: number,
-    @Body() completeOrderDto: CompleteOrderDto,
-  ) {
-    return this.orderService.completeOrder(id, completeOrderDto);
+  async completeOrder(@Param('id') id: number) {
+    return this.orderService.completeOrder(id);
   }
 
   @Post(':id/cash')

@@ -30,7 +30,7 @@ import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) { }
+  ) {}
 
   // upload picture to local storage
   @Post('upload')
@@ -396,15 +396,18 @@ export class MenuController {
     const ownerIdNum = Number(ownerId);
     const branchIdNum = Number(branchId);
 
-    return await this.menuService.deleteSizeGroup(sizeGroupName, ownerIdNum, branchIdNum);
+    return await this.menuService.deleteSizeGroup(
+      sizeGroupName,
+      ownerIdNum,
+      branchIdNum,
+    );
   }
 
   @Patch('options/size')
   async updateSizeGroup(
     @Req() request: Request,
-    @Body() updateSizeDto: UpdateSizeDto
+    @Body() updateSizeDto: UpdateSizeDto,
   ) {
-
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
@@ -419,9 +422,7 @@ export class MenuController {
   }
 
   @Delete('options/add-ons')
-  async deleteAllAddOns(
-    @Req() request: Request
-  ) {
+  async deleteAllAddOns(@Req() request: Request) {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
@@ -435,7 +436,7 @@ export class MenuController {
   @Patch('options/add-on')
   async updateAddOn(
     @Req() request: Request,
-    @Body() updateAddOnDto: UpdateAddOnDto
+    @Body() updateAddOnDto: UpdateAddOnDto,
   ) {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
@@ -446,7 +447,6 @@ export class MenuController {
 
     return this.menuService.updateAddOn(+ownerId, +branchId, updateAddOnDto);
   }
-
 
   @Delete('options/sweetness/:sweetness_group_name')
   async deleteSweetness(
