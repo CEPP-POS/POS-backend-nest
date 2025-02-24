@@ -72,7 +72,7 @@ export class MenuCustomerService {
 
     // สร้าง Map เพื่อจัดกลุ่มเมนูตามหมวดหมู่
     const categoryMap = new Map<string, any>();
-
+    console.log('menus', menus);
     // เพิ่มกลุ่มสำหรับเมนูที่ไม่มีหมวดหมู่
     categoryMap.set('no_category', {
       category_id: null,
@@ -130,54 +130,6 @@ export class MenuCustomerService {
       categories: categories,
     };
   }
-
-  // edit entity
-  // async getMenusAllCategory() {
-  //   // Fetch categories with related menus
-  //   const categories = await this.categoryRepository.find({
-  //     relations: ['menu'],
-  //   });
-
-  //   // Extract unique category names
-  //   const categoryNames = Array.from(new Set(categories.map(cat => cat.category_name)));
-
-  // Group menus by menu_id
-  // edit entity
-  // const menuMap = categories.reduce((map, category) => {
-  //   category.menu.forEach(menu => {
-  //     if (!map.has(menu.menu_id)) {
-  //       map.set(menu.menu_id, {
-  //         menu_id: menu.menu_id,
-  //         menu_name: menu.menu_name,
-  //         description: menu.description,
-  //         price: Number(menu.price),
-  //         image_url: menu.image_url,
-  //         category: [], // Store category objects
-  //       });
-  //     }
-
-  //     // Add category details (avoid duplicates)
-  //     const existingCategories = map.get(menu.menu_id).category;
-  //     if (!existingCategories.some((c) => c.category_id === category.category_id)) {
-  //       existingCategories.push({
-  //         category_id: category.category_id,
-  //         category_name: category.category_name,
-  //       });
-  //     }
-  //   });
-
-  //   return map;
-  // },
-  //   new Map<number, any>());
-
-  //   // Convert Map to Array
-  //   const availableMenus = Array.from(menuMap.values());
-
-  //   return {
-  //     available_category: categoryNames,
-  //     available_menus: availableMenus,
-  //   };
-  // }
 
   // EDIT ENTITY
   async getMenuDetails(menuId: number, ownerId: number, branchId: number) {

@@ -27,12 +27,6 @@ export class MenuCustomerController {
     return this.menuCustomerService.getCustomerMenus(ownerIdNum, branchIdNum);
   }
 
-  // edit entity
-  // @Get()
-  // async getMenusAllCategory() {
-  //   return this.menuCustomerService.getMenusAllCategory();
-  // }
-
   @Get(':id')
   async getMenuDetails(
     @Param('id') id: string,
