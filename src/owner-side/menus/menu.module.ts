@@ -35,7 +35,6 @@ import { diskStorage } from 'multer';
       SweetnessGroup,
       MenuIngredient,
       Ingredient,
-      // IngredientMenuLink,
     ]),
     CategoryModule,
     OwnerModule,

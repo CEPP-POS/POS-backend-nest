@@ -24,6 +24,15 @@ import { join } from 'path';
 import { CreateMenuTypeGroupDto } from './dto/menu-type/create-menu-type-group.dto';
 import { MenuTypeGroup } from 'src/entities/menu-type-group.entity';
 import { UpdateMenuTypeGroupDto } from './dto/menu-type/update-menu-type-group.dto';
+import { SweetnessGroup } from 'src/entities/sweetness-group.entity';
+import { SizeGroup } from 'src/entities/size-group.entity';
+import { MenuTypeGroup } from 'src/entities/menu-type-group.entity';
+import { CreateSizeDto } from './dto/create-option/create-size.dto';
+import { CreateAddOnDto } from './dto/create-option/create-add-ons.dto';
+import { CreateSweetnessDto } from './dto/create-option/create-sweetness-dto';
+import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
+import { UpdateSizeDto } from './dto/update-option/update-size.dto';
+import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
 
 @Injectable()
 export class MenuService {
@@ -40,11 +49,20 @@ export class MenuService {
     @InjectRepository(MenuType)
     private readonly menuTypeRepository: Repository<MenuType>,
 
+    @InjectRepository(MenuTypeGroup)
+    private readonly menuTypeGroupRepository: Repository<MenuTypeGroup>,
+
     @InjectRepository(Size)
     private readonly sizeRepository: Repository<Size>,
 
+    @InjectRepository(SizeGroup)
+    private readonly sizeGroupRepository: Repository<SizeGroup>,
+
     @InjectRepository(SweetnessLevel)
-    private readonly sweetnessRepository: Repository<SweetnessLevel>,
+    private readonly sweetnessLevelRepository: Repository<SweetnessLevel>,
+
+    @InjectRepository(SweetnessGroup)
+    private sweetnessGroupRepository: Repository<SweetnessGroup>,
 
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>, // Inject CategoryRepository
@@ -63,7 +81,7 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) {}
+  ) { }
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
@@ -158,12 +176,12 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-            menu_id: menu.menu_id,
-            menu_name: menu.menu_name,
-            description: menu.description,
-            image_url: menu.image_url,
-            price: menu.price,
-          };
+          menu_id: menu.menu_id,
+          menu_name: menu.menu_name,
+          description: menu.description,
+          image_url: menu.image_url,
+          price: menu.price,
+        };
     });
   }
 
@@ -230,6 +248,422 @@ export class MenuService {
       HttpStatus.OK, // Returns HTTP 200
     );
   }
+
+  // POST SWEETNESS
+  async createSweetness(
+    type: string,
+    createSweetnessDto: CreateSweetnessDto,
+    ownerId: number,
+    branchId: number,
+  ) {
+    if (type !== 'sweetness') {
+      throw new Error('Invalid option type');
+    }
+
+    // Step 1: Insert sweetness levels
+    const sweetnessLevels = createSweetnessDto.options.map((option) => ({
+      level_name: option,
+      owner: { owner_id: ownerId },
+      branch: { branch_id: branchId },
+    }));
+
+    const savedSweetnessLevels =
+      await this.sweetnessLevelRepository.save(sweetnessLevels);
+
+    // Step 2: Create sweetness groups
+    const sweetnessGroups = savedSweetnessLevels.map((sweetness) => ({
+      sweetness_group_name: createSweetnessDto.sweetness_group_name,
+      sweetnessLevel: sweetness, // Correct reference
+      owner: { owner_id: ownerId },
+      branch: { branch_id: branchId },
+    }));
+
+    const savedSweetnessGroups =
+      await this.sweetnessGroupRepository.save(sweetnessGroups);
+
+    // Ensure the sweetness group exists
+    const sweetnessGroup = await this.sweetnessGroupRepository.findOne({
+      where: { sweetness_group_name: createSweetnessDto.sweetness_group_name },
+    });
+
+    if (!sweetnessGroup) {
+      throw new Error('Sweetness Group not found');
+    }
+
+    // Step 3: Link sweetness group to menu items
+    for (const menuId of createSweetnessDto.menu_id) {
+      await this.menuRepository.update(
+        { menu_id: menuId },
+        { sweetnessGroup: sweetnessGroup },
+      );
+    }
+
+    throw new HttpException(
+      { message: `All sweetness options and groups created successfully` },
+      HttpStatus.OK,
+    );
+  }
+
+  async updateSweetness(
+    type: string,
+    updateSweetnessDto: UpdateSweetnessDto,
+    ownerId: number,
+    branchId: number,
+  ) {
+    if (type !== 'sweetness') {
+      throw new Error('Invalid option type');
+    }
+
+    // 1. Find all sweetness groups with the old name
+    const existingSweetnessGroups = await this.sweetnessGroupRepository.find({
+      where: {
+        sweetness_group_name: updateSweetnessDto.old_sweetness_group_name,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['sweetnessLevel'],
+    });
+
+    if (existingSweetnessGroups.length === 0) {
+      throw new HttpException(
+        { message: 'Sweetness group not found' },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // 2. Update existing sweetness levels and create new ones
+    const updatedSweetnessLevels = await Promise.all(
+      updateSweetnessDto.options.map(async (option) => {
+        if (option.sweetness_id) {
+          // Update existing level name
+          const existingLevel = await this.sweetnessLevelRepository.findOne({
+            where: {
+              sweetness_id: option.sweetness_id,
+              owner: { owner_id: ownerId },
+              branch: { branch_id: branchId },
+              is_delete: false,
+            },
+          });
+
+          if (existingLevel) {
+            existingLevel.level_name = option.level_name;
+            return await this.sweetnessLevelRepository.save(existingLevel);
+          }
+        }
+
+        // Create new sweetness level if id is null
+        return await this.sweetnessLevelRepository.save({
+          level_name: option.level_name,
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId },
+        });
+      }),
+    );
+
+    // 3. Update group names and handle deleted levels
+    await Promise.all(
+      existingSweetnessGroups.map(async (group) => {
+        // Check if this group's level is still in options
+        const levelStillExists = updateSweetnessDto.options.some(
+          (option) => option.sweetness_id === group.sweetnessLevel.sweetness_id,
+        );
+
+        if (!levelStillExists) {
+          // Mark the level as deleted
+          await this.sweetnessLevelRepository.update(
+            { sweetness_id: group.sweetnessLevel.sweetness_id },
+            { is_delete: true },
+          );
+
+          // Find menus using this group and update them to use first available group
+          const menusUsingThisGroup = await this.menuRepository.find({
+            where: {
+              sweetnessGroup: { sweetness_group_id: group.sweetness_group_id },
+            },
+          });
+
+          if (menusUsingThisGroup.length > 0) {
+            const availableGroup = existingSweetnessGroups.find((g) =>
+              updateSweetnessDto.options.some(
+                (opt) => opt.sweetness_id === g.sweetnessLevel.sweetness_id,
+              ),
+            );
+
+            if (availableGroup) {
+              await this.menuRepository.update(
+                {
+                  menu_id: In(menusUsingThisGroup.map((m) => m.menu_id)),
+                },
+                { sweetnessGroup: availableGroup },
+              );
+            } else {
+              // If no available group, set to null
+              await this.menuRepository.update(
+                {
+                  menu_id: In(menusUsingThisGroup.map((m) => m.menu_id)),
+                },
+                { sweetnessGroup: null },
+              );
+            }
+          }
+
+          // Remove the group
+          await this.sweetnessGroupRepository.remove(group);
+        } else {
+          // Just update the group name
+          group.sweetness_group_name =
+            updateSweetnessDto.new_sweetness_group_name;
+          await this.sweetnessGroupRepository.save(group);
+        }
+      }),
+    );
+
+    // 4. Create new groups for new levels
+    const newSweetnessGroups = updatedSweetnessLevels
+      .filter(
+        (level) =>
+          !existingSweetnessGroups.find(
+            (group) =>
+              group.sweetnessLevel?.sweetness_id === level.sweetness_id,
+          ),
+      )
+      .map((level) => ({
+        sweetness_group_name: updateSweetnessDto.new_sweetness_group_name,
+        sweetnessLevel: level,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      }));
+
+    if (newSweetnessGroups.length > 0) {
+      await this.sweetnessGroupRepository.save(newSweetnessGroups);
+    }
+
+    // 5. Update menu relations
+    // Find menus that need to be updated
+    const menusToUpdate = await this.menuRepository.find({
+      where: {
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['sweetnessGroup'],
+    });
+
+    // Get the group to use for new assignments
+    const groupToUse = await this.sweetnessGroupRepository.findOne({
+      where: {
+        sweetness_group_name: updateSweetnessDto.new_sweetness_group_name,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+    });
+
+    // Update each menu
+    for (const menu of menusToUpdate) {
+      if (
+        menu.sweetnessGroup?.sweetness_group_name ===
+        updateSweetnessDto.old_sweetness_group_name
+      ) {
+        if (updateSweetnessDto.menu_id.includes(menu.menu_id)) {
+          // Update to new group
+          await this.menuRepository.update(
+            { menu_id: menu.menu_id },
+            { sweetnessGroup: groupToUse },
+          );
+        } else {
+          // Set to null if not in menu_id list
+          await this.menuRepository.update(
+            { menu_id: menu.menu_id },
+            { sweetnessGroup: null },
+          );
+        }
+      }
+    }
+
+    return {
+      message: 'Sweetness options and groups updated successfully',
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  // POST OPTION SIZE
+  async createSize(
+    type: string,
+    createSizeDto: CreateSizeDto,
+    ownerId: number,
+    branchId: number,
+  ) {
+    if (type !== 'size') {
+      throw new Error('Invalid option type');
+    }
+
+    // Step 1: Insert sizes name and size price into the size table
+    const sizes = createSizeDto.options.map((option) => ({
+      size_name: Object.keys(option)[0],
+      size_price: parseFloat(Object.values(option)[0].price),
+      owner: { owner_id: ownerId },
+      branch: { branch_id: branchId },
+    }));
+
+    const savedSizes = await this.sizeRepository.save(sizes);
+    console.log('SAVE SIZE:', savedSizes);
+
+    // Step 2: Create size groups for each size
+    const sizeGroups = savedSizes.map((size) => ({
+      size_group_name: createSizeDto.size_group_name,
+      size: size,
+      owner: { owner_id: ownerId },
+      branch: { branch_id: branchId },
+    }));
+
+    const savedSizeGroups = await this.sizeGroupRepository.save(sizeGroups);
+    console.log('SAVE SIZE GROUP:', savedSizeGroups);
+
+    const sizeGroup = await this.sizeGroupRepository.findOne({
+      where: { size_group_name: createSizeDto.size_group_name },
+    });
+
+    console.log('size group:', sizeGroup.size_group_name);
+
+    if (!sizeGroup) {
+      throw new Error('Size Group not found');
+    }
+
+    // Step 3: Link size_group_id and name to all menu_id
+    for (const menuId of createSizeDto.menu_id) {
+      await this.menuRepository.update(
+        { menu_id: menuId },
+        { sizeGroup: sizeGroup },
+      );
+    }
+
+    throw new HttpException(
+      { message: `All size options and groups created successfully` },
+      HttpStatus.OK,
+    );
+  }
+
+  //POST ADD ON OPTION
+  async createAddOn(
+    type: string,
+    createAddOnDto: CreateAddOnDto,
+    ownerId: number,
+    branchId: number,
+  ) {
+    const { options, menu_id, is_required, is_multipled } = createAddOnDto;
+
+    //save name in table ingredient
+    const ingredientIds = [];
+    for (const option of options) {
+      const [ingredientName, ingredientData] = Object.entries(option)[0];
+
+      let ingredient = await this.ingredientRepository.findOne({
+        where: {
+          ingredient_name: ingredientName,
+          branch: { branch_id: branchId },
+          owner: { owner_id: ownerId },
+        },
+      });
+
+      if (!ingredient) {
+        ingredient = this.ingredientRepository.create({
+          ingredient_name: ingredientName,
+          unit: ingredientData.unit,
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId },
+        });
+        ingredient = await this.ingredientRepository.save(ingredient);
+      }
+
+      ingredientIds.push(ingredient.ingredient_id);
+
+      // save ingredient_id in table add on
+      const addOn = this.addOnRepository.create({
+        ingredient: ingredient,
+        add_on_price: parseFloat(ingredientData.price),
+        is_required: is_required,
+        is_multipled: is_multipled,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      });
+      await this.addOnRepository.save(addOn);
+
+      // Save menu id and ingredient id, quantity in table menu_ingredient
+      for (const menuId of menu_id) {
+        // Check if the menuIngredient already exists to avoid duplicates
+        const existingMenuIngredient =
+          await this.menuIngredientRepository.findOne({
+            where: {
+              menu: { menu_id: menuId },
+              ingredient: { ingredient_id: ingredient.ingredient_id },
+              owner: { owner_id: ownerId },
+              branch: { branch_id: branchId },
+            },
+          });
+
+        if (!existingMenuIngredient) {
+          // Log ingredientId for debugging
+          console.log(`Processing ingredientId: ${ingredient.ingredient_id}`);
+
+          // Log the result of ingredientData lookup
+          console.log('Found ingredientData:', ingredientData);
+
+          if (!ingredientData) {
+            throw new Error(
+              `Ingredient data not found for ingredient: ${ingredientName}`,
+            );
+          }
+
+          const menuIngredient = this.menuIngredientRepository.create({
+            menu: { menu_id: menuId },
+            ingredient: { ingredient_id: ingredient.ingredient_id },
+            is_addon: true,
+            quantity_used: parseFloat(ingredientData.quantity),
+            owner: { owner_id: ownerId },
+            branch: { branch_id: branchId },
+          });
+          await this.menuIngredientRepository.save(menuIngredient);
+        } else {
+          console.log(
+            `MenuIngredient for menu_id ${menuId} and ingredient_id ${ingredient.ingredient_id} already exists.`,
+          );
+        }
+      }
+    }
+  }
+
+  async deleteSizeGroup(sizeGroupName: string, ownerId: number, branchId: number) {
+    // find all size group name
+    const sizeGroups = await this.sizeGroupRepository.find({
+      where: { size_group_name: sizeGroupName, owner: { owner_id: ownerId }, branch: { branch_id: branchId } },
+      relations: ['size', 'menu'], // Include related sizes and menus
+    });
+
+    if (!sizeGroups.length) {
+      throw new Error(`Size group '${sizeGroupName}' not found.`);
+    }
+
+    // find size id by size group name to change status is_delete
+    const sizesToUpdate = sizeGroups.map(group => group.size);
+
+    if (sizesToUpdate.length) {
+      await this.sizeRepository.update(
+        { size_id: In(sizesToUpdate.map(size => size.size_id)) },
+        { is_delete: true }
+      );
+    }
+
+    // remove size group references in the menu table
+    await this.menuRepository.update(
+      { sizeGroup: In(sizeGroups.map(group => group.size_group_id)) },
+      { sizeGroup: null }
+    );
+
+    // delete all size group name in table size group 
+    await this.sizeGroupRepository.delete({ size_group_name: sizeGroupName });
+
+    return { message: `Size group '${sizeGroupName}' deleted and related sizes marked as deleted.` };
+  }
+
 
   // * link menu for auto cut stock
   // async updateStock(
@@ -341,105 +775,112 @@ export class MenuService {
   // }
 
   // EDIT ENTITY INGREDIENT_MENULINK
-  async updateStock(
+  async linkIngredientToStock(
     menu_id: number,
     owner_id: number,
     branch_id: number,
     linkMenuToStockDtoList: LinkMenuToStockDto[],
   ) {
+    // ตรวจสอบว่ามี menu, owner, branch อยู่จริง
+    const menu = await this.menuRepository.findOne({ where: { menu_id } });
+    if (!menu) {
+      throw new NotFoundException(`Menu with ID ${menu_id} not found`);
+    }
+
+    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+    if (!owner) {
+      throw new NotFoundException(`Owner with ID ${owner_id} not found`);
+    }
+
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id },
+    });
+    if (!branch) {
+      throw new NotFoundException(`Branch with ID ${branch_id} not found`);
+    }
+
     for (const linkMenuToStockDto of linkMenuToStockDtoList) {
       const { ingredient_name, unit, ingredientListForStock } =
         linkMenuToStockDto;
 
-      const menu = await this.menuRepository.findOne({ where: { menu_id } });
-      if (!menu) {
-        throw new NotFoundException(`Menu with ID ${menu_id} not found`);
-      }
-
-      const owner = await this.ownerRepository.findOne({ where: { owner_id } });
-      if (!owner) {
-        throw new NotFoundException(`Owner with ID ${owner_id} not found`);
-      }
-
-      // check size, menu type id from each table
-      for (const property of ingredientListForStock) {
-        const size = await this.sizeRepository.findOne({
-          where: { size_id: property.size_id },
-        });
-        if (!size) {
-          throw new NotFoundException(
-            `Size with ID ${property.size_id} not found`,
-          );
-        }
-
-        const menuType = await this.menuTypeRepository.findOne({
-          where: { menu_type_id: property.menu_type_id },
-        });
-        if (!menuType) {
-          throw new NotFoundException(
-            `MenuType with ID ${property.menu_type_id} not found`,
-          );
-        }
-      }
-
-      // EDIT ENTITY
-      // Find by ingredient name or create ingredient => if not have in ingredient table
+      // ค้นหา ingredient จากชื่อ
       let ingredient = await this.ingredientRepository.findOne({
-        where: { ingredient_name },
+        where: {
+          ingredient_name,
+          owner: { owner_id },
+          branch: { branch_id },
+        },
       });
+
+      // ถ้าไม่มี ingredient ให้สร้างใหม่
       if (!ingredient) {
         ingredient = this.ingredientRepository.create({
           ingredient_name,
           unit,
-          // owner_id: owner,
+          owner,
+          branch,
         });
         ingredient = await this.ingredientRepository.save(ingredient);
       }
 
-      // Save the MenuIngredient records
-      // Process the ingredient list for stock and link them
-      for (const property of ingredientListForStock) {
+      // วนลูปจัดการแต่ละ size และ menu type
+      for (const stockItem of ingredientListForStock) {
+        const { size_id, menu_type_id, quantity_used } = stockItem;
+
+        // ตรวจสอบว่ามี size และ menu type อยู่จริง
+        const size = await this.sizeRepository.findOne({
+          where: { size_id, owner: { owner_id }, branch: { branch_id } },
+        });
+        if (!size) {
+          throw new NotFoundException(`Size with ID ${size_id} not found`);
+        }
+
+        const menuType = await this.menuTypeRepository.findOne({
+          where: { menu_type_id, owner: { owner_id }, branch: { branch_id } },
+        });
+        if (!menuType) {
+          throw new NotFoundException(
+            `MenuType with ID ${menu_type_id} not found`,
+          );
+        }
+
+        // ค้นหา menu_ingredient ที่มีอยู่
         let menuIngredient = await this.menuIngredientRepository.findOne({
           where: {
-            menu: Equal(menu.menu_id),
-            ingredient: Equal(ingredient.ingredient_id),
-            size: Equal(property.size_id),
-            menu_type: Equal(property.menu_type_id),
+            menu: { menu_id },
+            ingredient: { ingredient_id: ingredient.ingredient_id },
+            size: { size_id },
+            menu_type: { menu_type_id },
+            owner: { owner_id },
+            branch: { branch_id },
           },
         });
 
         if (menuIngredient) {
-          // If the ingredient already exists, update quantity_used
-          menuIngredient.quantity_used = property.quantity_used;
+          // ถ้ามีอยู่แล้วให้อัพเดท quantity_used
+          menuIngredient.quantity_used = quantity_used;
           await this.menuIngredientRepository.save(menuIngredient);
         } else {
-          // Create a new menu ingredient if it doesn't exist
+          // ถ้าไม่มีให้สร้างใหม่
           menuIngredient = this.menuIngredientRepository.create({
-            menu: menu,
-            ingredient: ingredient,
-            size: { size_id: property.size_id },
-            menu_type: { menu_type_id: property.menu_type_id },
-            quantity_used: property.quantity_used,
+            menu,
+            ingredient,
+            size,
+            menu_type: menuType,
+            quantity_used,
+            is_addon: false,
+            owner,
+            branch,
           });
           await this.menuIngredientRepository.save(menuIngredient);
         }
-        console.log('menuIngredient:', menuIngredient);
       }
-
-      console.log('ingredientListForStock:', ingredientListForStock);
-
-      // link menu id and ingredient id in ingredient menu link
-      const ingredientMenuLinkToSave = {
-        menu_id: { menu_id: menu.menu_id },
-        ingredient_id: { ingredient_id: ingredient.ingredient_id },
-      };
-
-      console.log('ingredientMenuLinkToSave:', ingredientMenuLinkToSave);
-
-      // await this.ingredientMenuLinkRepository.save(ingredientMenuLinkToSave);
     }
 
-    return { message: 'Link Stock successfully' };
+    return {
+      message: 'Link Stock successfully',
+      statusCode: HttpStatus.OK,
+    };
   }
 
   async updateOption(type: string, optionId: number, updateOptionDto: any) {
@@ -466,7 +907,7 @@ export class MenuService {
         relation: 'addOns',
       },
       sweetness: {
-        repository: this.sweetnessRepository,
+        repository: this.sweetnessLevelRepository,
         optionKey: 'level_name',
         idKey: 'sweetness_id',
         relation: 'sweetnessLevels',
@@ -603,7 +1044,7 @@ export class MenuService {
         optionKey = 'type_name';
         break;
       case 'sweetness':
-        repository = this.sweetnessRepository;
+        repository = this.sweetnessLevelRepository;
         optionKey = 'level_name';
         break;
       default:
@@ -933,5 +1374,525 @@ export class MenuService {
       default:
         throw new Error('Invalid option type');
     }
+  }
+
+  async updateSize(owner_id: number, branch_id: number, updateSizeDto: UpdateSizeDto) {
+    try {
+      const { old_size_group_name, new_size_group_name, options, menu_id } = updateSizeDto;
+
+      // 1. Get existing size groups and their sizes
+      const existingSizeGroups = await this.sizeGroupRepository.find({
+        where: {
+          size_group_name: old_size_group_name,
+          owner: { owner_id },
+          branch: { branch_id }
+        },
+        relations: ['size']
+      });
+
+      if (existingSizeGroups.length === 0) {
+        throw new NotFoundException('Size group not found');
+      }
+
+      // 2. Handle group name change if needed
+      if (old_size_group_name !== new_size_group_name) {
+        await this.sizeGroupRepository.update(
+          {
+            size_group_name: old_size_group_name,
+            owner: { owner_id },
+            branch: { branch_id }
+          },
+          { size_group_name: new_size_group_name }
+        );
+      }
+
+      // 3. Process size updates and deletions
+      const existingSizeIds = existingSizeGroups.map(group => group.size.size_id.toString());
+      const keepSizeIds = options
+        .filter(opt => opt.size_id !== 'null')
+        .map(opt => opt.size_id);
+
+      // Update existing sizes
+      for (const option of options) {
+        if (option.size_id !== 'null') {
+          await this.sizeRepository.update(
+            { size_id: parseInt(option.size_id) },
+            {
+              size_name: option.size_name,
+              size_price: parseFloat(String(option.price)),
+              is_delete: false
+            }
+          );
+        }
+      }
+
+      // Handle deleted sizes
+      for (const existingSizeId of existingSizeIds) {
+        if (!keepSizeIds.includes(existingSizeId)) {
+          const sizeIdNum = parseInt(existingSizeId);
+
+          // 1. Mark size as deleted
+          await this.sizeRepository.update(
+            { size_id: sizeIdNum },
+            { is_delete: true }
+          );
+
+          // 2. Find all size groups using this size
+          const affectedSizeGroups = await this.sizeGroupRepository.find({
+            where: {
+              size: { size_id: sizeIdNum },
+              owner: { owner_id },
+              branch: { branch_id }
+            },
+            relations: ['size']
+          });
+
+          for (const sizeGroup of affectedSizeGroups) {
+            // Find menus using this size group
+            const menusUsingGroup = await this.menuRepository.find({
+              where: { sizeGroup: { size_group_id: sizeGroup.size_group_id } }
+            });
+
+            if (menusUsingGroup.length > 0) {
+              // Try to find another size group in the same name group that has non-deleted sizes
+              const alternativeSizeGroup = await this.sizeGroupRepository.findOne({
+                where: {
+                  size_group_name: sizeGroup.size_group_name,
+                  owner: { owner_id },
+                  branch: { branch_id },
+                  size: { is_delete: false },
+                  size_group_id: Not(sizeGroup.size_group_id)
+                }
+              });
+
+              // Update menus to use alternative size group or null
+              await this.menuRepository.update(
+                { menu_id: In(menusUsingGroup.map(m => m.menu_id)) },
+                { sizeGroup: alternativeSizeGroup || null }
+              );
+            }
+
+            // Remove this size group entry
+            await this.sizeGroupRepository.delete(sizeGroup.size_group_id);
+          }
+        }
+      }
+
+      // 4. Add new sizes
+      const newSizeOptions = options.filter(opt => opt.size_id === 'null');
+      for (const newOption of newSizeOptions) {
+        // Create new size
+        const newSize = await this.sizeRepository.save({
+          size_name: newOption.size_name,
+          size_price: parseFloat(String(newOption.price)),
+          owner: { owner_id },
+          branch: { branch_id }
+        });
+
+        // Link to size group if not already linked
+        const existingLink = await this.sizeGroupRepository.findOne({
+          where: {
+            size_group_name: new_size_group_name,
+            size: { size_id: newSize.size_id }
+          }
+        });
+
+        if (!existingLink) {
+          await this.sizeGroupRepository.save({
+            size_group_name: new_size_group_name,
+            size: newSize,
+            owner: { owner_id },
+            branch: { branch_id }
+          });
+        }
+      }
+
+      // 5. Update menu relationships
+      const sizeGroup = await this.sizeGroupRepository.findOne({
+        where: {
+          size_group_name: new_size_group_name,
+          owner: { owner_id },
+          branch: { branch_id }
+        }
+      });
+
+      if (!sizeGroup) {
+        throw new NotFoundException(`Size group "${new_size_group_name}" not found`);
+      }
+
+      // Update menus to use this size group
+      await this.menuRepository.update(
+        { menu_id: In(menu_id) },
+        { sizeGroup: sizeGroup }
+      );
+
+      // Clear size group for menus that shouldn't use it anymore
+      await this.menuRepository.update(
+        {
+          menu_id: Not(In(menu_id)),
+          sizeGroup: sizeGroup
+        },
+        { sizeGroup: null }
+      );
+
+      return { message: 'Size options updated successfully' };
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async deleteAllAddOns(ownerId: number, branchId: number) {
+    try {
+      // 1. Find all add-ons for this owner/branch
+      const addOns = await this.addOnRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId }
+        },
+        relations: ['ingredient']
+      });
+
+      if (addOns.length === 0) {
+        return { message: 'No add-ons found' };
+      }
+
+      // 2. Get unique ingredient IDs
+      const ingredientIds = [...new Set(
+        addOns
+          .filter(addOn => addOn.ingredient) // Filter out any null ingredients
+          .map(addOn => addOn.ingredient.ingredient_id)
+      )];
+
+      // 3. Mark all related ingredients as deleted
+      if (ingredientIds.length > 0) {
+        await this.ingredientRepository.update(
+          {
+            ingredient_id: In(ingredientIds),
+            owner: { owner_id: ownerId },
+            branch: { branch_id: branchId }
+          },
+          { is_delete: true }
+        );
+      }
+
+      // 4. Delete the add-ons
+      await this.addOnRepository.delete({
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId }
+      });
+
+      return {
+        message: 'Successfully deleted all add-ons and marked ingredients as deleted',
+        deletedAddOnsCount: addOns.length,
+        deletedIngredientsCount: ingredientIds.length
+      };
+
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async updateAddOn(owner_id: number, branch_id: number, updateAddOnDto: UpdateAddOnDto) {
+    try {
+      const { options, menu_id, is_require, is_multiple } = updateAddOnDto;
+
+      // Get all existing menu_ingredients for these add-ons
+      const existingMenuIngredients = await this.menuIngredientRepository.find({
+        where: {
+          owner: { owner_id },
+          branch: { branch_id },
+          is_addon: true
+        },
+        relations: ['menu', 'ingredient']
+      });
+
+      // Find menu IDs that were removed
+      const existingMenuIds = [...new Set(
+        existingMenuIngredients.map(mi => mi.menu.menu_id)
+      )];
+      const removedMenuIds = existingMenuIds.filter(id => !menu_id.includes(id));
+
+      // Remove menu_ingredient entries for removed menus
+      if (removedMenuIds.length > 0) {
+        await this.menuIngredientRepository.delete({
+          menu: { menu_id: In(removedMenuIds) },
+          owner: { owner_id },
+          branch: { branch_id },
+          is_addon: true
+        });
+      }
+
+      // 1. Get all existing add-ons
+      const existingAddOns = await this.addOnRepository.find({
+        where: {
+          owner: { owner_id },
+          branch: { branch_id }
+        },
+        relations: ['ingredient']
+      });
+
+      // Get IDs that will remain
+      const keepAddOnIds = options
+        .filter(opt => opt.add_on_id !== 'null')
+        .map(opt => parseInt(opt.add_on_id));
+
+      // 2. Handle deleted add-ons
+      const addOnsToRemove = existingAddOns.filter(
+        addOn => !keepAddOnIds.includes(addOn.add_on_id)
+      );
+
+      if (addOnsToRemove.length > 0) {
+        const ingredientIds = addOnsToRemove.map(addOn => addOn.ingredient.ingredient_id);
+
+        // Mark ingredients as deleted
+        await this.ingredientRepository.update(
+          { ingredient_id: In(ingredientIds) },
+          { is_delete: true }
+        );
+      }
+
+      // 3. Process each option
+      for (const option of options) {
+        if (option.add_on_id !== 'null') {
+          // Update existing add-on
+          await this.addOnRepository.update(
+            { add_on_id: parseInt(option.add_on_id) },
+            {
+              add_on_price: parseFloat(option.price),
+              is_required: is_require,
+              is_multipled: is_multiple
+            }
+          );
+
+          // Get ingredient_id for this add-on
+          const addOn = await this.addOnRepository.findOne({
+            where: { add_on_id: parseInt(option.add_on_id) },
+            relations: ['ingredient']
+          });
+
+          if (addOn?.ingredient) {
+            // Update ingredient
+            await this.ingredientRepository.update(
+              { ingredient_id: addOn.ingredient.ingredient_id },
+              { unit: option.unit }
+            );
+
+            // Update or create menu ingredient
+            for (const menuId of menu_id) {
+              const menuIngredient = await this.menuIngredientRepository.findOne({
+                where: {
+                  menu: { menu_id: menuId },
+                  ingredient: { ingredient_id: addOn.ingredient.ingredient_id }
+                }
+              });
+
+              if (menuIngredient) {
+                await this.menuIngredientRepository.update(
+                  { menu_ingredient_id: menuIngredient.menu_ingredient_id },
+                  { quantity_used: option.quantity }
+                );
+              } else {
+                await this.menuIngredientRepository.save({
+                  menu: { menu_id: menuId },
+                  ingredient: { ingredient_id: addOn.ingredient.ingredient_id },
+                  quantity_used: option.quantity,
+                  is_addon: true,
+                  owner: { owner_id },
+                  branch: { branch_id }
+                });
+              }
+            }
+          }
+        } else {
+          // Handle new add-on
+          // First check if ingredient exists
+          let ingredient = await this.ingredientRepository.findOne({
+            where: {
+              ingredient_name: option.add_on_name,
+              owner: { owner_id },
+              branch: { branch_id }
+            }
+          });
+
+          if (!ingredient) {
+            // Create new ingredient
+            ingredient = await this.ingredientRepository.save({
+              ingredient_name: option.add_on_name,
+              unit: option.unit,
+              owner: { owner_id },
+              branch: { branch_id }
+            });
+          }
+
+          // Create new add-on
+          const newAddOn = await this.addOnRepository.save({
+            ingredient: ingredient,
+            add_on_price: parseFloat(option.price),
+            is_required: is_require,
+            is_multipled: is_multiple,
+            owner: { owner_id },
+            branch: { branch_id }
+          });
+
+          // Create menu ingredients
+          for (const menuId of menu_id) {
+            await this.menuIngredientRepository.save({
+              menu: { menu_id: menuId },
+              ingredient: ingredient,
+              quantity_used: option.quantity,
+              is_addon: true,
+              owner: { owner_id },
+              branch: { branch_id }
+            });
+          }
+        }
+      }
+
+      return { message: 'Add-on options updated successfully' };
+
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+
+  async deleteSweetness(
+    sweetness_group_name: string,
+    ownerId: number,
+    branchId: number,
+  ) {
+    // 1. Find all sweetness groups with the given name and get their sweetness levels
+    const sweetnessGroups = await this.sweetnessGroupRepository.find({
+      where: {
+        sweetness_group_name,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['sweetnessLevel'],
+    });
+
+    if (!sweetnessGroups.length) {
+      throw new NotFoundException(
+        `Sweetness group "${sweetness_group_name}" not found`,
+      );
+    }
+
+    // Get all sweetness level IDs from the groups
+    const sweetnessLevelIds = sweetnessGroups.map(
+      (group) => group.sweetnessLevel.sweetness_id,
+    );
+
+    // 1. Soft delete the sweetness levels
+    await this.sweetnessLevelRepository.update(
+      {
+        sweetness_id: In(sweetnessLevelIds),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      { is_delete: true },
+    );
+
+    // 2. Find menus that use this sweetness group and set to null
+    const menusToUpdate = await this.menuRepository.find({
+      where: {
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['sweetnessGroup'],
+    });
+
+    const menusWithThisSweetnessGroup = menusToUpdate.filter(
+      (menu) =>
+        menu.sweetnessGroup?.sweetness_group_name === sweetness_group_name,
+    );
+
+    for (const menu of menusWithThisSweetnessGroup) {
+      menu.sweetnessGroup = null;
+      await this.menuRepository.save(menu);
+    }
+
+    // 3. Delete the sweetness groups
+    await this.sweetnessGroupRepository.delete({
+      sweetness_group_name,
+      owner: { owner_id: ownerId },
+      branch: { branch_id: branchId },
+    });
+
+    return {
+      message: `Sweetness group "${sweetness_group_name}" and its levels have been deleted`,
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  async getMenuIngredients(
+    menu_id: number,
+    owner_id: number,
+    branch_id: number,
+  ) {
+    // ตรวจสอบว่ามี menu, owner, branch อยู่จริง
+    const menu = await this.menuRepository.findOne({ where: { menu_id } });
+    if (!menu) {
+      throw new NotFoundException(`Menu with ID ${menu_id} not found`);
+    }
+
+    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+    if (!owner) {
+      throw new NotFoundException(`Owner with ID ${owner_id} not found`);
+    }
+
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id },
+    });
+    if (!branch) {
+      throw new NotFoundException(`Branch with ID ${branch_id} not found`);
+    }
+
+    // ดึงข้อมูล menu_ingredient ทั้งหมดที่เชื่อมกับ menu นี้
+    const menuIngredients = await this.menuIngredientRepository.find({
+      where: {
+        menu: { menu_id },
+        owner: { owner_id },
+        branch: { branch_id },
+        is_addon: false,
+      },
+      relations: ['ingredient', 'size', 'menu_type'],
+    });
+
+    // จัดกลุ่มข้อมูลตาม ingredient
+    const ingredientGroups = new Map<string, any>();
+
+    menuIngredients.forEach((mi) => {
+      const ingredientName = mi.ingredient.ingredient_name;
+
+      if (!ingredientGroups.has(ingredientName)) {
+        ingredientGroups.set(ingredientName, {
+          ingredient_name: ingredientName,
+          unit: mi.ingredient.unit,
+          ingredientListForStock: [],
+        });
+      }
+
+      ingredientGroups.get(ingredientName).ingredientListForStock.push({
+        size_id: mi.size.size_id,
+        menu_type_id: mi.menu_type.menu_type_id,
+        quantity_used: mi.quantity_used,
+      });
+    });
+
+    // แปลงข้อมูลให้อยู่ในรูปแบบที่ต้องการ
+    const menuData = Array.from(ingredientGroups.values());
+
+    return {
+      menuData,
+    };
   }
 }

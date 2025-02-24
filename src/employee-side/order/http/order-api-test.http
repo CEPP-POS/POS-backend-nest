@@ -1,7 +1,8 @@
 ### Create Order
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
-
+owner_id: 1
+branch_id: 1
 {
   "createOrderDto": {
     "order_date": "2025-03-01T08:00:00Z",
@@ -11,19 +12,19 @@ Content-Type: application/json
   },
   "items": [
     {
-      "menu_id": 15,
-      "sweetness_id": 2,
+      "menu_id": 1,
+      "sweetness_id": 69,
       "size_id": 1,
-      "add_on_id": [1,3],  
+      "add_on_id": [3,4],  
       "menu_type_id": 2,
       "quantity": 1,
       "price": 100
     },
     {
-      "menu_id": 11,
-      "sweetness_id": 1,
+      "menu_id": 2,
+      "sweetness_id": 68,
       "size_id": 1,
-      "add_on_id": [1,2],  
+      "add_on_id": [],  
       "menu_type_id": 1,
       "quantity": 1,
       "price": 60
@@ -63,10 +64,6 @@ GET http://localhost:3000/employee/orders/item
 ### complete order
 PATCH http://localhost:3000/employee/orders/1/complete
 Content-Type: application/json
-{
-  "order_id": 15,
-  "status": "success"
-}
 
 ### pay with cash
 POST http://localhost:3000/employee/orders/1/cash
