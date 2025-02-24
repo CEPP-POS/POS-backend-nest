@@ -157,7 +157,7 @@ export class MenuService {
     };
   }
 
-  async findAll(): Promise<any[]> {
+  async findAll(p0: number, p1: number): Promise<any[]> {
     const menus = await this.menuRepository.find({
       where: { is_delete: false },
       relations: [
