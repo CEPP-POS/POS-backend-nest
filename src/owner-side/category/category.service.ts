@@ -32,7 +32,7 @@ export class CategoryService {
 
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
-  ) {}
+  ) { }
 
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find();
@@ -325,5 +325,62 @@ export class CategoryService {
         category_name: category.category_name,
       },
     };
+  }
+
+  async getAllCategoriesWithMenus(ownerId: number, branchId: number) {
+    try {
+      // Get all categories with their menus
+      const categories = await this.categoryRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId }
+        },
+        relations: ['menuCategory', 'menuCategory.menu']
+      });
+
+      // Get all menus for this owner/branch
+      const allMenus = await this.menuRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId },
+          is_delete: false
+        },
+        relations: ['menuCategory']
+      });
+
+      // Find menus without categories
+      const menusWithoutCategory = allMenus.filter(menu =>
+        !menu.menuCategory || menu.menuCategory.length === 0
+      ).map(menu => ({
+        menu_id: menu.menu_id,
+        menu_name: menu.menu_name
+      }));
+
+      // Get all category names for available_category array
+      const available_category = categories.map(cat => cat.category_name);
+
+      // Format categories with their menus
+      const formattedCategories = categories.map(category => ({
+        name: category.category_name,
+        id: category.category_name,
+        menus: category.menuCategory
+          .filter(mc => mc.menu)
+          .map(mc => ({
+            menu_id: mc.menu.menu_id,
+            menu_name: mc.menu.menu_name
+          }))
+      }));
+
+      return {
+        available_category,
+        categories: formattedCategories,
+        menus: menusWithoutCategory // Add uncategorized menus directly here
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to get categories with menus',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 }

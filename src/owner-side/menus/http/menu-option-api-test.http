@@ -108,7 +108,7 @@ branch_id: 1
     { "size_id": "72", "size_name":"l",  "price": "35.00" },
     { "size_id": "75", "size_name":"xl",  "price": "45.00" }
   ],
-  "menu_id": [1,2]
+  "menu_id": [1]
 }
 
 POST http://localhost:3000/owner/menus/options/menu_type
@@ -200,3 +200,21 @@ branch_id: 1
   "is_require": false,
   "is_multiple": true
 }
+
+### Get sweetness group data
+GET http://localhost:3000/owner/menus/options/sweetness/ความหวานกาแฟ
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+### Get size group data
+GET http://localhost:3000/owner/menus/options/size/ขนาดแก้วสำหรับนม
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+### Get menu type group data
+GET http://localhost:3000/owner/menus/options/menu-type/ปั่นสำหรับนม
+Content-Type: application/json
+owner_id: 1
+branch_id: 1

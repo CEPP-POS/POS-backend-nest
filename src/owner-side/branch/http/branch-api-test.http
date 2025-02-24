@@ -6,7 +6,7 @@ Content-Type: application/json
   "branch_name": "MeMeem Branch",
   "branch_address": "123 Main Street",
   "branch_phone_number": "123456789",
-  "owner_id": 20
+  "owner_id": 6
 }
 
 ### Get all Branches

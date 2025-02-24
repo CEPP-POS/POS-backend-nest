@@ -17,7 +17,7 @@ import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-
 
 @Controller('owner/categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) { }
 
   @Post('link-menus')
   async linkMenusToCategory(
@@ -44,6 +44,21 @@ export class CategoryController {
     };
 
     return await this.categoryService.linkMenusToCategory(categoryData);
+  }
+
+  @Get('all/menus')
+  async getAllCategoriesWithMenus(@Req() request: Request) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new HttpException(
+        'Missing required headers: owner_id or branch_id',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    return this.categoryService.getAllCategoriesWithMenus(+ownerId, +branchId);
   }
 
   @Get('')

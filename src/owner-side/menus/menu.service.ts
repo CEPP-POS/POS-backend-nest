@@ -32,6 +32,8 @@ import { CreateSweetnessDto } from './dto/create-option/create-sweetness-dto';
 import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
 import { UpdateSizeDto } from './dto/update-option/update-size.dto';
 import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
+import { CreateMenuTypeGroupDto } from './dto/menu-type/create-menu-type-group.dto';
+import { UpdateMenuTypeGroupDto } from './dto/menu-type/update-menu-type-group.dto';
 
 @Injectable()
 export class MenuService {
@@ -104,13 +106,14 @@ export class MenuService {
   // * สร้างเมนูใหม่
   async create(createMenuDto: CreateMenuDto): Promise<any> {
     const { owner_id, branch_id, menu_name, ...menuData } = createMenuDto;
-    // เช็กว่ามี Owner นี้
+    
+    // Check if Owner exists
     const owner = await this.ownerRepository.findOne({ where: { owner_id } });
     if (!owner) {
       throw new NotFoundException(`Owner with ID ${owner_id} not found`);
     }
 
-    // เช็กว่าเจอ Branch นี้
+    // Check if Branch exists
     const branch = await this.branchRepository.findOne({
       where: { branch_id },
     });
@@ -118,17 +121,22 @@ export class MenuService {
       throw new NotFoundException(`Branch with ID ${branch_id} not found`);
     }
 
-    // 🔍 Check for duplicate menu name
+    // Check for duplicate menu name within owner and branch scope
     const duplicateMenu = await this.menuRepository.findOne({
-      where: { menu_name },
+      where: { 
+        menu_name,
+        owner: { owner_id },
+        branch: { branch_id }
+      }
     });
+    
     if (duplicateMenu) {
       throw new ConflictException(
-        `Menu with name "${menu_name}" already exists`,
+        `Menu with name "${menu_name}" already exists in this branch`
       );
     }
 
-    // สร้างเมนูใหม่ แบบยังไม่ผูก category
+    // Create new menu
     const newMenu = this.menuRepository.create({
       ...menuData,
       menu_name,
@@ -151,34 +159,28 @@ export class MenuService {
     };
   }
 
-  async findAll(): Promise<any[]> {
-    const menus = await this.menuRepository.find({
-      where: { is_delete: false },
-      relations: [
-        'menuIngredient',
-        'sweetnessGroup',
-        'sizeGroup',
-        'menuTypeGroup',
-      ],
-    });
+  async findAll(owner_id: number, branch_id: number): Promise<Menu[]> {
+    try {
+      const menus = await this.menuRepository.find({
+        where: {
+          owner: { owner_id },
+          branch: { branch_id },
+          is_delete: false
+        },
+        select: ['menu_id', 'menu_name', 'price', 'description', 'image_url', 'paused']
+      });
 
-    return menus.map((menu) => {
-      const hasRelations =
-        (menu.menuIngredient && menu.menuIngredient.length > 0) ||
-        (menu.sweetnessGroup !== null && menu.sweetnessGroup !== undefined) ||
-        (menu.sizeGroup != null && menu.sizeGroup !== undefined) ||
-        (menu.menuTypeGroup != null && menu.menuTypeGroup !== undefined);
+      if (!menus.length) {
+        throw new NotFoundException('No menus found for this owner and branch');
+      }
 
-      return hasRelations
-        ? menu
-        : {
-            menu_id: menu.menu_id,
-            menu_name: menu.menu_name,
-            description: menu.description,
-            image_url: menu.image_url,
-            price: menu.price,
-          };
-    });
+      return menus;
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to get menus',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   async findOne(menu_id: number): Promise<Menu> {
@@ -669,6 +671,7 @@ export class MenuService {
       message: `Size group '${sizeGroupName}' deleted and related sizes marked as deleted.`,
     };
   }
+
 
   // * link menu for auto cut stock
   // async updateStock(
@@ -1364,18 +1367,32 @@ export class MenuService {
     }
   }
 
-  async findOptionById(type: string) {
+  async findOptionById(type: string, menuId: number) {
+    const menu = await this.menuRepository.findOne({
+      where: { menu_id: menuId },
+      relations: ['menuTypeGroup', 'sweetnessGroup', 'sizeGroup']
+    });
+
+    if (!menu) {
+      throw new NotFoundException(`Menu with ID ${menuId} not found`);
+    }
+
     switch (type) {
-      // edit entity
-      // case 'add-ons':
-      //   return this.addOnRepository.find({ where: { menu: { menu_id: menuId } } });
-      // case 'size':
-      //   return this.sizeRepository.find({ where: { menu: { menu_id: menuId } } });
-      // edit entity
-      // case 'sweetness':
-      //   return this.sweetnessRepository.find({ where: { menu: { menu_id: menuId } } });
-      // case 'menu-type':
-      // return this.menuTypeRepository.find({ where: { menu: { menu_id: menuId } } });
+      case 'menu-type':
+        return menu.menuTypeGroup;
+      case 'sweetness':
+        return menu.sweetnessGroup;
+      case 'size':
+        return menu.sizeGroup;
+      case 'add-ons':
+        const addOns = await this.menuIngredientRepository.find({
+          where: {
+            menu: { menu_id: menuId },
+            is_addon: true
+          },
+          relations: ['ingredient']
+        });
+        return addOns;
       default:
         throw new Error('Invalid option type');
     }
@@ -1920,5 +1937,78 @@ export class MenuService {
     return {
       menuData,
     };
+  }
+
+  async getGroupData(type: string, groupName: string, ownerId: number, branchId: number) {
+    try {
+      switch (type) {
+        case 'sweetness':
+          const sweetnessGroups = await this.sweetnessGroupRepository.find({
+            where: {
+              sweetness_group_name: groupName,
+              owner: { owner_id: ownerId },
+              branch: { branch_id: branchId }
+            },
+            relations: ['sweetnessLevel', 'menu']
+          });
+          return {
+            group_name: groupName,
+            levels: sweetnessGroups.map(group => ({
+              sweetness_id: group.sweetnessLevel.sweetness_id,
+              level_name: group.sweetnessLevel.level_name,
+              is_delete: group.sweetnessLevel.is_delete
+            })),
+            menus: sweetnessGroups[0]?.menu || []
+          };
+
+        case 'size':
+          const sizeGroups = await this.sizeGroupRepository.find({
+            where: {
+              size_group_name: groupName,
+              owner: { owner_id: ownerId },
+              branch: { branch_id: branchId }
+            },
+            relations: ['size', 'menu']
+          });
+          return {
+            group_name: groupName,
+            sizes: sizeGroups.map(group => ({
+              size_id: group.size.size_id,
+              size_name: group.size.size_name,
+              size_price: group.size.size_price,
+              is_delete: group.size.is_delete
+            })),
+            menus: sizeGroups[0]?.menu || []
+          };
+
+        case 'menu-type':
+          const menuTypeGroups = await this.menuTypeGroupRepository.find({
+            where: {
+              menu_type_group_name: groupName,
+              owner: { owner_id: ownerId },
+              branch: { branch_id: branchId }
+            },
+            relations: ['menuType', 'menu']
+          });
+          return {
+            group_name: groupName,
+            types: menuTypeGroups.map(group => ({
+              menu_type_id: group.menuType.menu_type_id,
+              type_name: group.menuType.type_name,
+              price_difference: group.menuType.price_difference,
+              is_delete: group.menuType.is_delete
+            })),
+            menus: menuTypeGroups[0]?.menu || []
+          };
+
+        default:
+          throw new BadRequestException('Invalid group type');
+      }
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to get group data',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 }

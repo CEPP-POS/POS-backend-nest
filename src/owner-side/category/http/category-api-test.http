@@ -20,10 +20,10 @@ branch_id: 1
 #   "menu_ids": [6,7]
 # }
 
-GET http://localhost:3000/owner/categories/5/menus
+GET http://localhost:3000/owner/categories/1/menus
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
 
 
 POST http://localhost:3000/owner/categories
@@ -54,3 +54,9 @@ branch_id: 1
   "category_id": 1,
   "menu_ids": [1,2,3]
 }
+
+### Get all categories with their menus
+GET http://localhost:3000/owner/categories/all/menus
+Content-Type: application/json
+owner_id: 6
+branch_id: 3
