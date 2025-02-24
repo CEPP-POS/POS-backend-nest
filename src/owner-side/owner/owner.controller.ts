@@ -85,22 +85,12 @@ export class OwnerController {
     }
   }
   @Get('employees')
-  @Roles('owner') // ✅ เฉพาะ Owner เท่านั้นที่เข้าถึงได้
-  @UseGuards(JwtGuard, RolesGuard)
+  // @Roles('owner') // ✅ ให้เฉพาะ Owner ที่เป็น Manager ใช้ API นี้ได้
+  @UseGuards(JwtGuard)
   async getEmployees(@Req() req: Request) {
-    try {
-      const owner = req.user as { owner_id: number };
-      if (!owner || !owner.owner_id) {
-        throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-      }
-
-      return await this.ownerService.getEmployeesByOwner(owner.owner_id);
-    } catch (error) {
-      throw new HttpException(
-        error.message || 'Failed to get employees',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    console.log('🔍 [DEBUG] User from Token:', req.user);
+    const user = req.user as UserPayload; // 🔹 ดึงข้อมูลผู้ใช้จาก JWT
+    return this.ownerService.findEmployeesByManager(user.owner_id);
   }
 
   // async resetPassword(@Body() updatePasswordDto: UpdatePasswordDto) {

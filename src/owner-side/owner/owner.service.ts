@@ -108,18 +108,24 @@ export class OwnerService {
 
     const existingUser = await this.findByEmail(email);
     if (existingUser) {
-      throw new BadRequestException('Email already exists.');
+      // throw new BadRequestException('Email already exists.');
+      throw console.log('Create Employee DTO:', existingUser);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const manager = await this.ownerRepository.findOne({
       where: { owner_id: manager_id },
+      relations: ['employees'],
     });
 
     if (!manager) {
       throw new BadRequestException('Manager (Owner) not found.');
     }
+    const owner = await this.ownerRepository.findOne({
+      where: { owner_id: owner_id },
+    });
+    if (!owner) throw new NotFoundException('Owner not found.');
 
     // ✅ ดึง `branch` จากฐานข้อมูล
     const branch = await this.branchRepository.findOne({
@@ -135,12 +141,23 @@ export class OwnerService {
       email,
       password: hashedPassword,
       roles: ['employee'],
-      manager,
-      owner_id,
+      manager: owner,
       branch: [branch], // ✅ เชื่อมกับ branch
     });
+    manager.employees.push(newEmployee);
+    // const newEmployee = new Owner(); // ✅ สร้าง Entity ใหม่
+    // newEmployee.email = email;
+    // newEmployee.password = hashedPassword;
+    // newEmployee.roles = ['employee'];
+    // newEmployee.manager = manager;
+    // newEmployee.owner_id = owner_id;
+    // newEmployee.branch = [branch]; // ✅ เชื่อมกับ branch
+    console.log('New Employee:', newEmployee);
 
-    return this.ownerRepository.save(newEmployee);
+    await this.ownerRepository.save(manager);
+    this.ownerRepository.save(newEmployee);
+
+    return newEmployee;
   }
 
   // * Find Owner or Employee by email
@@ -161,7 +178,6 @@ export class OwnerService {
     });
   }
 
-  // * Login Owner or Employee
   async login(loginOwnerDto: LoginOwnerDto): Promise<Owner> {
     const user = await this.findByEmail(loginOwnerDto.email);
     if (!user) {
@@ -179,7 +195,6 @@ export class OwnerService {
     return user;
   }
 
-  // * Forgot Password (Generate OTP)
   async forgotPassword(
     forgotPasswordDto: ForgotPasswordDto,
     owner_id: number,
@@ -219,7 +234,6 @@ export class OwnerService {
     branch_id: number,
   ): Promise<void> {
     const { usernameOrEmail, otp } = verifyOtpDto;
-
     const user = await this.ownerRepository.findOne({
       where: {
         email: usernameOrEmail,
@@ -228,30 +242,27 @@ export class OwnerService {
       },
       relations: ['branch'],
     });
-
     if (!user || user.otp !== otp || user.otp_expiry < new Date()) {
       throw new BadRequestException('OTP expired or invalid');
     }
-
     user.otp = null;
     user.otp_expiry = null;
-    user.password = await bcrypt.hash(otp, 10);
-
     await this.ownerRepository.save(user);
   }
-  async getEmployeesByOwner(owner_id: number): Promise<Owner[]> {
+  async findEmployeesByManager(manager_id: number): Promise<Owner[]> {
     const employees = await this.ownerRepository.find({
-      where: { manager: { owner_id } },
-      relations: ['branch'],
-      select: ['owner_id', 'email', 'roles', 'branch'],
+      where: { manager: { owner_id: manager_id } },
+      relations: ['manager', 'branch'],
+      select: ['owner_id', 'owner_name', 'email', 'roles'],
     });
 
     if (!employees || employees.length === 0) {
-      throw new NotFoundException('No employees found for this owner.');
+      throw new NotFoundException('No employees found for this manager.');
     }
 
     return employees;
   }
+
   async resetPassword(
     updatePasswordDto: UpdatePasswordDto,
     ownerId: number,
@@ -262,25 +273,17 @@ export class OwnerService {
       where: { email, owner_id: ownerId, branch: { branch_id: branchId } },
       relations: ['branch'],
     });
-
     // const user = await this.findByEmail(email);
     // if (!user) {
     //   throw new BadRequestException('User not found.');
     // }
-
-    console.log('📌 [DEBUG] Hashed Password in DB:', user.password);
-
-    // ✅ เปรียบเทียบ `oldPassword` กับรหัสผ่านที่ถูกเข้ารหัส (OTP)
+    // เปรียบเทียบ `oldPassword` กับรหัสผ่านที่ถูกเข้ารหัส (OTP)
     // const isOtpValid = await bcrypt.compare(user.password);
     // if (!isOtpValid) {
     //   throw new UnauthorizedException('Invalid temporary password.');
     // }
-
-    // 🔐 เปลี่ยนรหัสผ่านใหม่
     user.password = await bcrypt.hash(newPassword, 10);
-
     await this.ownerRepository.save(user);
-
     return { message: 'Password reset successful. You can now log in.' };
   }
 
@@ -301,7 +304,6 @@ export class OwnerService {
     return this.ownerRepository.save(user);
   }
 
-  // * Count Employees under a Manager
   async countEmployees(manager_id: number): Promise<number> {
     const manager = await this.ownerRepository.findOne({
       where: { owner_id: manager_id },
