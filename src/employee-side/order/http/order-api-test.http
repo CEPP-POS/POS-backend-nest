@@ -10,7 +10,8 @@ branch_id: 1
     "queue_number": 4,
     "status": "รอทำ",
     "payment_method": "qr-code",
-    "path_img": "https://image/payment"
+    "path_img": "https://image/payment",
+    "cancel_status": "ยกเลิกโดยพนักงาน"
   },
   "items": [
     {

@@ -20,13 +20,11 @@ import { Owner } from './owner.entity';
 
 @Entity()
 export class Order {
-  
   @PrimaryGeneratedColumn()
   order_id: number;
 
   @CreateDateColumn()
   order_date: Date;
-
 
   @Column()
   queue_number: number;

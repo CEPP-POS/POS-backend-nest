@@ -136,8 +136,10 @@ export class OrderService {
     }
 
     // Proceed to create the order
-    const newOrder = this.orderRepository.create(createOrderDto);
-    // console.log(newOrder.order_date);
+    const newOrder = this.orderRepository.create({
+      ...createOrderDto,
+      cancel_status: createOrderDto.cancel_status || null,
+    });
     return this.orderRepository.save(newOrder);
   }
 
@@ -357,6 +359,7 @@ export class OrderService {
     const newOrder = this.orderRepository.create({
       ...createOrderDto,
       is_paid: false,
+      cancel_status: createOrderDto.cancel_status || null,
       owner,
       branch,
     });
