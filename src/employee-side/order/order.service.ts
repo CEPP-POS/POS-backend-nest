@@ -495,7 +495,7 @@ export class OrderService {
           console.error(`Failed to update ingredient stock: ${error.message}`);
           throw error;
         }
-
+        // console.log(orderItems);
         // Create order item first
         const orderItem = this.orderItemRepository.create({
           quantity: item.quantity,
@@ -533,15 +533,38 @@ export class OrderService {
 
     return this.findOrderById(savedOrder.order_id);
   }
+  async findAllOrders(
+    owner_id: number,
+    branch_id: number,
+  ): Promise<{
+    total_orders: number;
+    pending_orders: number;
+    completed_orders: number;
+    orders: any[];
+  }> {
+    const totalOrders = await this.orderRepository.count({
+      where: { owner: { owner_id }, branch: { branch_id } },
+    });
 
-  async findAllOrders(): Promise<Order[]> {
-    return this.orderRepository.find({
+    const pendingOrders = await this.orderRepository.count({
+      where: { owner: { owner_id }, branch: { branch_id }, status: 'รอทำ' },
+    });
+
+    const completedOrders = await this.orderRepository.count({
+      where: {
+        owner: { owner_id },
+        branch: { branch_id },
+        status: 'เสร็จสิ้น',
+      },
+    });
+
+    const orders = await this.orderRepository.find({
+      where: { owner: { owner_id }, branch: { branch_id } },
       relations: [
         'order_item',
         'order_item.menu',
         'order_item.sweetnessLevel',
         'order_item.size',
-        'order_item.orderItem',
         'order_item.menuType',
       ],
       select: {
@@ -549,11 +572,44 @@ export class OrderService {
         order_date: true,
         queue_number: true,
         status: true,
-        customer_name: true,
-        customer_contact: true,
         cancel_status: true,
       },
     });
+    const formattedOrders = orders.map((order) => ({
+      ...order,
+      order_item: order.order_item.map((item) => ({
+        menu_name: {
+          menu_id: item.menu.menu_id,
+          menu_name: item.menu.menu_name,
+          quantity: item.quantity,
+        },
+
+        details: [
+          item.sweetnessLevel
+            ? {
+                sweetness_id: item.sweetnessLevel.sweetness_id,
+                level_name: item.sweetnessLevel.level_name,
+              }
+            : null,
+          item.size
+            ? { size_id: item.size.size_id, size_name: item.size.size_name }
+            : null,
+          item.menuType
+            ? {
+                menu_type_id: item.menuType.menu_type_id,
+                type_name: item.menuType.type_name,
+              }
+            : null,
+        ].filter(Boolean),
+      })),
+    }));
+
+    return {
+      total_orders: totalOrders,
+      pending_orders: pendingOrders,
+      completed_orders: completedOrders,
+      orders: formattedOrders,
+    };
   }
 
   async findOrderById(order_id: number): Promise<Order> {

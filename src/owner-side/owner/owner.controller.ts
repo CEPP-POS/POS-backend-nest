@@ -85,22 +85,12 @@ export class OwnerController {
     }
   }
   @Get('employees')
-  @Roles('owner') // ✅ เฉพาะ Owner เท่านั้นที่เข้าถึงได้
-  @UseGuards(JwtGuard, RolesGuard)
+  // @Roles('owner') // ✅ ให้เฉพาะ Owner ที่เป็น Manager ใช้ API นี้ได้
+  @UseGuards(JwtGuard)
   async getEmployees(@Req() req: Request) {
-    try {
-      const owner = req.user as { owner_id: number };
-      if (!owner || !owner.owner_id) {
-        throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-      }
-
-      return await this.ownerService.getEmployeesByOwner(owner.owner_id);
-    } catch (error) {
-      throw new HttpException(
-        error.message || 'Failed to get employees',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    console.log('🔍 [DEBUG] User from Token:', req.user);
+    const user = req.user as UserPayload; // 🔹 ดึงข้อมูลผู้ใช้จาก JWT
+    return this.ownerService.findEmployeesByManager(user.owner_id);
   }
 
   // async resetPassword(@Body() updatePasswordDto: UpdatePasswordDto) {
@@ -147,14 +137,42 @@ export class OwnerController {
     const stream = Readable.from(file.buffer.toString());
 
     try {
-      for await (const row of stream.pipe(csvParser())) {
+      const csvStream = stream.pipe(
+        csvParser({
+          headers: [
+            'timestamp',
+            'first_name',
+            'last_name',
+            'contact_info',
+            'email',
+            'line_id',
+            'address',
+          ],
+          skipLines: 1,
+          mapValues: ({ value }) => value.trim().replace(/^"|"$/g, ''), // ✅ Trim และลบเครื่องหมายคำพูด
+        }),
+      );
+
+      for await (const row of csvStream) {
+        const ownerName = `${row.first_name} ${row.last_name}`;
+
+        // ✅ เช็คว่ามี email ในระบบแล้วหรือไม่
+        const existingOwner = await this.ownerService.findByEmail(row.email);
+        if (existingOwner) {
+          console.warn(`⚠️ Skipping existing email: ${row.email}`);
+          continue; // ✅ ข้ามการสร้างบัญชีซ้ำ
+        }
+
         const tempPassword = Math.random().toString(36).slice(-8);
         const createOwnerDto: CreateOwnerDto = {
-          owner_name: row.owner_name,
+          owner_name: ownerName,
           contact_info: row.contact_info,
           email: row.email,
           password: tempPassword,
         };
+        console.log('📌 Line ID:', row.line_id);
+        console.log('📌 Timestamp:', row.timestamp);
+        console.log('📌 Address:', row.address);
 
         owners.push(createOwnerDto);
         await sendTemporaryPasswordEmail(createOwnerDto.email, tempPassword);
@@ -162,10 +180,16 @@ export class OwnerController {
       }
 
       if (owners.length === 0) {
-        throw new HttpException('CSV file is empty', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'CSV file is empty or all emails already exist',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
-      return { message: 'CSV data uploaded successfully' };
+      return {
+        message: 'CSV data uploaded successfully',
+        created: owners.length,
+      };
     } catch (error) {
       console.error('Error uploading CSV data:', error);
       throw new HttpException(

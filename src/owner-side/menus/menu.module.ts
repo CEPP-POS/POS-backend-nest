@@ -53,4 +53,4 @@ import { diskStorage } from 'multer';
   providers: [MenuService],
   exports: [MenuService],
 })
-export class MenuModule { }
+export class MenuModule {}

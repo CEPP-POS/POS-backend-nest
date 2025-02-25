@@ -5,58 +5,57 @@ Content-Type: application/json
 {
   "owner_name": "pich",
   "contact_info": "0123456789",
-  "email": "pich@gmail.com",
+  "email": "ownername12@gmail.com",
   "password": "SecurePass123!"
 }
-
-### 2. Owner ใช้รหัสผ่านแบบใช้แล้วทิ้งเข้าสู่ระบบ
+### 2. Owner
 POST http://localhost:3000/owner/login
 Content-Type: application/json
 
 {
-  "email": "pich@gmail.com",
-  "password": "1606jscw"
+  "email": "ownername12@gmail.com",
+  "password": "SecurePass4567!"
 }
 
 ### 3. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน (Forgot Password)
 POST http://localhost:3000/owner/forgot-password
 Content-Type: application/json
-owner_id: 20
-branch_id: 3
+owner_id: 24
+branch_id: 7
 {
-  "usernameOrEmail": "ownername1@gmail.com"
+  "usernameOrEmail": "ownername12@gmail.com"
 }
 
 ### 4. Owner ยืนยัน OTP
 POST http://localhost:3000/owner/verify-otp
 Content-Type: application/json
-owner_id: 16
-branch_id: 2
+owner_id: 24
+branch_id: 7
 {
-  "usernameOrEmail": "owner1@gmail.com",
-  "otp": "155693"
+  "usernameOrEmail": "ownername12@gmail.com",
+  "otp": "214233"
 }
 
 
 ### 5. Owner รีเซ็ตรหัสผ่านใหม่
 PATCH http://localhost:3000/owner/reset-password
 Content-Type: application/json
-owner_id: 16
-branch_id: 2
+owner_id: 24
+branch_id: 7
 {
-  "email": "owner1@gmail.com",
+  "email": "ownername12@gmail.com",
   "newPassword": "SecurePass4567!"
 }
 
 ### 6. Owner สร้าง Employee (ต้องแนบ Token)
 POST http://localhost:3000/owner/create-employee
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MiwiZW1haWwiOiJvd25lcm5hbWUxQGdtYWlsLmNvbSIsImJyYW5jaF9pZCI6Miwicm9sZXMiOlsib3duZXIiXSwiaWF0IjoxNzQwMjk3MzAxLCJleHAiOjE3NDAzODM3MDF9.Cncf4PXkFXX--OMZN9d-_RFzofyfAeJepUUXLXVoCYI
-Content-Type: application/json
-owner_id: 2
-branch_id: 2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MjQsImVtYWlsIjoib3duZXJuYW1lMTJAZ21haWwuY29tIiwiYnJhbmNoX2lkIjo3LCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3NDAzNzY5MDgsImV4cCI6MTc0MDQ2MzMwOH0.Twc-H_P53IQqUaHcnUh3xwlytz9mtuwRsoP1PXVGpRc
+owner_id: 24
+branch_id: 7
 {
-  "email": "employeememeebranchone1@example.com",
-  "password": "EmployeePass123!"
+  "email": "12123121221woeo@example.com",
+  "password": "EmployeePass123e!",
+  "manager_id": 24
 }
 
 ### Owner อัปโหลดไฟล์ CSV
@@ -64,18 +63,16 @@ POST http://localhost:3000/owner/upload-csv
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
-Content-Disposition: form-data; name="file"; filename="owners.csv"
+Content-Disposition: form-data; name="file"; filename="สมัครสมาชิกระบบ POS (Responses) - Form Responses 1.csv"
 Content-Type: text/csv
 
-< /Users/watcharapolyotadee/Development/POS/POS-backend-nest/src/uploads/owners.csv
+< /Users/pimolnutsriphadej/Desktop/POS-backend-nest/src/uploads/สมัครสมาชิกระบบ POS (Responses) - Form Responses 1.csv
 --boundary--
 
 
 GET http://localhost:3000/owner/employees
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MjAsImVtYWlsIjoib3duZXJuYW1lMUBnbWFpbC5jb20iLCJicmFuY2hfaWQiOjMsInJvbGVzIjpbIm93bmVyIl0sImlhdCI6MTc0MDI4MzQzOSwiZXhwIjoxNzQwMzY5ODM5fQ.Xh3axKrHgONip-VNU_qnttnzEI1UQU583SUz3UOmRsI
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MjQsImVtYWlsIjoib3duZXJuYW1lMTJAZ21haWwuY29tIiwiYnJhbmNoX2lkIjo3LCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3NDAyOTcxMTMsImV4cCI6MTc0MDM4MzUxM30.gwABrrWFqsTt_onk0yeH_NBMo5JjaoFXQjJ_TVYwYqA
 
-
-###  Owner ตรวจสอบว่ามี Employee อย่างน้อย 1 คน
 GET http://localhost:3000/owner/check-employees
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MjAsImVtYWlsIjoib3duZXJuYW1lMUBnbWFpbC5jb20iLCJicmFuY2hfaWQiOjMsInJvbGVzIjpbIm93bmVyIl0sImlhdCI6MTc0MDI4MzQzOSwiZXhwIjoxNzQwMzY5ODM5fQ.Xh3axKrHgONip-VNU_qnttnzEI1UQU583SUz3UOmRsI
 

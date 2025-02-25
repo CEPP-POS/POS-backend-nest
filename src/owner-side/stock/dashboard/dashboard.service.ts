@@ -3,15 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  Between,
-  Equal,
-  IsNull,
-  MoreThan,
-  Not,
-  Raw,
-  Repository,
-} from 'typeorm';
+import { Between, IsNull, MoreThan, Not, Raw, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Overview, TopItemDto } from './dto/overview.dto';
 import { SalesSummary } from '../../../entities/sales-summary.entity';
@@ -29,17 +21,21 @@ import { IngredientCategory } from 'src/entities/ingredient-category.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
 import { Owner } from 'src/entities/owner.entity';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
-import {
-  IngredientDetailsDto,
-  MenuIngredientDto,
-} from './dto/ingredients-details.dto';
+// import {
+//   IngredientDetailsDto,
+//   MenuIngredientDto,
+// } from './dto/ingredients-details.dto';
 import { IngredientCategoriesDto } from './dto/ingredients-categories.dto';
+import { Branch } from 'src/entities/branch.entity';
 
 @Injectable()
 export class DashboardService {
   constructor(
     @InjectRepository(SalesSummary)
     private readonly salesSummaryRepository: Repository<SalesSummary>,
+
+    @InjectRepository(Branch)
+    private readonly branchRepository: Repository<Branch>,
 
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
@@ -353,18 +349,23 @@ export class DashboardService {
       };
     });
   }
+  async getIngredientsCategories(
+    owner_id: number,
+    branch_id: number,
+  ): Promise<IngredientCategoriesDto> {
+    const categories = await this.ingredientCategoryRepository.find({
+      where: {
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+    });
 
-  async getIngredientsCategories(): Promise<IngredientCategoriesDto> {
-    const categories = await this.ingredientCategoryRepository.find();
-
-    const result: IngredientCategoriesDto = {
+    return {
       categories: categories.map((category) => ({
         category_id: category.ingredient_category_id,
         category_name: category.ingredient_category_name,
       })),
     };
-
-    return result;
   }
 
   async getIngredientDetails(ingredient_id: number): Promise<any> {
@@ -446,30 +447,58 @@ export class DashboardService {
     // };
   }
 
-  // ENTITY
-  async createCategory(createCategoryDto: CreateCategoryDto): Promise<any> {
-    // const { category_name } = createCategoryDto;
-    // const existingCategory = await this.ingredientCategoryRepository.findOne({
-    //   where: { category_name },
-    // });
-    // if (existingCategory) {
-    //   throw new BadRequestException(
-    //     `Category '${category_name}' มีอยู่แล้วในระบบ`,
-    //   );
-    // }
-    const result =
-      await this.ingredientCategoryRepository.insert(createCategoryDto);
-    // return { category_name: createCategoryDto.category_name };
+  async createStockGroup(
+    createCategoryDto: CreateCategoryDto,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<any> {
+    const { category_name } = createCategoryDto;
+
+    const existingCategory = await this.ingredientCategoryRepository.findOne({
+      where: {
+        ingredient_category_name: category_name,
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+    });
+
+    if (existingCategory) {
+      throw new BadRequestException(`หมวดหมู่ '${category_name}' มีอยู่แล้ว`);
+    }
+
+    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+    if (!owner)
+      throw new BadRequestException(`Owner ID ${owner_id} ไม่พบในระบบ`);
+
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id },
+    });
+    if (!branch)
+      throw new BadRequestException(`Branch ID ${branch_id} ไม่พบในระบบ`);
+
+    const newCategory = this.ingredientCategoryRepository.create({
+      ingredient_category_name: category_name,
+      owner,
+      branch,
+    });
+
+    await this.ingredientCategoryRepository.save(newCategory);
+
+    return {
+      message: 'สร้างหมวดหมู่สำเร็จ',
+      category_name: category_name,
+      owner_id: owner_id,
+      branch_id: branch_id,
+    };
   }
 
-  // EDIT ENTITY change owner to branch id
-  // ENTITY INGREDIENT CATEGORY
   async createIngredient(
     createIngredientDto: CreateIngredientDto,
+    owner_id: number,
+    branch_id: number,
   ): Promise<any> {
     const {
       image_url,
-      owner_id,
       ingredient_name,
       net_volume,
       unit,
@@ -478,39 +507,41 @@ export class DashboardService {
       expiration_date,
     } = createIngredientDto;
 
-    // Find owner
     const owner = await this.ownerRepository.findOne({ where: { owner_id } });
-
     if (!owner) {
       throw new NotFoundException(`Owner with ID ${owner_id} not found`);
     }
 
-    // Find or create category
-    // let category = await this.ingredientCategoryRepository.findOne({
-    //   where: { ingredient_category_name },
-    // });
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id },
+    });
+    if (!branch) {
+      throw new NotFoundException(`Branch with ID ${branch_id} not found`);
+    }
 
-    // if (!category) {
-    //   category = this.ingredientCategoryRepository.create({ category_name });
-    //   await this.ingredientCategoryRepository.save(category);
-    // }
+    let category = await this.ingredientCategoryRepository.findOne({
+      where: { ingredient_category_name: category_name },
+    });
 
-    // Find existing ingredient
-    let ingredient = await this.ingredientRepository
-      .createQueryBuilder('ingredient')
-      .leftJoinAndSelect('ingredient.owner_id', 'owner')
-      .where('ingredient.ingredient_name = :ingredient_name', {
-        ingredient_name,
-      })
-      .andWhere('owner.owner_id = :owner_id', { owner_id })
-      .getOne();
+    if (!category) {
+      category = this.ingredientCategoryRepository.create({
+        ingredient_category_name: category_name,
+        owner,
+        branch,
+      });
+      await this.ingredientCategoryRepository.save(category);
+    }
+
+    let ingredient = await this.ingredientRepository.findOne({
+      where: { ingredient_name, owner: { owner_id }, branch: { branch_id } },
+    });
 
     if (!ingredient) {
-      // Create new ingredient if not found
       ingredient = this.ingredientRepository.create({
         ingredient_name,
-        // ingredientCategory: category,
-        // owner_id: owner,
+        ingredientCategory: category,
+        owner,
+        branch,
         image_url,
         unit,
       });
@@ -518,34 +549,27 @@ export class DashboardService {
       await this.ingredientRepository.save(ingredient);
     }
 
-    // Use QueryBuilder to find existing update
-    const existingUpdate = await this.ingredientUpdateRepository
-      .createQueryBuilder('update')
-      .where('update.ingredient_id = :ingredientId', {
-        ingredientId: ingredient.ingredient_id,
-      })
-      .andWhere('update.net_volume = :netVolume', {
-        netVolume: net_volume,
-      })
-      .andWhere('update.expiration_date = :expirationDate', {
-        expirationDate: new Date(expiration_date),
-      })
-      .getOne();
+    const existingUpdate = await this.ingredientUpdateRepository.findOne({
+      where: {
+        ingredient: { ingredient_id: ingredient.ingredient_id },
+        net_volume: net_volume,
+        expiration_date: new Date(expiration_date),
+      },
+    });
 
     if (existingUpdate) {
-      // Add quantity and update total volume if the same ingredient exists
       existingUpdate.quantity_in_stock += quantity_in_stock;
-      existingUpdate.total_volume += quantity_in_stock * net_volume;
+      existingUpdate.total_volume += net_volume * quantity_in_stock;
 
       await this.ingredientUpdateRepository.save(existingUpdate);
 
       return {
-        message: 'Existing ingredient update modified successfully',
+        message: 'Stock updated successfully',
         ingredient_id: ingredient.ingredient_id,
         update_id: existingUpdate.update_id,
+        total_volume: existingUpdate.total_volume,
       };
     } else {
-      // Create new ingredient update if no existing record matches
       const total_volume = net_volume * quantity_in_stock;
 
       const newUpdate = this.ingredientUpdateRepository.create({
@@ -554,14 +578,17 @@ export class DashboardService {
         net_volume,
         total_volume,
         expiration_date: new Date(expiration_date),
+        owner,
+        branch,
       });
 
       await this.ingredientUpdateRepository.save(newUpdate);
 
       return {
-        message: 'Ingredient and update created successfully',
+        message: 'Ingredient created successfully',
         ingredient_id: ingredient.ingredient_id,
         update_id: newUpdate.update_id,
+        total_volume: newUpdate.total_volume,
       };
     }
   }

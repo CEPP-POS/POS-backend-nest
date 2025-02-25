@@ -1,5 +1,7 @@
 
-GET http://localhost:3000/owner/ingredient/21
+GET http://localhost:3000/owner/ingredient/4
 
 
 GET http://localhost:3000/owner/ingredient/menu/16
+
+GET http://localhost:3000/owner/ingredients/1

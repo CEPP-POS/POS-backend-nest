@@ -18,7 +18,7 @@ import { UpdateOrderDto } from './dto/update-order/update-order.dto';
 import { CancelOrderDto } from './dto/cancel-order/Cancel-order.dto';
 import { OrderItemDto } from './dto/order-item/order-item.dto';
 import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
-import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
+// import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 
 @Controller('employee/orders')
 export class OrderController {
@@ -46,8 +46,11 @@ export class OrderController {
   }
 
   @Get()
-  async findAllOrders() {
-    return this.orderService.findAllOrders();
+  async findAllOrders(
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
+  ) {
+    return this.orderService.findAllOrders(owner_id, branch_id);
   }
 
   @Get(':id')
