@@ -30,7 +30,7 @@ import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) {}
+  ) { }
 
   // upload picture to local storage
   @Post('upload')
@@ -165,11 +165,23 @@ export class MenuController {
     return this.menuService.getAllOptionGroups(+ownerId, +branchId);
   }
 
-  @Get('options/:type')
-  async getOptions(
-    @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
-  ) {
-    return this.menuService.getOptions(type);
+  // @Get('options/:type')
+  // async getOptions(
+  //   @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
+  // ) {
+  //   return this.menuService.getOptions(type);
+  // }
+
+  @Get('options/add-on')
+  async getAddOnDetails(@Req() request: Request) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.menuService.getAddOnDetails(+ownerId, +branchId);
   }
 
   @Get('options/sweetness/:groupName')
@@ -433,7 +445,7 @@ export class MenuController {
     return this.menuService.deleteAllAddOns(+ownerId, +branchId);
   }
 
-  @Patch('options/add-on')
+  @Patch('options/add-ons')
   async updateAddOn(
     @Req() request: Request,
     @Body() updateAddOnDto: UpdateAddOnDto,

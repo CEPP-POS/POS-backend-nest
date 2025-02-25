@@ -58,7 +58,7 @@ branch_id: 1
 }
 
 # edit add on option
-PATCH http://localhost:3000/owner/menus/options/add-on
+PATCH http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
@@ -197,7 +197,7 @@ owner_id: 6
 branch_id: 3
 
 ### Get add-on group data
-GET http://localhost:3000/owner/menus/options/add-ons
+GET http://localhost:3000/owner/menus/options/add-on
 Content-Type: application/json
 owner_id: 6
 branch_id: 3

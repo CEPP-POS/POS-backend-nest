@@ -2093,64 +2093,58 @@ export class MenuService {
   }
 
   async getAddOnDetails(ownerId: number, branchId: number) {
-    // First get all active add-ons
-    const addOns = await this.addOnRepository
-      .createQueryBuilder('ao')
-      .leftJoinAndSelect('ao.owner', 'owner')
-      .leftJoinAndSelect('ao.branch', 'branch')
-      .leftJoinAndSelect('ao.ingredient', 'ing')  // Join with ingredient table
-      .where('owner.owner_id = :ownerId', { ownerId })
-      .andWhere('branch.branch_id = :branchId', { branchId })
-      .andWhere('ao.is_delete = :isDelete', { isDelete: false })
-      .select([
-        'ao.add_on_id',
-        'ao.add_on_price',
-        'ao.is_required',
-        'ao.is_multipled',
-        'ing.ingredient_id',
-        'ing.ingredient_name',
-        'ing.unit'
-      ])
-      .getMany();
+    try {
+      // 1. Get all add-ons with ingredient info
+      const addOns = await this.addOnRepository
+        .createQueryBuilder('ao')
+        .leftJoinAndSelect('ao.ingredient', 'ing')
+        .leftJoinAndSelect('ao.owner', 'owner')
+        .leftJoinAndSelect('ao.branch', 'branch')
+        .where('owner.owner_id = :ownerId', { ownerId })
+        .andWhere('branch.branch_id = :branchId', { branchId })
+        .getMany();
 
-    // For each add-on, get the menu information
-    const addOnsWithMenus = await Promise.all(
-      addOns.map(async (addOn) => {
-        // Get menu ingredients using this add-on
-        const menuIngredients = await this.menuIngredientRepository
-          .createQueryBuilder('mi')
-          .leftJoinAndSelect('mi.menu', 'm')
-          .leftJoinAndSelect('mi.ingredient', 'ing')  // Added this
-          .where('mi.ingredient.ingredient_id = :ingredientId', {
-            ingredientId: addOn.ingredient.ingredient_id
-          })
-          .andWhere('mi.is_addon = :isAddon', { isAddon: true })
-          .andWhere('mi.is_delete = :isDelete', { isDelete: false })
-          .select([
-            'mi.quantity_used',
-            'm.menu_id',
-            'm.menu_name',
-            'ing.ingredient_name',
-            'ing.unit'
-          ])
-          .getMany();
+      // 2. Get menu ingredients for each add-on
+      const menuIngredients = await this.menuIngredientRepository
+        .createQueryBuilder('mi')
+        .leftJoinAndSelect('mi.menu', 'menu')
+        .leftJoinAndSelect('mi.ingredient', 'ing')
+        .where('mi.is_addon = :isAddon', { isAddon: true })
+        .andWhere('mi.owner.owner_id = :ownerId', { ownerId })
+        .andWhere('mi.branch.branch_id = :branchId', { branchId })
+        .getMany();
 
-        return {
-          add_on_id: addOn.add_on_id,
-          ingredient_name: addOn.ingredient.ingredient_name,
-          unit: addOn.ingredient.unit,
-          price: addOn.add_on_price,
-          is_required: addOn.is_required,
-          is_multipled: addOn.is_multipled,
-          menus: menuIngredients.map(mi => ({
-            menu_id: mi.menu.menu_id,
-            menu_name: mi.menu.menu_name,
-            quantity_used: mi.quantity_used
-          }))
-        };
-      })
-    );
+      // 3. Format the response
+      const options = addOns.map(addon => ({
+        add_on_id: addon.add_on_id.toString(),
+        add_on_name: addon.ingredient.ingredient_name,
+        price: Number(addon.add_on_price).toFixed(2),
+        quantity: menuIngredients.find(mi =>
+          mi.ingredient.ingredient_id === addon.ingredient.ingredient_id
+        )?.quantity_used || 0,
+        unit: addon.ingredient.unit
+      }));
 
-    return addOnsWithMenus;
+      // Get unique menu IDs from menu ingredients
+      const menuIds = [...new Set(
+        menuIngredients.map(mi => mi.menu.menu_id)
+      )];
+
+      // Get is_required and is_multiple from first add-on
+      const firstAddOn = addOns[0];
+
+      return {
+        options,
+        menu_id: menuIds,
+        is_require: firstAddOn?.is_required || false,
+        is_multiple: firstAddOn?.is_multipled || false
+      };
+
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to get add-on details',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 }
