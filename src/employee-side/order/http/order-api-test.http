@@ -42,7 +42,7 @@ owner_id: 1
 branch_id: 1
 {
   "createOrderDto": {
-    "order_date": "2025-03-02T08:00:00Z",
+    "order_date": "2025-03-01T08:00:00Z",
     "total_price": 260,
     "queue_number": 4,
     "status": "รอทำ",

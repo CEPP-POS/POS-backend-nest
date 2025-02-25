@@ -336,8 +336,10 @@ export class OrderService {
 
     // Calculate start and end of the day for comparison
     const orderDate = new Date(createOrderDto.order_date);
-    const startOfDay = new Date(orderDate.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(orderDate.setHours(23, 59, 59, 999));
+    const startOfDay = new Date(orderDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(orderDate);
+    endOfDay.setHours(23, 59, 59, 999);
 
     // Find the latest queue number for the current day
     const latestOrder = await this.orderRepository.findOne({
@@ -356,6 +358,38 @@ export class OrderService {
       ? latestOrder.queue_number + 1
       : 1;
 
+    // ค้นหา sales summary สำหรับวันนี้
+    let salesSummary = await this.salesSummaryRepository.findOne({
+      where: {
+        date: Between(startOfDay, endOfDay),
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+    });
+
+    // ถ้าไม่มี sales summary สำหรับวันนี้ ให้สร้างใหม่
+    if (!salesSummary) {
+      salesSummary = this.salesSummaryRepository.create({
+        date: startOfDay,
+        total_revenue: createOrderDto.total_price,
+        total_orders: 1,
+        canceled_orders: createOrderDto.cancel_status ? 1 : 0,
+        owner,
+        branch,
+      });
+    } else {
+      // อัพเดทข้อมูลที่มีอยู่
+      salesSummary.total_revenue += createOrderDto.total_price;
+      salesSummary.total_orders += 1;
+      if (createOrderDto.cancel_status) {
+        salesSummary.canceled_orders += 1;
+      }
+    }
+
+    // บันทึก sales summary
+    await this.salesSummaryRepository.save(salesSummary);
+
+    // Proceed to create the order
     const newOrder = this.orderRepository.create({
       ...createOrderDto,
       is_paid: false,
