@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Patch,
+  Headers,
   Param,
   Delete,
   HttpCode,
@@ -15,22 +16,24 @@ import { PauseService } from './pause.service';
 import { PauseIngredientDto } from './dto/pause-ingredient.dto';
 import { PauseMenuDto } from './dto/pause-menu.dto';
 
-
 @Controller('employee/pause')
 export class PauseController {
-  constructor(private readonly pauseService: PauseService) { }
-
+  constructor(private readonly pauseService: PauseService) {}
 
   @Get('ingredients')
-  async getAllIngredients() {
-    return this.pauseService.getAllIngredient();
+  async getAllIngredients(
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
+  ) {
+    return this.pauseService.getAllIngredient(owner_id, branch_id);
   }
 
   @Patch('ingredients')
-  async updateIngredients(@Body() ingredientUpdates: { ingredient_id: number; paused: boolean }[]) {
+  async updateIngredients(
+    @Body() ingredientUpdates: { ingredient_id: number; paused: boolean }[],
+  ) {
     return this.pauseService.updateIngredient(ingredientUpdates);
   }
-
 
   // @Get('menu')
   // async getMenu(): Promise<PauseMenuDto[]> {
@@ -43,11 +46,9 @@ export class PauseController {
   }
 
   @Patch('menus')
-  async updateMenu(@Body() MenuUpdates: { menu_id: number; paused: boolean }[]) {
+  async updateMenu(
+    @Body() MenuUpdates: { menu_id: number; paused: boolean }[],
+  ) {
     return this.pauseService.updateMenu(MenuUpdates);
   }
-
 }
-
-
-

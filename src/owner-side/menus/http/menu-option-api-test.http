@@ -17,14 +17,16 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "old_sweetness_group_name": "ความหวานกาแฟนม",
-  "new_sweetness_group_name": "ความหวานกาแฟนม",
+  "old_sweetness_group_name": "ความหวานกาแฟss",
+  "new_sweetness_group_name": "ความหวานกาแฟss",
   "options": [
-    { "sweetness_id": 67, "level_name": "ความหวานกลางกาแฟgg" },
-    { "sweetness_id": null, "level_name": "ความหวานกลางกาแฟaa" }
+    { "sweetness_id": 87, "level_name": "level 87" },
+    { "sweetness_id": 88, "level_name": "level 88" },
+    { "sweetness_id": null, "level_name": "level new" },
+    { "sweetness_id": 89, "level_name": "level 89" }
 
   ],
-  "menu_id": [2]
+  "menu_id": [1,2,4]
 }
 
 DELETE http://localhost:3000/owner/menus/options/sweetness/ความหวาน coffee นม y
