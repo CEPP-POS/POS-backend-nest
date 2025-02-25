@@ -23,6 +23,7 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
 import { OrderItemAddOn } from 'src/entities/order-item-add-on.entity';
 import { PaymentMethod } from './dto/create-order/create-order.dto';
+import { isNotEmpty } from 'class-validator';
 
 @Injectable()
 export class OrderService {
@@ -428,7 +429,11 @@ export class OrderService {
 
     // ถ้าเป็นการชำระเงินสด ให้อัพเดทสถานะ order เป็น paid ทันที
     if (createOrderDto.payment_method === PaymentMethod.CASH) {
-      savedOrder.status = 'paid';
+      savedOrder.status = 'รอทำ';
+      savedOrder.is_paid = true;
+      if (savedOrder.cancel_status !== null) {
+        savedOrder.is_paid = false;
+      }
       await this.orderRepository.save(savedOrder);
     }
 

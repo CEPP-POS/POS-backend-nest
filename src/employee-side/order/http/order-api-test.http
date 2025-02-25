@@ -11,7 +11,7 @@ branch_id: 1
     "status": "รอทำ",
     "payment_method": "qr-code",
     "path_img": "https://image/payment",
-    "cancel_status": "ยกเลิกโดยพนักงาน"
+    "cancel_status": null
   },
   "items": [
     {
@@ -48,7 +48,8 @@ branch_id: 1
     "status": "รอทำ",
     "payment_method": "cash",
     "cash_given": 500,
-    "change": 240
+    "change": 240,
+    "cancel_status": "ยกเลิกโดยพนักงาน"
   },
   "items": [
     {
