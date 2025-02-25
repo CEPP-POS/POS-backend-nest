@@ -3,7 +3,9 @@ GET http://localhost:3000/employee/pause/menu
 
 // * Get all ingredient and paused status
 GET http://localhost:3000/employee/pause/ingredients
-
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 // * update ingredient and paused status
 PATCH http://localhost:3000/employee/pause/ingredients
@@ -24,6 +26,9 @@ branch_id: 1
 
 // * Get all menu and paused status
 GET http://localhost:3000/employee/pause/menus
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 // * update menu and paused status
 PATCH http://localhost:3000/employee/pause/menus

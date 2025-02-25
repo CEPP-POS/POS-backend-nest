@@ -69,9 +69,14 @@ export class PauseService {
     return { message: 'Paused ingredients successfully' };
   }
 
-  async getAllMenu() {
+  async getAllMenu(owner_id: number, branch_id: number) {
     const menus = await this.menuRepository.find({
       select: ['menu_id', 'menu_name', 'paused'],
+      where: {
+        owner: { owner_id },
+        branch: { branch_id },
+        is_delete: false,
+      },
     });
 
     return menus;

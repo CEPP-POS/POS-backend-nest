@@ -47,8 +47,11 @@ export class PauseController {
   // }
 
   @Get('menus')
-  async getAllMenu() {
-    return this.pauseService.getAllMenu();
+  async getAllMenu(
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
+  ) {
+    return this.pauseService.getAllMenu(owner_id, branch_id);
   }
 
   @Patch('menus')
