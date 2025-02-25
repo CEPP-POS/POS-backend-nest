@@ -12,25 +12,36 @@ export class PauseService {
 
     @InjectRepository(Menu)
     private readonly menuRepository: Repository<Menu>,
-  ) { }
+  ) {}
 
-  async getAllIngredient() {
+  async getAllIngredient(owner_id: number, branch_id: number) {
     const ingredients = await this.ingredientRepository.find({
       select: ['ingredient_id', 'ingredient_name', 'paused'],
+      where: {
+        owner: { owner_id },
+        branch: { branch_id },
+        is_delete: false,
+      },
     });
 
     return ingredients;
-  };
+  }
 
-  async updateIngredient(listIngredientUpdates: { ingredient_id: number; paused: boolean }[]) {
-    const listIngredientId = listIngredientUpdates.map((item) => item.ingredient_id);
+  async updateIngredient(
+    listIngredientUpdates: { ingredient_id: number; paused: boolean }[],
+  ) {
+    const listIngredientId = listIngredientUpdates.map(
+      (item) => item.ingredient_id,
+    );
 
     const ingredients = await this.ingredientRepository.find({
       where: { ingredient_id: In(listIngredientId) },
     });
 
     ingredients.forEach((ingredient) => {
-      const updatePauseStatus = listIngredientUpdates.find((item) => item.ingredient_id === ingredient.ingredient_id);
+      const updatePauseStatus = listIngredientUpdates.find(
+        (item) => item.ingredient_id === ingredient.ingredient_id,
+      );
       if (updatePauseStatus) {
         ingredient.paused = updatePauseStatus.paused;
       }
@@ -38,7 +49,7 @@ export class PauseService {
 
     await this.ingredientRepository.save(ingredients);
 
-    return { message: "Paused ingredients successfully" };
+    return { message: 'Paused ingredients successfully' };
   }
 
   async getAllMenu() {
@@ -47,7 +58,7 @@ export class PauseService {
     });
 
     return menus;
-  };
+  }
 
   async updateMenu(listMenuUpdates: { menu_id: number; paused: boolean }[]) {
     const listMenuId = listMenuUpdates.map((item) => item.menu_id);
@@ -57,7 +68,9 @@ export class PauseService {
     });
 
     menus.forEach((menu) => {
-      const updatePauseStatus = listMenuUpdates.find((item) => item.menu_id === menu.menu_id);
+      const updatePauseStatus = listMenuUpdates.find(
+        (item) => item.menu_id === menu.menu_id,
+      );
       if (updatePauseStatus) {
         menu.paused = updatePauseStatus.paused;
       }
@@ -65,7 +78,6 @@ export class PauseService {
 
     await this.menuRepository.save(menus);
 
-    return { message: "Paused menus successfully" };
+    return { message: 'Paused menus successfully' };
   }
 }
-
