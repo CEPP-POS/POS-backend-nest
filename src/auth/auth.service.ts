@@ -2,8 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { OwnerService } from 'src/owner-side/manage-owner/owner.service';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { LoginOwnerDto } from 'src/owner-side/manage-owner/dto/login-owner/login-owner.dto';
-
+import { LoginDto } from './dto/auth.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -11,15 +10,15 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(loginOwnerDto: LoginOwnerDto) {
-    const user = await this.validateUser(loginOwnerDto);
+  async login(loginDto: LoginDto) {
+    const user = await this.validateUser(loginDto);
     console.log('[File auth service] USER FOUND:', user);
   
     if (!user) {
       throw new UnauthorizedException('Invalid credentials.');
     }
   
-    if (user.otp && user.otp === loginOwnerDto.password) {
+    if (user.otp && user.otp === loginDto.password) {
       throw new UnauthorizedException(
         'You must reset your password before accessing the system.',
       );
@@ -48,14 +47,14 @@ export class AuthService {
   }
   
 
-  async validateUser(loginOwnerDto: LoginOwnerDto) {
-    const user = await this.userService.findByEmail(loginOwnerDto.email);
+  async validateUser(loginDto: LoginDto) {
+    const user = await this.userService.findByEmail(loginDto.email);
     console.log('🔍 Found user:', user);
     if (user) {
-      console.log('📌 Input Password:', loginOwnerDto.password);
+      console.log('📌 Input Password:', loginDto.password);
       console.log('🔐 Hashed Password in DB:', user.password);
       const passwordValid = await compare(
-        loginOwnerDto.password,
+        loginDto.password,
         user.password,
       );
       console.log('✅ Password Match:', passwordValid);

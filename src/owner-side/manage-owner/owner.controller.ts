@@ -2,8 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -18,13 +16,9 @@ import {
 import { CreateOwnerDto } from './dto/create-owner/create-owner.dto';
 import { Express, Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { LoginOwnerDto } from './dto/login-owner/login-owner.dto';
 import { OwnerService } from './owner.service';
 import { Readable } from 'stream';
-import { UpdatePasswordDto } from './dto/update-password/update-password.dto';
 import * as csvParser from 'csv-parser';
-import { ForgotPasswordDto } from './dto/forgot-owner/forgot-owner.dto';
-import { VerifyOtpDto } from './dto/verify-otp-owner/verify-otp-owner.dto';
 import { sendTemporaryPasswordEmail } from 'src/utils/send-email.util';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
@@ -32,13 +26,21 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { AuthService } from '../../auth/auth.service';
 import { CreateEmployeeDto } from './dto/create-employee/create-employee.dto';
 import { UserPayload } from '../../auth/interfaces/user.interface';
-// import * as bcrypt from 'bcrypt';
+import { BranchService } from '../branch/branch.service';
+import * as bcrypt from 'bcrypt';
+import { UpdatePasswordDto } from '../../auth/dto/password.dto';
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  VerifyOtpDto,
+} from '../../auth/dto/auth.dto';
 
 @Controller('owner')
 export class OwnerController {
   constructor(
     private readonly ownerService: OwnerService,
     private readonly authService: AuthService,
+    private readonly branchService: BranchService,
   ) {}
   @Patch('reset-password/:id')
   async updatePassword(
@@ -85,11 +87,11 @@ export class OwnerController {
     }
   }
   @Get('employees')
-  // @Roles('owner') // ✅ ให้เฉพาะ Owner ที่เป็น Manager ใช้ API นี้ได้
+  @Roles('owner')
   @UseGuards(JwtGuard)
   async getEmployees(@Req() req: Request) {
     console.log('🔍 [DEBUG] User from Token:', req.user);
-    const user = req.user as UserPayload; // 🔹 ดึงข้อมูลผู้ใช้จาก JWT
+    const user = req.user as UserPayload;
     return this.ownerService.findEmployeesByManager(user.owner_id);
   }
 
@@ -101,46 +103,34 @@ export class OwnerController {
 
   // * Function Login Owner
   @Post('login')
-  async login(@Body() loginOwnerDto: LoginOwnerDto) {
-    return this.authService.login(loginOwnerDto);
+  async login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
   }
   // * Function Upload CSV file
   @Post('upload-csv')
   @UseInterceptors(FileInterceptor('file'))
   async uploadCsv(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
-      throw new HttpException('No file provided', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('No file provided');
     }
 
-    const owners: CreateOwnerDto[] = [];
     const stream = Readable.from(file.buffer.toString());
+    const owners = [];
 
     try {
       for await (const row of stream.pipe(csvParser())) {
-        const tempPassword = Math.random().toString(36).slice(-8);
-        const createOwnerDto: CreateOwnerDto = {
-          owner_name: row.owner_name,
-          contact_info: row.contact_info,
-          email: row.email,
-          password: tempPassword,
-        };
-
-        owners.push(createOwnerDto);
-        await sendTemporaryPasswordEmail(createOwnerDto.email, tempPassword);
-        await this.ownerService.create(createOwnerDto);
+        const owner = await this.ownerService.createOwnerWithBranch(row);
+        owners.push(owner);
       }
 
       if (owners.length === 0) {
-        throw new HttpException('CSV file is empty', HttpStatus.BAD_REQUEST);
+        throw new BadRequestException('CSV file is empty');
       }
 
       return { message: 'CSV data uploaded successfully' };
     } catch (error) {
       console.error('Error uploading CSV data:', error);
-      throw new HttpException(
-        'Error processing CSV file',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new BadRequestException('Error processing CSV file');
     }
   }
 
@@ -165,11 +155,7 @@ export class OwnerController {
     const branchIdNum = Number(branchId);
 
     // ✅ ส่งค่าไปยัง service
-    await this.ownerService.forgotPassword(
-      forgotPasswordDto,
-      ownerIdNum,
-      branchIdNum,
-    );
+    await this.ownerService.forgotPassword(forgotPasswordDto);
 
     return { message: 'OTP ถูกส่งไปยังอีเมลของคุณแล้ว' };
   }
@@ -213,14 +199,6 @@ export class OwnerController {
     return { message: 'This is admin data' };
   }
 
-  // * Function Get Ingredients
-  @Get('ingredients/:owner_id')
-  async getIngredients(@Param('owner_id', ParseIntPipe) ownerId: number) {
-    console.log(ownerId);
-    console.log(typeof ownerId);
-    return this.ownerService.getIngredientsByOwner(ownerId);
-  }
-
   // * Function Create Employee
   @Post('create-employee')
   @Roles('owner')
@@ -252,11 +230,21 @@ export class OwnerController {
   }
 
   // * Dev only
-  // @Post('create-employee-dev')
-  // async createEmployeeWithoutAuth(
-  //   @Body() createEmployeeDto: CreateEmployeeDto,
-  // ) {
-  //   console.log('🔍 Creating Employee (No Auth):', createEmployeeDto);
-  //   return this.ownerService.createEmployee(createEmployeeDto);
-  // }
+  @Post('create-employee-dev')
+  async createEmployeeWithoutAuth(
+    @Body() createEmployeeDto: CreateEmployeeDto,
+  ) {
+    console.log('🔍 Creating Employee (No Auth):', createEmployeeDto);
+    return this.ownerService.createEmployee(createEmployeeDto);
+  }
+
+  //
+  // * Function Get Ingredients
+  @Get('ingredients/:owner_id')
+  async getIngredients(@Param('owner_id', ParseIntPipe) ownerId: number) {
+    console.log(ownerId);
+    console.log(typeof ownerId);
+    return this.ownerService.getIngredientsByOwner(ownerId);
+  }
+  //
 }

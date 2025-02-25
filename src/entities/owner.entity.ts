@@ -52,7 +52,7 @@ export class Owner {
   @Column({ type: 'timestamp', nullable: true })
   otp_expiry: Date;
 
-  @Column('text', { array: true, default: () => "ARRAY['owner']", nullable: false })
+  @Column('text', { array: true, default: () => "ARRAY['owner']"})
   roles: string[];
 
   
@@ -62,6 +62,9 @@ export class Owner {
   @ManyToOne(() => Owner, (owner) => owner.employees, { nullable: true })
   @JoinColumn({ name: 'manager_id' }) 
   manager: Owner;
+
+  @Column({ nullable: true })
+  branch_id: number;
 
 
   @ManyToOne(() => Branch, (branch) => branch.owner, { nullable: true })

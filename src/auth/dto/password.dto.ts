@@ -8,3 +8,11 @@ export class UpdatePasswordDto {
   @MinLength(6)
   newPassword: string;
 }
+
+export class ResetPasswordDto {
+  @IsString()
+  usernameOrEmail: string;
+
+  @IsString()
+  newPassword: string;
+}
