@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BranchService } from './branch.service';
 import { Branch } from '../../entities/branch.entity';
 import { BranchController } from './branch.controller';
-import { OwnerModule } from '../owner/owner.module';
+import { OwnerModule } from '../manage-owner/owner.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Branch]), OwnerModule],

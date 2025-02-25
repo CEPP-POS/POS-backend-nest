@@ -1,11 +1,11 @@
 import { Controller } from '@nestjs/common';
-import { OwnerService } from 'src/owner-side/owner/owner.service';
+import { OwnerService } from 'src/owner-side/manage-owner/owner.service';
 import { AuthService } from './auth.service';
 import { Post } from '@nestjs/common';
 import { Body } from '@nestjs/common';
-import { CreateOwnerDto } from 'src/owner-side/owner/dto/create-owner/create-owner.dto';
+import { CreateOwnerDto } from 'src/owner-side/manage-owner/dto/create-owner/create-owner.dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { LoginOwnerDto } from 'src/owner-side/owner/dto/login-owner/login-owner.dto';
+import { LoginOwnerDto } from 'src/owner-side/manage-owner/dto/login-owner/login-owner.dto';
 
 @Controller('auth')
 export class AuthController {

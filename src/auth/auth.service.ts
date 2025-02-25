@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { OwnerService } from 'src/owner-side/owner/owner.service';
+import { OwnerService } from 'src/owner-side/manage-owner/owner.service';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { LoginOwnerDto } from 'src/owner-side/owner/dto/login-owner/login-owner.dto';
+import { LoginOwnerDto } from 'src/owner-side/manage-owner/dto/login-owner/login-owner.dto';
 
 @Injectable()
 export class AuthService {

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { OwnerService } from '../../src/owner-side/owner/owner.service';
+import { OwnerService } from '../../src/owner-side/manage-owner/owner.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Owner } from '../../src/entities/owner.entity';
 import * as bcrypt from 'bcrypt';
