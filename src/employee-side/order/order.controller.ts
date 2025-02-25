@@ -46,8 +46,11 @@ export class OrderController {
   }
 
   @Get()
-  async findAllOrders() {
-    return this.orderService.findAllOrders();
+  async findAllOrders(
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
+  ) {
+    return this.orderService.findAllOrders(owner_id, branch_id);
   }
 
   @Get(':id')

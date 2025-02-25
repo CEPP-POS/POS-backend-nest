@@ -77,7 +77,7 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) { }
+  ) {}
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
@@ -178,12 +178,12 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-          menu_id: menu.menu_id,
-          menu_name: menu.menu_name,
-          description: menu.description,
-          image_url: menu.image_url,
-          price: menu.price,
-        };
+            menu_id: menu.menu_id,
+            menu_name: menu.menu_name,
+            description: menu.description,
+            image_url: menu.image_url,
+            price: menu.price,
+          };
     });
   }
 
@@ -1096,7 +1096,7 @@ export class MenuService {
       const savedMenuTypes = await this.menuTypeRepository.save(menuTypes);
 
       // Create menu type group entries for each menu type
-      const menuTypeGroupEntries = savedMenuTypes.map(menuType => ({
+      const menuTypeGroupEntries = savedMenuTypes.map((menuType) => ({
         menu_type_group_name: dto.menu_type_group_name,
         menuType: menuType,
         owner,
@@ -1104,7 +1104,8 @@ export class MenuService {
       }));
 
       // Save all menu type group entries
-      const savedMenuTypeGroups = await this.menuTypeGroupRepository.save(menuTypeGroupEntries);
+      const savedMenuTypeGroups =
+        await this.menuTypeGroupRepository.save(menuTypeGroupEntries);
 
       // Link menus to the menu type group - using the first menu type group since they share the same name
       const menuTypeGroup = savedMenuTypeGroups[0];
@@ -1130,7 +1131,7 @@ export class MenuService {
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to create menu type group',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -1813,34 +1814,39 @@ export class MenuService {
       .createQueryBuilder('sg')
       .leftJoinAndSelect('sg.owner', 'owner')
       .leftJoinAndSelect('sg.branch', 'branch')
-      .where('sg.sweetness_group_name = :groupName', { groupName: sweetness_group_name })
+      .where('sg.sweetness_group_name = :groupName', {
+        groupName: sweetness_group_name,
+      })
       .andWhere('owner.owner_id = :ownerId', { ownerId })
       .andWhere('branch.branch_id = :branchId', { branchId })
       .getOne();
 
     if (!sweetnessGroup) {
-      throw new NotFoundException(`Sweetness group "${sweetness_group_name}" not found`);
+      throw new NotFoundException(
+        `Sweetness group "${sweetness_group_name}" not found`,
+      );
     }
 
     // 2. Get all sweetness levels that belong to this group
     const sweetnessLevels = await this.sweetnessLevelRepository
       .createQueryBuilder('sl')
       .leftJoinAndSelect('sl.sweetnessGroup', 'sg')
-      .where('sg.sweetness_group_name = :groupName', { groupName: sweetness_group_name })
+      .where('sg.sweetness_group_name = :groupName', {
+        groupName: sweetness_group_name,
+      })
       .andWhere('sg.owner.owner_id = :ownerId', { ownerId })
       .andWhere('sg.branch.branch_id = :branchId', { branchId })
       .andWhere('sl.is_delete = :isDelete', { isDelete: false })
-      .select([
-        'sl.sweetness_id',
-        'sl.level_name'
-      ])
+      .select(['sl.sweetness_id', 'sl.level_name'])
       .getMany();
 
     // Get menus using this sweetness group
     const menus = await this.menuRepository
       .createQueryBuilder('m')
       .leftJoinAndSelect('m.sweetnessGroup', 'sg')
-      .where('sg.sweetness_group_name = :groupName', { groupName: sweetness_group_name })
+      .where('sg.sweetness_group_name = :groupName', {
+        groupName: sweetness_group_name,
+      })
       .andWhere('sg.owner.owner_id = :ownerId', { ownerId })
       .andWhere('sg.branch.branch_id = :branchId', { branchId })
       .andWhere('m.is_delete = :isDelete', { isDelete: false })
@@ -1849,14 +1855,14 @@ export class MenuService {
 
     return {
       group_name: sweetness_group_name,
-      levels: sweetnessLevels.map(level => ({
+      levels: sweetnessLevels.map((level) => ({
         sweetness_id: level.sweetness_id,
-        level_name: level.level_name
+        level_name: level.level_name,
       })),
-      menus: menus.map(menu => ({
+      menus: menus.map((menu) => ({
         menu_id: menu.menu_id,
-        menu_name: menu.menu_name
-      }))
+        menu_name: menu.menu_name,
+      })),
     };
   }
 
@@ -1943,7 +1949,9 @@ export class MenuService {
             .getOne();
 
           if (!sweetnessGroup) {
-            throw new NotFoundException(`Sweetness group "${groupName}" not found`);
+            throw new NotFoundException(
+              `Sweetness group "${groupName}" not found`,
+            );
           }
 
           // 2. Get all sweetness levels that belong to this group
@@ -1954,10 +1962,7 @@ export class MenuService {
             .andWhere('sg.owner.owner_id = :ownerId', { ownerId })
             .andWhere('sg.branch.branch_id = :branchId', { branchId })
             .andWhere('sl.is_delete = :isDelete', { isDelete: false })
-            .select([
-              'sl.sweetness_id',
-              'sl.level_name'
-            ])
+            .select(['sl.sweetness_id', 'sl.level_name'])
             .getMany();
 
           // Get menus using this sweetness group
@@ -1973,14 +1978,14 @@ export class MenuService {
 
           return {
             group_name: groupName,
-            levels: sweetnessLevels.map(level => ({
+            levels: sweetnessLevels.map((level) => ({
               sweetness_id: level.sweetness_id,
-              level_name: level.level_name
+              level_name: level.level_name,
             })),
-            menus: menus.map(menu => ({
+            menus: menus.map((menu) => ({
               menu_id: menu.menu_id,
-              menu_name: menu.menu_name
-            }))
+              menu_name: menu.menu_name,
+            })),
           };
 
         case 'size':
@@ -2044,55 +2049,59 @@ export class MenuService {
       const sweetnessGroups = await this.sweetnessGroupRepository.find({
         where: {
           owner: { owner_id: ownerId },
-          branch: { branch_id: branchId }
+          branch: { branch_id: branchId },
         },
-        select: ['sweetness_group_name']
+        select: ['sweetness_group_name'],
       });
 
       // Get all size groups
       const sizeGroups = await this.sizeGroupRepository.find({
         where: {
           owner: { owner_id: ownerId },
-          branch: { branch_id: branchId }
+          branch: { branch_id: branchId },
         },
-        select: ['size_group_name']
+        select: ['size_group_name'],
       });
 
       // Get all menu type groups
       const menuTypeGroups = await this.menuTypeGroupRepository.find({
         where: {
           owner: { owner_id: ownerId },
-          branch: { branch_id: branchId }
+          branch: { branch_id: branchId },
         },
-        select: ['menu_type_group_name']
+        select: ['menu_type_group_name'],
       });
 
       // Get all add-ons
       const addOns = await this.addOnRepository.find({
         where: {
           owner: { owner_id: ownerId },
-          branch: { branch_id: branchId }
+          branch: { branch_id: branchId },
         },
         relations: ['ingredient'],
-        select: ['add_on_id', 'add_on_price', 'is_required', 'is_multipled']
+        select: ['add_on_id', 'add_on_price', 'is_required', 'is_multipled'],
       });
 
       return {
-        sweetness_groups: [...new Set(sweetnessGroups.map(g => g.sweetness_group_name))],
-        size_groups: [...new Set(sizeGroups.map(g => g.size_group_name))],
-        menu_type_groups: [...new Set(menuTypeGroups.map(g => g.menu_type_group_name))],
-        add_ons: addOns.map(addon => ({
+        sweetness_groups: [
+          ...new Set(sweetnessGroups.map((g) => g.sweetness_group_name)),
+        ],
+        size_groups: [...new Set(sizeGroups.map((g) => g.size_group_name))],
+        menu_type_groups: [
+          ...new Set(menuTypeGroups.map((g) => g.menu_type_group_name)),
+        ],
+        add_ons: addOns.map((addon) => ({
           add_on_id: addon.add_on_id,
           ingredient_name: addon.ingredient.ingredient_name,
           price: addon.add_on_price,
           is_required: addon.is_required,
-          is_multipled: addon.is_multipled
-        }))
+          is_multipled: addon.is_multipled,
+        })),
       };
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to get option groups',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -2103,7 +2112,7 @@ export class MenuService {
       .createQueryBuilder('ao')
       .leftJoinAndSelect('ao.owner', 'owner')
       .leftJoinAndSelect('ao.branch', 'branch')
-      .leftJoinAndSelect('ao.ingredient', 'ing')  // Join with ingredient table
+      .leftJoinAndSelect('ao.ingredient', 'ing') // Join with ingredient table
       .where('owner.owner_id = :ownerId', { ownerId })
       .andWhere('branch.branch_id = :branchId', { branchId })
       .andWhere('ao.is_delete = :isDelete', { isDelete: false })
@@ -2114,7 +2123,7 @@ export class MenuService {
         'ao.is_multipled',
         'ing.ingredient_id',
         'ing.ingredient_name',
-        'ing.unit'
+        'ing.unit',
       ])
       .getMany();
 
@@ -2125,9 +2134,9 @@ export class MenuService {
         const menuIngredients = await this.menuIngredientRepository
           .createQueryBuilder('mi')
           .leftJoinAndSelect('mi.menu', 'm')
-          .leftJoinAndSelect('mi.ingredient', 'ing')  // Added this
+          .leftJoinAndSelect('mi.ingredient', 'ing') // Added this
           .where('mi.ingredient.ingredient_id = :ingredientId', {
-            ingredientId: addOn.ingredient.ingredient_id
+            ingredientId: addOn.ingredient.ingredient_id,
           })
           .andWhere('mi.is_addon = :isAddon', { isAddon: true })
           .andWhere('mi.is_delete = :isDelete', { isDelete: false })
@@ -2136,7 +2145,7 @@ export class MenuService {
             'm.menu_id',
             'm.menu_name',
             'ing.ingredient_name',
-            'ing.unit'
+            'ing.unit',
           ])
           .getMany();
 
@@ -2147,13 +2156,13 @@ export class MenuService {
           price: addOn.add_on_price,
           is_required: addOn.is_required,
           is_multipled: addOn.is_multipled,
-          menus: menuIngredients.map(mi => ({
+          menus: menuIngredients.map((mi) => ({
             menu_id: mi.menu.menu_id,
             menu_name: mi.menu.menu_name,
-            quantity_used: mi.quantity_used
-          }))
+            quantity_used: mi.quantity_used,
+          })),
         };
-      })
+      }),
     );
 
     return addOnsWithMenus;
