@@ -137,14 +137,42 @@ export class OwnerController {
     const stream = Readable.from(file.buffer.toString());
 
     try {
-      for await (const row of stream.pipe(csvParser())) {
+      const csvStream = stream.pipe(
+        csvParser({
+          headers: [
+            'timestamp',
+            'first_name',
+            'last_name',
+            'contact_info',
+            'email',
+            'line_id',
+            'address',
+          ],
+          skipLines: 1,
+          mapValues: ({ value }) => value.trim().replace(/^"|"$/g, ''), // ✅ Trim และลบเครื่องหมายคำพูด
+        }),
+      );
+
+      for await (const row of csvStream) {
+        const ownerName = `${row.first_name} ${row.last_name}`;
+
+        // ✅ เช็คว่ามี email ในระบบแล้วหรือไม่
+        const existingOwner = await this.ownerService.findByEmail(row.email);
+        if (existingOwner) {
+          console.warn(`⚠️ Skipping existing email: ${row.email}`);
+          continue; // ✅ ข้ามการสร้างบัญชีซ้ำ
+        }
+
         const tempPassword = Math.random().toString(36).slice(-8);
         const createOwnerDto: CreateOwnerDto = {
-          owner_name: row.owner_name,
+          owner_name: ownerName,
           contact_info: row.contact_info,
           email: row.email,
           password: tempPassword,
         };
+        console.log('📌 Line ID:', row.line_id);
+        console.log('📌 Timestamp:', row.timestamp);
+        console.log('📌 Address:', row.address);
 
         owners.push(createOwnerDto);
         await sendTemporaryPasswordEmail(createOwnerDto.email, tempPassword);
@@ -152,10 +180,16 @@ export class OwnerController {
       }
 
       if (owners.length === 0) {
-        throw new HttpException('CSV file is empty', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'CSV file is empty or all emails already exist',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
-      return { message: 'CSV data uploaded successfully' };
+      return {
+        message: 'CSV data uploaded successfully',
+        created: owners.length,
+      };
     } catch (error) {
       console.error('Error uploading CSV data:', error);
       throw new HttpException(

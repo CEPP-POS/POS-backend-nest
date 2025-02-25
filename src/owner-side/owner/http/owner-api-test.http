@@ -63,10 +63,10 @@ POST http://localhost:3000/owner/upload-csv
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
-Content-Disposition: form-data; name="file"; filename="owners.csv"
+Content-Disposition: form-data; name="file"; filename="สมัครสมาชิกระบบ POS (Responses) - Form Responses 1.csv"
 Content-Type: text/csv
 
-< /Users/pimolnutsriphadej/Desktop/POS-backend-nest/src/uploads/owners.csv
+< /Users/pimolnutsriphadej/Desktop/POS-backend-nest/src/uploads/สมัครสมาชิกระบบ POS (Responses) - Form Responses 1.csv
 --boundary--
 
 

@@ -62,46 +62,7 @@ export class OwnerService {
   async countTotalOwners(): Promise<number> {
     return this.ownerRepository.count(); // 🔹 นับจำนวน Owner ทั้งหมด
   }
-  // * Create Employee
-  // async createEmployee(
-  //   createEmployeeDto: CreateEmployeeDto,
-  //   owner_id: number,
-  //   branch_id: number,
-  // ): Promise<Owner> {
-  //   const { email, password } = createEmployeeDto;
 
-  //   const existingUser = await this.findByEmail(email);
-  //   if (existingUser) {
-  //     throw new BadRequestException('Email already exists.');
-  //   }
-
-  //   const hashedPassword = await bcrypt.hash(password, 10);
-
-  //   const manager = await this.ownerRepository.findOne({
-  //     where: { owner_id: owner_id },
-  //     relations: ['branch'],
-  //   });
-
-  //   if (!manager) {
-  //     throw new BadRequestException('Manager (Owner) not found.');
-  //   }
-
-  //   const branch = await this.branchRepository.findOne({
-  //     where: { branch_id: branch_id, owner: { owner_id: owner_id } },
-  //   });
-  //   if (!branch) {
-  //     throw new BadRequestException('Branch not found for this Owner.');
-  //   }
-  //   const newEmployee = this.ownerRepository.create({
-  //     email,
-  //     password: hashedPassword,
-  //     roles: ['employee'],
-  //     manager,
-  //     branch,
-  //   });
-
-  //   return this.ownerRepository.save(newEmployee);
-  // }
   async createEmployee(createEmployeeDto: CreateEmployeeDto): Promise<Owner> {
     const { email, password, manager_id, owner_id, branch_id } =
       createEmployeeDto;
