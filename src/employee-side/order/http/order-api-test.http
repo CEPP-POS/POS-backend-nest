@@ -91,7 +91,7 @@ Content-Type: application/json
 DELETE http://localhost:3000/employee/orders/1
 
 
-PATCH http://localhost:3000/employee/orders/40/cancel
+PATCH http://localhost:3000/employee/orders/56/cancel
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
@@ -104,8 +104,10 @@ branch_id: 1
 GET http://localhost:3000/employee/orders/item
 
 ### complete order
-PATCH http://localhost:3000/employee/orders/1/complete
+PATCH http://localhost:3000/employee/orders/55/complete
 Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 ### pay with cash
 POST http://localhost:3000/employee/orders/1/cash

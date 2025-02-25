@@ -105,9 +105,13 @@ export class OrderController {
     );
   }
 
-  @Patch(':id/complete')
-  async completeOrder(@Param('id') id: number) {
-    return this.orderService.completeOrder(id);
+  @Patch(':order_id/complete')
+  async completeOrder(
+    @Param('order_id') id: number,
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
+  ) {
+    return this.orderService.completeOrder(id, owner_id, branch_id);
   }
 
   @Post(':id/cash')

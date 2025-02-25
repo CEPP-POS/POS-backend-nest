@@ -222,12 +222,7 @@ export class OrderService {
       throw new Error('Cannot cancel an unpaid order');
     }
 
-    await this.orderRepository.save(order);
-
-    // ดึงข้อมูลคำสั่งซื้อที่อัปเดตพร้อมทุกฟิลด์
-    return this.orderRepository.findOne({
-      where: { order_id: orderId, owner: { owner_id }, branch: { branch_id } },
-    });
+    return await this.orderRepository.save(order);
   }
 
   async updateIngredientStock(
@@ -581,23 +576,27 @@ export class OrderService {
     return order;
   }
 
-  async completeOrder(order_id: number): Promise<Order> {
+  async completeOrder(
+    order_id: number,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<Order> {
     const order = await this.orderRepository.findOne({
-      where: { order_id: order_id },
+      where: { order_id: order_id, owner: { owner_id }, branch: { branch_id } },
     });
     if (!order) {
-      throw new NotFoundException(`Order with ID ${order_id} not found`);
+      throw new NotFoundException(
+        `Order with ID ${order_id} or owner_id ${owner_id} or branch_id ${branch_id} not found`,
+      );
     }
 
-    if (order.status === 'paid' || order.status === 'processing') {
-      order.status = 'success';
+    if (order.status === 'paid' || order.status === 'รอทำ') {
+      order.status = 'เสร็จสิ้น';
     } else {
-      throw new Error('Cannot make order successful');
+      throw new Error('ออร์เดอร์อาจเสร็จสิ้นไปแล้ว');
     }
 
-    await this.orderRepository.save(order);
-
-    return this.orderRepository.findOne({ where: { order_id: order_id } });
+    return await this.orderRepository.save(order);
   }
 
   async payWithCash(
