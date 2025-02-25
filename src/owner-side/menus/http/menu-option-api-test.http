@@ -14,22 +14,20 @@ branch_id: 1
 
 PATCH http://localhost:3000/owner/menus/options/sweetness
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
 {
   "old_sweetness_group_name": "ความหวานกาแฟss",
   "new_sweetness_group_name": "ความหวานกาแฟss",
   "options": [
-    { "sweetness_id": 87, "level_name": "level 87" },
-    { "sweetness_id": 88, "level_name": "level 88" },
-    { "sweetness_id": null, "level_name": "level new" },
-    { "sweetness_id": 89, "level_name": "level 89" }
-
+    { "sweetness_id": 3, "level_name": "หวานน้อย" },
+    { "sweetness_id": 4, "level_name": "หวานกลาง" },
+    { "sweetness_id": 5, "level_name": "หวานมาก" }
   ],
   "menu_id": [1,2,4]
 }
 
-DELETE http://localhost:3000/owner/menus/options/sweetness/ความหวาน coffee นม y
+DELETE http://localhost:3000/owner/menus/options/sweetness/ความหวาน
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
@@ -43,15 +41,6 @@ Content-Type: application/json
   "menu_id": [15, 16, 10],
   "is_required":true
 }
-//pass////////////////////////
-// GET http://localhost:3000/sweetness-levels
-
-
-# GET http://localhost:3000/sweetness-levels/menu/25 
-
-
-# DELETE http://localhost:3000/sweetness-levels/1
-
 
 POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
@@ -67,107 +56,6 @@ branch_id: 1
   "is_required":true,
   "is_multipled":true
 }
-
-PATCH http://localhost:3000/owner/menus/options/add-ons/114
-Content-Type: application/json
-
-{
-  "options": [
-    { "ไข่มุกบราวชูการ์": { "price": "20.00", "unit": 20 } },
-    { "ขนมปังกรอบ": { "price": "20.00", "unit": 50 } }
-  ],
-  "menu_id": [16,15],
-  "is_required":true
-}
-
-
-POST http://localhost:3000/owner/menus/options/size
-Content-Type: application/json
-owner_id: 1
-branch_id: 1
-
-{
-  "size_group_name": "ขนาดแก้วสำหรับนม",
-   "options": [
-    { "s":  { "price": "5.00" } },
-    { "m":  { "price": "10.00" } },
-    { "l":  { "price": "15.00" } }
-  ],
-  "menu_id": [1]
-}
-
-# edit size option
-PATCH http://localhost:3000/owner/menus/options/size
-Content-Type: application/json
-owner_id: 1
-branch_id: 1
-
-{
-  "old_size_group_name": "ขนาดแก้วสำหรับนมสด",
-  "new_size_group_name": "ขนาดแก้วสำหรับนมสด",
-   "options": [
-    { "size_id": "71", "size_name":"m",  "price": "25.00" },
-    { "size_id": "72", "size_name":"l",  "price": "35.00" },
-    { "size_id": "75", "size_name":"xl",  "price": "45.00" }
-  ],
-  "menu_id": [1]
-}
-
-POST http://localhost:3000/owner/menus/options/menu_type
-Content-Type: application/json
-owner_id: 1
-branch_id: 1
-{
-  "menu_type_group_name": "ปั่นสำหรับนม",
-  "options": [
-    { "ปั่นเย็น": "5.00" },
-    { "iceน้อย": "20.00" }
-  ],
-  "menu_id": [1, 2]
-}
-
-DELETE http://localhost:3000/owner/menus/options/menu_type/ปั่นรักสุขภาพ
-Content-Type: application/json
-owner_id: 1
-branch_id: 1
-
-PATCH http://localhost:3000/owner/menus/options/menu_type
-Content-Type: application/json
-owner_id: 1
-branch_id: 1
-{
-  "old_menu_type_group_name": "ปั่นเย็น",
-  "new_menu_type_group_name": "เครื่องดื่มเย็นและร้อน",
-  "options": [
-    { "menu_type_id": "32", "type_name": "น้ำแยก", "price_difference": 10.00 },
-    { "menu_type_id": "5", "type_name": "ปั่น", "price_difference": 5.00 }
-  ],
-  "menu_id": [1, 2]
-}
-
-
-
-GET http://localhost:3000/owner/menus/14
-
-GET http://localhost:3000/owner/menus/options/add-ons
-
-GET http://localhost:3000/owner/menus/options/size
-
-GET http://localhost:3000/owner/menus/options/sweetness
-
-GET http://localhost:3000/owner/menus/options/menu-type
-
-# delete size group
-DELETE http://localhost:3000/owner/menus/options/size/ขนาดแก้วสำหรับนม
-Content-Type: application/json
-owner_id: 1
-branch_id: 1
-
-# Delete all add-ons
-DELETE http://localhost:3000/owner/menus/options/add-ons
-Content-Type: application/json
-owner_id: 1
-branch_id: 1
 
 # edit add on option
 PATCH http://localhost:3000/owner/menus/options/add-on
@@ -203,11 +91,98 @@ branch_id: 1
   "is_multiple": true
 }
 
-### Get sweetness group data
-GET http://localhost:3000/owner/menus/options/sweetness/ความหวานกาแฟ
+POST http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
+
+{
+  "size_group_name": "ขนาดแก้วสำหรับนม",
+   "options": [
+    { "s":  { "price": "5.00" } },
+    { "m":  { "price": "10.00" } },
+    { "l":  { "price": "15.00" } }
+  ],
+  "menu_id": [1]
+}
+
+# edit size option
+PATCH http://localhost:3000/owner/menus/options/size
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+{
+  "old_size_group_name": "ขนาดแก้วสำหรับนมจ้า",
+  "new_size_group_name": "ขนาดแก้วสำหรับนมจ้า",
+   "options": [
+    { "size_id": "96", "size_name":"m",  "price": "25.00" },
+    { "size_id": "97", "size_name":"l",  "price": "35.00" },
+    { "size_id": "98", "size_name":"xl",  "price": "45.00" },
+    { "size_id": "null", "size_name":"xs",  "price": "45.00" }
+  ],
+  "menu_id": [1]
+}
+
+POST http://localhost:3000/owner/menus/options/menu_type
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+{
+  "menu_type_group_name": "ปั่นสำหรับนม",
+  "options": [
+    { "ปั่นเย็น": "5.00" },
+    { "iceน้อย": "20.00" }
+  ],
+  "menu_id": [1, 2]
+}
+
+# delete size group
+DELETE http://localhost:3000/owner/menus/options/size/ขนาดแก้วสำหรับนม
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+PATCH http://localhost:3000/owner/menus/options/menu_type
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+{
+  "old_menu_type_group_name": "ปั่นเย็น",
+  "new_menu_type_group_name": "เครื่องดื่มเย็นและร้อน",
+  "options": [
+    { "menu_type_id": "32", "type_name": "น้ำแยก", "price_difference": 10.00 },
+    { "menu_type_id": "5", "type_name": "ปั่น", "price_difference": 5.00 }
+  ],
+  "menu_id": [1, 2]
+}
+
+DELETE http://localhost:3000/owner/menus/options/menu_type/ปั่นรักสุขภาพ
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+GET http://localhost:3000/owner/menus/14
+
+GET http://localhost:3000/owner/menus/options/add-ons
+
+GET http://localhost:3000/owner/menus/options/size
+
+GET http://localhost:3000/owner/menus/options/sweetness
+
+GET http://localhost:3000/owner/menus/options/menu-type
+
+# Delete all add-ons
+DELETE http://localhost:3000/owner/menus/options/add-ons
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+### Get sweetness group data
+GET http://localhost:3000/owner/menus/options/sweetness/ความหวานสำหรับกลุ่มนม
+Content-Type: application/json
+owner_id: 6
+branch_id: 3
 
 ### Get size group data
 GET http://localhost:3000/owner/menus/options/size/ขนาดแก้วสำหรับนม
@@ -216,7 +191,19 @@ owner_id: 1
 branch_id: 1
 
 ### Get menu type group data
-GET http://localhost:3000/owner/menus/options/menu-type/ปั่นสำหรับนม
+GET http://localhost:3000/owner/menus/options/menu-type/รวมมิตรผลไม้
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
+
+### Get add-on group data
+GET http://localhost:3000/owner/menus/options/add-ons
+Content-Type: application/json
+owner_id: 6
+branch_id: 3
+
+### Get all option groups
+GET http://localhost:3000/owner/menus/options/groups
+Content-Type: application/json
+owner_id: 6
+branch_id: 3

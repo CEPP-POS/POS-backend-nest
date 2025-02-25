@@ -77,7 +77,7 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) {}
+  ) { }
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
@@ -157,37 +157,33 @@ export class MenuService {
     };
   }
 
-  async findAll(owner_id: number, branch_id: number): Promise<Menu[]> {
-    try {
-      const menus = await this.menuRepository.find({
-        where: {
-          owner: { owner_id },
-          branch: { branch_id },
-          is_delete: false,
-        },
-        select: [
-          'menu_id',
-          'menu_name',
-          'price',
-          'description',
-          'image_url',
-          'paused',
-        ],
-      });
+  async findAll(p0: number, p1: number): Promise<any[]> {
+    const menus = await this.menuRepository.find({
+      where: { is_delete: false },
+      relations: [
+        'menuIngredient',
+        'sweetnessGroup',
+        'sizeGroup',
+        'menuTypeGroup',
+      ],
+    });
 
-      if (!menus.length) {
-        throw new NotFoundException('No menus found for this owner and branch');
-      }
+    return menus.map((menu) => {
+      const hasRelations =
+        (menu.menuIngredient && menu.menuIngredient.length > 0) ||
+        (menu.sweetnessGroup !== null && menu.sweetnessGroup !== undefined) ||
+        (menu.sizeGroup != null && menu.sizeGroup !== undefined) ||
+        (menu.menuTypeGroup != null && menu.menuTypeGroup !== undefined);
 
       return hasRelations
         ? menu
         : {
-            menu_id: menu.menu_id,
-            menu_name: menu.menu_name,
-            description: menu.description,
-            image_url: menu.image_url,
-            price: menu.price,
-          };
+          menu_id: menu.menu_id,
+          menu_name: menu.menu_name,
+          description: menu.description,
+          image_url: menu.image_url,
+          price: menu.price,
+        };
     });
   }
 
@@ -1075,62 +1071,68 @@ export class MenuService {
     owner_id: number,
     branch_id: number,
   ): Promise<any> {
-    if (!dto.options || dto.options.length === 0) {
-      throw new Error('Options cannot be empty');
-    }
+    try {
+      if (!dto.options || dto.options.length === 0) {
+        throw new Error('Options cannot be empty');
+      }
 
-    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
-    if (!owner) throw new NotFoundException('Owner not found');
+      const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+      if (!owner) throw new NotFoundException('Owner not found');
 
-    const branch = await this.branchRepository.findOne({
-      where: { branch_id },
-    });
-    if (!branch) throw new NotFoundException('Branch not found');
+      const branch = await this.branchRepository.findOne({
+        where: { branch_id },
+      });
+      if (!branch) throw new NotFoundException('Branch not found');
 
-    const menuTypes = dto.options.map((option) => ({
-      type_name: Object.keys(option)[0],
-      price_difference: parseFloat(Object.values(option)[0]),
-      is_delete: false,
-      owner,
-      branch,
-    }));
+      // Save menu types first
+      const menuTypes = dto.options.map((option) => ({
+        type_name: Object.keys(option)[0],
+        price_difference: parseFloat(Object.values(option)[0]),
+        is_delete: false,
+        owner,
+        branch,
+      }));
 
-    const savedMenuTypes = await this.menuTypeRepository.save(menuTypes);
+      const savedMenuTypes = await this.menuTypeRepository.save(menuTypes);
 
-    const newMenuTypeGroup = this.menuTypeGroupRepository.create({
-      menu_type_group_name: dto.menu_type_group_name,
-      owner,
-      branch,
-    });
+      // Create menu type group entries for each menu type
+      const menuTypeGroupEntries = savedMenuTypes.map(menuType => ({
+        menu_type_group_name: dto.menu_type_group_name,
+        menuType: menuType,
+        owner,
+        branch,
+      }));
 
-    await this.menuTypeGroupRepository.save(newMenuTypeGroup);
+      // Save all menu type group entries
+      const savedMenuTypeGroups = await this.menuTypeGroupRepository.save(menuTypeGroupEntries);
 
-    const menuTypeGroup = await this.menuTypeGroupRepository.findOne({
-      where: { menu_type_group_name: dto.menu_type_group_name },
-    });
+      // Link menus to the menu type group - using the first menu type group since they share the same name
+      const menuTypeGroup = savedMenuTypeGroups[0];
 
-    if (!menuTypeGroup) {
-      throw new Error('Menu Type Group not found');
-    }
+      // Update menus with the menu type group reference
+      for (const menuId of dto.menu_id) {
+        await this.menuRepository
+          .createQueryBuilder()
+          .update(Menu)
+          .set({ menuTypeGroup: menuTypeGroup })
+          .where('menu_id = :menuId', { menuId })
+          .andWhere('owner.owner_id = :ownerId', { ownerId: owner_id })
+          .andWhere('branch.branch_id = :branchId', { branchId: branch_id })
+          .execute();
+      }
 
-    for (const menuType of savedMenuTypes) {
-      menuTypeGroup.menuType = menuType;
-      await this.menuTypeGroupRepository.save(menuTypeGroup);
-    }
-
-    for (const menuId of dto.menu_id) {
-      await this.menuRepository.update(
-        { menu_id: menuId },
-        { menuTypeGroup: menuTypeGroup },
+      return {
+        message: 'Menu Type Group created successfully',
+        menu_type_group_name: dto.menu_type_group_name,
+        menu_types: savedMenuTypes,
+        linked_menus: dto.menu_id,
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to create menu type group',
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
-
-    return {
-      message: 'Menu Type Group created successfully',
-      menu_type_group_name: menuTypeGroup.menu_type_group_name,
-      menu_types: savedMenuTypes,
-      linked_menus: dto.menu_id,
-    };
   }
 
   async deleteMenuTypeGroup(
@@ -1806,66 +1808,55 @@ export class MenuService {
     ownerId: number,
     branchId: number,
   ) {
-    // 1. Find all sweetness groups with the given name and get their sweetness levels
-    const sweetnessGroups = await this.sweetnessGroupRepository.find({
-      where: {
-        sweetness_group_name,
-        owner: { owner_id: ownerId },
-        branch: { branch_id: branchId },
-      },
-      relations: ['sweetnessLevel'],
-    });
+    // 1. First find the sweetness group
+    const sweetnessGroup = await this.sweetnessGroupRepository
+      .createQueryBuilder('sg')
+      .leftJoinAndSelect('sg.owner', 'owner')
+      .leftJoinAndSelect('sg.branch', 'branch')
+      .where('sg.sweetness_group_name = :groupName', { groupName: sweetness_group_name })
+      .andWhere('owner.owner_id = :ownerId', { ownerId })
+      .andWhere('branch.branch_id = :branchId', { branchId })
+      .getOne();
 
-    if (!sweetnessGroups.length) {
-      throw new NotFoundException(
-        `Sweetness group "${sweetness_group_name}" not found`,
-      );
+    if (!sweetnessGroup) {
+      throw new NotFoundException(`Sweetness group "${sweetness_group_name}" not found`);
     }
 
-    // Get all sweetness level IDs from the groups
-    const sweetnessLevelIds = sweetnessGroups.map(
-      (group) => group.sweetnessLevel.sweetness_id,
-    );
+    // 2. Get all sweetness levels that belong to this group
+    const sweetnessLevels = await this.sweetnessLevelRepository
+      .createQueryBuilder('sl')
+      .leftJoinAndSelect('sl.sweetnessGroup', 'sg')
+      .where('sg.sweetness_group_name = :groupName', { groupName: sweetness_group_name })
+      .andWhere('sg.owner.owner_id = :ownerId', { ownerId })
+      .andWhere('sg.branch.branch_id = :branchId', { branchId })
+      .andWhere('sl.is_delete = :isDelete', { isDelete: false })
+      .select([
+        'sl.sweetness_id',
+        'sl.level_name'
+      ])
+      .getMany();
 
-    // 1. Soft delete the sweetness levels
-    await this.sweetnessLevelRepository.update(
-      {
-        sweetness_id: In(sweetnessLevelIds),
-        owner: { owner_id: ownerId },
-        branch: { branch_id: branchId },
-      },
-      { is_delete: true },
-    );
-
-    // 2. Find menus that use this sweetness group and set to null
-    const menusToUpdate = await this.menuRepository.find({
-      where: {
-        owner: { owner_id: ownerId },
-        branch: { branch_id: branchId },
-      },
-      relations: ['sweetnessGroup'],
-    });
-
-    const menusWithThisSweetnessGroup = menusToUpdate.filter(
-      (menu) =>
-        menu.sweetnessGroup?.sweetness_group_name === sweetness_group_name,
-    );
-
-    for (const menu of menusWithThisSweetnessGroup) {
-      menu.sweetnessGroup = null;
-      await this.menuRepository.save(menu);
-    }
-
-    // 3. Delete the sweetness groups
-    await this.sweetnessGroupRepository.delete({
-      sweetness_group_name,
-      owner: { owner_id: ownerId },
-      branch: { branch_id: branchId },
-    });
+    // Get menus using this sweetness group
+    const menus = await this.menuRepository
+      .createQueryBuilder('m')
+      .leftJoinAndSelect('m.sweetnessGroup', 'sg')
+      .where('sg.sweetness_group_name = :groupName', { groupName: sweetness_group_name })
+      .andWhere('sg.owner.owner_id = :ownerId', { ownerId })
+      .andWhere('sg.branch.branch_id = :branchId', { branchId })
+      .andWhere('m.is_delete = :isDelete', { isDelete: false })
+      .select(['m.menu_id', 'm.menu_name'])
+      .getMany();
 
     return {
-      message: `Sweetness group "${sweetness_group_name}" and its levels have been deleted`,
-      statusCode: HttpStatus.OK,
+      group_name: sweetness_group_name,
+      levels: sweetnessLevels.map(level => ({
+        sweetness_id: level.sweetness_id,
+        level_name: level.level_name
+      })),
+      menus: menus.map(menu => ({
+        menu_id: menu.menu_id,
+        menu_name: menu.menu_name
+      }))
     };
   }
 
@@ -1941,22 +1932,55 @@ export class MenuService {
     try {
       switch (type) {
         case 'sweetness':
-          const sweetnessGroups = await this.sweetnessGroupRepository.find({
-            where: {
-              sweetness_group_name: groupName,
-              owner: { owner_id: ownerId },
-              branch: { branch_id: branchId },
-            },
-            relations: ['sweetnessLevel', 'menu'],
-          });
+          // 1. First find the sweetness group
+          const sweetnessGroup = await this.sweetnessGroupRepository
+            .createQueryBuilder('sg')
+            .leftJoinAndSelect('sg.owner', 'owner')
+            .leftJoinAndSelect('sg.branch', 'branch')
+            .where('sg.sweetness_group_name = :groupName', { groupName })
+            .andWhere('owner.owner_id = :ownerId', { ownerId })
+            .andWhere('branch.branch_id = :branchId', { branchId })
+            .getOne();
+
+          if (!sweetnessGroup) {
+            throw new NotFoundException(`Sweetness group "${groupName}" not found`);
+          }
+
+          // 2. Get all sweetness levels that belong to this group
+          const sweetnessLevels = await this.sweetnessLevelRepository
+            .createQueryBuilder('sl')
+            .leftJoinAndSelect('sl.sweetnessGroup', 'sg')
+            .where('sg.sweetness_group_name = :groupName', { groupName })
+            .andWhere('sg.owner.owner_id = :ownerId', { ownerId })
+            .andWhere('sg.branch.branch_id = :branchId', { branchId })
+            .andWhere('sl.is_delete = :isDelete', { isDelete: false })
+            .select([
+              'sl.sweetness_id',
+              'sl.level_name'
+            ])
+            .getMany();
+
+          // Get menus using this sweetness group
+          const menus = await this.menuRepository
+            .createQueryBuilder('m')
+            .leftJoinAndSelect('m.sweetnessGroup', 'sg')
+            .where('sg.sweetness_group_name = :groupName', { groupName })
+            .andWhere('sg.owner.owner_id = :ownerId', { ownerId })
+            .andWhere('sg.branch.branch_id = :branchId', { branchId })
+            .andWhere('m.is_delete = :isDelete', { isDelete: false })
+            .select(['m.menu_id', 'm.menu_name'])
+            .getMany();
+
           return {
             group_name: groupName,
-            levels: sweetnessGroups.map((group) => ({
-              sweetness_id: group.sweetnessLevel.sweetness_id,
-              level_name: group.sweetnessLevel.level_name,
-              is_delete: group.sweetnessLevel.is_delete,
+            levels: sweetnessLevels.map(level => ({
+              sweetness_id: level.sweetness_id,
+              level_name: level.level_name
             })),
-            menus: sweetnessGroups[0]?.menu || [],
+            menus: menus.map(menu => ({
+              menu_id: menu.menu_id,
+              menu_name: menu.menu_name
+            }))
           };
 
         case 'size':
@@ -1999,6 +2023,10 @@ export class MenuService {
             menus: menuTypeGroups[0]?.menu || [],
           };
 
+        case 'add-ons':
+          // Call our new method for add-ons
+          return this.getAddOnDetails(ownerId, branchId);
+
         default:
           throw new BadRequestException('Invalid group type');
       }
@@ -2008,5 +2036,126 @@ export class MenuService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async getAllOptionGroups(ownerId: number, branchId: number) {
+    try {
+      // Get all sweetness groups
+      const sweetnessGroups = await this.sweetnessGroupRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId }
+        },
+        select: ['sweetness_group_name']
+      });
+
+      // Get all size groups
+      const sizeGroups = await this.sizeGroupRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId }
+        },
+        select: ['size_group_name']
+      });
+
+      // Get all menu type groups
+      const menuTypeGroups = await this.menuTypeGroupRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId }
+        },
+        select: ['menu_type_group_name']
+      });
+
+      // Get all add-ons
+      const addOns = await this.addOnRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId }
+        },
+        relations: ['ingredient'],
+        select: ['add_on_id', 'add_on_price', 'is_required', 'is_multipled']
+      });
+
+      return {
+        sweetness_groups: [...new Set(sweetnessGroups.map(g => g.sweetness_group_name))],
+        size_groups: [...new Set(sizeGroups.map(g => g.size_group_name))],
+        menu_type_groups: [...new Set(menuTypeGroups.map(g => g.menu_type_group_name))],
+        add_ons: addOns.map(addon => ({
+          add_on_id: addon.add_on_id,
+          ingredient_name: addon.ingredient.ingredient_name,
+          price: addon.add_on_price,
+          is_required: addon.is_required,
+          is_multipled: addon.is_multipled
+        }))
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to get option groups',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async getAddOnDetails(ownerId: number, branchId: number) {
+    // First get all active add-ons
+    const addOns = await this.addOnRepository
+      .createQueryBuilder('ao')
+      .leftJoinAndSelect('ao.owner', 'owner')
+      .leftJoinAndSelect('ao.branch', 'branch')
+      .leftJoinAndSelect('ao.ingredient', 'ing')  // Join with ingredient table
+      .where('owner.owner_id = :ownerId', { ownerId })
+      .andWhere('branch.branch_id = :branchId', { branchId })
+      .andWhere('ao.is_delete = :isDelete', { isDelete: false })
+      .select([
+        'ao.add_on_id',
+        'ao.add_on_price',
+        'ao.is_required',
+        'ao.is_multipled',
+        'ing.ingredient_id',
+        'ing.ingredient_name',
+        'ing.unit'
+      ])
+      .getMany();
+
+    // For each add-on, get the menu information
+    const addOnsWithMenus = await Promise.all(
+      addOns.map(async (addOn) => {
+        // Get menu ingredients using this add-on
+        const menuIngredients = await this.menuIngredientRepository
+          .createQueryBuilder('mi')
+          .leftJoinAndSelect('mi.menu', 'm')
+          .leftJoinAndSelect('mi.ingredient', 'ing')  // Added this
+          .where('mi.ingredient.ingredient_id = :ingredientId', {
+            ingredientId: addOn.ingredient.ingredient_id
+          })
+          .andWhere('mi.is_addon = :isAddon', { isAddon: true })
+          .andWhere('mi.is_delete = :isDelete', { isDelete: false })
+          .select([
+            'mi.quantity_used',
+            'm.menu_id',
+            'm.menu_name',
+            'ing.ingredient_name',
+            'ing.unit'
+          ])
+          .getMany();
+
+        return {
+          add_on_id: addOn.add_on_id,
+          ingredient_name: addOn.ingredient.ingredient_name,
+          unit: addOn.ingredient.unit,
+          price: addOn.add_on_price,
+          is_required: addOn.is_required,
+          is_multipled: addOn.is_multipled,
+          menus: menuIngredients.map(mi => ({
+            menu_id: mi.menu.menu_id,
+            menu_name: mi.menu.menu_name,
+            quantity_used: mi.quantity_used
+          }))
+        };
+      })
+    );
+
+    return addOnsWithMenus;
   }
 }

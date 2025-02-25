@@ -155,11 +155,68 @@ export class MenuController {
     return this.menuService.findOne(+id);
   }
 
+  @Get('options/groups')
+  async getAllOptionGroups(@Req() request: Request) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.menuService.getAllOptionGroups(+ownerId, +branchId);
+  }
+
   @Get('options/:type')
   async getOptions(
     @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
   ) {
     return this.menuService.getOptions(type);
+  }
+
+  @Get('options/sweetness/:groupName')
+  async getSweetnessGroup(
+    @Param('groupName') groupName: string,
+    @Req() request: Request
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.menuService.getGroupData('sweetness', groupName, +ownerId, +branchId);
+  }
+
+  @Get('options/size/:groupName')
+  async getSizeGroup(
+    @Param('groupName') groupName: string,
+    @Req() request: Request
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.menuService.getGroupData('size', groupName, +ownerId, +branchId);
+  }
+
+  @Get('options/menu-type/:groupName')
+  async getMenuTypeGroup(
+    @Param('groupName') groupName: string,
+    @Req() request: Request
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.menuService.getGroupData('menu-type', groupName, +ownerId, +branchId);
   }
 
   // * Update a menuname description price image
