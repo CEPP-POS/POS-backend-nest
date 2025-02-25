@@ -57,7 +57,9 @@ export class PauseController {
   @Patch('menus')
   async updateMenu(
     @Body() MenuUpdates: { menu_id: number; paused: boolean }[],
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
   ) {
-    return this.pauseService.updateMenu(MenuUpdates);
+    return this.pauseService.updateMenu(MenuUpdates, owner_id, branch_id);
   }
 }

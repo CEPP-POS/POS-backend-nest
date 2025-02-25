@@ -82,12 +82,29 @@ export class PauseService {
     return menus;
   }
 
-  async updateMenu(listMenuUpdates: { menu_id: number; paused: boolean }[]) {
+  async updateMenu(
+    listMenuUpdates: { menu_id: number; paused: boolean }[],
+    owner_id: number,
+    branch_id: number,
+  ) {
     const listMenuId = listMenuUpdates.map((item) => item.menu_id);
 
     const menus = await this.menuRepository.find({
-      where: { menu_id: In(listMenuId) },
+      where: {
+        menu_id: In(listMenuId),
+        owner: { owner_id },
+        branch: { branch_id },
+        is_delete: false,
+      },
     });
+
+    if (menus.length === 0) {
+      return { message: 'No menus found for this owner and branch' };
+    }
+
+    if (menus.length !== listMenuId.length) {
+      return { message: 'Some menus do not belong to this owner and branch' };
+    }
 
     menus.forEach((menu) => {
       const updatePauseStatus = listMenuUpdates.find(
