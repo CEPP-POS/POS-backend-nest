@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, Between, Equal, MoreThan } from 'typeorm';
 import { Order } from '../../entities/order.entity';
-import { CreateOrderDto } from './dto/create-order/create-order.dto';
+import {
+  CancelStatus,
+  CreateOrderDto,
+} from './dto/create-order/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order/update-order.dto';
 import { CancelOrderDto } from './dto/cancel-order/Cancel-order.dto';
 import { OrderItem } from '../../entities/order-item.entity';
@@ -23,7 +26,6 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
 import { OrderItemAddOn } from 'src/entities/order-item-add-on.entity';
 import { PaymentMethod } from './dto/create-order/create-order.dto';
-import { isNotEmpty } from 'class-validator';
 
 @Injectable()
 export class OrderService {
@@ -69,12 +71,16 @@ export class OrderService {
     private readonly ingredientUpdateRepository: Repository<IngredientUpdate>,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto): Promise<Order> {
+  async create(
+    createOrderDto: CreateOrderDto,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<Order> {
     const owner = await this.ownerRepository.findOne({
-      where: { owner_id: 1 },
+      where: { owner_id },
     });
     const branch = await this.branchRepository.findOne({
-      where: { branch_id: 1 },
+      where: { branch_id },
     });
 
     // Convert order_date to Date if it's a string
@@ -193,20 +199,25 @@ export class OrderService {
   async cancelOrder(
     orderId: number,
     cancelOrderDto: CancelOrderDto,
+    owner_id: number,
+    branch_id: number,
   ): Promise<Order> {
     const order = await this.orderRepository.findOne({
-      where: { order_id: orderId },
+      where: { order_id: orderId, owner: { owner_id }, branch: { branch_id } },
     });
 
     if (!order) {
-      throw new NotFoundException(`Order with ID ${orderId} not found`);
+      throw new NotFoundException(
+        `Order with order_id ${orderId} or owner_id ${owner_id} or ${branch_id} not found`,
+      );
     }
 
     // ตรวจสอบสถานะ หากคำสั่งซื้อชำระเงินแล้ว
-    if (order.status === 'paid' || order.status === 'processing') {
+    if (order.status === 'paid' || order.status === 'รอทำ') {
       order.status = 'canceled';
       order.customer_name = cancelOrderDto.customer_name;
       order.customer_contact = cancelOrderDto.contact;
+      order.cancel_status = CancelStatus.RefundPending;
     } else {
       throw new Error('Cannot cancel an unpaid order');
     }
@@ -215,7 +226,7 @@ export class OrderService {
 
     // ดึงข้อมูลคำสั่งซื้อที่อัปเดตพร้อมทุกฟิลด์
     return this.orderRepository.findOne({
-      where: { order_id: orderId },
+      where: { order_id: orderId, owner: { owner_id }, branch: { branch_id } },
     });
   }
 

@@ -89,13 +89,20 @@ export class OrderController {
     await this.orderService.remove(+id);
     return res.status(HttpStatus.NO_CONTENT).send();
   }
-
-  @Patch(':id/cancel')
+  //
+  @Patch(':order_id/cancel')
   async cancelOrder(
-    @Param('id') id: number,
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
+    @Param('order_id') id: number,
     @Body() cancelOrderDto: CancelOrderDto,
   ) {
-    return this.orderService.cancelOrder(id, cancelOrderDto);
+    return this.orderService.cancelOrder(
+      id,
+      cancelOrderDto,
+      owner_id,
+      branch_id,
+    );
   }
 
   @Patch(':id/complete')
