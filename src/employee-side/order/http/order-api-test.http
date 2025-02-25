@@ -1,4 +1,4 @@
-### Create Order
+### Create Order with QRCODE PAY
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
 owner_id: 1
@@ -8,7 +8,9 @@ branch_id: 1
     "order_date": "2025-03-01T08:00:00Z",
     "total_price": 260,
     "queue_number": 4,
-    "status": "รอทำ"
+    "status": "รอทำ",
+    "payment_method": "QR_CODE",
+    "path_img": "https://image/payment"
   },
   "items": [
     {
@@ -26,7 +28,44 @@ branch_id: 1
       "size_id": 1,
       "add_on_id": [],  
       "menu_type_id": 1,
+      "quantity": 2,
+      "price": 60
+    }
+  ]
+}
+
+### Create Order WITH CASH PAY
+POST http://localhost:3000/employee/orders
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+{
+  "createOrderDto": {
+    "order_date": "2025-03-01T08:00:00Z",
+    "total_price": 260,
+    "queue_number": 4,
+    "status": "รอทำ",
+    "payment_method": "CASH",
+    "cash_given": 500,
+    "change": 240
+  },
+  "items": [
+    {
+      "menu_id": 1,
+      "sweetness_id": 69,
+      "size_id": 1,
+      "add_on_id": [3,4],  
+      "menu_type_id": 2,
       "quantity": 1,
+      "price": 100
+    },
+    {
+      "menu_id": 2,
+      "sweetness_id": 68,
+      "size_id": 1,
+      "add_on_id": [],  
+      "menu_type_id": 1,
+      "quantity": 2,
       "price": 60
     }
   ]

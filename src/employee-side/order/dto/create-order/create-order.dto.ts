@@ -1,4 +1,11 @@
-import { IsEnum, IsInt, IsNotEmpty, IsDate } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsDate,
+  IsString,
+  IsOptional,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { Column } from 'typeorm';
 
@@ -39,4 +46,8 @@ export class CreateOrderDto {
 
   @Column({ nullable: true })
   contact: string;
+
+  @IsString()
+  @IsOptional()
+  path_img?: string;
 }

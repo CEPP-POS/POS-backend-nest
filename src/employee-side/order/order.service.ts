@@ -315,6 +315,21 @@ export class OrderService {
 
     const savedOrder = await this.orderRepository.save(newOrder);
 
+    // เพิ่มการสร้าง payment record
+    const payment = this.paymentRepository.create({
+      order: savedOrder,
+      payment_method: createOrderDto.payment_method,
+      status: 'pending', // สถานะเริ่มต้นเป็น pending
+      path_img: createOrderDto.path_img,
+      amount: createOrderDto.total_price,
+      total_amount: createOrderDto.total_price,
+      payment_date: new Date(),
+      owner,
+      branch,
+    });
+
+    await this.paymentRepository.save(payment);
+
     const orderItems = await Promise.all(
       items.map(async (item) => {
         const menu = await this.menuRepository.findOne({
@@ -513,5 +528,30 @@ export class OrderService {
     }
 
     return this.orderRepository.findOne({ where: { order_id: order_id } });
+  }
+
+  // เพิ่มฟังก์ชันสำหรับอัพเดทสถานะการชำระเงิน
+  async updatePaymentStatus(
+    order_id: number,
+    status: string,
+  ): Promise<Payment> {
+    const payment = await this.paymentRepository.findOne({
+      where: { order: { order_id } },
+      relations: ['order'],
+    });
+
+    if (!payment) {
+      throw new NotFoundException(`Payment for order ${order_id} not found`);
+    }
+
+    payment.status = status;
+
+    // ถ้าชำระเงินสำเร็จ อัพเดทสถานะ order ด้วย
+    if (status === 'success') {
+      payment.order.status = 'paid';
+      await this.orderRepository.save(payment.order);
+    }
+
+    return this.paymentRepository.save(payment);
   }
 }
