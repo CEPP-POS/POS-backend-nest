@@ -5,6 +5,7 @@ import {
   IsDate,
   IsString,
   IsOptional,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Column } from 'typeorm';
@@ -50,4 +51,12 @@ export class CreateOrderDto {
   @IsString()
   @IsOptional()
   path_img?: string;
+
+  @IsNumber()
+  @IsOptional()
+  cash_given?: number;
+
+  @IsNumber()
+  @IsOptional()
+  change?: number;
 }

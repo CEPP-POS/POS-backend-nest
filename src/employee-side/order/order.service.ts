@@ -19,10 +19,10 @@ import { Owner } from 'src/entities/owner.entity';
 import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
 import { Payment } from 'src/entities/payment.entity';
 import { SalesSummary } from 'src/entities/sales-summary.entity';
-import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
 import { OrderItemAddOn } from 'src/entities/order-item-add-on.entity';
+import { PaymentMethod } from './dto/create-order/create-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -120,7 +120,7 @@ export class OrderService {
 
     // Proceed to create the order
     const newOrder = this.orderRepository.create(createOrderDto);
-    console.log(newOrder.order_date);
+    // console.log(newOrder.order_date);
     return this.orderRepository.save(newOrder);
   }
 
@@ -315,22 +315,39 @@ export class OrderService {
 
     const savedOrder = await this.orderRepository.save(newOrder);
 
-    // เพิ่มการสร้าง payment record
+    // คำนวณ total_amount รวม VAT 7%
+    const totalAmount = createOrderDto.total_price * 1.07;
+
+    // สร้าง payment record ตามวิธีการชำระเงิน
     const payment = this.paymentRepository.create({
       order: savedOrder,
       payment_method: createOrderDto.payment_method,
-      status: 'pending', // สถานะเริ่มต้นเป็น pending
+      status:
+        createOrderDto.payment_method === PaymentMethod.CASH
+          ? 'cash'
+          : 'pending',
       path_img: createOrderDto.path_img,
       amount: createOrderDto.total_price,
-      total_amount: createOrderDto.total_price,
+      total_amount: totalAmount,
       payment_date: new Date(),
       owner,
       branch,
+      // เพิ่มข้อมูลการชำระเงินสดถ้าเป็นการชำระด้วยเงินสด
+      ...(createOrderDto.payment_method === PaymentMethod.CASH && {
+        cash_given: createOrderDto.cash_given,
+        change: createOrderDto.change,
+      }),
     });
 
     await this.paymentRepository.save(payment);
 
-    const orderItems = await Promise.all(
+    // ถ้าเป็นการชำระเงินสด ให้อัพเดทสถานะ order เป็น paid ทันที
+    if (createOrderDto.payment_method === PaymentMethod.CASH) {
+      savedOrder.status = 'paid';
+      await this.orderRepository.save(savedOrder);
+    }
+
+    await Promise.all(
       items.map(async (item) => {
         const menu = await this.menuRepository.findOne({
           where: {
@@ -363,10 +380,6 @@ export class OrderService {
             branch: { branch_id },
           },
         });
-        console.log(menu);
-        console.log(sweetness);
-        console.log(size);
-        console.log(menuType);
 
         if (!menu || !sweetness || !size || !menuType) {
           throw new NotFoundException(
@@ -492,7 +505,9 @@ export class OrderService {
   ): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { order_id: order_id },
+      relations: ['owner', 'branch'],
     });
+
     if (!order) {
       throw new NotFoundException(`Order with ID ${order_id} not found`);
     }
@@ -501,33 +516,49 @@ export class OrderService {
       where: { order: { order_id: order_id } },
     });
 
+    // คำนวณ total_amount รวม VAT 7%
+    const totalAmount = payWithCashDto.amount * 1.07;
+
     if (!payment) {
       // If no payment exists, create a new one
       payment = this.paymentRepository.create({
         order,
         cash_given: payWithCashDto.cash_given,
         change: payWithCashDto.change,
-        payment_method: 'cash',
+        payment_method: 'CASH',
         status: 'cash',
         payment_date: new Date(),
         amount: payWithCashDto.amount,
-        total_amount: payWithCashDto.total_amount,
+        total_amount: totalAmount,
+        owner: order.owner,
+        branch: order.branch,
       });
-      await this.paymentRepository.save(payment);
     } else {
       // Update the existing payment
-      payment.cash_given = payWithCashDto.cash_given;
-      payment.change = payWithCashDto.change;
-      payment.payment_method = 'cash';
-      payment.status = 'cash';
-      payment.payment_date = new Date();
-      payment.amount = payWithCashDto.amount;
-      payment.total_amount = payWithCashDto.total_amount;
-
-      await this.paymentRepository.save(payment);
+      Object.assign(payment, {
+        cash_given: payWithCashDto.cash_given,
+        change: payWithCashDto.change,
+        payment_method: 'CASH',
+        status: 'cash',
+        payment_date: new Date(),
+        amount: payWithCashDto.amount,
+        total_amount: totalAmount,
+        owner: order.owner,
+        branch: order.branch,
+      });
     }
 
-    return this.orderRepository.findOne({ where: { order_id: order_id } });
+    // Save payment
+    const savedPayment = await this.paymentRepository.save(payment);
+
+    // Update order status
+    order.status = 'paid';
+    await this.orderRepository.save(order);
+
+    return this.orderRepository.findOne({
+      where: { order_id: order_id },
+      relations: ['owner', 'branch'],
+    });
   }
 
   // เพิ่มฟังก์ชันสำหรับอัพเดทสถานะการชำระเงิน

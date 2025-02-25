@@ -9,7 +9,7 @@ branch_id: 1
     "total_price": 260,
     "queue_number": 4,
     "status": "รอทำ",
-    "payment_method": "QR_CODE",
+    "payment_method": "qr-code",
     "path_img": "https://image/payment"
   },
   "items": [
@@ -45,7 +45,7 @@ branch_id: 1
     "total_price": 260,
     "queue_number": 4,
     "status": "รอทำ",
-    "payment_method": "CASH",
+    "payment_method": "cash",
     "cash_given": 500,
     "change": 240
   },
