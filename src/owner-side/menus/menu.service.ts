@@ -2147,4 +2147,65 @@ export class MenuService {
       );
     }
   }
+
+  async getMenuOptions(menu_id: number, owner_id: number, branch_id: number) {
+    try {
+      // Find the menu with its size group and menu type group
+      const menu = await this.menuRepository
+        .createQueryBuilder('menu')
+        .leftJoinAndSelect('menu.sizeGroup', 'sg')
+        .leftJoinAndSelect('menu.menuTypeGroup', 'mtg')
+        .where('menu.menu_id = :menu_id', { menu_id })
+        .andWhere('menu.owner.owner_id = :owner_id', { owner_id })
+        .andWhere('menu.branch.branch_id = :branch_id', { branch_id })
+        .getOne();
+
+      if (!menu) {
+        throw new NotFoundException(`Menu with ID ${menu_id} not found`);
+      }
+
+      // Get sizes for this menu's size group
+      const sizes = await this.sizeRepository
+        .createQueryBuilder('size')
+        .leftJoin('size.sizeGroup', 'sg')
+        .where('sg.size_group_name = :groupName', {
+          groupName: menu.sizeGroup?.size_group_name
+        })
+        .andWhere('size.owner.owner_id = :owner_id', { owner_id })
+        .andWhere('size.branch.branch_id = :branch_id', { branch_id })
+        .andWhere('size.is_delete = :isDelete', { isDelete: false })
+        .select(['size.size_id', 'size.size_name'])
+        .getMany();
+
+      // Get menu types for this menu's menu type group
+      const menuTypes = await this.menuTypeRepository
+        .createQueryBuilder('mt')
+        .leftJoin('mt.menuTypeGroup', 'mtg')
+        .where('mtg.menu_type_group_name = :groupName', {
+          groupName: menu.menuTypeGroup?.menu_type_group_name
+        })
+        .andWhere('mt.owner.owner_id = :owner_id', { owner_id })
+        .andWhere('mt.branch.branch_id = :branch_id', { branch_id })
+        .andWhere('mt.is_delete = :isDelete', { isDelete: false })
+        .select(['mt.menu_type_id', 'mt.type_name'])
+        .getMany();
+
+      return {
+        sizes: sizes.map(size => ({
+          size_id: size.size_id,
+          size_name: size.size_name
+        })),
+        menu_types: menuTypes.map(type => ({
+          type_id: type.menu_type_id,
+          type_name: type.type_name
+        }))
+      };
+
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to get menu options',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }

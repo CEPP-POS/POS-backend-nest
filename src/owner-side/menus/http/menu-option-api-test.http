@@ -32,7 +32,6 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 
-
 GET http://localhost:3000/owner/menus/15
 PATCH http://localhost:3000/owner/menus/options/sweetness/104
 Content-Type: application/json
@@ -162,15 +161,15 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 
-GET http://localhost:3000/owner/menus/14
+# GET http://localhost:3000/owner/menus/14
 
-GET http://localhost:3000/owner/menus/options/add-ons
+# GET http://localhost:3000/owner/menus/options/add-ons
 
-GET http://localhost:3000/owner/menus/options/size
+# GET http://localhost:3000/owner/menus/options/size
 
-GET http://localhost:3000/owner/menus/options/sweetness
+# GET http://localhost:3000/owner/menus/options/sweetness
 
-GET http://localhost:3000/owner/menus/options/menu-type
+# GET http://localhost:3000/owner/menus/options/menu-type
 
 # Delete all add-ons
 DELETE http://localhost:3000/owner/menus/options/add-ons
@@ -204,6 +203,12 @@ branch_id: 3
 
 ### Get all option groups
 GET http://localhost:3000/owner/menus/options/groups
+Content-Type: application/json
+owner_id: 6
+branch_id: 3
+
+### Get menu options by menu id for cut stock
+GET http://localhost:3000/owner/menus/stock/option/7
 Content-Type: application/json
 owner_id: 6
 branch_id: 3

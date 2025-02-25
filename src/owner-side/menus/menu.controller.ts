@@ -503,4 +503,19 @@ export class MenuController {
       branchIdNum,
     );
   }
+
+  @Get('stock/option/:menu_id')
+  async getMenuOptions(
+    @Param('menu_id') menu_id: number,
+    @Req() request: Request,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.menuService.getMenuOptions(menu_id, +ownerId, +branchId);
+  }
 }
