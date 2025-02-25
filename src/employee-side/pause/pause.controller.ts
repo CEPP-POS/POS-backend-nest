@@ -31,8 +31,14 @@ export class PauseController {
   @Patch('ingredients')
   async updateIngredients(
     @Body() ingredientUpdates: { ingredient_id: number; paused: boolean }[],
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
   ) {
-    return this.pauseService.updateIngredient(ingredientUpdates);
+    return this.pauseService.updateIngredient(
+      ingredientUpdates,
+      owner_id,
+      branch_id,
+    );
   }
 
   // @Get('menu')
@@ -41,14 +47,19 @@ export class PauseController {
   // }
 
   @Get('menus')
-  async getAllMenu() {
-    return this.pauseService.getAllMenu();
+  async getAllMenu(
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
+  ) {
+    return this.pauseService.getAllMenu(owner_id, branch_id);
   }
 
   @Patch('menus')
   async updateMenu(
     @Body() MenuUpdates: { menu_id: number; paused: boolean }[],
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
   ) {
-    return this.pauseService.updateMenu(MenuUpdates);
+    return this.pauseService.updateMenu(MenuUpdates, owner_id, branch_id);
   }
 }

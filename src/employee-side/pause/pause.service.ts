@@ -29,14 +29,31 @@ export class PauseService {
 
   async updateIngredient(
     listIngredientUpdates: { ingredient_id: number; paused: boolean }[],
+    owner_id: number,
+    branch_id: number,
   ) {
     const listIngredientId = listIngredientUpdates.map(
       (item) => item.ingredient_id,
     );
 
     const ingredients = await this.ingredientRepository.find({
-      where: { ingredient_id: In(listIngredientId) },
+      where: {
+        ingredient_id: In(listIngredientId),
+        owner: { owner_id },
+        branch: { branch_id },
+        is_delete: false,
+      },
     });
+
+    if (ingredients.length === 0) {
+      return { message: 'No ingredients found for this owner and branch' };
+    }
+
+    if (ingredients.length !== listIngredientId.length) {
+      return {
+        message: 'Some ingredients do not belong to this owner and branch',
+      };
+    }
 
     ingredients.forEach((ingredient) => {
       const updatePauseStatus = listIngredientUpdates.find(
@@ -52,20 +69,42 @@ export class PauseService {
     return { message: 'Paused ingredients successfully' };
   }
 
-  async getAllMenu() {
+  async getAllMenu(owner_id: number, branch_id: number) {
     const menus = await this.menuRepository.find({
       select: ['menu_id', 'menu_name', 'paused'],
+      where: {
+        owner: { owner_id },
+        branch: { branch_id },
+        is_delete: false,
+      },
     });
 
     return menus;
   }
 
-  async updateMenu(listMenuUpdates: { menu_id: number; paused: boolean }[]) {
+  async updateMenu(
+    listMenuUpdates: { menu_id: number; paused: boolean }[],
+    owner_id: number,
+    branch_id: number,
+  ) {
     const listMenuId = listMenuUpdates.map((item) => item.menu_id);
 
     const menus = await this.menuRepository.find({
-      where: { menu_id: In(listMenuId) },
+      where: {
+        menu_id: In(listMenuId),
+        owner: { owner_id },
+        branch: { branch_id },
+        is_delete: false,
+      },
     });
+
+    if (menus.length === 0) {
+      return { message: 'No menus found for this owner and branch' };
+    }
+
+    if (menus.length !== listMenuId.length) {
+      return { message: 'Some menus do not belong to this owner and branch' };
+    }
 
     menus.forEach((menu) => {
       const updatePauseStatus = listMenuUpdates.find(
