@@ -19,10 +19,13 @@ GET http://localhost:3000/owner/stock-ingredients
 
 # getIngredientsCategories
 GET http://localhost:3000/owner/stock-ingredients/categories
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 # getIngredientDetails
 ## fix
-GET http://localhost:3000/owner/stock-ingredients/18
+GET http://localhost:3000/owner/stock-ingredients/2
 
 #getUpdateIngredient
 ## fix
@@ -51,22 +54,26 @@ Content-Type: application/json
 
 POST http://localhost:3000/owner/stock-group
 Content-Type: application/json
+owner_id: 1
+branch_id: 1
 {
-    "category_name": "เครื่องครัว"
+    "category_name": "น้ำชง"
 }
 
 ## create new ingredient
 POST http://localhost:3000/owner/create-stock-ingredients
 Content-Type: application/json
+owner_id: 1
+branch_id: 1
 {
   "image_url": "imagepath/image.png",
-  "ingredient_name": "ผงโกโก้ทิวลิป",
+  "ingredient_name": "นมสด",
+  "total_volume": 30,
   "net_volume": 250,
   "unit": "g",
   "quantity_in_stock": 1,
-  "category_name": "วัตถุดิบ",
-  "expiration_date": "2025-01-27",
-  "owner_id": 1
+  "category_name": "เครื่องครัว",
+  "expiration_date": "2025-01-27"
 }
 
 ## update cancel order status

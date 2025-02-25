@@ -1,4 +1,10 @@
-import { IsInt, IsString, IsDateString, IsNumber } from 'class-validator';
+import {
+  IsInt,
+  IsString,
+  IsDateString,
+  IsNumber,
+  IsNotEmpty,
+} from 'class-validator';
 
 export class CreateIngredientDto {
   @IsString()
@@ -18,6 +24,10 @@ export class CreateIngredientDto {
 
   @IsInt()
   quantity_in_stock: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  total_volume: number;
 
   @IsString()
   category_name: string;
