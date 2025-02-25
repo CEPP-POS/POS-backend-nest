@@ -25,28 +25,33 @@ branch_id: 1
 
 # getIngredientDetails
 ## fix
-GET http://localhost:3000/owner/stock-ingredients/2
+GET http://localhost:3000/owner/stock-ingredients/8
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 #getUpdateIngredient
 ## fix
 GET http://localhost:3000/owner/update-stock-ingredients/18
 
-PATCH http://localhost:3000/owner/update-stock-ingredients/18
+PATCH http://localhost:3000/owner/update-stock-ingredients/8
 Content-Type: application/json
+owner_id: 1
+branch_id: 1
 {
   "updates": [
     {
-      "update_id": 16,
+      "update_id": 8,
       "quantity_in_stock": 2,
-      "total_volume": 699,
-      "net_volume": 310,
+      "total_volume": 12,
+      "net_volume": 150,
       "expiration_date": "2025-02-28"
     },
     {
-      "update_id": 15,
+      "update_id": 7,
       "quantity_in_stock": 4,
-      "total_volume": 500,
-      "net_volume": 300,
+      "total_volume": 90,
+      "net_volume": 67,
       "expiration_date": "2025-02-30"
     }
   ]
@@ -67,8 +72,7 @@ owner_id: 1
 branch_id: 1
 {
   "image_url": "imagepath/image.png",
-  "ingredient_name": "นมสด",
-  "total_volume": 30,
+  "ingredient_name": "นมข้นหวาน",
   "net_volume": 250,
   "unit": "g",
   "quantity_in_stock": 1,

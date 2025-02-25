@@ -558,7 +558,6 @@ export class DashboardService {
     });
 
     if (existingUpdate) {
-      // ✅ ถ้ามีอยู่แล้วให้เพิ่ม stock
       existingUpdate.quantity_in_stock += quantity_in_stock;
       existingUpdate.total_volume += net_volume * quantity_in_stock;
 
@@ -577,7 +576,7 @@ export class DashboardService {
         ingredient: ingredient,
         quantity_in_stock,
         net_volume,
-        total_volume, // ✅ กำหนดค่า total_volume
+        total_volume,
         expiration_date: new Date(expiration_date),
         owner,
         branch,
