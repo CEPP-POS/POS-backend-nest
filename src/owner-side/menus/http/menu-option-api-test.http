@@ -91,18 +91,6 @@ branch_id: 1
   "is_multiple": true
 }
 
-# PATCH http://localhost:3000/owner/menus/options/add-ons/114
-# Content-Type: application/json
-
-# {
-#   "options": [
-#     { "ไข่มุกบราวชูการ์": { "price": "20.00", "unit": 20 } },
-#     { "ขนมปังกรอบ": { "price": "20.00", "unit": 50 } }
-#   ],
-#   "menu_id": [16,15],
-#   "is_required":true
-# }
-
 POST http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
 owner_id: 1
@@ -125,12 +113,13 @@ owner_id: 1
 branch_id: 1
 
 {
-  "old_size_group_name": "ขนาดแก้วสำหรับนมสด",
-  "new_size_group_name": "ขนาดแก้วสำหรับนมสด",
+  "old_size_group_name": "ขนาดแก้วสำหรับนมจ้า",
+  "new_size_group_name": "ขนาดแก้วสำหรับนมจ้า",
    "options": [
-    { "size_id": "71", "size_name":"m",  "price": "25.00" },
-    { "size_id": "72", "size_name":"l",  "price": "35.00" },
-    { "size_id": "75", "size_name":"xl",  "price": "45.00" }
+    { "size_id": "96", "size_name":"m",  "price": "25.00" },
+    { "size_id": "97", "size_name":"l",  "price": "35.00" },
+    { "size_id": "98", "size_name":"xl",  "price": "45.00" },
+    { "size_id": "null", "size_name":"xs",  "price": "45.00" }
   ],
   "menu_id": [1]
 }
@@ -196,13 +185,13 @@ owner_id: 6
 branch_id: 3
 
 ### Get size group data
-GET http://localhost:3000/owner/menus/options/size/รวมมิตรผลไม้
+GET http://localhost:3000/owner/menus/options/size/ขนาดแก้วสำหรับนม
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: 1
+branch_id: 1
 
 ### Get menu type group data
-GET http://localhost:3000/owner/menus/options/menu-type/ชนิดเครื่องดื่มสำหรับเมนูทั่วไป
+GET http://localhost:3000/owner/menus/options/menu-type/รวมมิตรผลไม้
 Content-Type: application/json
 owner_id: 6
 branch_id: 3

@@ -77,7 +77,7 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) {}
+  ) { }
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
@@ -178,12 +178,12 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-            menu_id: menu.menu_id,
-            menu_name: menu.menu_name,
-            description: menu.description,
-            image_url: menu.image_url,
-            price: menu.price,
-          };
+          menu_id: menu.menu_id,
+          menu_name: menu.menu_name,
+          description: menu.description,
+          image_url: menu.image_url,
+          price: menu.price,
+        };
     });
   }
 
@@ -1071,62 +1071,68 @@ export class MenuService {
     owner_id: number,
     branch_id: number,
   ): Promise<any> {
-    if (!dto.options || dto.options.length === 0) {
-      throw new Error('Options cannot be empty');
-    }
+    try {
+      if (!dto.options || dto.options.length === 0) {
+        throw new Error('Options cannot be empty');
+      }
 
-    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
-    if (!owner) throw new NotFoundException('Owner not found');
+      const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+      if (!owner) throw new NotFoundException('Owner not found');
 
-    const branch = await this.branchRepository.findOne({
-      where: { branch_id },
-    });
-    if (!branch) throw new NotFoundException('Branch not found');
+      const branch = await this.branchRepository.findOne({
+        where: { branch_id },
+      });
+      if (!branch) throw new NotFoundException('Branch not found');
 
-    const menuTypes = dto.options.map((option) => ({
-      type_name: Object.keys(option)[0],
-      price_difference: parseFloat(Object.values(option)[0]),
-      is_delete: false,
-      owner,
-      branch,
-    }));
+      // Save menu types first
+      const menuTypes = dto.options.map((option) => ({
+        type_name: Object.keys(option)[0],
+        price_difference: parseFloat(Object.values(option)[0]),
+        is_delete: false,
+        owner,
+        branch,
+      }));
 
-    const savedMenuTypes = await this.menuTypeRepository.save(menuTypes);
+      const savedMenuTypes = await this.menuTypeRepository.save(menuTypes);
 
-    const newMenuTypeGroup = this.menuTypeGroupRepository.create({
-      menu_type_group_name: dto.menu_type_group_name,
-      owner,
-      branch,
-    });
+      // Create menu type group entries for each menu type
+      const menuTypeGroupEntries = savedMenuTypes.map(menuType => ({
+        menu_type_group_name: dto.menu_type_group_name,
+        menuType: menuType,
+        owner,
+        branch,
+      }));
 
-    await this.menuTypeGroupRepository.save(newMenuTypeGroup);
+      // Save all menu type group entries
+      const savedMenuTypeGroups = await this.menuTypeGroupRepository.save(menuTypeGroupEntries);
 
-    const menuTypeGroup = await this.menuTypeGroupRepository.findOne({
-      where: { menu_type_group_name: dto.menu_type_group_name },
-    });
+      // Link menus to the menu type group - using the first menu type group since they share the same name
+      const menuTypeGroup = savedMenuTypeGroups[0];
 
-    if (!menuTypeGroup) {
-      throw new Error('Menu Type Group not found');
-    }
+      // Update menus with the menu type group reference
+      for (const menuId of dto.menu_id) {
+        await this.menuRepository
+          .createQueryBuilder()
+          .update(Menu)
+          .set({ menuTypeGroup: menuTypeGroup })
+          .where('menu_id = :menuId', { menuId })
+          .andWhere('owner.owner_id = :ownerId', { ownerId: owner_id })
+          .andWhere('branch.branch_id = :branchId', { branchId: branch_id })
+          .execute();
+      }
 
-    for (const menuType of savedMenuTypes) {
-      menuTypeGroup.menuType = menuType;
-      await this.menuTypeGroupRepository.save(menuTypeGroup);
-    }
-
-    for (const menuId of dto.menu_id) {
-      await this.menuRepository.update(
-        { menu_id: menuId },
-        { menuTypeGroup: menuTypeGroup },
+      return {
+        message: 'Menu Type Group created successfully',
+        menu_type_group_name: dto.menu_type_group_name,
+        menu_types: savedMenuTypes,
+        linked_menus: dto.menu_id,
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to create menu type group',
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
-
-    return {
-      message: 'Menu Type Group created successfully',
-      menu_type_group_name: menuTypeGroup.menu_type_group_name,
-      menu_types: savedMenuTypes,
-      linked_menus: dto.menu_id,
-    };
   }
 
   async deleteMenuTypeGroup(
@@ -2115,8 +2121,8 @@ export class MenuService {
           .createQueryBuilder('mi')
           .leftJoinAndSelect('mi.menu', 'm')
           .leftJoinAndSelect('mi.ingredient', 'ing')  // Added this
-          .where('mi.ingredient.ingredient_id = :ingredientId', { 
-            ingredientId: addOn.ingredient.ingredient_id 
+          .where('mi.ingredient.ingredient_id = :ingredientId', {
+            ingredientId: addOn.ingredient.ingredient_id
           })
           .andWhere('mi.is_addon = :isAddon', { isAddon: true })
           .andWhere('mi.is_delete = :isDelete', { isDelete: false })
