@@ -29,14 +29,31 @@ export class PauseService {
 
   async updateIngredient(
     listIngredientUpdates: { ingredient_id: number; paused: boolean }[],
+    owner_id: number,
+    branch_id: number,
   ) {
     const listIngredientId = listIngredientUpdates.map(
       (item) => item.ingredient_id,
     );
 
     const ingredients = await this.ingredientRepository.find({
-      where: { ingredient_id: In(listIngredientId) },
+      where: {
+        ingredient_id: In(listIngredientId),
+        owner: { owner_id },
+        branch: { branch_id },
+        is_delete: false,
+      },
     });
+
+    if (ingredients.length === 0) {
+      return { message: 'No ingredients found for this owner and branch' };
+    }
+
+    if (ingredients.length !== listIngredientId.length) {
+      return {
+        message: 'Some ingredients do not belong to this owner and branch',
+      };
+    }
 
     ingredients.forEach((ingredient) => {
       const updatePauseStatus = listIngredientUpdates.find(

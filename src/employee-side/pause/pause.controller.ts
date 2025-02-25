@@ -31,8 +31,14 @@ export class PauseController {
   @Patch('ingredients')
   async updateIngredients(
     @Body() ingredientUpdates: { ingredient_id: number; paused: boolean }[],
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
   ) {
-    return this.pauseService.updateIngredient(ingredientUpdates);
+    return this.pauseService.updateIngredient(
+      ingredientUpdates,
+      owner_id,
+      branch_id,
+    );
   }
 
   // @Get('menu')
