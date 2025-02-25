@@ -92,6 +92,23 @@ export class OrderService {
     const startOfDay = new Date(orderDateOnly.setHours(0, 0, 0, 0));
     const endOfDay = new Date(orderDateOnly.setHours(23, 59, 59, 999));
 
+    // Find the latest queue number for the current day
+    const latestOrder = await this.orderRepository.findOne({
+      where: {
+        order_date: Between(startOfDay, endOfDay),
+        branch: { branch_id: branch.branch_id },
+        owner: { owner_id: owner.owner_id },
+      },
+      order: {
+        queue_number: 'DESC',
+      },
+    });
+
+    // Set queue number to latest + 1 or 1 if no orders exist for today
+    createOrderDto.queue_number = latestOrder
+      ? latestOrder.queue_number + 1
+      : 1;
+
     let salesSummary = await this.salesSummaryRepository.findOne({
       where: {
         date: Between(startOfDay, endOfDay),
@@ -305,6 +322,37 @@ export class OrderService {
     if (!owner || !branch) {
       throw new NotFoundException('Invalid owner or branch');
     }
+
+    // Convert order_date to Date if it's a string
+    if (typeof createOrderDto.order_date === 'string') {
+      const parsedDate = new Date(createOrderDto.order_date);
+      if (isNaN(parsedDate.getTime())) {
+        throw new Error('Invalid date format');
+      }
+      createOrderDto.order_date = parsedDate;
+    }
+
+    // Calculate start and end of the day for comparison
+    const orderDate = new Date(createOrderDto.order_date);
+    const startOfDay = new Date(orderDate.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(orderDate.setHours(23, 59, 59, 999));
+
+    // Find the latest queue number for the current day
+    const latestOrder = await this.orderRepository.findOne({
+      where: {
+        order_date: Between(startOfDay, endOfDay),
+        branch: { branch_id },
+        owner: { owner_id },
+      },
+      order: {
+        queue_number: 'DESC',
+      },
+    });
+
+    // Set queue number to latest + 1 or 1 if no orders exist for today
+    createOrderDto.queue_number = latestOrder
+      ? latestOrder.queue_number + 1
+      : 1;
 
     const newOrder = this.orderRepository.create({
       ...createOrderDto,
