@@ -224,11 +224,23 @@ export class DashboardController {
   @Patch('orders/:order_id')
   async updateCancelStatus(
     @Param('order_id') order_id: number,
-    @Body() updateCancelStatusDto: UpdateCancelStatusDto,
-  ) {
+    @Body() updateData: { cancel_status: string },
+    @Req() request: Request,
+  ): Promise<any> {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
     return this.dashboardService.updateCancelStatus(
       Number(order_id),
-      updateCancelStatusDto,
+      updateData.cancel_status,
+      Number(ownerId),
+      Number(branchId),
     );
   }
 }

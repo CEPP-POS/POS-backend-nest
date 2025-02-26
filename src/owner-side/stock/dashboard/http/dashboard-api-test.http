@@ -97,11 +97,11 @@ branch_id: 1
 }
 
 ## update cancel order status
-PATCH http://localhost:3000/owner/orders/1
+PATCH http://localhost:3000/owner/orders/71
 Content-Type: application/json
-
+owner_id: 1
+branch_id: 1
 {
   "cancel_status": "คืนเงินเสร็จสิ้น"
-  // "cancel_status": "ยังไม่คืนเงิน"
 }
 

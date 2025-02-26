@@ -27,6 +27,7 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 // } from './dto/ingredients-details.dto';
 import { IngredientCategoriesDto } from './dto/ingredients-categories.dto';
 import { Branch } from 'src/entities/branch.entity';
+import { CancelStatus } from 'src/employee-side/order/dto/create-order/create-order.dto';
 
 @Injectable()
 export class DashboardService {
@@ -767,25 +768,48 @@ export class DashboardService {
 
   async updateCancelStatus(
     order_id: number,
-    updateCancelStatusDto: UpdateCancelStatusDto,
+    cancel_status: string,
+    ownerId: number,
+    branchId: number,
   ) {
-    // Extract cancel_status from the DTO
-    const { cancel_status } = updateCancelStatusDto;
+    const order = await this.orderRepository.findOne({
+      where: {
+        order_id: order_id,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['payment'], // เพิ่ม relation กับ payment
+    });
 
-    // Find the order by ID
-    const order = await this.orderRepository.findOne({ where: { order_id } });
-
-    // If no order is found, throw an exception
     if (!order) {
-      throw new NotFoundException(`Order with ID ${order_id} not found`);
+      throw new NotFoundException(
+        `Order with ID ${order_id} not found for this owner and branch`,
+      );
     }
 
-    // Update the cancel_status
-    order.cancel_status = cancel_status;
+    // ถ้าสถานะเป็น "คืนเงินเสร็จสิ้น" ให้หักยอดเงินออกจาก sales_summary
+    if (cancel_status === 'คืนเงินเสร็จสิ้น') {
+      const orderDate = new Date(order.order_date);
+      const startOfDay = new Date(orderDate.setHours(0, 0, 0, 0));
+      const endOfDay = new Date(orderDate.setHours(23, 59, 59, 999));
 
-    // Save the updated order to the database
-    await this.orderRepository.save(order);
+      // หา sales_summary ของวันที่สั่งออเดอร์
+      const salesSummary = await this.salesSummaryRepository.findOne({
+        where: {
+          date: Between(startOfDay, endOfDay),
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId },
+        },
+      });
 
-    return order;
+      if (salesSummary) {
+        // หักยอดเงินออกจาก total_revenue
+        salesSummary.total_revenue -= order.payment.amount;
+        await this.salesSummaryRepository.save(salesSummary);
+      }
+    }
+
+    order.cancel_status = cancel_status as CancelStatus;
+    return await this.orderRepository.save(order);
   }
 }
