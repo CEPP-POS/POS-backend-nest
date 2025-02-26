@@ -17,21 +17,20 @@ Content-Type: application/json
 owner_id: 6
 branch_id: 3
 {
-  "old_sweetness_group_name": "ความหวานกาแฟss",
-  "new_sweetness_group_name": "ความหวานกาแฟss",
+  "old_sweetness_group_name": "ความหวานสำหรับกลุ่มนมเฉยๆ",
+  "new_sweetness_group_name": "ความหวานสำหรับกลุ่มนมเฉยๆ",
   "options": [
     { "sweetness_id": 3, "level_name": "หวานน้อย" },
     { "sweetness_id": 4, "level_name": "หวานกลาง" },
     { "sweetness_id": 5, "level_name": "หวานมาก" }
   ],
-  "menu_id": [1,2,4]
+  "menu_id": [2,3]
 }
 
 DELETE http://localhost:3000/owner/menus/options/sweetness/ความหวาน
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
-
 
 GET http://localhost:3000/owner/menus/15
 PATCH http://localhost:3000/owner/menus/options/sweetness/104
@@ -58,7 +57,7 @@ branch_id: 1
 }
 
 # edit add on option
-PATCH http://localhost:3000/owner/menus/options/add-on
+PATCH http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
@@ -162,15 +161,15 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 
-GET http://localhost:3000/owner/menus/14
+# GET http://localhost:3000/owner/menus/14
 
-GET http://localhost:3000/owner/menus/options/add-ons
+# GET http://localhost:3000/owner/menus/options/add-ons
 
-GET http://localhost:3000/owner/menus/options/size
+# GET http://localhost:3000/owner/menus/options/size
 
-GET http://localhost:3000/owner/menus/options/sweetness
+# GET http://localhost:3000/owner/menus/options/sweetness
 
-GET http://localhost:3000/owner/menus/options/menu-type
+# GET http://localhost:3000/owner/menus/options/menu-type
 
 # Delete all add-ons
 DELETE http://localhost:3000/owner/menus/options/add-ons
@@ -197,13 +196,19 @@ owner_id: 6
 branch_id: 3
 
 ### Get add-on group data
-GET http://localhost:3000/owner/menus/options/add-ons
+GET http://localhost:3000/owner/menus/options/add-on
 Content-Type: application/json
 owner_id: 6
 branch_id: 3
 
 ### Get all option groups
 GET http://localhost:3000/owner/menus/options/groups
+Content-Type: application/json
+owner_id: 6
+branch_id: 3
+
+### Get menu options by menu id for cut stock
+GET http://localhost:3000/owner/menus/stock/option/7
 Content-Type: application/json
 owner_id: 6
 branch_id: 3

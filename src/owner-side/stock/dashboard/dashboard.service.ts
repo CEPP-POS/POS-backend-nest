@@ -27,6 +27,7 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 // } from './dto/ingredients-details.dto';
 import { IngredientCategoriesDto } from './dto/ingredients-categories.dto';
 import { Branch } from 'src/entities/branch.entity';
+import { CancelStatus } from 'src/employee-side/order/dto/create-order/create-order.dto';
 
 @Injectable()
 export class DashboardService {
@@ -62,7 +63,11 @@ export class DashboardService {
     private ownerRepository: Repository<Owner>,
   ) {}
 
-  private async calculateMonthlyRevenue(year: number): Promise<number[]> {
+  private async calculateMonthlyRevenue(
+    year: number,
+    ownerId: number,
+    branchId: number,
+  ): Promise<number[]> {
     const monthlyRevenue = Array(12).fill(0);
     for (let month = 0; month < 12; month++) {
       const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
@@ -71,6 +76,8 @@ export class DashboardService {
       const salesSummaries = await this.salesSummaryRepository.find({
         where: {
           date: Between(startOfMonth, endOfMonth),
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId },
         },
       });
 
@@ -82,7 +89,11 @@ export class DashboardService {
     return monthlyRevenue;
   }
 
-  private async calculateDailyStats(date: Date): Promise<{
+  private async calculateDailyStats(
+    date: Date,
+    ownerId: number,
+    branchId: number,
+  ): Promise<{
     totalRevenue: number;
     totalOrders: number;
     canceledOrders: number;
@@ -94,14 +105,18 @@ export class DashboardService {
     const salesSummariesForDay = await this.salesSummaryRepository.find({
       where: {
         date: Between(startOfDay, endOfDay),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
       },
     });
 
     const allOrdersForDay = await this.orderRepository.find({
       where: {
         order_date: Between(startOfDay, endOfDay),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
       },
-      relations: ['order_item', 'order_item.menu'], // Include related order items and menu
+      relations: ['order_item', 'order_item.menu'],
     });
 
     // Flatten the array of order items and aggregate quantities by menu_name
@@ -145,11 +160,19 @@ export class DashboardService {
     };
   }
 
-  async getStockSummary(date: Date): Promise<Overview> {
+  async getStockSummary(
+    date: Date,
+    ownerId: number,
+    branchId: number,
+  ): Promise<Overview> {
     const year = date.getFullYear();
-    const monthlyRevenue = await this.calculateMonthlyRevenue(year);
+    const monthlyRevenue = await this.calculateMonthlyRevenue(
+      year,
+      ownerId,
+      branchId,
+    );
     const { top_three, totalRevenue, totalOrders, canceledOrders } =
-      await this.calculateDailyStats(date);
+      await this.calculateDailyStats(date, ownerId, branchId);
 
     const topThree: TopItemDto[] = top_three;
 
@@ -162,11 +185,19 @@ export class DashboardService {
     };
   }
 
-  async getStockLineGraph(date: Date): Promise<Linegraph> {
+  async getStockLineGraph(
+    date: Date,
+    ownerId: number,
+    branchId: number,
+  ): Promise<Linegraph> {
     const year = date.getFullYear();
-    const monthlyRevenue = await this.calculateMonthlyRevenue(year);
+    const monthlyRevenue = await this.calculateMonthlyRevenue(
+      year,
+      ownerId,
+      branchId,
+    );
     const { totalRevenue, totalOrders, canceledOrders } =
-      await this.calculateDailyStats(date);
+      await this.calculateDailyStats(date, ownerId, branchId);
 
     return {
       total_revenue: totalRevenue,
@@ -177,13 +208,19 @@ export class DashboardService {
   }
 
   // Entity order total price
-  async getOrderTopic(date: Date): Promise<any> {
+  async getOrderTopic(
+    date: Date,
+    ownerId: number,
+    branchId: number,
+  ): Promise<any> {
     const startOfDay = new Date(date.setHours(0, 0, 0, 0));
     const endOfDay = new Date(date.setHours(23, 59, 59, 999));
 
     const salesSummary = await this.salesSummaryRepository.findOne({
       where: {
         date: Between(startOfDay, endOfDay),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
       },
     });
 
@@ -193,31 +230,36 @@ export class DashboardService {
     const orders = await this.orderRepository.find({
       where: {
         order_date: Between(startOfDay, endOfDay),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
       },
-      relations: ['order_item', 'payment'], // Load the related order_items
+      relations: ['order_item', 'payment'],
     });
 
     const orderTopic = orders.map((order) => {
-      // Calculate the total quantity by summing the quantities of the related order items
       const totalQuantity = order.order_item.reduce(
         (sum, item) => sum + item.quantity,
         0,
       );
       const paymentMethod = order.payment
         ? order.payment.payment_method
-        : 'Unknown'; // Fallback if no payment exists
+        : 'Unknown';
 
-      // Return the formatted order details
+      const amount = order.payment.amount;
+      const total_amount = order.payment.total_amount;
+      const cancel_status = order.cancel_status;
+
       return {
         order_id: order.order_id,
         order_date: order.order_date,
-        quantity: totalQuantity, // Total quantity of items for the order
-        // total_amount: order.total_price || 0, // Total price for the order
-        payment_method: paymentMethod, // Add logic to fetch payment method if available
+        quantity: totalQuantity,
+        amount: amount,
+        total_amount: total_amount,
+        payment_method: paymentMethod,
+        cancel_status: cancel_status,
       };
     });
 
-    // Return the formatted response
     return {
       total_orders: totalOrders,
       canceled_orders: canceledOrders,
@@ -226,12 +268,14 @@ export class DashboardService {
   }
 
   // ENTITY ORDER TOTAL PRICE
-  async getCancelOrders() {
+  async getCancelOrders(ownerId: number, branchId: number) {
     const orders = await this.orderRepository.find({
       where: {
         cancel_status: Not(IsNull()),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
       },
-      relations: ['order_item', 'payment'], // Load the related order_items
+      relations: ['order_item', 'payment'],
     });
 
     // Create an array to store the formatted order topics
@@ -246,15 +290,19 @@ export class DashboardService {
       const paymentMethod = order.payment
         ? order.payment.payment_method
         : 'Unknown';
+      const amount = order.payment.amount;
+      const total_amount = order.payment.total_amount;
+      const cancel_status = order.cancel_status;
 
       // Return the formatted order details
       return {
         order_id: order.order_id,
         order_date: order.order_date,
-        quantity: totalQuantity, // Total quantity of items for the order
-        // total_amount: order.total_price || 0, // Total price for the order
+        quantity: totalQuantity,
+        amount: amount,
+        total_amount: total_amount,
         payment_method: paymentMethod,
-        cancel_order_topic: order.cancel_status,
+        cancel_status: cancel_status,
       };
     });
 
@@ -262,14 +310,14 @@ export class DashboardService {
     orderTopics.sort((a, b) => {
       // Sort by cancel_order_topic ("ยังไม่คืนเงิน" comes first)
       if (
-        a.cancel_order_topic === 'ยังไม่คืนเงิน' &&
-        b.cancel_order_topic !== 'ยังไม่คืนเงิน'
+        a.cancel_status === 'ยังไม่คืนเงิน' &&
+        b.cancel_status !== 'ยังไม่คืนเงิน'
       ) {
         return -1;
       }
       if (
-        a.cancel_order_topic !== 'ยังไม่คืนเงิน' &&
-        b.cancel_order_topic === 'ยังไม่คืนเงิน'
+        a.cancel_status !== 'ยังไม่คืนเงิน' &&
+        b.cancel_status === 'ยังไม่คืนเงิน'
       ) {
         return 1;
       }
@@ -283,45 +331,60 @@ export class DashboardService {
     return orderTopics;
   }
 
-  async getCancelOrderDetails(order_id: number) {
-    console.log(order_id);
-
+  async getCancelOrderDetails(
+    order_id: number,
+    ownerId: number,
+    branchId: number,
+  ) {
     const order = await this.orderRepository.findOne({
       where: {
         order_id: order_id,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
       },
       relations: [
         'order_item',
         'order_item.menu',
-        'order_item.menu.categories',
+        'order_item.size',
+        'order_item.sweetnessLevel',
+        'order_item.orderItem',
+        'order_item.orderItem.ingredient',
+        'order_item.menu.menuCategory',
+        'order_item.menu.menuCategory.category',
         'payment',
       ],
     });
 
     if (!order) {
-      throw new Error(`Order with ID ${order_id} not found`);
+      throw new NotFoundException(
+        `Order with ID ${order_id} not found for this owner and branch`,
+      );
     }
 
-    // edit entity
-    // const cancelOrderDetails = {
-    //   order_id: order.order_id,
-    //   order_table: order.order_item.map((item) => ({
-    //     menu_name: item.menu?.menu_name || 'N/A',
-    //     quantity: item.quantity,
-    //     amount: item.price,
-    //     category_name: item.menu?.categories?.[0]?.category_name || 'N/A',
-    //   })),
-    //   total_amount: order.payment.amount,
-    //   // total_amount_vat: order.payment.amount * 1.07,
-    //   payment_method: order.payment.payment_method,
-    //   cancel_status: order.cancel_status,
-    //   customer_name: order.customer_name,
-    //   customer_contact: order.customer_contact,
-    // };
+    const cancelOrderDetails = {
+      order_id: order.order_id,
+      order_date: order.order_date,
+      order_table: order.order_item.map((item) => ({
+        menu_name: item.menu?.menu_name || 'N/A',
+        quantity: item.quantity,
+        amount: item.price,
+        size_name: item.size?.size_name || 'N/A',
+        sweetness_name: item.sweetnessLevel?.level_name || 'N/A',
+        add_on_name:
+          item.orderItem?.map((addOn) => addOn.ingredient?.ingredient_name) ||
+          'N/A',
+        category_name:
+          item.menu?.menuCategory?.map((cat) => cat.category.category_name) ||
+          'N/A',
+      })),
+      total_amount: order.payment?.amount || 0,
+      payment_method: order.payment?.payment_method || 'N/A',
+      cancel_status: order.cancel_status,
+      customer_name: order.customer_name,
+      customer_contact: order.customer_contact,
+    };
 
-    // console.log(cancelOrderDetails);
-
-    // return cancelOrderDetails; // Return the hardcoded data
+    return cancelOrderDetails;
   }
 
   //TODO
@@ -593,8 +656,6 @@ export class DashboardService {
     }
   }
 
-  //THISSSSSSsssssssssssssssssssssssssssssssssssssss
-
   async getUpdateIngredient(ingredient_id: number) {
     const ingredient = await this.ingredientRepository.findOne({
       where: { ingredient_id },
@@ -707,25 +768,48 @@ export class DashboardService {
 
   async updateCancelStatus(
     order_id: number,
-    updateCancelStatusDto: UpdateCancelStatusDto,
+    cancel_status: string,
+    ownerId: number,
+    branchId: number,
   ) {
-    // Extract cancel_status from the DTO
-    const { cancel_status } = updateCancelStatusDto;
+    const order = await this.orderRepository.findOne({
+      where: {
+        order_id: order_id,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['payment'], // เพิ่ม relation กับ payment
+    });
 
-    // Find the order by ID
-    const order = await this.orderRepository.findOne({ where: { order_id } });
-
-    // If no order is found, throw an exception
     if (!order) {
-      throw new NotFoundException(`Order with ID ${order_id} not found`);
+      throw new NotFoundException(
+        `Order with ID ${order_id} not found for this owner and branch`,
+      );
     }
 
-    // Update the cancel_status
-    order.cancel_status = cancel_status;
+    // ถ้าสถานะเป็น "คืนเงินเสร็จสิ้น" ให้หักยอดเงินออกจาก sales_summary
+    if (cancel_status === 'คืนเงินเสร็จสิ้น') {
+      const orderDate = new Date(order.order_date);
+      const startOfDay = new Date(orderDate.setHours(0, 0, 0, 0));
+      const endOfDay = new Date(orderDate.setHours(23, 59, 59, 999));
 
-    // Save the updated order to the database
-    await this.orderRepository.save(order);
+      // หา sales_summary ของวันที่สั่งออเดอร์
+      const salesSummary = await this.salesSummaryRepository.findOne({
+        where: {
+          date: Between(startOfDay, endOfDay),
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId },
+        },
+      });
 
-    return order;
+      if (salesSummary) {
+        // หักยอดเงินออกจาก total_revenue
+        salesSummary.total_revenue -= order.payment.amount;
+        await this.salesSummaryRepository.save(salesSummary);
+      }
+    }
+
+    order.cancel_status = cancel_status as CancelStatus;
+    return await this.orderRepository.save(order);
   }
 }

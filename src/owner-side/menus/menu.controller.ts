@@ -30,7 +30,7 @@ import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) {}
+  ) { }
 
   // upload picture to local storage
   @Post('upload')
@@ -77,6 +77,18 @@ export class MenuController {
   // ) {
   //   return this.menuService.updateOption(type, id, updateOptionDto);
   // }
+
+  @Get('options/add-on')
+  async getAddOnDetails(@Req() request: Request) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.menuService.getAddOnDetails(+ownerId, +branchId);
+  }
 
   // * เรียกดู ชื่อ ID Menu ทั้งหมด
   @Get()
@@ -169,11 +181,49 @@ export class MenuController {
     return this.menuService.getAllOptionGroups(+ownerId, +branchId);
   }
 
-  @Get('options/:type')
-  async getOptions(
-    @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
+  @Get('options/sweetness/:groupName')
+  async getSweetnessGroup(
+    @Param('groupName') groupName: string,
+    @Req() request: Request
   ) {
-    return this.menuService.getOptions(type);
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.menuService.getGroupData('sweetness', groupName, +ownerId, +branchId);
+  }
+
+  @Get('options/size/:groupName')
+  async getSizeGroup(
+    @Param('groupName') groupName: string,
+    @Req() request: Request
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.menuService.getGroupData('size', groupName, +ownerId, +branchId);
+  }
+
+  @Get('options/menu-type/:groupName')
+  async getMenuTypeGroup(
+    @Param('groupName') groupName: string,
+    @Req() request: Request
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.menuService.getGroupData('menu-type', groupName, +ownerId, +branchId);
   }
 
   // * Update a menuname description price image
@@ -392,7 +442,7 @@ export class MenuController {
     return this.menuService.deleteAllAddOns(+ownerId, +branchId);
   }
 
-  @Patch('options/add-on')
+  @Patch('options/add-ons')
   async updateAddOn(
     @Req() request: Request,
     @Body() updateAddOnDto: UpdateAddOnDto,
@@ -451,69 +501,18 @@ export class MenuController {
     );
   }
 
-  @Get('options/sweetness/:groupName')
-  async getSweetnessGroup(
-    @Param('groupName') groupName: string,
+  @Get('stock/option/:menu_id')
+  async getMenuOptions(
+    @Param('menu_id') menu_id: number,
     @Req() request: Request,
   ) {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
     if (!ownerId || !branchId) {
-      throw new BadRequestException(
-        'Missing required headers: owner_id or branch_id',
-      );
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
     }
 
-    return this.menuService.getGroupData(
-      'sweetness',
-      groupName,
-      +ownerId,
-      +branchId,
-    );
-  }
-
-  @Get('options/size/:groupName')
-  async getSizeGroup(
-    @Param('groupName') groupName: string,
-    @Req() request: Request,
-  ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
-
-    if (!ownerId || !branchId) {
-      throw new BadRequestException(
-        'Missing required headers: owner_id or branch_id',
-      );
-    }
-
-    return this.menuService.getGroupData(
-      'size',
-      groupName,
-      +ownerId,
-      +branchId,
-    );
-  }
-
-  @Get('options/menu-type/:groupName')
-  async getMenuTypeGroup(
-    @Param('groupName') groupName: string,
-    @Req() request: Request,
-  ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
-
-    if (!ownerId || !branchId) {
-      throw new BadRequestException(
-        'Missing required headers: owner_id or branch_id',
-      );
-    }
-
-    return this.menuService.getGroupData(
-      'menu-type',
-      groupName,
-      +ownerId,
-      +branchId,
-    );
+    return this.menuService.getMenuOptions(menu_id, +ownerId, +branchId);
   }
 }

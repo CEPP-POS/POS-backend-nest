@@ -12,7 +12,7 @@ import { Column } from 'typeorm';
 
 export enum CancelStatus {
   RefundPending = 'ยังไม่คืนเงิน',
-  Refunded = 'คืนเงินแล้ว',
+  Refunded = 'คืนเงินเสร็จสิ้น',
   CancelByEmployee = 'ยกเลิกโดยพนักงาน',
 }
 export enum PaymentMethod {

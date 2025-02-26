@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, Repository } from 'typeorm';
 // import { Category } from '../../entities/category.entity';
@@ -25,7 +25,7 @@ export class IngredientService {
 
     @InjectRepository(MenuIngredient)
     private readonly menuIngredientRepository: Repository<MenuIngredient>,
-  ) {}
+  ) { }
 
   async test(): Promise<Ingredient[]> {
     return this.ingredientRepository.find();
@@ -71,17 +71,27 @@ export class IngredientService {
       // })),
     };
   }
-  async findIngredientsByOwnerId(owner_id: number): Promise<any[]> {
-    const ingredients = await this.ingredientRepository.find({
-      where: { owner: { owner_id } },
-      select: ['ingredient_id', 'ingredient_name'],
-    });
 
-    if (!ingredients.length) {
-      return [];
+  async findIngredientsByOwnerId(ownerId: number, branchId: number): Promise<{ ingredient_id: number; ingredient_name: string }[]> {
+    try {
+      const ingredients = await this.ingredientRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId },
+          is_delete: false,
+        },
+      });
+
+      return ingredients.map(ingredient => ({
+        ingredient_id: ingredient.ingredient_id,
+        ingredient_name: ingredient.ingredient_name,
+      }));
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to find ingredients',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
     }
-
-    return ingredients;
   }
 
   async findAllMenuIngredientById(menuId: number) {
@@ -114,15 +124,15 @@ export class IngredientService {
         menu_ingredient_id: menuIngredient.menu_ingredient_id,
         menu: menuIngredient.menu
           ? {
-              menu_id: menuIngredient.menu.menu_id,
-              menu_name: menuIngredient.menu.menu_name,
-            }
+            menu_id: menuIngredient.menu.menu_id,
+            menu_name: menuIngredient.menu.menu_name,
+          }
           : null,
         ingredient: menuIngredient.ingredient
           ? {
-              ingredient_id: menuIngredient.ingredient.ingredient_id,
-              ingredient_name: menuIngredient.ingredient.ingredient_name,
-            }
+            ingredient_id: menuIngredient.ingredient.ingredient_id,
+            ingredient_name: menuIngredient.ingredient.ingredient_name,
+          }
           : null,
         // size: menuIngredient.size_id ? {
         //     size_id: menuIngredient.size_id.size_id,
@@ -134,9 +144,9 @@ export class IngredientService {
         // } : null,
         menu_type: menuIngredient.menu_type
           ? {
-              menu_type_id: menuIngredient.menu_type.menu_type_id,
-              menu_type_name: menuIngredient.menu_type.type_name,
-            }
+            menu_type_id: menuIngredient.menu_type.menu_type_id,
+            menu_type_name: menuIngredient.menu_type.type_name,
+          }
           : null,
         // add_on: menuIngredient.add_on ? {
         //     add_on_id: menuIngredient.add_on.add_on_id,

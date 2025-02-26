@@ -39,8 +39,8 @@ branch_id: 1
 ### get all menu with ingredient link for auto cut stock
 GET http://localhost:3000/owner/menus/stock/2
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
 
 
 ### link Ingredient to Menu for auto cut stock
