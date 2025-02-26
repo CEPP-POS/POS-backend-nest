@@ -5,7 +5,7 @@ owner_id: 1
 branch_id: 1
 {
   "createOrderDto": {
-    "order_date": "2025-03-01T08:00:00Z",
+    "order_date": "2025-03-03T08:00:00Z",
     "total_price": 260,
     "queue_number": 4,
     "status": "รอทำ",
@@ -16,19 +16,19 @@ branch_id: 1
   "items": [
     {
       "menu_id": 1,
-      "sweetness_id": 1,
+      "sweetness_id": 88,
       "size_id": 1,
       "add_on_id": [1,2],  
-      "menu_type_id": 39,
+      "menu_type_id": 3,
       "quantity": 1,
       "price": 100
     },
     {
       "menu_id": 2,
-      "sweetness_id": 1,
+      "sweetness_id": 88,
       "size_id": 1,
       "add_on_id": [1],  
-      "menu_type_id": 39,
+      "menu_type_id": 2,
       "quantity": 2,
       "price": 60
     }

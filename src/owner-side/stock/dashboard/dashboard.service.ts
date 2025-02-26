@@ -347,6 +347,9 @@ export class DashboardService {
         'order_item.size',
         'order_item.sweetnessLevel',
         'order_item.orderItem',
+        'order_item.orderItem.ingredient',
+        'order_item.menu.menuCategory',
+        'order_item.menu.menuCategory.category',
         'payment',
       ],
     });
@@ -369,7 +372,9 @@ export class DashboardService {
         add_on_name:
           item.orderItem?.map((addOn) => addOn.ingredient?.ingredient_name) ||
           'N/A',
-        // category_name: item.menu?.category?.category_name || 'N/A',
+        category_name:
+          item.menu?.menuCategory?.map((cat) => cat.category.category_name) ||
+          'N/A',
       })),
       total_amount: order.payment?.amount || 0,
       payment_method: order.payment?.payment_method || 'N/A',

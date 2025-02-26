@@ -25,7 +25,7 @@ owner_id: 1
 branch_id: 1
 
 ## get menu detail
-GET http://localhost:3000/owner/orders/60
+GET http://localhost:3000/owner/orders/68
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
