@@ -88,8 +88,20 @@ export class DashboardController {
   }
 
   @Get('stock-cancel-orders')
-  async getCancelOrders(): Promise<CancelOrderTopicDto> {
-    return this.dashboardService.getCancelOrders();
+  async getCancelOrders(@Req() request: Request): Promise<CancelOrderTopicDto> {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    return this.dashboardService.getCancelOrders(
+      Number(ownerId),
+      Number(branchId),
+    );
   }
 
   // edit entity

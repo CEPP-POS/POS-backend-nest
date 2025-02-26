@@ -267,12 +267,14 @@ export class DashboardService {
   }
 
   // ENTITY ORDER TOTAL PRICE
-  async getCancelOrders() {
+  async getCancelOrders(ownerId: number, branchId: number) {
     const orders = await this.orderRepository.find({
       where: {
         cancel_status: Not(IsNull()),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
       },
-      relations: ['order_item', 'payment'], // Load the related order_items
+      relations: ['order_item', 'payment'],
     });
 
     // Create an array to store the formatted order topics
@@ -287,15 +289,19 @@ export class DashboardService {
       const paymentMethod = order.payment
         ? order.payment.payment_method
         : 'Unknown';
+      const amount = order.payment.amount;
+      const total_amount = order.payment.total_amount;
+      const cancel_status = order.cancel_status;
 
       // Return the formatted order details
       return {
         order_id: order.order_id,
         order_date: order.order_date,
-        quantity: totalQuantity, // Total quantity of items for the order
-        // total_amount: order.total_price || 0, // Total price for the order
+        quantity: totalQuantity,
+        amount: amount,
+        total_amount: total_amount,
         payment_method: paymentMethod,
-        cancel_order_topic: order.cancel_status,
+        cancel_status: cancel_status,
       };
     });
 
@@ -303,14 +309,14 @@ export class DashboardService {
     orderTopics.sort((a, b) => {
       // Sort by cancel_order_topic ("ยังไม่คืนเงิน" comes first)
       if (
-        a.cancel_order_topic === 'ยังไม่คืนเงิน' &&
-        b.cancel_order_topic !== 'ยังไม่คืนเงิน'
+        a.cancel_status === 'ยังไม่คืนเงิน' &&
+        b.cancel_status !== 'ยังไม่คืนเงิน'
       ) {
         return -1;
       }
       if (
-        a.cancel_order_topic !== 'ยังไม่คืนเงิน' &&
-        b.cancel_order_topic === 'ยังไม่คืนเงิน'
+        a.cancel_status !== 'ยังไม่คืนเงิน' &&
+        b.cancel_status === 'ยังไม่คืนเงิน'
       ) {
         return 1;
       }
