@@ -21,6 +21,7 @@ export enum PaymentMethod {
 }
 
 export class CreateOrderDto {
+  @IsOptional()
   @IsDate()
   @Type(() => Date)
   order_date: Date;
@@ -29,8 +30,7 @@ export class CreateOrderDto {
   total_price: number;
 
   @IsInt()
-  @IsNotEmpty()
-  queue_number: number;
+  queue_number?: number;
 
   @Column({ default: 'รอทำ' }) // สถานะเริ่มต้น
   status: string;

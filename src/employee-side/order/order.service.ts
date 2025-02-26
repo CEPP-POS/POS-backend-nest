@@ -83,6 +83,11 @@ export class OrderService {
       where: { branch_id },
     });
 
+    // Set default values if not provided
+    createOrderDto.order_date = createOrderDto.order_date || new Date();
+    createOrderDto.queue_number = createOrderDto.queue_number || 1; // Default to 1 if not provided
+    createOrderDto.status = createOrderDto.status || 'รอทำ'; // Default status
+
     // Convert order_date to Date if it's a string
     if (typeof createOrderDto.order_date === 'string') {
       const parsedDate = new Date(createOrderDto.order_date);
