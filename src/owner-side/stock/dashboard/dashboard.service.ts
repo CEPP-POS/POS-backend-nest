@@ -62,7 +62,11 @@ export class DashboardService {
     private ownerRepository: Repository<Owner>,
   ) {}
 
-  private async calculateMonthlyRevenue(year: number): Promise<number[]> {
+  private async calculateMonthlyRevenue(
+    year: number,
+    ownerId: number,
+    branchId: number,
+  ): Promise<number[]> {
     const monthlyRevenue = Array(12).fill(0);
     for (let month = 0; month < 12; month++) {
       const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
@@ -71,6 +75,8 @@ export class DashboardService {
       const salesSummaries = await this.salesSummaryRepository.find({
         where: {
           date: Between(startOfMonth, endOfMonth),
+          owner: { owner_id: ownerId },
+          branch: { branch_id: branchId },
         },
       });
 
@@ -82,7 +88,11 @@ export class DashboardService {
     return monthlyRevenue;
   }
 
-  private async calculateDailyStats(date: Date): Promise<{
+  private async calculateDailyStats(
+    date: Date,
+    ownerId: number,
+    branchId: number,
+  ): Promise<{
     totalRevenue: number;
     totalOrders: number;
     canceledOrders: number;
@@ -94,14 +104,18 @@ export class DashboardService {
     const salesSummariesForDay = await this.salesSummaryRepository.find({
       where: {
         date: Between(startOfDay, endOfDay),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
       },
     });
 
     const allOrdersForDay = await this.orderRepository.find({
       where: {
         order_date: Between(startOfDay, endOfDay),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
       },
-      relations: ['order_item', 'order_item.menu'], // Include related order items and menu
+      relations: ['order_item', 'order_item.menu'],
     });
 
     // Flatten the array of order items and aggregate quantities by menu_name
@@ -145,11 +159,19 @@ export class DashboardService {
     };
   }
 
-  async getStockSummary(date: Date): Promise<Overview> {
+  async getStockSummary(
+    date: Date,
+    ownerId: number,
+    branchId: number,
+  ): Promise<Overview> {
     const year = date.getFullYear();
-    const monthlyRevenue = await this.calculateMonthlyRevenue(year);
+    const monthlyRevenue = await this.calculateMonthlyRevenue(
+      year,
+      ownerId,
+      branchId,
+    );
     const { top_three, totalRevenue, totalOrders, canceledOrders } =
-      await this.calculateDailyStats(date);
+      await this.calculateDailyStats(date, ownerId, branchId);
 
     const topThree: TopItemDto[] = top_three;
 
@@ -162,11 +184,19 @@ export class DashboardService {
     };
   }
 
-  async getStockLineGraph(date: Date): Promise<Linegraph> {
+  async getStockLineGraph(
+    date: Date,
+    ownerId: number,
+    branchId: number,
+  ): Promise<Linegraph> {
     const year = date.getFullYear();
-    const monthlyRevenue = await this.calculateMonthlyRevenue(year);
+    const monthlyRevenue = await this.calculateMonthlyRevenue(
+      year,
+      ownerId,
+      branchId,
+    );
     const { totalRevenue, totalOrders, canceledOrders } =
-      await this.calculateDailyStats(date);
+      await this.calculateDailyStats(date, ownerId, branchId);
 
     return {
       total_revenue: totalRevenue,
@@ -592,8 +622,6 @@ export class DashboardService {
       };
     }
   }
-
-  //THISSSSSSsssssssssssssssssssssssssssssssssssssss
 
   async getUpdateIngredient(ingredient_id: number) {
     const ingredient = await this.ingredientRepository.findOne({

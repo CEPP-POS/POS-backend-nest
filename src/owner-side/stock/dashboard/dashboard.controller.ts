@@ -28,15 +28,41 @@ export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('stock-summary/:date')
-  async getStockSummary(@Param('date') date: string): Promise<Overview> {
+  async getStockSummary(
+    @Param('date') date: string,
+    @Req() request: Request,
+  ): Promise<Overview> {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
     date = date + 'T08:00:00.000Z';
-    return this.dashboardService.getStockSummary(new Date(date));
+    return this.dashboardService.getStockSummary(
+      new Date(date),
+      Number(ownerId),
+      Number(branchId),
+    );
   }
 
   @Get('stock-sale/:date')
-  async getStockLineGraph(@Param('date') date: string): Promise<Linegraph> {
+  async getStockLineGraph(
+    @Param('date') date: string,
+    @Req() request: Request,
+  ): Promise<Linegraph> {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
     date = date + 'T08:00:00.000Z';
-    return this.dashboardService.getStockLineGraph(new Date(date));
+    return this.dashboardService.getStockLineGraph(
+      new Date(date),
+      Number(ownerId),
+      Number(branchId),
+    );
   }
 
   @Get('stock-orders/:date')

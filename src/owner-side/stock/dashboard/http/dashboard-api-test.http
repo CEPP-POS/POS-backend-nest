@@ -1,8 +1,10 @@
 ### Get Stock Summary by Date
-GET http://localhost:3000/owner/stock-summary/2025-09-18
+GET http://localhost:3000/owner/stock-summary/2025-03-01
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 ## get menu ingredient by ingredient id
-## fix
 GET http://localhost:3000/owner/stock-ingredients/16
 
 ## GET ALL ORDERS
@@ -75,9 +77,9 @@ branch_id: 1
   "ingredient_name": "นมข้นหวาน",
   "net_volume": 250,
   "unit": "g",
-  "quantity_in_stock": 1,
+  "quantity_in_stock": 4,
   "category_name": "เครื่องครัว",
-  "expiration_date": "2025-01-27"
+  "expiration_date": "2025-05-28"
 }
 
 ## update cancel order status
