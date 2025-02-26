@@ -66,9 +66,25 @@ export class DashboardController {
   }
 
   @Get('stock-orders/:date')
-  async getOrderTopic(@Param('date') date: string): Promise<OrderItemDto> {
+  async getOrderTopic(
+    @Param('date') date: string,
+    @Req() request: Request,
+  ): Promise<OrderItemDto> {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
     date = date + 'T08:00:00.000Z';
-    return this.dashboardService.getOrderTopic(new Date(date));
+    return this.dashboardService.getOrderTopic(
+      new Date(date),
+      Number(ownerId),
+      Number(branchId),
+    );
   }
 
   @Get('stock-cancel-orders')

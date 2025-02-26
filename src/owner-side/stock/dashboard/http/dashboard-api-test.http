@@ -4,11 +4,14 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 
+## GET ALL ORDERS
+GET http://localhost:3000/owner/stock-orders/2025-03-01
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
 ## get menu ingredient by ingredient id
 GET http://localhost:3000/owner/stock-ingredients/16
-
-## GET ALL ORDERS
-GET http://localhost:3000/owner/stock-orders/2025-01-01
 
 ## GET ALL CANCEL ORDERS
 GET http://localhost:3000/owner/stock-cancel-orders

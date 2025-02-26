@@ -207,13 +207,19 @@ export class DashboardService {
   }
 
   // Entity order total price
-  async getOrderTopic(date: Date): Promise<any> {
+  async getOrderTopic(
+    date: Date,
+    ownerId: number,
+    branchId: number,
+  ): Promise<any> {
     const startOfDay = new Date(date.setHours(0, 0, 0, 0));
     const endOfDay = new Date(date.setHours(23, 59, 59, 999));
 
     const salesSummary = await this.salesSummaryRepository.findOne({
       where: {
         date: Between(startOfDay, endOfDay),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
       },
     });
 
@@ -223,31 +229,36 @@ export class DashboardService {
     const orders = await this.orderRepository.find({
       where: {
         order_date: Between(startOfDay, endOfDay),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
       },
-      relations: ['order_item', 'payment'], // Load the related order_items
+      relations: ['order_item', 'payment'],
     });
 
     const orderTopic = orders.map((order) => {
-      // Calculate the total quantity by summing the quantities of the related order items
       const totalQuantity = order.order_item.reduce(
         (sum, item) => sum + item.quantity,
         0,
       );
       const paymentMethod = order.payment
         ? order.payment.payment_method
-        : 'Unknown'; // Fallback if no payment exists
+        : 'Unknown';
 
-      // Return the formatted order details
+      const amount = order.payment.amount;
+      const total_amount = order.payment.total_amount;
+      const cancel_status = order.cancel_status;
+
       return {
         order_id: order.order_id,
         order_date: order.order_date,
-        quantity: totalQuantity, // Total quantity of items for the order
-        // total_amount: order.total_price || 0, // Total price for the order
-        payment_method: paymentMethod, // Add logic to fetch payment method if available
+        quantity: totalQuantity,
+        amount: amount,
+        total_amount: total_amount,
+        payment_method: paymentMethod,
+        cancel_status: cancel_status,
       };
     });
 
-    // Return the formatted response
     return {
       total_orders: totalOrders,
       canceled_orders: canceledOrders,
