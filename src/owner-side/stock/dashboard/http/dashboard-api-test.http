@@ -32,6 +32,9 @@ branch_id: 1
 
 ## GET ALL INGREDIENT
 GET http://localhost:3000/owner/stock-ingredients
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 # getIngredientsCategories
 GET http://localhost:3000/owner/stock-ingredients/categories

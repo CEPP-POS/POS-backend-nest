@@ -812,4 +812,75 @@ export class DashboardService {
     order.cancel_status = cancel_status as CancelStatus;
     return await this.orderRepository.save(order);
   }
+
+  async getStockIngredients(ownerId: number, branchId: number) {
+    const ingredients = await this.ingredientRepository.find({
+      where: {
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+        is_delete: false,
+      },
+      relations: ['ingredientCategory', 'ingredientUpdate'],
+      order: {
+        ingredient_name: 'ASC',
+      },
+    });
+
+    const today = new Date();
+    console.log(ingredients);
+    const stockIngredients = ingredients.map((ingredient) => {
+      console.log('Processing ingredient:', ingredient.ingredient_name);
+
+      // กรองและคำนวณ net_volume และ total_volume
+      const validUpdates = ingredient.ingredientUpdate.filter((update) => {
+        const isValid =
+          update.quantity_in_stock > 0 &&
+          new Date(update.expiration_date) > today;
+        console.log('Update valid?', isValid, 'for:', {
+          quantity_in_stock: update.quantity_in_stock,
+          net_volume: update.net_volume,
+          total_volume: update.total_volume,
+          expiration_date: update.expiration_date,
+        });
+        return isValid;
+      });
+
+      const totalNetVolume = validUpdates.reduce((sum, update) => {
+        console.log('Adding to net_volume sum:', update.net_volume);
+        return sum + update.net_volume;
+      }, 0);
+
+      const totalVolume = validUpdates.reduce((sum, update) => {
+        console.log('Adding to total_volume sum:', update.total_volume);
+        return sum + update.total_volume;
+      }, 0);
+
+      const totalQuantityInStock = validUpdates.reduce((sum, update) => {
+        console.log(
+          'Adding to quantity_in_stock sum:',
+          update.quantity_in_stock,
+        );
+        return sum + update.quantity_in_stock;
+      }, 0);
+
+      console.log('Total net volume:', totalNetVolume);
+      console.log('Total volume:', totalVolume);
+
+      return {
+        ingredient_id: ingredient.ingredient_id,
+        ingredient_name: ingredient.ingredient_name,
+        net_volume: totalNetVolume > 0 ? totalNetVolume : 0,
+        total_volume: totalVolume > 0 ? totalVolume : 0,
+        quantity_in_stock: totalQuantityInStock > 0 ? totalQuantityInStock : 0,
+        unit: ingredient.unit,
+        category_id:
+          ingredient.ingredientCategory?.ingredient_category_id || null,
+        category_name:
+          ingredient.ingredientCategory?.ingredient_category_name ||
+          'ไม่ระบุหมวดหมู่',
+      };
+    });
+
+    return stockIngredients;
+  }
 }
