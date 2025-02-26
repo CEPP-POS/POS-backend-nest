@@ -36,6 +36,11 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 
+GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/5
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
 # getIngredientsCategories
 GET http://localhost:3000/owner/stock-ingredients/categories
 Content-Type: application/json

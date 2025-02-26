@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Req,
+  Headers,
 } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { Overview } from './dto/overview.dto';
@@ -253,6 +254,19 @@ export class DashboardController {
       updateData.cancel_status,
       Number(ownerId),
       Number(branchId),
+    );
+  }
+
+  @Get('stock-ingredients/sub-ingredient/:id')
+  async getSubIngredient(
+    @Param('id') ingredientId: string,
+    @Headers('owner_id') ownerId: string,
+    @Headers('branch_id') branchId: string,
+  ) {
+    return await this.dashboardService.getSubIngredient(
+      parseInt(ingredientId),
+      parseInt(ownerId),
+      parseInt(branchId),
     );
   }
 }

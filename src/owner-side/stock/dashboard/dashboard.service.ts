@@ -889,4 +889,52 @@ export class DashboardService {
     // แปลง Map เป็น Array แล้วส่งกลับ
     return Array.from(categoryMap.values());
   }
+
+  async getSubIngredient(
+    ingredient_id: number,
+    ownerId: number,
+    branchId: number,
+  ) {
+    const ingredient = await this.ingredientRepository.findOne({
+      where: {
+        ingredient_id: ingredient_id,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['ingredientUpdate'],
+    });
+
+    if (!ingredient) {
+      throw new NotFoundException('ไม่พบข้อมูลวัตถุดิบ');
+    }
+
+    // Get today's date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // กรองและจัดเรียงข้อมูลจาก relation แทนการ query ใหม่
+    const validUpdates = ingredient.ingredientUpdate
+      .filter(
+        (update) =>
+          update.quantity_in_stock > 0 &&
+          new Date(update.expiration_date) > today,
+      )
+      .sort(
+        (a, b) =>
+          new Date(a.expiration_date).getTime() -
+          new Date(b.expiration_date).getTime(),
+      );
+
+    return {
+      ingredient_id: ingredient.ingredient_id,
+      ingredient_name: ingredient.ingredient_name,
+      updates: validUpdates.map((update) => ({
+        update_id: update.update_id,
+        quantity_in_stock: update.quantity_in_stock,
+        total_volume: update.total_volume,
+        net_volume: update.net_volume,
+        expiration_date: update.expiration_date,
+      })),
+    };
+  }
 }
