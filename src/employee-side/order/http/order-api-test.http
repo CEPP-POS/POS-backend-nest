@@ -1,8 +1,8 @@
 ### Create Order with QRCODE PAY
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id:3
 {
   "createOrderDto": {
     "order_date": "2025-03-01T08:00:00Z",
@@ -76,8 +76,8 @@ branch_id: 1
 ### Get All Orders
 GET http://localhost:3000/employee/orders
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
 
 
 ### Get Order by ID
