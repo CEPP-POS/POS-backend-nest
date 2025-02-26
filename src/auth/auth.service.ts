@@ -9,7 +9,7 @@ export class AuthService {
     private readonly userService: OwnerService,
     private readonly jwtService: JwtService,
   ) {}
-
+  // * Login 
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto);
     console.log('[File auth service] USER FOUND:', user);
@@ -46,22 +46,30 @@ export class AuthService {
     };
   }
   
-
+  // * Validate user
   async validateUser(loginDto: LoginDto) {
     const user = await this.userService.findByEmail(loginDto.email);
     console.log('🔍 Found user:', user);
-    if (user) {
-      console.log('📌 Input Password:', loginDto.password);
-      console.log('🔐 Hashed Password in DB:', user.password);
-      const passwordValid = await compare(
-        loginDto.password,
-        user.password,
-      );
-      console.log('✅ Password Match:', passwordValid);
-      if (passwordValid) {
-        return user;
-      }
+
+    if (!user) {
+        throw new UnauthorizedException('Invalid email or password');
     }
-    throw new UnauthorizedException('Username or password not correct.');
-  }
+
+    console.log('📌 Input Password:', loginDto.password);
+    console.log('🔐 Hashed Password in DB:', user.password);
+
+    if (!user.password) {
+        throw new UnauthorizedException('No password set for this account');
+    }
+
+    const passwordValid = await compare(loginDto.password, user.password);
+    console.log('✅ Password Match:', passwordValid);
+
+    if (!passwordValid) {
+        throw new UnauthorizedException('Invalid email or password');
+    }
+
+    return user;
+}
+
 }

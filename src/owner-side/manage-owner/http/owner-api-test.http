@@ -1,65 +1,4 @@
-### 1. Owner สมัครใช้งาน (Register)
-POST http://localhost:3000/owner/register
-Content-Type: application/json
-
-{
-  "owner_name": "Owner",
-  "contact_info": "0123456789",
-  "email": "ownername12@gmail.com",
-  "password": "SecurePass123!"
-}
-### 2. Owner เข้าสู่ระบบ (Login)
-POST http://localhost:3000/owner/login
-Content-Type: application/json
-
-{
-  "email": "ownername12@gmail.com",
-  "password": "SecurePass4567!"
-}
-
-### 3. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน (Forgot Password)
-POST http://localhost:3000/owner/forgot-password
-Content-Type: application/json
-owner_id: 10
-branch_id: 1
-{
-  "usernameOrEmail": "ownername12@gmail.com"
-}
-
-### 4. Owner ยืนยัน OTP
-POST http://localhost:3000/owner/verify-otp
-Content-Type: application/json
-owner_id: 10
-branch_id: 1
-{
-  "usernameOrEmail": "ownername12@gmail.com",
-  "otp": "698314"
-}
-
-
-### 5. Owner รีเซ็ตรหัสผ่านใหม่
-PATCH http://localhost:3000/owner/reset-password
-Content-Type: application/json
-owner_id: 10
-branch_id: 1
-{
-  "email": "ownername12@gmail.com",
-  "newPassword": "SecurePass4567!"
-}
-
-### 6. Owner สร้าง Employee (ต้องแนบ Token)
-POST http://localhost:3000/owner/create-employee
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MTAsImVtYWlsIjoib3duZXJuYW1lMTJAZ21haWwuY29tIiwiYnJhbmNoX2lkIjoxLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3NDAzODg3NTUsImV4cCI6MTc0MDQ3NTE1NX0.rdaGOv96Bo0vTaLmpf8FdW59UmXR-860sXh7WTKG0eE
-Content-Type: application/json
-
-{
-  "email": "employeeMemee@example.com",
-  "password": "EmployeePass123e!",
-  "branch_id": 1
-}
-
-
-### Owner อัปโหลดไฟล์ CSV
+### 1. Owner อัปโหลดไฟล์ CSV
 POST http://localhost:3000/owner/upload-csv
 Content-Type: multipart/form-data; boundary=boundary
 
@@ -70,25 +9,57 @@ Content-Type: text/csv
 < /Users/watcharapolyotadee/Development/POS/POS-backend-nest/src/uploads/owners.csv
 --boundary--
 
-
-GET http://localhost:3000/owner/employees
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MjQsImVtYWlsIjoib3duZXJuYW1lMTJAZ21haWwuY29tIiwiYnJhbmNoX2lkIjo3LCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3NDAyOTcxMTMsImV4cCI6MTc0MDM4MzUxM30.gwABrrWFqsTt_onk0yeH_NBMo5JjaoFXQjJ_TVYwYqA
-
-GET http://localhost:3000/owner/check-employees
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MjAsImVtYWlsIjoib3duZXJuYW1lMUBnbWFpbC5jb20iLCJicmFuY2hfaWQiOjMsInJvbGVzIjpbIm93bmVyIl0sImlhdCI6MTc0MDI4MzQzOSwiZXhwIjoxNzQwMzY5ODM5fQ.Xh3axKrHgONip-VNU_qnttnzEI1UQU583SUz3UOmRsI
-
-###  Owner ดูข้อมูลตัวเอง
-GET http://localhost:3000/owner/profile
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MTAsImVtYWlsIjoib3duZXJuYW1lMTJAZ21haWwuY29tIiwiYnJhbmNoX2lkIjoxLCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3NDAzODg3NTUsImV4cCI6MTc0MDQ3NTE1NX0.rdaGOv96Bo0vTaLmpf8FdW59UmXR-860sXh7WTKG0eE
-
-
-
-### Dev only สร้าง employee ใหม่
-POST http://localhost:3000/owner/create-employee-dev
+### 2. Owner เข้าสู่ระบบ (Login)
+POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-  "email": "employee@gmail.com",
-  "password": "EmployeePass123!",
-  "manager_id": 4
+  "email": "charlie.white@example.com",
+  "password": "g888bswf"
+}
+
+### 3. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน (Forgot Password)
+POST http://localhost:3000/owner/forgot-password
+Content-Type: application/json
+owner_id: 6
+branch_id: 6
+{
+  "usernameOrEmail": "charlie.white@example.com"
+}
+### 4. Owner ยืนยัน OTP
+POST http://localhost:3000/owner/verify-otp
+Content-Type: application/json
+owner_id: 6
+branch_id: 6
+{
+  "usernameOrEmail": "charlie.white@example.com",
+  "otp": "888977"
+}
+
+### 5. Owner รีเซ็ตรหัสผ่านใหม่
+PATCH http://localhost:3000/owner/reset-password
+Content-Type: application/json
+owner_id: 6
+branch_id: 6
+{
+  "email": "charlie.white@example.com",
+  "newPassword": "SecureWhite123!"
+}
+### 6. Owner เข้าสู่ระบบ (Login)
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "charlie.white@example.com",
+  "password": "SecureWhite123!"
+}
+### 7. Owner สร้าง Employee (ต้องแนบ Token)
+POST http://localhost:3000/owner/create-employee
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NiwiZW1haWwiOiJjaGFybGllLndoaXRlQGV4YW1wbGUuY29tIiwiYnJhbmNoX2lkIjo2LCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3NDA1OTQyMzcsImV4cCI6MTc0MDY4MDYzN30.Ug1donayg6_dhz0aCtMftFtY6YiAyAT5ma0oni80UrI
+Content-Type: application/json
+
+{
+  "email": "MemeeEmployee2@example.com",
+  "password": "Employee2",
+  "branch_id": 6
 }
