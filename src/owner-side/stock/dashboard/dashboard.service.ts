@@ -724,46 +724,110 @@ export class DashboardService {
       stock_data: groupedStockData, // Store grouped stock data (excluding expired/zero quantity)
     };
   }
-
   async updateIngredient(
-    ingredient_id: number,
-    updateIngredientDto: UpdateIngredientDto[],
+    update_id: number,
+    owner_id: number,
+    branch_id: number,
+    updateIngredientDto: UpdateIngredientDto,
   ) {
-    const updatedIngredients = [];
+    console.log(`🔍 Checking update_id: ${update_id}`);
 
-    for (const update of updateIngredientDto) {
-      const ingredientUpdate = await this.ingredientUpdateRepository.findOne({
-        where: {
-          ingredient: Raw((alias) => `${alias} = ${ingredient_id}`),
-          update_id: update.update_id,
-        },
-      });
+    const ingredientUpdate = await this.ingredientUpdateRepository.findOne({
+      where: {
+        update_id: update_id,
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+      relations: ['ingredient'],
+    });
 
-      if (!ingredientUpdate) {
-        console.log(`No ingredient found with update_id ${update.update_id}`);
-        continue;
-      }
+    console.log(' Found Ingredient Update:', ingredientUpdate);
 
-      // Apply updates only for provided fields
-      if (update.quantity_in_stock !== undefined) {
-        ingredientUpdate.quantity_in_stock = update.quantity_in_stock;
-      }
-      if (update.total_volume !== undefined) {
-        ingredientUpdate.total_volume = update.total_volume;
-      }
-      if (update.net_volume !== undefined) {
-        ingredientUpdate.net_volume = update.net_volume;
-      }
-      if (update.expiration_date !== undefined) {
-        ingredientUpdate.expiration_date = new Date(update.expiration_date);
-      }
-
-      // Save updated ingredient record
-      await this.ingredientUpdateRepository.save(ingredientUpdate);
-      updatedIngredients.push(ingredientUpdate);
+    if (!ingredientUpdate) {
+      throw new NotFoundException(
+        ` No ingredient update found with update_id ${update_id}`,
+      );
     }
 
-    return { updatedIngredients };
+    const ingredient = await this.ingredientRepository.findOne({
+      where: {
+        ingredient_id: ingredientUpdate.ingredient.ingredient_id,
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+      relations: ['ingredientCategory'],
+    });
+
+    console.log(' Found Ingredient:', ingredient);
+
+    if (!ingredient) {
+      throw new NotFoundException(
+        ` Ingredient ID ${ingredientUpdate.ingredient.ingredient_id} not found for this owner/branch`,
+      );
+    }
+
+    const old_quantity = ingredientUpdate.quantity_in_stock;
+    const old_net_volume = ingredientUpdate.net_volume;
+    const old_total_volume = ingredientUpdate.total_volume;
+
+    console.log(
+      ` Old Data - quantity: ${old_quantity}, net_volume: ${old_net_volume}, total_volume: ${old_total_volume}`,
+    );
+
+    const new_quantity =
+      updateIngredientDto.quantity_in_stock !== undefined
+        ? updateIngredientDto.quantity_in_stock
+        : old_quantity;
+
+    const new_net_volume =
+      updateIngredientDto.net_volume !== undefined
+        ? updateIngredientDto.net_volume
+        : old_net_volume;
+
+    let new_total_volume = old_total_volume;
+
+    if (
+      updateIngredientDto.total_volume !== undefined &&
+      new_quantity === old_quantity &&
+      new_net_volume === old_net_volume
+    ) {
+      new_total_volume = updateIngredientDto.total_volume;
+    } else {
+      new_total_volume = new_quantity * new_net_volume;
+    }
+
+    console.log(
+      ` New Data - quantity: ${new_quantity}, net_volume: ${new_net_volume}, total_volume: ${new_total_volume}`,
+    );
+
+    ingredientUpdate.quantity_in_stock = new_quantity;
+    ingredientUpdate.net_volume = new_net_volume;
+    ingredientUpdate.total_volume = new_total_volume;
+
+    if (updateIngredientDto.expiration_date !== undefined) {
+      ingredientUpdate.expiration_date = new Date(
+        updateIngredientDto.expiration_date,
+      );
+    }
+
+    await this.ingredientUpdateRepository.save(ingredientUpdate);
+    console.log(' Update successful!');
+
+    return {
+      ingredient_id: ingredient.ingredient_id,
+      category_name: ingredient.ingredientCategory
+        ? ingredient.ingredientCategory.ingredient_category_name
+        : 'Unknown',
+      ingredient_name: ingredient.ingredient_name,
+      update_id: ingredientUpdate.update_id,
+      quantity: ingredientUpdate.quantity_in_stock,
+      net_volume: ingredientUpdate.net_volume,
+      total_volume: ingredientUpdate.total_volume,
+      expiration_date: ingredientUpdate.expiration_date
+        .toISOString()
+        .split('T')[0],
+      unit: ingredient.unit,
+    };
   }
 
   async updateCancelStatus(

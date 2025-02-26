@@ -222,16 +222,26 @@ export class DashboardController {
     return this.dashboardService.getUpdateIngredient(Number(ingredient_id));
   }
 
-  @Patch('update-stock-ingredients/:ingredient_id')
+  @Patch('update-stock-ingredients/:update_id')
   async updateIngredient(
-    @Param('ingredient_id') ingredient_id: number,
-    @Body() body: { updates: UpdateIngredientDto[] },
+    @Param('update_id') update_id: number,
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
+    @Body() body: UpdateIngredientDto,
   ) {
-    console.log('Received body:', body); // Add this log to inspect the request body
-    return this.dashboardService.updateIngredient(
-      ingredient_id,
-      body.updates, // Pass the array to the service
+    if (!owner_id || !branch_id) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    await this.dashboardService.updateIngredient(
+      update_id,
+      owner_id,
+      branch_id,
+      body,
     );
+    return { message: 'success' };
   }
 
   @Patch('orders/:order_id')
