@@ -1,21 +1,45 @@
 ### Get Stock Summary by Date
-GET http://localhost:3000/owner/stock-summary/2025-09-18
+GET http://localhost:3000/owner/stock-summary/2025-03-01
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
-## get menu ingredient by ingredient id
-## fix
-GET http://localhost:3000/owner/stock-ingredients/16
+GET http://localhost:3000/owner/stock-sale/2025-03-01
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 ## GET ALL ORDERS
-GET http://localhost:3000/owner/stock-orders/2025-01-01
+GET http://localhost:3000/owner/stock-orders/2025-03-01
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+## get menu ingredient by ingredient id
+GET http://localhost:3000/owner/stock-ingredients/16
 
 ## GET ALL CANCEL ORDERS
 GET http://localhost:3000/owner/stock-cancel-orders
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 ## get menu detail
-GET http://localhost:3000/owner/orders/1
+GET http://localhost:3000/owner/orders/68
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 ## GET ALL INGREDIENT
 GET http://localhost:3000/owner/stock-ingredients
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/5
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 # getIngredientsCategories
 GET http://localhost:3000/owner/stock-ingredients/categories
@@ -75,17 +99,17 @@ branch_id: 1
   "ingredient_name": "นมข้นหวาน",
   "net_volume": 250,
   "unit": "g",
-  "quantity_in_stock": 1,
+  "quantity_in_stock": 4,
   "category_name": "เครื่องครัว",
-  "expiration_date": "2025-01-27"
+  "expiration_date": "2025-05-29"
 }
 
 ## update cancel order status
-PATCH http://localhost:3000/owner/orders/1
+PATCH http://localhost:3000/owner/orders/71
 Content-Type: application/json
-
+owner_id: 1
+branch_id: 1
 {
   "cancel_status": "คืนเงินเสร็จสิ้น"
-  // "cancel_status": "ยังไม่คืนเงิน"
 }
 

@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Req,
+  Headers,
 } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { Overview } from './dto/overview.dto';
@@ -28,39 +29,119 @@ export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('stock-summary/:date')
-  async getStockSummary(@Param('date') date: string): Promise<Overview> {
+  async getStockSummary(
+    @Param('date') date: string,
+    @Req() request: Request,
+  ): Promise<Overview> {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
     date = date + 'T08:00:00.000Z';
-    return this.dashboardService.getStockSummary(new Date(date));
+    return this.dashboardService.getStockSummary(
+      new Date(date),
+      Number(ownerId),
+      Number(branchId),
+    );
   }
 
   @Get('stock-sale/:date')
-  async getStockLineGraph(@Param('date') date: string): Promise<Linegraph> {
+  async getStockLineGraph(
+    @Param('date') date: string,
+    @Req() request: Request,
+  ): Promise<Linegraph> {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
     date = date + 'T08:00:00.000Z';
-    return this.dashboardService.getStockLineGraph(new Date(date));
+    return this.dashboardService.getStockLineGraph(
+      new Date(date),
+      Number(ownerId),
+      Number(branchId),
+    );
   }
 
   @Get('stock-orders/:date')
-  async getOrderTopic(@Param('date') date: string): Promise<OrderItemDto> {
+  async getOrderTopic(
+    @Param('date') date: string,
+    @Req() request: Request,
+  ): Promise<OrderItemDto> {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
     date = date + 'T08:00:00.000Z';
-    return this.dashboardService.getOrderTopic(new Date(date));
+    return this.dashboardService.getOrderTopic(
+      new Date(date),
+      Number(ownerId),
+      Number(branchId),
+    );
   }
 
   @Get('stock-cancel-orders')
-  async getCancelOrders(): Promise<CancelOrderTopicDto> {
-    return this.dashboardService.getCancelOrders();
+  async getCancelOrders(@Req() request: Request): Promise<CancelOrderTopicDto> {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    return this.dashboardService.getCancelOrders(
+      Number(ownerId),
+      Number(branchId),
+    );
   }
 
   // edit entity
-  // @Get('orders/:order_id')
-  // async getCancelOrderDetails(
-  //   @Param('order_id') order_id: number,
-  // ): Promise<OrderDto> {
-  //   return this.dashboardService.getCancelOrderDetails(Number(order_id));
-  // }
+  @Get('orders/:order_id')
+  async getCancelOrderDetails(
+    @Param('order_id') order_id: number,
+    @Req() request: Request,
+  ): Promise<any> {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    return this.dashboardService.getCancelOrderDetails(
+      Number(order_id),
+      Number(ownerId),
+      Number(branchId),
+    );
+  }
 
   @Get('stock-ingredients')
-  async getIngredients(): Promise<IngredientDto[]> {
-    return this.dashboardService.getIngredients();
+  async getStockIngredients(@Req() request: Request) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    return this.dashboardService.getStockIngredients(
+      Number(ownerId),
+      Number(branchId),
+    );
   }
 
   @Get('stock-ingredients/categories')
@@ -156,11 +237,36 @@ export class DashboardController {
   @Patch('orders/:order_id')
   async updateCancelStatus(
     @Param('order_id') order_id: number,
-    @Body() updateCancelStatusDto: UpdateCancelStatusDto,
-  ) {
+    @Body() updateData: { cancel_status: string },
+    @Req() request: Request,
+  ): Promise<any> {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
     return this.dashboardService.updateCancelStatus(
       Number(order_id),
-      updateCancelStatusDto,
+      updateData.cancel_status,
+      Number(ownerId),
+      Number(branchId),
+    );
+  }
+
+  @Get('stock-ingredients/sub-ingredient/:id')
+  async getSubIngredient(
+    @Param('id') ingredientId: string,
+    @Headers('owner_id') ownerId: string,
+    @Headers('branch_id') branchId: string,
+  ) {
+    return await this.dashboardService.getSubIngredient(
+      parseInt(ingredientId),
+      parseInt(ownerId),
+      parseInt(branchId),
     );
   }
 }
