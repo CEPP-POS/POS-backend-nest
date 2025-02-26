@@ -828,10 +828,13 @@ export class DashboardService {
 
     const today = new Date();
     console.log(ingredients);
-    const stockIngredients = ingredients.map((ingredient) => {
+
+    // สร้าง Map เพื่อจัดกลุ่มตาม category
+    const categoryMap = new Map();
+
+    ingredients.forEach((ingredient) => {
       console.log('Processing ingredient:', ingredient.ingredient_name);
 
-      // กรองและคำนวณ net_volume และ total_volume
       const validUpdates = ingredient.ingredientUpdate.filter((update) => {
         const isValid =
           update.quantity_in_stock > 0 &&
@@ -855,32 +858,35 @@ export class DashboardService {
         return sum + update.total_volume;
       }, 0);
 
-      const totalQuantityInStock = validUpdates.reduce((sum, update) => {
-        console.log(
-          'Adding to quantity_in_stock sum:',
-          update.quantity_in_stock,
-        );
-        return sum + update.quantity_in_stock;
-      }, 0);
-
       console.log('Total net volume:', totalNetVolume);
       console.log('Total volume:', totalVolume);
 
-      return {
+      const categoryId =
+        ingredient.ingredientCategory?.ingredient_category_id || null;
+      const categoryName =
+        ingredient.ingredientCategory?.ingredient_category_name ||
+        'ไม่ระบุหมวดหมู่';
+
+      // ถ้ายังไม่มี category นี้ใน Map ให้สร้างใหม่
+      if (!categoryMap.has(categoryId)) {
+        categoryMap.set(categoryId, {
+          category_id: categoryId,
+          category_name: categoryName,
+          ingredients: [],
+        });
+      }
+
+      // เพิ่ม ingredient เข้าไปใน array ของ category นั้นๆ
+      categoryMap.get(categoryId).ingredients.push({
         ingredient_id: ingredient.ingredient_id,
         ingredient_name: ingredient.ingredient_name,
         net_volume: totalNetVolume > 0 ? totalNetVolume : 0,
         total_volume: totalVolume > 0 ? totalVolume : 0,
-        quantity_in_stock: totalQuantityInStock > 0 ? totalQuantityInStock : 0,
         unit: ingredient.unit,
-        category_id:
-          ingredient.ingredientCategory?.ingredient_category_id || null,
-        category_name:
-          ingredient.ingredientCategory?.ingredient_category_name ||
-          'ไม่ระบุหมวดหมู่',
-      };
+      });
     });
 
-    return stockIngredients;
+    // แปลง Map เป็น Array แล้วส่งกลับ
+    return Array.from(categoryMap.values());
   }
 }
