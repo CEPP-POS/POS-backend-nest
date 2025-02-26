@@ -812,4 +812,129 @@ export class DashboardService {
     order.cancel_status = cancel_status as CancelStatus;
     return await this.orderRepository.save(order);
   }
+
+  async getStockIngredients(ownerId: number, branchId: number) {
+    const ingredients = await this.ingredientRepository.find({
+      where: {
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+        is_delete: false,
+      },
+      relations: ['ingredientCategory', 'ingredientUpdate'],
+      order: {
+        ingredient_name: 'ASC',
+      },
+    });
+
+    const today = new Date();
+    console.log(ingredients);
+
+    // สร้าง Map เพื่อจัดกลุ่มตาม category
+    const categoryMap = new Map();
+
+    ingredients.forEach((ingredient) => {
+      console.log('Processing ingredient:', ingredient.ingredient_name);
+
+      const validUpdates = ingredient.ingredientUpdate.filter((update) => {
+        const isValid =
+          update.quantity_in_stock > 0 &&
+          new Date(update.expiration_date) > today;
+        console.log('Update valid?', isValid, 'for:', {
+          quantity_in_stock: update.quantity_in_stock,
+          net_volume: update.net_volume,
+          total_volume: update.total_volume,
+          expiration_date: update.expiration_date,
+        });
+        return isValid;
+      });
+
+      const totalNetVolume = validUpdates.reduce((sum, update) => {
+        console.log('Adding to net_volume sum:', update.net_volume);
+        return sum + update.net_volume;
+      }, 0);
+
+      const totalVolume = validUpdates.reduce((sum, update) => {
+        console.log('Adding to total_volume sum:', update.total_volume);
+        return sum + update.total_volume;
+      }, 0);
+
+      console.log('Total net volume:', totalNetVolume);
+      console.log('Total volume:', totalVolume);
+
+      const categoryId =
+        ingredient.ingredientCategory?.ingredient_category_id || null;
+      const categoryName =
+        ingredient.ingredientCategory?.ingredient_category_name ||
+        'ไม่ระบุหมวดหมู่';
+
+      // ถ้ายังไม่มี category นี้ใน Map ให้สร้างใหม่
+      if (!categoryMap.has(categoryId)) {
+        categoryMap.set(categoryId, {
+          category_id: categoryId,
+          category_name: categoryName,
+          ingredients: [],
+        });
+      }
+
+      // เพิ่ม ingredient เข้าไปใน array ของ category นั้นๆ
+      categoryMap.get(categoryId).ingredients.push({
+        ingredient_id: ingredient.ingredient_id,
+        ingredient_name: ingredient.ingredient_name,
+        net_volume: totalNetVolume > 0 ? totalNetVolume : 0,
+        total_volume: totalVolume > 0 ? totalVolume : 0,
+        unit: ingredient.unit,
+      });
+    });
+
+    // แปลง Map เป็น Array แล้วส่งกลับ
+    return Array.from(categoryMap.values());
+  }
+
+  async getSubIngredient(
+    ingredient_id: number,
+    ownerId: number,
+    branchId: number,
+  ) {
+    const ingredient = await this.ingredientRepository.findOne({
+      where: {
+        ingredient_id: ingredient_id,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['ingredientUpdate'],
+    });
+
+    if (!ingredient) {
+      throw new NotFoundException('ไม่พบข้อมูลวัตถุดิบ');
+    }
+
+    // Get today's date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // กรองและจัดเรียงข้อมูลจาก relation แทนการ query ใหม่
+    const validUpdates = ingredient.ingredientUpdate
+      .filter(
+        (update) =>
+          update.quantity_in_stock > 0 &&
+          new Date(update.expiration_date) > today,
+      )
+      .sort(
+        (a, b) =>
+          new Date(a.expiration_date).getTime() -
+          new Date(b.expiration_date).getTime(),
+      );
+
+    return {
+      ingredient_id: ingredient.ingredient_id,
+      ingredient_name: ingredient.ingredient_name,
+      updates: validUpdates.map((update) => ({
+        update_id: update.update_id,
+        quantity_in_stock: update.quantity_in_stock,
+        total_volume: update.total_volume,
+        net_volume: update.net_volume,
+        expiration_date: update.expiration_date,
+      })),
+    };
+  }
 }

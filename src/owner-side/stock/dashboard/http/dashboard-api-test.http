@@ -32,6 +32,14 @@ branch_id: 1
 
 ## GET ALL INGREDIENT
 GET http://localhost:3000/owner/stock-ingredients
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/5
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 # getIngredientsCategories
 GET http://localhost:3000/owner/stock-ingredients/categories
@@ -93,7 +101,7 @@ branch_id: 1
   "unit": "g",
   "quantity_in_stock": 4,
   "category_name": "เครื่องครัว",
-  "expiration_date": "2025-05-28"
+  "expiration_date": "2025-05-29"
 }
 
 ## update cancel order status
