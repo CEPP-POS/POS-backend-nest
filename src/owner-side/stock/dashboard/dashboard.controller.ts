@@ -105,12 +105,26 @@ export class DashboardController {
   }
 
   // edit entity
-  // @Get('orders/:order_id')
-  // async getCancelOrderDetails(
-  //   @Param('order_id') order_id: number,
-  // ): Promise<OrderDto> {
-  //   return this.dashboardService.getCancelOrderDetails(Number(order_id));
-  // }
+  @Get('orders/:order_id')
+  async getCancelOrderDetails(
+    @Param('order_id') order_id: number,
+    @Req() request: Request,
+  ): Promise<any> {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    return this.dashboardService.getCancelOrderDetails(
+      Number(order_id),
+      Number(ownerId),
+      Number(branchId),
+    );
+  }
 
   @Get('stock-ingredients')
   async getIngredients(): Promise<IngredientDto[]> {

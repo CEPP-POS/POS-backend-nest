@@ -330,45 +330,55 @@ export class DashboardService {
     return orderTopics;
   }
 
-  async getCancelOrderDetails(order_id: number) {
-    console.log(order_id);
-
+  async getCancelOrderDetails(
+    order_id: number,
+    ownerId: number,
+    branchId: number,
+  ) {
     const order = await this.orderRepository.findOne({
       where: {
         order_id: order_id,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
       },
       relations: [
         'order_item',
         'order_item.menu',
-        'order_item.menu.categories',
+        'order_item.size',
+        'order_item.sweetnessLevel',
+        'order_item.orderItem',
         'payment',
       ],
     });
 
     if (!order) {
-      throw new Error(`Order with ID ${order_id} not found`);
+      throw new NotFoundException(
+        `Order with ID ${order_id} not found for this owner and branch`,
+      );
     }
 
-    // edit entity
-    // const cancelOrderDetails = {
-    //   order_id: order.order_id,
-    //   order_table: order.order_item.map((item) => ({
-    //     menu_name: item.menu?.menu_name || 'N/A',
-    //     quantity: item.quantity,
-    //     amount: item.price,
-    //     category_name: item.menu?.categories?.[0]?.category_name || 'N/A',
-    //   })),
-    //   total_amount: order.payment.amount,
-    //   // total_amount_vat: order.payment.amount * 1.07,
-    //   payment_method: order.payment.payment_method,
-    //   cancel_status: order.cancel_status,
-    //   customer_name: order.customer_name,
-    //   customer_contact: order.customer_contact,
-    // };
+    const cancelOrderDetails = {
+      order_id: order.order_id,
+      order_date: order.order_date,
+      order_table: order.order_item.map((item) => ({
+        menu_name: item.menu?.menu_name || 'N/A',
+        quantity: item.quantity,
+        amount: item.price,
+        size_name: item.size?.size_name || 'N/A',
+        sweetness_name: item.sweetnessLevel?.level_name || 'N/A',
+        add_on_name:
+          item.orderItem?.map((addOn) => addOn.ingredient?.ingredient_name) ||
+          'N/A',
+        // category_name: item.menu?.category?.category_name || 'N/A',
+      })),
+      total_amount: order.payment?.amount || 0,
+      payment_method: order.payment?.payment_method || 'N/A',
+      cancel_status: order.cancel_status,
+      customer_name: order.customer_name,
+      customer_contact: order.customer_contact,
+    };
 
-    // console.log(cancelOrderDetails);
-
-    // return cancelOrderDetails; // Return the hardcoded data
+    return cancelOrderDetails;
   }
 
   //TODO
