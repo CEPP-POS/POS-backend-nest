@@ -4,19 +4,17 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, Raw, Repository } from 'typeorm';
-import { Owner } from '../../entities/owner.entity';
-import { CreateOwnerDto } from './dto/create-owner/create-owner.dto';
-import * as bcrypt from 'bcrypt';
-import { sendTemporaryPasswordEmail } from '../../utils/send-email.util';
-import { UpdatePasswordDto } from './dto/update-password/update-password.dto';
-import { LoginOwnerDto } from './dto/login-owner/login-owner.dto';
-import { ForgotPasswordDto } from './dto/forgot-owner/forgot-owner.dto';
-import { VerifyOtpDto } from './dto/verify-otp-owner/verify-otp-owner.dto';
-import { Ingredient } from 'src/entities/ingredient.entity';
-import { CreateEmployeeDto } from './dto/create-employee/create-employee.dto';
 import { Branch } from 'src/entities/branch.entity';
+import { BranchService } from '../branch/branch.service';
+import { CreateEmployeeDto } from './dto/create-employee/create-employee.dto';
+import { CreateOwnerDto } from './dto/create-owner/create-owner.dto';
+import { Raw, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Owner } from '../../entities/owner.entity';
+import { sendTemporaryPasswordEmail } from '../../utils/send-email.util';
+import * as bcrypt from 'bcrypt';
+import { ForgotPasswordDto, VerifyOtpDto } from '../../auth/dto/auth.dto';
+import { UpdatePasswordDto } from '../../auth/dto/password.dto';
 
 @Injectable()
 export class OwnerService {
@@ -27,68 +25,74 @@ export class OwnerService {
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
 
-    @InjectRepository(Ingredient)
-    private ingredientRepository: Repository<Ingredient>,
+    private readonly branchService: BranchService,
   ) {}
 
-  // * Register Owner (Owner Only)
-  async create(createOwnerDto: CreateOwnerDto): Promise<Owner> {
-    const existingOwner = await this.findByEmail(createOwnerDto.email);
-    if (existingOwner) {
-      throw new BadRequestException('Email already exists');
-    }
-
-    const tempPassword = Math.random().toString(36).slice(-8); // ? Generate a random temporary password
+  // * Create Owner with Branch(CSV)
+  async createOwnerWithBranch(row: any): Promise<Owner> {
+    const tempPassword = Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-    const newOwner = this.ownerRepository.create({
-      ...createOwnerDto,
-      password: hashedPassword, // ? Save the hashed password
-      roles: ['owner'],
-    });
+    const createOwnerDto: CreateOwnerDto = {
+      owner_name: `${row.first_name} ${row.last_name}`,
+      contact_info: row.phone,
+      email: row.email,
+      password: hashedPassword,
+    };
 
-    const savedOwner = await this.ownerRepository.save(newOwner);
-    try {
-      await sendTemporaryPasswordEmail(savedOwner.email, tempPassword);
-    } catch (error) {
-      console.error('Failed to send email:', error);
-      throw new BadRequestException(
-        'Failed to send email. Please try again later.',
-      );
+    let owner = await this.findByEmail(createOwnerDto.email);
+    if (!owner) {
+      owner = this.ownerRepository.create(createOwnerDto);
+      owner = await this.ownerRepository.save(owner);
+
+      await sendTemporaryPasswordEmail(owner.email, tempPassword);
     }
-    return savedOwner;
+
+    let branch = await this.branchRepository.findOne({ where: { owner } });
+
+    if (!branch) {
+      branch = await this.branchService.create({
+        owner_id: owner.owner_id,
+        branch_name: `${owner.owner_name}'s Branch`,
+        branch_address: row.address || 'N/A',
+        branch_phone_number: row.phone || 'N/A',
+      });
+    }
+
+    owner.branch_id = branch.branch_id;
+    await this.updateBranchId(owner.owner_id, branch.branch_id);
+
+    return owner;
   }
 
-  async countTotalOwners(): Promise<number> {
-    return this.ownerRepository.count(); // 🔹 นับจำนวน Owner ทั้งหมด
+  async updateBranchId(ownerId: number, branchId: number): Promise<void> {
+    await this.ownerRepository.update(ownerId, { branch_id: branchId });
   }
 
+  // * Create Employee
   async createEmployee(createEmployeeDto: CreateEmployeeDto): Promise<Owner> {
-    const { email, password, manager_id, owner_id, branch_id } =
-      createEmployeeDto;
+    const { email, password, manager_id, branch_id } = createEmployeeDto;
 
     const existingUser = await this.findByEmail(email);
     if (existingUser) {
-      // throw new BadRequestException('Email already exists.');
-      throw console.log('Create Employee DTO:', existingUser);
+      throw new BadRequestException('Email already exists.');
+    }
+
+    if (!password) {
+      throw new BadRequestException('Password is required.');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const manager = await this.ownerRepository.findOne({
       where: { owner_id: manager_id },
-      relations: ['employees'],
+      relations: ['branch'],
     });
 
     if (!manager) {
       throw new BadRequestException('Manager (Owner) not found.');
     }
-    const owner = await this.ownerRepository.findOne({
-      where: { owner_id: owner_id },
-    });
-    if (!owner) throw new NotFoundException('Owner not found.');
 
-    // ✅ ดึง `branch` จากฐานข้อมูล
     const branch = await this.branchRepository.findOne({
       where: { branch_id },
     });
@@ -97,28 +101,15 @@ export class OwnerService {
       throw new BadRequestException('Branch not found.');
     }
 
-    // ✅ สร้างพนักงานและเชื่อมกับ `owner` และ `branch`
     const newEmployee = this.ownerRepository.create({
       email,
       password: hashedPassword,
       roles: ['employee'],
-      manager: owner,
-      branch: [branch], // ✅ เชื่อมกับ branch
+      manager,
+      branch,
     });
-    manager.employees.push(newEmployee);
-    // const newEmployee = new Owner(); // ✅ สร้าง Entity ใหม่
-    // newEmployee.email = email;
-    // newEmployee.password = hashedPassword;
-    // newEmployee.roles = ['employee'];
-    // newEmployee.manager = manager;
-    // newEmployee.owner_id = owner_id;
-    // newEmployee.branch = [branch]; // ✅ เชื่อมกับ branch
-    console.log('New Employee:', newEmployee);
 
-    await this.ownerRepository.save(manager);
-    this.ownerRepository.save(newEmployee);
-
-    return newEmployee;
+    return this.ownerRepository.save(newEmployee);
   }
 
   // * Find Owner or Employee by email
@@ -139,50 +130,39 @@ export class OwnerService {
     });
   }
 
-  async login(loginOwnerDto: LoginOwnerDto): Promise<Owner> {
-    const user = await this.findByEmail(loginOwnerDto.email);
-    if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
-    }
-
-    const passwordValid = await bcrypt.compare(
-      loginOwnerDto.password,
-      user.password,
-    );
-    if (!passwordValid) {
-      throw new UnauthorizedException('Invalid email or password');
-    }
-
-    return user;
-  }
-
+  // * forgot password
   async forgotPassword(
     forgotPasswordDto: ForgotPasswordDto,
-    owner_id: number,
-    branch_id: number,
+    ownerId: number,
+    branchId: number,
   ): Promise<void> {
     const { usernameOrEmail } = forgotPasswordDto;
 
     const user = await this.ownerRepository.findOne({
       where: {
         email: usernameOrEmail,
-        owner_id,
-        branch: { branch_id },
+        owner_id: ownerId,
+        branch: { branch_id: branchId },
       },
+      relations: ['branch'],
     });
 
     if (!user) {
-      throw new BadRequestException('User not found.');
+      throw new NotFoundException(
+        'User not found for the given owner and branch.',
+      );
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
+    const otp = this.generateOtp();
     user.otp = otp;
-    user.otp_expiry = new Date();
-    user.otp_expiry.setMinutes(user.otp_expiry.getMinutes() + 15);
+    user.otp_expiry = new Date(Date.now() + 15 * 60 * 1000);
 
     await this.ownerRepository.save(user);
     await this.sendOtpEmail(user.email, otp);
+  }
+
+  private generateOtp(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
   async sendOtpEmail(email: string, otp: string) {
@@ -191,25 +171,35 @@ export class OwnerService {
 
   async verifyOtp(
     verifyOtpDto: VerifyOtpDto,
-    owner_id: number,
-    branch_id: number,
+    ownerId: number,
+    branchId: number,
   ): Promise<void> {
     const { usernameOrEmail, otp } = verifyOtpDto;
+
     const user = await this.ownerRepository.findOne({
       where: {
         email: usernameOrEmail,
-        owner_id,
-        branch: { branch_id },
+        owner_id: ownerId,
+        branch: { branch_id: branchId },
       },
       relations: ['branch'],
     });
-    if (!user || user.otp !== otp || user.otp_expiry < new Date()) {
-      throw new BadRequestException('OTP expired or invalid');
+
+    if (!user) {
+      throw new BadRequestException(
+        'User not found for the given owner and branch.',
+      );
     }
+
+    if (!user.otp || user.otp !== otp || user.otp_expiry < new Date()) {
+      throw new BadRequestException('OTP expired or invalid.');
+    }
+
     user.otp = null;
     user.otp_expiry = null;
     await this.ownerRepository.save(user);
   }
+
   async findEmployeesByManager(manager_id: number): Promise<Owner[]> {
     const employees = await this.ownerRepository.find({
       where: { manager: { owner_id: manager_id } },
@@ -234,15 +224,6 @@ export class OwnerService {
       where: { email, owner_id: ownerId, branch: { branch_id: branchId } },
       relations: ['branch'],
     });
-    // const user = await this.findByEmail(email);
-    // if (!user) {
-    //   throw new BadRequestException('User not found.');
-    // }
-    // เปรียบเทียบ `oldPassword` กับรหัสผ่านที่ถูกเข้ารหัส (OTP)
-    // const isOtpValid = await bcrypt.compare(user.password);
-    // if (!isOtpValid) {
-    //   throw new UnauthorizedException('Invalid temporary password.');
-    // }
     user.password = await bcrypt.hash(newPassword, 10);
     await this.ownerRepository.save(user);
     return { message: 'Password reset successful. You can now log in.' };
@@ -297,12 +278,5 @@ export class OwnerService {
     await this.ownerRepository.save(user);
     await sendTemporaryPasswordEmail(user.email, tempPassword);
     return { message: 'Temporary password sent to your email.' };
-  }
-
-  async getIngredientsByOwner(branchId: number) {
-    return this.ingredientRepository.find({
-      where: { branch: Equal(branchId) },
-      select: ['ingredient_id', 'ingredient_name'],
-    });
   }
 }

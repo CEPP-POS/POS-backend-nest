@@ -11,7 +11,7 @@ import { MenuType } from '../../entities/menu-type.entity';
 
 // เชื่อมโยง StockModule (หรือ IngredientModule หากต้องการ)
 import { CategoryModule } from 'src/owner-side/category/category.module';
-import { OwnerModule } from 'src/owner-side/owner/owner.module';
+import { OwnerModule } from 'src/owner-side/manage-owner/owner.module';
 import { BranchModule } from 'src/owner-side/branch/branch.module';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
