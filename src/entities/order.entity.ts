@@ -16,6 +16,7 @@ import { OrderItem } from './order-item.entity';
 import { Payment } from './payment.entity';
 import { Branch } from './branch.entity';
 import { LocalData } from './local-data.entity';
+import { Owner } from './owner.entity';
 
 @Entity()
 export class Order {
@@ -53,6 +54,10 @@ export class Order {
   @ManyToOne(() => Branch, { nullable: true })
   @JoinColumn({ name: 'branch_id' })
   branch: Branch;
+
+  @ManyToOne(() => Owner, { nullable: true })
+  @JoinColumn({ name: 'owner_id' })
+  owner: Owner;
 
   @OneToMany(() => OrderItem, (orderItem) => orderItem.order, { cascade: true })
   order_item: OrderItem[];

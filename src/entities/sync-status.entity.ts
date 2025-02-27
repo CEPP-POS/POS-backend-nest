@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Branch } from './branch.entity';
 import { LocalData } from './local-data.entity';
+import { Owner } from './owner.entity';
 
 export enum syncStatus {
   'online',
@@ -19,6 +20,10 @@ export enum syncStatus {
 export class SyncStatus {
   @PrimaryGeneratedColumn()
   sync_status_id: number;
+
+  @ManyToOne(() => Owner, { nullable: false })
+  @JoinColumn({ name: 'owner_id' })
+  owner: Owner;
 
   @ManyToOne(() => Branch, { nullable: false })
   @JoinColumn({ name: 'branch_id' })

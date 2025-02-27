@@ -1,7 +1,6 @@
 import { IsString, IsInt, IsOptional, IsDecimal, IsUrl } from 'class-validator';
 
 export class UpdateMenuDto {
-
   @IsInt()
   @IsOptional()
   category_id?: number;

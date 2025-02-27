@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { OwnerService } from 'src/owner-side/owner/owner.service';
+import { OwnerService } from 'src/owner-side/manage-owner/owner.service';
 import { IJwtPayload } from '../interfaces/jwt.interface';
 import { UserPayload } from '../interfaces/user.interface';
 
@@ -18,16 +18,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  
   async validate(payload: IJwtPayload): Promise<UserPayload> {
     console.log('Decoded JWT Payload:', payload);
-  
+
     const existingUser = await this.ownerService.findByEmail(payload.email);
-  
+
     if (!existingUser) throw new UnauthorizedException('Invalid token.');
-  
+
     console.log('User from DB:', existingUser);
-  
+
     return {
       owner_id: existingUser.owner_id,
       email: existingUser.email,
@@ -35,5 +34,4 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       roles: existingUser.roles,
     };
   }
-  
 }

@@ -1,10 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Branch } from '../../entities/branch.entity';
 import { CreateBranchDto } from './dto/create-branch/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch/update-branch.dto';
-import { Owner } from '../owner/entity/owner.entity';
+import { Owner } from '../../entities/owner.entity';
 
 @Injectable()
 export class BranchService {
@@ -15,47 +19,60 @@ export class BranchService {
     @InjectRepository(Owner)
     private readonly ownerRepository: Repository<Owner>,
   ) {}
-
+  // * Create Branch (Owner Only)
   async create(createBranchDto: CreateBranchDto): Promise<Branch> {
     const { owner_id, ...branchData } = createBranchDto;
 
-    // ตรวจสอบว่า owner_id มีอยู่ในฐานข้อมูล
     const owner = await this.ownerRepository.findOne({ where: { owner_id } });
     if (!owner) {
       throw new NotFoundException(`Owner with ID ${owner_id} not found`);
     }
 
-    // สร้าง Branch ใหม่พร้อม map owner
     const newBranch = this.branchRepository.create({
       ...branchData,
-      owner, // map owner ให้กับ Branch
+      owner,
     });
 
     return this.branchRepository.save(newBranch);
   }
-
+  // * Find All Branches (Owner Only
   async findAll(): Promise<Branch[]> {
     return this.branchRepository.find();
   }
-
+  // * Find One Branch (Owner Only)
   async findOne(id: number): Promise<Branch> {
     const branch = await this.branchRepository.findOne({
       where: { branch_id: id },
+      relations: ['owner'],
     });
     if (!branch) {
       throw new NotFoundException(`Branch with ID ${id} not found`);
     }
     return branch;
   }
-
-  async update(id: number, updateBranchDto: UpdateBranchDto): Promise<Branch> {
+  // * Update Branch (Owner Only)
+  async update(
+    id: number,
+    updateBranchDto: UpdateBranchDto,
+    owner_id: number,
+  ): Promise<Branch> {
     const branch = await this.findOne(id);
+    if (branch.owner.owner_id !== owner_id) {
+      throw new ForbiddenException(
+        'You do not have permission to update this branch',
+      );
+    }
     Object.assign(branch, updateBranchDto);
     return this.branchRepository.save(branch);
   }
-
-  async remove(id: number): Promise<void> {
+  // * Remove Branch (Owner Only)
+  async remove(id: number, owner_id: number): Promise<void> {
     const branch = await this.findOne(id);
+    if (branch.owner.owner_id !== owner_id) {
+      throw new ForbiddenException(
+        'You do not have permission to delete this branch',
+      );
+    }
     await this.branchRepository.remove(branch);
   }
 }

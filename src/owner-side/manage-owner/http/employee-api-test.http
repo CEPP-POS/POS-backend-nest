@@ -1,0 +1,19 @@
+### 1. Employee ล็อกอิน
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "MemeeEmployee2@example.com",
+  "password": "Employee2",
+  "branch_id": 6
+}
+
+### 2. Employee พยายามสร้าง Employee (ต้องห้าม)
+POST http://localhost:3000/owner/create-employee
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6OSwiZW1haWwiOiJNZW1lZUVtcGxveWVlMkBleGFtcGxlLmNvbSIsImJyYW5jaF9pZCI6Niwicm9sZXMiOlsiZW1wbG95ZWUiXSwiaWF0IjoxNzQwNTk1Nzg4LCJleHAiOjE3NDA2ODIxODh9.jlwWZt14-1D4AqDzcwQ83HAEKf2rEL8KsgSUq2Cvr8k
+Content-Type: application/json
+
+{
+  "email": "new-employee@example.com",
+  "password": "AnotherPass123!"
+}

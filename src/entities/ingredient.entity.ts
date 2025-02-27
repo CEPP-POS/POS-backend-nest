@@ -10,6 +10,7 @@ import { IngredientCategory } from './ingredient-category.entity';
 import { IngredientUpdate } from './ingredient-update.entity';
 import { Branch } from './branch.entity';
 import { OrderItemAddOn } from './order-item-add-on.entity';
+import { Owner } from './owner.entity';
 
 @Entity()
 export class Ingredient {
@@ -38,6 +39,10 @@ export class Ingredient {
 
   @Column({ type: 'boolean', default: false })
   is_delete: boolean;
+
+  @ManyToOne(() => Owner, { nullable: true })
+  @JoinColumn({ name: 'owner_id' })
+  owner: Owner;
 
   @OneToMany(
     () => IngredientUpdate,

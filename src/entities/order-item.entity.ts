@@ -15,6 +15,8 @@ import { AddOn } from './add-on.entity';
 import { Size } from './size.entity';
 import { SweetnessLevel } from './sweetness-level.entity';
 import { OrderItemAddOn } from './order-item-add-on.entity';
+import { Branch } from './branch.entity';
+import { Owner } from './owner.entity';
 
 @Entity()
 export class OrderItem {
@@ -49,6 +51,14 @@ export class OrderItem {
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
+
+  @ManyToOne(() => Branch, { nullable: false })
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
+
+  @ManyToOne(() => Owner, { nullable: false })
+  @JoinColumn({ name: 'owner_id' })
+  owner: Owner;
 
   @OneToMany(
     () => OrderItemAddOn,

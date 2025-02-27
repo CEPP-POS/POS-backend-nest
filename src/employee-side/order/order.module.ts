@@ -9,7 +9,7 @@ import { Size } from 'src/entities/size.entity';
 import { SweetnessLevel } from 'src/entities/sweetness-level.entity';
 import { Menu } from 'src/entities/menu.entity';
 import { AddOn } from 'src/entities/add-on.entity';
-import { Owner } from 'src/owner-side/owner/entity/owner.entity';
+import { Owner } from 'src/entities/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 import { Payment } from 'src/entities/payment.entity';
 import { SalesSummary } from 'src/entities/sales-summary.entity';
@@ -33,11 +33,11 @@ import { OrderItemAddOn } from 'src/entities/order-item-add-on.entity';
       Payment,
       MenuIngredient,
       IngredientUpdate,
-      OrderItemAddOn
+      OrderItemAddOn,
     ]),
   ],
 
   controllers: [OrderController],
   providers: [OrderService],
 })
-export class OrderModule { }
+export class OrderModule {}

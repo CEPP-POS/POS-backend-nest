@@ -6,7 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-import { Owner } from 'src/owner-side/owner/entity/owner.entity';
+import { Owner } from 'src/entities/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 
 @Entity()
@@ -21,7 +21,7 @@ export class SalesSummary {
   @ManyToOne(() => Branch, { nullable: false })
   @JoinColumn({ name: 'branch_id' })
   branch: Branch;
-  
+
   @Column()
   total_revenue: number;
 
@@ -33,5 +33,4 @@ export class SalesSummary {
 
   @Column({ type: 'timestamp' })
   date: Date;
-
 }

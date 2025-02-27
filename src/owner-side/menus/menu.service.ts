@@ -7,11 +7,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, Repository } from 'typeorm';
+import { Equal, In, Not, Repository } from 'typeorm';
 import { Menu } from '../../entities/menu.entity';
-import { UpdateMenuDto } from './dto/update-menu.dto/update-menu.dto';
 import { Category } from '../../entities/category.entity';
-import { Owner } from '../owner/entity/owner.entity';
+import { Owner } from '../../entities/owner.entity';
 import { Branch } from '../../entities/branch.entity';
 import { SweetnessLevel } from '../../entities/sweetness-level.entity';
 import { MenuType } from '../../entities/menu-type.entity';
@@ -22,12 +21,14 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { LinkMenuToStockDto } from './dto/link-stock/link-menu-to-stock.dto';
 import { join } from 'path';
+import { CreateMenuTypeGroupDto } from './dto/menu-type/create-menu-type-group.dto';
+import { MenuTypeGroup } from 'src/entities/menu-type-group.entity';
+import { UpdateMenuTypeGroupDto } from './dto/menu-type/update-menu-type-group.dto';
 
 @Injectable()
 export class MenuService {
-
   // upload local storage image
-  private uploadFolder = join(__dirname, '..', 'uploads')
+  private uploadFolder = join(__dirname, '..', 'uploads');
 
   constructor(
     @InjectRepository(Menu)
@@ -57,13 +58,16 @@ export class MenuService {
     @InjectRepository(MenuIngredient)
     private readonly menuIngredientRepository: Repository<MenuIngredient>,
 
+    @InjectRepository(MenuTypeGroup)
+    private readonly menuTypeGroupRepository: Repository<MenuTypeGroup>,
+
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) { }
+  ) {}
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
-    console.log("upload picture")
+    console.log('upload picture');
     if (!file) {
       throw new BadRequestException('no file uploaded');
     }
@@ -154,12 +158,12 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-          menu_id: menu.menu_id,
-          menu_name: menu.menu_name,
-          description: menu.description,
-          image_url: menu.image_url,
-          price: menu.price
-        };
+            menu_id: menu.menu_id,
+            menu_name: menu.menu_name,
+            description: menu.description,
+            image_url: menu.image_url,
+            price: menu.price,
+          };
     });
   }
 
@@ -177,21 +181,44 @@ export class MenuService {
   }
 
   // * อัปเดตเมนู
-  async update(menu_id: number, updateMenuDto: UpdateMenuDto): Promise<Menu> {
-    const menu = await this.findOne(menu_id);
+  async update(
+    menu_id: number,
+    owner_id: number,
+    branch_id: number,
+    updateMenuDto: Partial<Menu>,
+  ): Promise<Menu> {
+    const menu = await this.menuRepository.findOne({
+      where: { menu_id, owner: { owner_id }, branch: { branch_id } },
+      relations: ['owner', 'branch'], // Ensure we load the related entities
+    });
+
+    if (!menu) {
+      throw new Error(
+        `Menu with id ${menu_id} not found for owner_id ${owner_id} and branch_id ${branch_id}`,
+      );
+    }
+
+    // Assign new values
     Object.assign(menu, updateMenuDto);
+
     return this.menuRepository.save(menu);
   }
 
   // * ลบเมนู
-  async remove(menu_id: number, owner_id: number, branch_id: number): Promise<{ message: string }> {
+  async remove(
+    menu_id: number,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<{ message: string }> {
     const menu = await this.menuRepository.findOne({
       where: { menu_id, owner: { owner_id }, branch: { branch_id } },
       relations: ['owner', 'branch'], // Ensure relations are included
     });
 
     if (!menu) {
-      throw new NotFoundException(`Menu with ID ${menu_id} not found for the given owner and branch.`);
+      throw new NotFoundException(
+        `Menu with ID ${menu_id} not found for the given owner and branch.`,
+      );
     }
 
     // Set soft delete
@@ -202,248 +229,6 @@ export class MenuService {
       { message: `Menu with ID ${menu_id} is now marked as deleted.` },
       HttpStatus.OK, // Returns HTTP 200
     );
-  }
-
-  // สร้าง option
-  // EDIT ENTITY
-  async createOption(type: string, createOptionDto: any) {
-    // edit entity
-    // let repository: Repository<any>;
-    // let optionKey: string;
-    // let relationField: string;
-    // switch (type) {
-    //   case 'add-ons':
-    //     repository = this.addOnRepository;
-    //     optionKey = 'add_on_name';
-    //     relationField = 'addOns';
-    //     break;
-    //   case 'size':
-    //     repository = this.sizeRepository;
-    //     optionKey = 'size_name';
-    //     relationField = 'sizes';
-    //     break;
-    //   case 'menu-type':
-    //     repository = this.menuTypeRepository;
-    //     optionKey = 'type_name';
-    //     relationField = 'menuTypes';
-    //     break;
-    //   case 'sweetness':
-    //     repository = this.sweetnessRepository;
-    //     optionKey = 'level_name';
-    //     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    //     relationField = 'sweetnessLevels';
-    //     break;
-    //   default:
-    //     throw new NotFoundException(`Invalid option type: ${type}`);
-    // }
-    // try {
-    //   const menus = await this.menuRepository.find({
-    //     where: { menu_id: In(createOptionDto.menu_id) },
-    //     relations: [relationField],
-    //   });
-    //   if (menus.length !== createOptionDto.menu_id.length) {
-    //     throw new NotFoundException(
-    //       `Some menus with IDs ${createOptionDto.menu_id} not found`,
-    //     );
-    //   }
-    //   const options = [];
-    //   if (type === 'sweetness') {
-    //     // สร้าง sweetness option สำหรับแต่ละเมนู
-    //     for (const level of createOptionDto.options) {
-    //       for (const menu of menus) {
-    //         const newOption = repository.create({
-    //           [optionKey]: level, // ตั้งค่า level_name สำหรับ sweetness
-    //           menu, // เชื่อมโยง option กับเมนู
-    //           is_required: createOptionDto.is_required, // Include is_require
-    //         });
-    //         const savedOption = await repository.save(newOption); // บันทึก sweetness option
-    //         options.push(savedOption);
-    //       }
-    //     }
-    //   } else if (type === 'add-ons') {
-    //     // Handle add-ons option creation
-    //     for (const option of createOptionDto.options) {
-    //       for (const [ingredientName, detail] of Object.entries(option)) {
-    //         const { price, unit } = detail as { price: string; unit: number };
-    //         // 1. Check if the ingredient exists, create if not
-    //         let ingredient = await this.ingredientRepository.findOne({
-    //           where: { ingredient_name: ingredientName },
-    //         });
-    //         if (!ingredient) {
-    //           ingredient = this.ingredientRepository.create({
-    //             ingredient_name: ingredientName,
-    //           });
-    //           await this.ingredientRepository.save(ingredient);
-    //         }
-    //         console.log("INGREDIENT:", ingredient)
-    //         for (const menuId of createOptionDto.menu_id) {
-    //           // 2. Check if the add-on exists for this menu, create if not
-    //           let addOn = await this.addOnRepository.findOne({
-    //             where: {
-    //               add_on_name: ingredientName,
-    //               menu: { menu_id: menuId },
-    //             },
-    //           });
-    //           if (!addOn) {
-    //             addOn = this.addOnRepository.create({
-    //               add_on_name: ingredientName,
-    //               add_on_price: parseFloat(price),
-    //               unit: unit,
-    //               menu: { menu_id: menuId },
-    //               is_required: createOptionDto.is_required,
-    //               is_multipled: createOptionDto.is_multipled,
-    //             });
-    //             await this.addOnRepository.save(addOn);
-    //           }
-    //           console.log("ADD ON:", addOn)
-    //           // 3. Create a link to the IngredientMenuLink table
-    //           let ingredientMenuLink = await this.ingredientMenuLinkRepository.findOne({
-    //             where: {
-    //               menu_id: menuId,
-    //               ingredient_id: Equal(ingredient.ingredient_id),
-    //             },
-    //           });
-    //           if (!ingredientMenuLink) {
-    //             ingredientMenuLink = this.ingredientMenuLinkRepository.create({
-    //               menu_id: { menu_id: menuId },
-    //               ingredient_id: ingredient,
-    //             });
-    //             await this.ingredientMenuLinkRepository.save(ingredientMenuLink);
-    //           }
-    //           // 4. Link to menu_ingredient table
-    //           let menuIngredient = await this.menuIngredientRepository.findOne({
-    //             where: {
-    //               menu_id: menuId,
-    //               add_on: Equal(addOn.add_on_id),
-    //               ingredient_id: Equal(ingredient.ingredient_id),
-    //             },
-    //           });
-    //           if (!menuIngredient) {
-    //             menuIngredient = this.menuIngredientRepository.create({
-    //               menu_id: menuId,
-    //               add_on: addOn,
-    //               ingredient_id: ingredient,
-    //               quantity_used: unit,
-    //             });
-    //             await this.menuIngredientRepository.save(menuIngredient);
-    //           }
-    //           console.log('MENU INGREDIENT:', menuIngredient);
-    //         }
-    //       }
-    //     }
-    //   } else if (type === 'menu-type') {
-    //     const menus = await this.menuRepository.find({
-    //       where: { menu_id: In(createOptionDto.menu_id) },
-    //       relations: ['menuTypes'], // ✅ โหลดความสัมพันธ์กับ menuTypes
-    //     });
-    //     const options = [];
-    //     for (const option of createOptionDto.options) {
-    //       for (const [ingredientName, detail] of Object.entries(option)) {
-    //         const { price } = detail as { price: string };
-    //         for (const menu of menus) {
-    //           // ✅ ค้นหา MenuType ที่เชื่อมโยงกับ Menu โดยเฉพาะ
-    //           let menuType = await this.menuTypeRepository.findOne({
-    //             where: {
-    //               type_name: ingredientName,
-    //               // edit entity
-    //               // menu: { menu_id: menu.menu_id },
-    //             },
-    //             relations: ['menu'],
-    //           });
-    //           // ✅ ถ้าไม่มี MenuType ให้สร้างใหม่สำหรับเมนูนี้
-    //           // edit entity
-    //           // if (!menuType) {
-    //           //   menuType = this.menuTypeRepository.create({
-    //           //     type_name: ingredientName,
-    //           //     price_difference: parseFloat(price),
-    //           //     menu: { menu_id: menu.menu_id },
-    //           //     is_required: createOptionDto.is_required
-    //           //   });
-    //           //   await this.menuTypeRepository.save(menuType);
-    //           // }
-    //           // ✅ ตรวจสอบการเชื่อมโยงเพื่อป้องกันการเพิ่มซ้ำ
-    //       //     const isAlreadyLinked = menu.menuTypes.some(
-    //       //       (linkedType) =>
-    //       //         linkedType.menu_type_id === menuType.menu_type_id,
-    //       //     );
-    //       //     if (!isAlreadyLinked) {
-    //       //       await this.menuRepository
-    //       //         .createQueryBuilder()
-    //       //         .relation(Menu, 'menuTypes')
-    //       //         .of(menu.menu_id)
-    //       //         .add(menuType.menu_type_id);
-    //       //       menu.menuTypes.push(menuType); // ✅ อัปเดตใน Memory
-    //       //       await this.menuRepository.save(menu); // ✅ บันทึกใน Database
-    //       //     }
-    //       //     options.push(menuType);
-    //       //   }
-    //       // }
-    //     // }
-    //     return {
-    //       message: `Menu types created and linked successfully`,
-    //     };
-    //   } else if (type === 'size') {
-    //     // ✅ โหลดเมนูที่เกี่ยวข้องทั้งหมด
-    //     const menus = await this.menuRepository.find({
-    //       where: { menu_id: In(createOptionDto.menu_id) },
-    //       relations: ['sizes'], // ✅ โหลดความสัมพันธ์กับ sizes
-    //     });
-    //     const options = [];
-    //     for (const option of createOptionDto.options) {
-    //       for (const [sizeName, detail] of Object.entries(option)) {
-    //         const { price } = detail as { price: string };
-    //         for (const menu of menus) {
-    //           // ✅ ค้นหา Size ที่เชื่อมโยงกับ Menu นี้
-    //           let size = await this.sizeRepository.findOne({
-    //             where: {
-    //               size_name: sizeName,
-    //               menu: { menu_id: menu.menu_id },
-    //             },
-    //             relations: ['menu'],
-    //           });
-    //           // ✅ ถ้ายังไม่มี Size ให้สร้างใหม่
-    //           if (!size) {
-    //             size = this.sizeRepository.create({
-    //               size_name: sizeName,
-    //               size_price: parseFloat(price),
-    //               menu: { menu_id: menu.menu_id },
-    //               is_required: createOptionDto.is_required
-    //             });
-    //             await this.sizeRepository.save(size);
-    //           }
-    //           // ✅ ตรวจสอบการเชื่อมโยงเพื่อป้องกันการเพิ่มซ้ำ
-    //           const isAlreadyLinked = menu.sizes.some(
-    //             (linkedSize) => linkedSize.size_id === size.size_id,
-    //           );
-    //           if (!isAlreadyLinked) {
-    //             await this.menuRepository
-    //               .createQueryBuilder()
-    //               .relation(Menu, 'sizes')
-    //               .of(menu.menu_id)
-    //               .add(size.size_id);
-    //             menu.sizes.push(size); // ✅ อัปเดตใน Memory
-    //             await this.menuRepository.save(menu); // ✅ บันทึกใน Database
-    //           }
-    //           options.push(size);
-    //         }
-    //       }
-    //     }
-    //     return {
-    //       message: `Sizes created and linked successfully`,
-    //     };
-    //   }
-    //   return {
-    //     statusCode: HttpStatus.OK,
-    //     message: `${type} options created successfully`,
-    //     data: options,
-    //   };
-    // } catch (error) {
-    //   return {
-    //     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-    //     message: `Failed to create ${type} options`,
-    //     error: error.message,
-    //   };
-    // }
   }
 
   // * link menu for auto cut stock
@@ -843,8 +628,297 @@ export class MenuService {
         : {}),
     }));
   }
-  // EDIT ENTITY
-  async findOptionById(type: string, menuId: number) {
+  async createMenuTypeGroup(
+    dto: CreateMenuTypeGroupDto,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<any> {
+    if (!dto.options || dto.options.length === 0) {
+      throw new Error('Options cannot be empty');
+    }
+
+    const owner = await this.ownerRepository.findOne({ where: { owner_id } });
+    if (!owner) throw new NotFoundException('Owner not found');
+
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id },
+    });
+    if (!branch) throw new NotFoundException('Branch not found');
+
+    const menuTypes = dto.options.map((option) => ({
+      type_name: Object.keys(option)[0],
+      price_difference: parseFloat(Object.values(option)[0]),
+      is_delete: false,
+      owner,
+      branch,
+    }));
+
+    const savedMenuTypes = await this.menuTypeRepository.save(menuTypes);
+
+    const newMenuTypeGroup = this.menuTypeGroupRepository.create({
+      menu_type_group_name: dto.menu_type_group_name,
+      owner,
+      branch,
+    });
+
+    await this.menuTypeGroupRepository.save(newMenuTypeGroup);
+
+    const menuTypeGroup = await this.menuTypeGroupRepository.findOne({
+      where: { menu_type_group_name: dto.menu_type_group_name },
+    });
+
+    if (!menuTypeGroup) {
+      throw new Error('Menu Type Group not found');
+    }
+
+    for (const menuType of savedMenuTypes) {
+      menuTypeGroup.menuType = menuType;
+      await this.menuTypeGroupRepository.save(menuTypeGroup);
+    }
+
+    for (const menuId of dto.menu_id) {
+      await this.menuRepository.update(
+        { menu_id: menuId },
+        { menuTypeGroup: menuTypeGroup },
+      );
+    }
+
+    return {
+      message: 'Menu Type Group created successfully',
+      menu_type_group_name: menuTypeGroup.menu_type_group_name,
+      menu_types: savedMenuTypes,
+      linked_menus: dto.menu_id,
+    };
+  }
+
+  async deleteMenuTypeGroup(
+    menuTypeGroupName: string,
+    ownerId: number,
+    branchId: number,
+  ): Promise<any> {
+    const menuTypeGroups = await this.menuTypeGroupRepository.find({
+      where: {
+        menu_type_group_name: menuTypeGroupName,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['menuType', 'owner', 'branch'],
+    });
+
+    if (!menuTypeGroups.length) {
+      throw new NotFoundException(
+        `MenuTypeGroup '${menuTypeGroupName}' not found.`,
+      );
+    }
+
+    const menuTypesToUpdate = menuTypeGroups.flatMap((group) => group.menuType);
+    if (menuTypesToUpdate.length) {
+      await this.menuTypeRepository.update(
+        {
+          menu_type_id: In(menuTypesToUpdate.map((type) => type.menu_type_id)),
+        },
+        { is_delete: true },
+      );
+    }
+
+    await this.menuRepository.update(
+      {
+        menuTypeGroup: In(
+          menuTypeGroups.map((group) => group.menu_type_group_id),
+        ),
+      },
+      { menuTypeGroup: null },
+    );
+
+    // ✅ Step 4: ลบ `MenuTypeGroup`
+    await this.menuTypeGroupRepository.delete({
+      menu_type_group_name: menuTypeGroupName,
+    });
+
+    return {
+      message: `MenuTypeGroup '${menuTypeGroupName}' deleted and related menu types marked as deleted.`,
+    };
+  }
+
+  async updateMenuTypeGroup(
+    owner_id: number,
+    branch_id: number,
+    updateMenuTypeGroupDto: UpdateMenuTypeGroupDto,
+  ): Promise<any> {
+    try {
+      const {
+        old_menu_type_group_name,
+        new_menu_type_group_name,
+        options,
+        menu_id,
+      } = updateMenuTypeGroupDto;
+
+      const existingMenuTypeGroups = await this.menuTypeGroupRepository.find({
+        where: {
+          menu_type_group_name: old_menu_type_group_name,
+          owner: { owner_id },
+          branch: { branch_id },
+        },
+        relations: ['menuType'],
+      });
+
+      if (existingMenuTypeGroups.length === 0) {
+        throw new NotFoundException('Menu Type Group not found');
+      }
+
+      if (old_menu_type_group_name !== new_menu_type_group_name) {
+        await this.menuTypeGroupRepository.update(
+          {
+            menu_type_group_name: old_menu_type_group_name,
+            owner: { owner_id },
+            branch: { branch_id },
+          },
+          { menu_type_group_name: new_menu_type_group_name },
+        );
+      }
+
+      const existingMenuTypeIds = existingMenuTypeGroups.map((group) =>
+        group.menuType.menu_type_id.toString(),
+      );
+
+      const keepMenuTypeIds = options
+        .filter((opt) => opt.menu_type_id && opt.menu_type_id !== 'null')
+        .map((opt) => opt.menu_type_id);
+
+      for (const option of options) {
+        if (option.menu_type_id && option.menu_type_id !== 'null') {
+          await this.menuTypeRepository.update(
+            { menu_type_id: parseInt(option.menu_type_id) },
+            {
+              type_name: option.type_name,
+              price_difference: parseFloat(String(option.price_difference)),
+              is_delete: false,
+            },
+          );
+        }
+      }
+
+      for (const existingMenuTypeId of existingMenuTypeIds) {
+        if (!keepMenuTypeIds.includes(existingMenuTypeId)) {
+          const menuTypeIdNum = parseInt(existingMenuTypeId);
+
+          await this.menuTypeRepository.update(
+            { menu_type_id: menuTypeIdNum },
+            { is_delete: true },
+          );
+
+          const affectedMenuTypeGroups =
+            await this.menuTypeGroupRepository.find({
+              where: {
+                menuType: { menu_type_id: menuTypeIdNum },
+                owner: { owner_id },
+                branch: { branch_id },
+              },
+              relations: ['menuType'],
+            });
+
+          for (const menuTypeGroup of affectedMenuTypeGroups) {
+            const menusUsingGroup = await this.menuRepository.find({
+              where: {
+                menuTypeGroup: {
+                  menu_type_group_id: menuTypeGroup.menu_type_group_id,
+                },
+              },
+            });
+
+            if (menusUsingGroup.length > 0) {
+              const alternativeMenuTypeGroup =
+                await this.menuTypeGroupRepository.findOne({
+                  where: {
+                    menu_type_group_name: menuTypeGroup.menu_type_group_name,
+                    owner: { owner_id },
+                    branch: { branch_id },
+                    menuType: { is_delete: false },
+                    menu_type_group_id: Not(menuTypeGroup.menu_type_group_id),
+                  },
+                });
+
+              await this.menuRepository.update(
+                { menu_id: In(menusUsingGroup.map((m) => m.menu_id)) },
+                { menuTypeGroup: alternativeMenuTypeGroup || null },
+              );
+            }
+
+            await this.menuTypeGroupRepository.delete(
+              menuTypeGroup.menu_type_group_id,
+            );
+          }
+        }
+      }
+
+      const newMenuTypeOptions = options.filter(
+        (opt) => opt.menu_type_id === 'null',
+      );
+      for (const newOption of newMenuTypeOptions) {
+        const newMenuType = await this.menuTypeRepository.save({
+          type_name: newOption.type_name,
+          price_difference: parseFloat(String(newOption.price_difference)),
+          owner: { owner_id },
+          branch: { branch_id },
+        });
+
+        const existingLink = await this.menuTypeGroupRepository.findOne({
+          where: {
+            menu_type_group_name: new_menu_type_group_name,
+            menuType: { menu_type_id: newMenuType.menu_type_id },
+          },
+        });
+
+        if (!existingLink) {
+          await this.menuTypeGroupRepository.save({
+            menu_type_group_name: new_menu_type_group_name,
+            menuType: newMenuType,
+            owner: { owner_id },
+            branch: { branch_id },
+          });
+        }
+      }
+
+      const menuTypeGroup = await this.menuTypeGroupRepository.findOne({
+        where: {
+          menu_type_group_name: new_menu_type_group_name,
+          owner: { owner_id },
+          branch: { branch_id },
+        },
+      });
+
+      if (!menuTypeGroup) {
+        throw new NotFoundException(
+          `Menu Type Group "${new_menu_type_group_name}" not found`,
+        );
+      }
+
+      await this.menuRepository.update(
+        { menu_id: In(menu_id) },
+        { menuTypeGroup: menuTypeGroup },
+      );
+
+      await this.menuRepository.update(
+        {
+          menu_id: Not(In(menu_id)),
+          menuTypeGroup: menuTypeGroup,
+        },
+        { menuTypeGroup: null },
+      );
+
+      return {
+        message: 'Menu Type Group updated successfully',
+        HttpStatus: HttpStatus.OK,
+      };
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message || 'Something went wrong.' },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async findOptionById(type: string) {
     switch (type) {
       // edit entity
       // case 'add-ons':

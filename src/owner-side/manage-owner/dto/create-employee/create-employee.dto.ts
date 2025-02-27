@@ -1,19 +1,22 @@
 import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
-export class CreateBranchDto {
+export class CreateEmployeeDto {
   @IsNotEmpty()
   @IsString()
-  branch_name: string;
+  email: string;
 
   @IsNotEmpty()
   @IsString()
-  branch_address: string; 
+  password: string;
 
-  @IsNotEmpty()
-  @IsString()
-  branch_phone_number: string;
+  @IsNumber()
+  manager_id: number;
 
   @IsNotEmpty()
   @IsNumber()
   owner_id: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  branch_id: number;
 }
