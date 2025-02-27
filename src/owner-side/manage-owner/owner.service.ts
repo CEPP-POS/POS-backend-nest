@@ -33,27 +33,35 @@ export class OwnerService {
     const tempPassword = Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-    const createOwnerDto: CreateOwnerDto = {
-      owner_name: `${row.first_name} ${row.last_name}`,
-      contact_info: row.phone,
-      email: row.email,
-      password: hashedPassword,
-    };
+    let owner = await this.findByEmail(row.email);
 
-    let owner = await this.findByEmail(createOwnerDto.email);
     if (!owner) {
+      const createOwnerDto: CreateOwnerDto = {
+        owner_name: `${row.first_name} ${row.last_name}`,
+        contact_info: row.phone,
+        email: row.email,
+        password: hashedPassword,
+      };
+
       owner = this.ownerRepository.create(createOwnerDto);
       owner = await this.ownerRepository.save(owner);
 
       await sendTemporaryPasswordEmail(owner.email, tempPassword);
     }
 
-    let branch = await this.branchRepository.findOne({ where: { owner } });
+    const branchName = row.branch_name || `${owner.owner_name}'s New Branch`;
+
+    let branch = await this.branchRepository.findOne({
+      where: {
+        branch_name: branchName,
+        owner: { owner_id: owner.owner_id },
+      },
+    });
 
     if (!branch) {
       branch = await this.branchService.create({
         owner_id: owner.owner_id,
-        branch_name: `${owner.owner_name}'s Branch`,
+        branch_name: branchName,
         branch_address: row.address || 'N/A',
         branch_phone_number: row.phone || 'N/A',
       });
