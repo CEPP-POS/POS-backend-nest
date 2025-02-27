@@ -36,7 +36,7 @@ Content-Type: application/json
 owner_id: 6
 branch_id: 3
 
-GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/5
+GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/9
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
@@ -54,32 +54,19 @@ Content-Type: application/json
 owner_id: 6
 branch_id: 3
 
-#getUpdateIngredient
-## fix
-GET http://localhost:3000/owner/update-stock-ingredients/18
 
-PATCH http://localhost:3000/owner/update-stock-ingredients/8
+PATCH http://localhost:3000/owner/update-stock-ingredients/10
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-  "updates": [
-    {
-      "update_id": 8,
-      "quantity_in_stock": 2,
-      "total_volume": 12,
-      "net_volume": 150,
-      "expiration_date": "2025-02-28"
-    },
-    {
-      "update_id": 7,
-      "quantity_in_stock": 4,
-      "total_volume": 90,
-      "net_volume": 67,
-      "expiration_date": "2025-02-30"
-    }
-  ]
+  "quantity_in_stock": 4,
+  "net_volume": 250,
+  "total_volume": 3000,
+  "expiration_date": "2026-02-26"
 }
+
+
 
 POST http://localhost:3000/owner/stock-group
 Content-Type: application/json
@@ -96,11 +83,11 @@ owner_id: 1
 branch_id: 1
 {
   "image_url": "imagepath/image.png",
-  "ingredient_name": "นมข้นหวาน",
+  "ingredient_name": "นมจืดสดวิป",
   "net_volume": 250,
   "unit": "g",
   "quantity_in_stock": 4,
-  "category_name": "เครื่องครัว",
+  "category_name": "น้ำชง",
   "expiration_date": "2025-05-29"
 }
 

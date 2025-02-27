@@ -6,6 +6,7 @@ import { Owner } from '../../entities/owner.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import { Branch } from 'src/entities/branch.entity';
+import { BranchService } from '../branch/branch.service';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { Branch } from 'src/entities/branch.entity';
     forwardRef(() => AuthModule),
   ],
   controllers: [OwnerController],
-  providers: [OwnerService],
+  providers: [OwnerService, BranchService],
   exports: [OwnerService, TypeOrmModule],
 })
 export class OwnerModule {}

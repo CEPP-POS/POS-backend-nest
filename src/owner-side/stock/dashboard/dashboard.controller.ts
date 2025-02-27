@@ -8,6 +8,8 @@ import {
   Post,
   Req,
   Headers,
+  Query,
+  NotFoundException,
 } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { Overview } from './dto/overview.dto';
@@ -15,14 +17,11 @@ import { Linegraph } from './dto/linegraph.dto';
 import { OrderItemDto } from 'src/employee-side/order/dto/order-item/order-item.dto';
 import { CancelOrderTopicDto } from './dto/cancel-orders.dto';
 
-import { IngredientDto } from './dto/ingredients.dto';
 import { IngredientCategoriesDto } from './dto/ingredients-categories.dto';
-import { IngredientDetailsDto } from './dto/ingredients-details.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
-import { UpdateCancelStatusDto } from './dto/update-cancel-status.dto';
 
 @Controller('owner')
 export class DashboardController {
@@ -167,8 +166,22 @@ export class DashboardController {
   @Get('stock-ingredients/:ingredient_id')
   async getIngredientDetails(
     @Param('ingredient_id') ingredient_id: number,
-  ): Promise<IngredientDetailsDto> {
-    return this.dashboardService.getIngredientDetails(Number(ingredient_id));
+    @Headers() headers: Record<string, string>,
+  ): Promise<any> {
+    const ownerId = headers['owner_id'];
+    const branchId = headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    return this.dashboardService.getIngredientDetails(
+      Number(ingredient_id),
+      Number(ownerId),
+      Number(branchId),
+    );
   }
 
   @Post('stock-group')
@@ -216,23 +229,26 @@ export class DashboardController {
     );
   }
 
-  @Get('update-stock-ingredients/:ingredient_id')
-  async getUpdateIngredient(
-    @Param('ingredient_id') ingredient_id: number,
-  ): Promise<any> {
-    return this.dashboardService.getUpdateIngredient(Number(ingredient_id));
-  }
-
-  @Patch('update-stock-ingredients/:ingredient_id')
+  @Patch('update-stock-ingredients/:update_id')
   async updateIngredient(
-    @Param('ingredient_id') ingredient_id: number,
-    @Body() body: { updates: UpdateIngredientDto[] },
+    @Param('update_id') update_id: number,
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
+    @Body() body: UpdateIngredientDto,
   ) {
-    console.log('Received body:', body); // Add this log to inspect the request body
-    return this.dashboardService.updateIngredient(
-      ingredient_id,
-      body.updates, // Pass the array to the service
+    if (!owner_id || !branch_id) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    await this.dashboardService.updateIngredient(
+      update_id,
+      owner_id,
+      branch_id,
+      body,
     );
+    return { message: 'success' };
   }
 
   @Patch('orders/:order_id')
@@ -269,5 +285,24 @@ export class DashboardController {
       parseInt(ownerId),
       parseInt(branchId),
     );
+  }
+
+  @Get('update-stock-ingredients/:update_id')
+  async getSubIngredientByID(
+    @Param('update_id') update_id: number,
+    @Query('owner_id') owner_id: number,
+    @Query('branch_id') branch_id: number,
+  ) {
+    const result = await this.dashboardService.getSubIngredientByID(
+      update_id,
+      owner_id,
+      branch_id,
+    );
+    if (!result) {
+      throw new NotFoundException(
+        `Ingredient update with ID ${update_id} not found`,
+      );
+    }
+    return result;
   }
 }

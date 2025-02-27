@@ -1,6 +1,14 @@
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
-export class LoginOwnerDto {
+export class CreateOwnerDto {
+  @IsString()
+  @IsNotEmpty()
+  owner_name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  contact_info: string;
+
   @IsEmail()
   @IsNotEmpty()
   email: string;
@@ -8,4 +16,6 @@ export class LoginOwnerDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  roles?: string[];
 }

@@ -1,15 +1,19 @@
-import { IsString, IsInt } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
 export class CreateBranchDto {
+  @IsNotEmpty()
   @IsString()
   branch_name: string;
 
+  @IsNotEmpty()
   @IsString()
-  branch_address: string;
+  branch_address: string; 
 
+  @IsNotEmpty()
   @IsString()
   branch_phone_number: string;
 
-  @IsInt()
+  @IsNotEmpty()
+  @IsNumber()
   owner_id: number;
 }

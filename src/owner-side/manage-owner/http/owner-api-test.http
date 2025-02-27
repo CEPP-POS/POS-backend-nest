@@ -1,0 +1,65 @@
+### 1. Owner อัปโหลดไฟล์ CSV
+POST http://localhost:3000/owner/upload-csv
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="owners.csv"
+Content-Type: text/csv
+
+< /Users/pimolnutsriphadej/Desktop/POS-backend-nest/src/uploads/owners.csv
+--boundary--
+
+### 2. Owner เข้าสู่ระบบ (Login)
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "michael.green@example.com",
+  "password": "SecureWhite123!2"
+}
+
+### 3. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน (Forgot Password)
+POST http://localhost:3000/owner/forgot-password
+Content-Type: application/json
+owner_id: 35
+branch_id: 10
+{
+  "usernameOrEmail": "michael.green@example.com"
+}
+### 4. Owner ยืนยัน OTP
+POST http://localhost:3000/owner/verify-otp
+Content-Type: application/json
+owner_id: 35
+branch_id: 10
+{
+  "usernameOrEmail": "michael.green@example.com",
+  "otp": "389217"
+}
+
+### 5. Owner รีเซ็ตรหัสผ่านใหม่
+PATCH http://localhost:3000/owner/reset-password
+Content-Type: application/json
+owner_id: 35
+branch_id: 10
+{
+  "email": "michael.green@example.com",
+  "newPassword": "SecureWhite123!2"
+}
+### 6. Owner เข้าสู่ระบบ (Login)
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "charlie.white@example.com",
+  "password": "SecureWhite123!"
+}
+### 7. Owner สร้าง Employee (ต้องแนบ Token)
+POST http://localhost:3000/owner/create-employee
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MzUsImVtYWlsIjoibWljaGFlbC5ncmVlbkBleGFtcGxlLmNvbSIsImJyYW5jaF9pZCI6MTAsInJvbGVzIjpbIm93bmVyIl0sImlhdCI6MTc0MDYzODg4MywiZXhwIjoxNzQwNzI1MjgzfQ.H0MupVW1zHDHfIDrWwmc9uP57kqiR13WiTW94lnp90Y
+Content-Type: application/json
+
+{
+  "email": "MemeeEmployee2@example.com",
+  "password": "Employee2",
+  "branch_id": 10
+}

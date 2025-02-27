@@ -1,11 +1,13 @@
-import { Controller } from '@nestjs/common';
-import { OwnerService } from 'src/owner-side/owner/owner.service';
+import {
+  Controller,
+  Post,
+  Body,
+  BadRequestException,
+} from '@nestjs/common';
+import { OwnerService } from 'src/owner-side/manage-owner/owner.service';
 import { AuthService } from './auth.service';
-import { Post } from '@nestjs/common';
-import { Body } from '@nestjs/common';
-import { CreateOwnerDto } from 'src/owner-side/owner/dto/create-owner/create-owner.dto';
-import { HttpException, HttpStatus } from '@nestjs/common';
-import { LoginOwnerDto } from 'src/owner-side/owner/dto/login-owner/login-owner.dto';
+import { CreateOwnerDto } from 'src/owner-side/manage-owner/dto/create-owner/create-owner.dto';
+import { LoginDto } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -14,20 +16,19 @@ export class AuthController {
     private readonly authService: AuthService,
   ) {}
 
+  // * Register Owner
   @Post('register')
   async register(@Body() createOwnerDto: CreateOwnerDto) {
-    const existingOwner = await this.ownerService.findByEmail(
-      createOwnerDto.email,
-    );
-
-    if (existingOwner) {
-      throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
+    try {
+      return await this.ownerService.createOwnerWithBranch(createOwnerDto);
+    } catch (error) {
+      throw new BadRequestException(error.message);
     }
-    return this.ownerService.create(createOwnerDto);
   }
 
+  // * Login Owner
   @Post('login')
-  async login(@Body() loginOwnerDto: LoginOwnerDto) {
-    return this.authService.login(loginOwnerDto);
+  async login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
   }
 }
