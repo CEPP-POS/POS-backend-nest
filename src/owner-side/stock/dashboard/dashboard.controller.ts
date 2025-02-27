@@ -17,14 +17,11 @@ import { Linegraph } from './dto/linegraph.dto';
 import { OrderItemDto } from 'src/employee-side/order/dto/order-item/order-item.dto';
 import { CancelOrderTopicDto } from './dto/cancel-orders.dto';
 
-import { IngredientDto } from './dto/ingredients.dto';
 import { IngredientCategoriesDto } from './dto/ingredients-categories.dto';
-import { IngredientDetailsDto } from './dto/ingredients-details.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
-import { UpdateCancelStatusDto } from './dto/update-cancel-status.dto';
 
 @Controller('owner')
 export class DashboardController {
