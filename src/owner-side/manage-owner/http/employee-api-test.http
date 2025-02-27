@@ -3,9 +3,9 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-  "email": "MemeeEmployee2@example.com",
+   "email": "MemeeEmployee2@example.com",
   "password": "Employee2",
-  "branch_id": 6
+  "branch_id": 10
 }
 
 ### 2. Employee พยายามสร้าง Employee (ต้องห้าม)

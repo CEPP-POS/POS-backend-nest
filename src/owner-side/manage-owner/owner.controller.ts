@@ -28,10 +28,7 @@ import { CreateEmployeeDto } from './dto/create-employee/create-employee.dto';
 import { UserPayload } from '../../auth/interfaces/user.interface';
 import { BranchService } from '../branch/branch.service';
 import { UpdatePasswordDto } from '../../auth/dto/password.dto';
-import {
-  ForgotPasswordDto,
-  VerifyOtpDto,
-} from '../../auth/dto/auth.dto';
+import { ForgotPasswordDto, VerifyOtpDto } from '../../auth/dto/auth.dto';
 
 @Controller('owner')
 export class OwnerController {
@@ -68,7 +65,7 @@ export class OwnerController {
           owner_name: owner.owner_name,
           contact_info: owner.contact_info,
           email: owner.email,
-          password: '***flukelovememee***',
+          password: '***temp password send tto email***',
         });
       }
 
