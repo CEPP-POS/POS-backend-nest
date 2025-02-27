@@ -18,7 +18,15 @@ export class Linegraph {
   @IsNumber()
   canceled_orders: number;
 
+  // @IsArray()
+  // @IsNumber({}, { each: true })
+  // monthly_revenue: number[];
+
   @IsArray()
-  @IsNumber({}, { each: true })
-  monthly_revenue: number[];
+  daily_stats: DailyStat[];
+}
+
+export interface DailyStat {
+  date: string;
+  totalRevenue: number;
 }

@@ -61,7 +61,7 @@ export class DashboardService {
 
     @InjectRepository(Owner)
     private ownerRepository: Repository<Owner>,
-  ) {}
+  ) { }
 
   private async calculateMonthlyRevenue(
     year: number,
@@ -186,24 +186,41 @@ export class DashboardService {
   }
 
   async getStockLineGraph(
-    date: Date,
+    year: number,
+    month: number,
     ownerId: number,
     branchId: number,
   ): Promise<Linegraph> {
-    const year = date.getFullYear();
-    const monthlyRevenue = await this.calculateMonthlyRevenue(
-      year,
-      ownerId,
-      branchId,
-    );
-    const { totalRevenue, totalOrders, canceledOrders } =
-      await this.calculateDailyStats(date, ownerId, branchId);
+    const monthlyRevenue = await this.calculateMonthlyRevenue(year, ownerId, branchId);
+
+    const dailyStats = [];
+    const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
+
+    let totalRevenue = 0;
+    let totalOrders = 0;
+    let canceledOrders = 0;
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month - 1, day); // month is 0-indexed
+      const { totalRevenue: dailyRevenue, totalOrders: dailyOrders, canceledOrders: dailyCanceledOrders } = await this.calculateDailyStats(date, ownerId, branchId);
+
+      // Accumulate totals
+      totalRevenue += dailyRevenue;
+      totalOrders += dailyOrders;
+      canceledOrders += dailyCanceledOrders;
+
+      dailyStats.push({
+        date: date.toISOString().split('T')[0], // Format date as YYYY-MM-DD
+        totalRevenue: dailyRevenue, // Only include totalRevenue
+      });
+    }
 
     return {
       total_revenue: totalRevenue,
       total_orders: totalOrders,
       canceled_orders: canceledOrders,
-      monthly_revenue: monthlyRevenue,
+      // monthly_revenue: monthlyRevenue,
+      daily_stats: dailyStats,
     };
   }
 

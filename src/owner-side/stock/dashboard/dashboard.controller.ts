@@ -26,7 +26,7 @@ import { UpdateCancelStatusDto } from './dto/update-cancel-status.dto';
 
 @Controller('owner')
 export class DashboardController {
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(private readonly dashboardService: DashboardService) { }
 
   @Get('stock-summary/:date')
   async getStockSummary(
@@ -50,17 +50,18 @@ export class DashboardController {
     );
   }
 
-  @Get('stock-sale/:date')
+  @Get('stock-sale/:year/:month')
   async getStockLineGraph(
-    @Param('date') date: string,
+    @Param('year') year: string,
+    @Param('month') month: string,
     @Req() request: Request,
   ): Promise<Linegraph> {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
-    date = date + 'T08:00:00.000Z';
     return this.dashboardService.getStockLineGraph(
-      new Date(date),
+      Number(year),
+      Number(month),
       Number(ownerId),
       Number(branchId),
     );
