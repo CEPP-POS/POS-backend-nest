@@ -8,6 +8,8 @@ import {
   Post,
   Req,
   Headers,
+  Query,
+  NotFoundException,
 } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { Overview } from './dto/overview.dto';
@@ -229,13 +231,6 @@ export class DashboardController {
     );
   }
 
-  @Get('update-stock-ingredients/:ingredient_id')
-  async getUpdateIngredient(
-    @Param('ingredient_id') ingredient_id: number,
-  ): Promise<any> {
-    return this.dashboardService.getUpdateIngredient(Number(ingredient_id));
-  }
-
   @Patch('update-stock-ingredients/:update_id')
   async updateIngredient(
     @Param('update_id') update_id: number,
@@ -292,5 +287,24 @@ export class DashboardController {
       parseInt(ownerId),
       parseInt(branchId),
     );
+  }
+
+  @Get('update-stock-ingredients/:update_id')
+  async getSubIngredientByID(
+    @Param('update_id') update_id: number,
+    @Query('owner_id') owner_id: number,
+    @Query('branch_id') branch_id: number,
+  ) {
+    const result = await this.dashboardService.getSubIngredientByID(
+      update_id,
+      owner_id,
+      branch_id,
+    );
+    if (!result) {
+      throw new NotFoundException(
+        `Ingredient update with ID ${update_id} not found`,
+      );
+    }
+    return result;
   }
 }

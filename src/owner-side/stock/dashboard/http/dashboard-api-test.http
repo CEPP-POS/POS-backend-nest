@@ -36,7 +36,7 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 
-GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/5
+GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/9
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
@@ -56,10 +56,10 @@ branch_id: 1
 
 # #getUpdateIngredient
 # ## fix
-# GET http://localhost:3000/owner/update-stock-ingredients/10
-# Content-Type: application/json
-# owner_id: 1
-# branch_id: 1
+GET http://localhost:3000/owner/update-stock-ingredients/8
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 
 
