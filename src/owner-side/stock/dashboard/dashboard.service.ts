@@ -431,83 +431,86 @@ export class DashboardService {
     };
   }
 
-  async getIngredientDetails(ingredient_id: number): Promise<any> {
-    // Fetch ingredient details
+  async getIngredientDetails(
+    ingredient_id: number,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<any> {
     const ingredient = await this.ingredientRepository.findOne({
-      where: { ingredient_id },
-      relations: ['category_id'], // Get category details
+      where: {
+        ingredient_id,
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+      relations: ['ingredientCategory', 'owner', 'branch'], // เพิ่ม owner และ branch ใน relations
     });
 
     if (!ingredient) {
-      throw new Error('Ingredient not found');
+      throw new NotFoundException(`Ingredient ID ${ingredient_id} not found`);
     }
 
-    // Get today's date (set time to 00:00:00)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Get all valid ingredient stock updates (not expired, quantity > 0)
-    const latestUpdates = await this.ingredientUpdateRepository.find({
+    const validStockData = await this.ingredientUpdateRepository.findOne({
       where: {
-        ingredient: Raw((alias) => `${alias} = ${ingredient_id}`),
-        expiration_date: MoreThan(today), // Exclude expired stock
-        quantity_in_stock: MoreThan(0), // Exclude empty stock
+        ingredient: { ingredient_id },
+        expiration_date: MoreThan(today),
+        quantity_in_stock: MoreThan(0),
       },
-      order: { expiration_date: 'DESC' }, // Get the latest stock updates
+      order: { expiration_date: 'ASC' }, // เปลี่ยนเป็น 'ASC'
     });
 
-    // Group valid stock data by net_volume
-    const groupedStockData: {
-      net_volume: number;
-      quantity_in_stock: number;
-      total_volume: number;
-      expiration_date: Date;
-    }[] = [];
+    let stock_data = []; // Initialize stock_data as an empty array
 
-    latestUpdates.forEach((update) => {
-      const existing = groupedStockData.find(
-        (item) =>
-          item.net_volume === update.net_volume &&
-          item.expiration_date.getTime() === update.expiration_date.getTime(),
-      );
-      if (existing) {
-        existing.quantity_in_stock += update.quantity_in_stock;
-        existing.total_volume += update.total_volume;
-      } else {
-        groupedStockData.push({
-          net_volume: update.net_volume,
-          quantity_in_stock: update.quantity_in_stock,
-          total_volume: update.total_volume,
-          expiration_date: update.expiration_date,
-        });
-      }
-    });
+    if (validStockData) {
+      // Check if validStockData exists
+      stock_data = [
+        {
+          net_volume: validStockData.net_volume,
+          quantity_in_stock: validStockData.quantity_in_stock,
+          total_volume: validStockData.total_volume,
+          expiration_date: validStockData.expiration_date
+            .toISOString()
+            .split('T')[0],
+        },
+      ];
+    }
 
-    // Fetch menu ingredients associated with this ingredient
     const menuIngredients = await this.menuIngredientRepository.find({
-      where: { ingredient: Raw((alias) => `${alias} = ${ingredient_id}`) },
-      relations: ['menu_id', 'menu_id.categories', 'size_id', 'sweetness_id'], // Get related details
+      where: { ingredient: { ingredient_id } },
+      relations: [
+        'menu',
+        'menu.menuCategory',
+        'menu.menuCategory.category',
+        'size',
+        'menu_type',
+      ],
     });
 
-    // edit entity
-    // Transform menu ingredients data
-    // const menuIngredientsDto = menuIngredients.map((menuIng) => ({
-    //   menu_name: menuIng.menu_id.menu_name,
-    //   size_name: menuIng.size_id.size_name,
-    //   level_name: menuIng.sweetness_id.level_name,
-    //   quantity_used: menuIng.quantity_used,
-    //   unit: ingredient.unit,
-    //   category_name: menuIng.menu_id.categories?.map(cat => cat.category_name).join(', ') || 'Unknown', // Adjust to handle multiple categories
-    // }));
+    const menu_ingredients = menuIngredients.map((menuIng) => ({
+      menu_name: menuIng.menu.menu_name,
+      size_name: menuIng.size ? menuIng.size.size_name : null,
+      level_name: menuIng.menu_type ? menuIng.menu_type.type_name : null,
+      quantity_used: menuIng.quantity_used,
+      unit: ingredient.unit,
+      category_name:
+        menuIng.menu.menuCategory.length > 0
+          ? menuIng.menu.menuCategory
+              .map((cat) => cat.category.category_name)
+              .join(', ')
+          : 'Unknown',
+    }));
 
-    // Construct the response
-    // return {
-    //   ingredient_id: ingredient.ingredient_id,
-    //   ingredient_name: ingredient.ingredient_name,
-    //   category_name: ingredient.category_id?.category_name || 'Unknown',
-    //   stock_data: groupedStockData, // Store grouped stock data (excluding expired/zero quantity)
-    //   menu_ingredients: menuIngredientsDto,
-    // };
+    return {
+      ingredient_id: ingredient.ingredient_id,
+      ingredient_name: ingredient.ingredient_name,
+      category_name: ingredient.ingredientCategory
+        ? ingredient.ingredientCategory.ingredient_category_name
+        : 'Unknown',
+      stock_data,
+      menu_ingredients,
+    };
   }
 
   async createStockGroup(

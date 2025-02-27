@@ -49,18 +49,22 @@ branch_id: 1
 
 # getIngredientDetails
 ## fix
-GET http://localhost:3000/owner/stock-ingredients/8
+GET http://localhost:3000/owner/stock-ingredients/10
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
 
-#getUpdateIngredient
-## fix
-GET http://localhost:3000/owner/update-stock-ingredients/18
+# #getUpdateIngredient
+# ## fix
+# GET http://localhost:3000/owner/update-stock-ingredients/10
+# Content-Type: application/json
+# owner_id: 1
+# branch_id: 1
 
 
 
-PATCH http://localhost:3000/owner/update-stock-ingredients/9
+
+PATCH http://localhost:3000/owner/update-stock-ingredients/10
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
@@ -68,7 +72,7 @@ branch_id: 1
   "quantity_in_stock": 4,
   "net_volume": 250,
   "total_volume": 3000,
-  "expiration_date": "2025-02-26"
+  "expiration_date": "2026-02-26"
 }
 
 

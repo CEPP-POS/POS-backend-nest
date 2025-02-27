@@ -166,8 +166,22 @@ export class DashboardController {
   @Get('stock-ingredients/:ingredient_id')
   async getIngredientDetails(
     @Param('ingredient_id') ingredient_id: number,
-  ): Promise<IngredientDetailsDto> {
-    return this.dashboardService.getIngredientDetails(Number(ingredient_id));
+    @Headers() headers: Record<string, string>,
+  ): Promise<any> {
+    const ownerId = headers['owner_id'];
+    const branchId = headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    return this.dashboardService.getIngredientDetails(
+      Number(ingredient_id),
+      Number(ownerId),
+      Number(branchId),
+    );
   }
 
   @Post('stock-group')
