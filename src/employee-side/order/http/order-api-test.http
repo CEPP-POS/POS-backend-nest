@@ -58,7 +58,7 @@ branch_id: 3
 ### Get All Orders
 GET http://localhost:3000/employee/orders
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
 

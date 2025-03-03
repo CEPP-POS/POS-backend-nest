@@ -10,18 +10,21 @@ owner_id: 6
 branch_id: 3
 
 ## GET ALL ORDERS
-GET http://localhost:3000/owner/stock-orders/2025-02-27
+GET http://localhost:3000/owner/stock-orders/2025-02-28
+Content-Type: application/json
+owner_id: 1
+branch_id: 3
+
+## get menu ingredient by ingredient id
+GET http://localhost:3000/owner/stock-ingredients/28
 Content-Type: application/json
 owner_id: 6
 branch_id: 3
 
-## get menu ingredient by ingredient id
-GET http://localhost:3000/owner/stock-ingredients/16
-
 ## GET ALL CANCEL ORDERS
 GET http://localhost:3000/owner/stock-cancel-orders
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
 ## get menu detail
@@ -36,47 +39,40 @@ Content-Type: application/json
 owner_id: 6
 branch_id: 3
 
-GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/5
+GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/8
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
 
 # getIngredientsCategories
 GET http://localhost:3000/owner/stock-ingredients/categories
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
 
 # getIngredientDetails
 ## fix
-GET http://localhost:3000/owner/stock-ingredients/27
+GET http://localhost:3000/owner/stock-ingredients/30
 Content-Type: application/json
 owner_id: 6
 branch_id: 3
 
 #getUpdateIngredient
 ## fix
-GET http://localhost:3000/owner/update-stock-ingredients/18
+GET http://localhost:3000/owner/update-stock-ingredients/1
 
-PATCH http://localhost:3000/owner/update-stock-ingredients/8
+PATCH http://localhost:3000/owner/update-stock-ingredients/1
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 {
   "updates": [
     {
-      "update_id": 8,
-      "quantity_in_stock": 2,
-      "total_volume": 12,
-      "net_volume": 150,
-      "expiration_date": "2025-02-28"
-    },
-    {
-      "update_id": 7,
-      "quantity_in_stock": 4,
-      "total_volume": 90,
-      "net_volume": 67,
-      "expiration_date": "2025-02-30"
+      "update_id": 1,
+      "quantity_in_stock": 52,
+      "total_volume": 50000,
+      "net_volume": 1000,
+      "expiration_date": "2026-02-27"
     }
   ]
 }

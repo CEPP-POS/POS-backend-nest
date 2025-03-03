@@ -454,7 +454,7 @@ export class DashboardService {
         owner: { owner_id },
         branch: { branch_id },
       },
-      relations: ['ingredientCategory', 'owner', 'branch'], // เพิ่ม owner และ branch ใน relations
+      relations: ['ingredientCategory', 'owner', 'branch'], // Include relations as needed
     });
 
     if (!ingredient) {
@@ -470,7 +470,7 @@ export class DashboardService {
         expiration_date: MoreThan(today),
         quantity_in_stock: MoreThan(0),
       },
-      order: { expiration_date: 'ASC' }, // เปลี่ยนเป็น 'ASC'
+      order: { expiration_date: 'ASC' }, // Order by expiration date
     });
 
     let stock_data = []; // Initialize stock_data as an empty array
@@ -509,8 +509,8 @@ export class DashboardService {
       category_name:
         menuIng.menu.menuCategory.length > 0
           ? menuIng.menu.menuCategory
-              .map((cat) => cat.category.category_name)
-              .join(', ')
+            .map((cat) => cat.category.category_name)
+            .join(', ')
           : 'Unknown',
     }));
 
@@ -522,6 +522,8 @@ export class DashboardService {
         : 'Unknown',
       stock_data,
       menu_ingredients,
+      image_url: ingredient.image_url,
+      unit: ingredient.unit,
     };
   }
 
