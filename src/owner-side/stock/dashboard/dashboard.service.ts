@@ -987,6 +987,7 @@ export class DashboardService {
         .toISOString()
         .split('T')[0],
       unit: ingredient.unit,
+      image_url: ingredient.image_url
     };
   }
 }

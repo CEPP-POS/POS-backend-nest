@@ -59,7 +59,10 @@ branch_id: 3
 
 #getUpdateIngredient
 ## fix
-GET http://localhost:3000/owner/update-stock-ingredients/1
+GET http://localhost:3000/owner/update-stock-ingredients/5
+Content-Type: application/json
+owner_id: 1
+branch_id: 3
 
 PATCH http://localhost:3000/owner/update-stock-ingredients/1
 Content-Type: application/json
