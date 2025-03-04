@@ -1,7 +1,9 @@
-first_name,last_name,email,phone,address
-Michael,Green,michael.michael@example.com,0912345678,555 Palm St, Bangkok
-Emma,Wilson,emma.emma@example.com,0823456789,777 Ocean Ave, Chiang Mai
-David,Lee,david.david@example.com,0734567890,999 Mountain Rd, Phuket
-Sophia,Clark,sophia.sophia@example.com,0645678901,333 Sunset Blvd, Pattaya
-James,Hall,james.james@example.com,0556789012,222 River Ln, Krabi
-Charlie,White,charlie.charlie@example.com,0654321098,202 Fifth Ln, Krabi
+first_name,last_name,email,phone,address,branch_name
+Michael,Green,michael.green@example.com,0912345678,555 Palm St, Bangkok,Michael's Branch
+Emma,Wilson,emma.wilson@example.com,0823456789,777 Ocean Ave, Chiang Mai,Emma's Coffee
+David,Lee,david.lee@example.com,0734567890,999 Mountain Rd, Phuket,David's Store
+Sophia,Clark,sophia.clark@example.com,0645678901,333 Sunset Blvd, Pattaya,Sophia's Market
+James,Hall,james.hall@example.com,0556789012,222 River Ln, Krabi,James's Bakery
+Charlie,White,charlie.white@example.com,0654321098,202 Fifth Ln, Krabi,Charlie's Branch
+Charlie,Black,new@gmail.com,0654321098,203 lalala, lalala,Charlie's Second Branch
+Charlie,Black,new@gmail.com,0654321098,145 Paradise, Paradise,Charlie's Third Branch
