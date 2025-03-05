@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { OwnerService } from 'src/owner-side/manage-owner/owner.service';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -11,7 +15,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  // * Login 
+  // * Login
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto);
     console.log('[File auth service] USER FOUND:', user);
@@ -31,13 +35,16 @@ export class AuthService {
     const branchId = user.branch ? user.branch.branch_id : null;
 
     if (!branchId) {
-      throw new UnauthorizedException('This account is not associated with any branch.');
+      throw new UnauthorizedException(
+        'This account is not associated with any branch.',
+      );
     }
 
     console.log('✅ Extracted branch_id:', branchId);
 
     // ✅ ตรวจสอบว่ามี Employee อยู่ในสาขาหรือยัง
-    const employeeCount = await this.userService.countEmployeesInBranch(branchId);
+    const employeeCount =
+      await this.userService.countEmployeesInBranch(branchId);
     if (employeeCount === 0) {
       throw new BadRequestException(
         `Your branch (${user.branch.branch_name}) requires at least 1 employee before use. Please create an employee first.`,
