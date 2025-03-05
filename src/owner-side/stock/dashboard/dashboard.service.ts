@@ -990,4 +990,26 @@ export class DashboardService {
       image_url: ingredient.image_url
     };
   }
+
+  // Method to mark an ingredient as deleted
+  async deleteIngredient(ingredient_id: number, owner_id: number, branch_id: number): Promise<{ message: string }> {
+    const ingredient = await this.ingredientRepository.findOne({
+      where: {
+        ingredient_id,
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+    });
+
+    if (!ingredient) {
+      throw new NotFoundException(`Ingredient with ID ${ingredient_id} not found for owner ID ${owner_id} and branch ID ${branch_id}`);
+    }
+
+    // Set is_delete to true
+    ingredient.is_delete = true;
+
+    await this.ingredientRepository.save(ingredient);
+
+    return { message: `Ingredient with ID ${ingredient_id} has been marked as deleted` };
+  }
 }

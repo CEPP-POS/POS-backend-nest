@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, HttpException } from '@nestjs/common';
+import { HttpStatus, Injectable, HttpException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, Repository } from 'typeorm';
 // import { Category } from '../../entities/category.entity';
@@ -155,5 +155,23 @@ export class IngredientService {
         quantity_used: menuIngredient.quantity_used,
       })),
     };
+  }
+
+  // Method to mark an ingredient as deleted
+  async deleteIngredient(ingredient_id: number): Promise<{ message: string }> {
+    const ingredient = await this.ingredientRepository.findOne({
+      where: { ingredient_id },
+    });
+
+    if (!ingredient) {
+      throw new NotFoundException(`Ingredient with ID ${ingredient_id} not found`);
+    }
+
+    // Set is_delete to true
+    ingredient.is_delete = true;
+
+    await this.ingredientRepository.save(ingredient);
+
+    return { message: `Ingredient with ID ${ingredient_id} has been marked as deleted` };
   }
 }

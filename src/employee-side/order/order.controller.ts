@@ -10,6 +10,7 @@ import {
   HttpStatus,
   Res,
   Headers,
+  BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { OrderService } from './order.service';
@@ -123,5 +124,17 @@ export class OrderController {
     @Body() payWithCashDto: PayWithCashDto,
   ) {
     return this.orderService.payWithCash(id, payWithCashDto);
+  }
+
+  @Get('latest')
+  async getLatestOrder(@Headers() headers: Record<string, string>) {
+    const ownerId = headers['owner_id'];
+    const branchId = headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.orderService.getLatestOrder(Number(ownerId), Number(branchId));
   }
 }

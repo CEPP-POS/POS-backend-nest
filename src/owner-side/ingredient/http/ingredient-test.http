@@ -8,3 +8,4 @@ GET http://localhost:3000/owner/ingredient
 Content-Type: application/json
 owner_id: 6
 branch_id: 3
+

@@ -10,6 +10,9 @@ import {
   Headers,
   Query,
   NotFoundException,
+  Delete,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { Overview } from './dto/overview.dto';
@@ -304,5 +307,18 @@ export class DashboardController {
       );
     }
     return result;
+  }
+
+  @Patch('stock-ingredients/:ingredient_id')
+  @HttpCode(HttpStatus.OK)
+  async deleteIngredient(@Param('ingredient_id') ingredient_id: number, @Headers() headers: Record<string, string>) {
+    const ownerId = headers['owner_id'];
+    const branchId = headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.dashboardService.deleteIngredient(ingredient_id, Number(ownerId), Number(branchId));
   }
 }

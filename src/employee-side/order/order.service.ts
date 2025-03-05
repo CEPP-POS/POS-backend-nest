@@ -746,4 +746,25 @@ export class OrderService {
 
     return this.paymentRepository.save(payment);
   }
+
+  async getLatestOrder(owner_id: number, branch_id: number): Promise<{ order_id: number; queue_number: number }> {
+    const latestOrder = await this.orderRepository.findOne({
+      where: {
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+      order: {
+        order_date: 'DESC', // Get the latest order by order_date
+      },
+    });
+
+    if (!latestOrder) {
+      throw new NotFoundException('No orders found for the specified owner and branch');
+    }
+
+    return {
+      order_id: latestOrder.order_id,
+      queue_number: latestOrder.queue_number,
+    };
+  }
 }

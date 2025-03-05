@@ -76,14 +76,14 @@ Content-Type: application/json
 ### Delete Order
 DELETE http://localhost:3000/employee/orders/1
 
-
-PATCH http://localhost:3000/employee/orders/56/cancel
+## cancel order
+PATCH http://localhost:3000/employee/orders/15/cancel
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 {
   "customer_name": "John Doe",
-  "contact": "081-234-5678"
+  "contact": "0812345678"
 }
 
 ### Get Order Item 

@@ -77,7 +77,7 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) {}
+  ) { }
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
@@ -178,12 +178,12 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-            menu_id: menu.menu_id,
-            menu_name: menu.menu_name,
-            description: menu.description,
-            image_url: menu.image_url,
-            price: menu.price,
-          };
+          menu_id: menu.menu_id,
+          menu_name: menu.menu_name,
+          description: menu.description,
+          image_url: menu.image_url,
+          price: menu.price,
+        };
     });
   }
 
@@ -654,7 +654,7 @@ export class MenuService {
       { sizeGroup: null },
     );
 
-    // delete all size group name in table size group
+    // delete all size group name in table size group 
     await this.sizeGroupRepository.delete({ size_group_name: sizeGroupName });
 
     return {

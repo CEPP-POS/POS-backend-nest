@@ -112,3 +112,9 @@ branch_id: 1
   "cancel_status": "คืนเงินเสร็จสิ้น"
 }
 
+## DELETE Ingredient
+PATCH http://localhost:3000/owner/stock-ingredients/1
+Content-Type: application/json
+owner_id: 1
+branch_id: 3
+
