@@ -178,9 +178,9 @@ owner_id: 1
 branch_id: 1
 
 ### Get sweetness group data
-GET http://localhost:3000/owner/menus/options/sweetness/ความหวานสำหรับกลุ่มนม
+GET http://localhost:3000/owner/menus/options/sweetness/ระดับความหวานทั่วไป
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
 ### Get size group data
@@ -190,15 +190,15 @@ owner_id: 1
 branch_id: 1
 
 ### Get menu type group data
-GET http://localhost:3000/owner/menus/options/menu-type/รวมมิตรผลไม้
+GET http://localhost:3000/owner/menus/options/menu-type/ชนิดเครื่องดื่มสำหรับทั่วไป
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
 ### Get add-on group data
 GET http://localhost:3000/owner/menus/options/add-on
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
 ### Get all option groups

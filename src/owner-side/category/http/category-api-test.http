@@ -20,9 +20,9 @@ branch_id: 1
 #   "menu_ids": [6,7]
 # }
 
-GET http://localhost:3000/owner/categories/1/menus
+GET http://localhost:3000/owner/categories/2/menus
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
 

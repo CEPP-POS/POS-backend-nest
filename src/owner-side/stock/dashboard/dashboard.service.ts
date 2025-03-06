@@ -260,6 +260,7 @@ export class DashboardService {
       const amount = order.payment.amount;
       const total_amount = order.payment.total_amount;
       const cancel_status = order.cancel_status;
+      const image_url = order.payment.path_img;
 
       return {
         order_id: order.order_id,
@@ -269,6 +270,7 @@ export class DashboardService {
         total_amount: total_amount,
         payment_method: paymentMethod,
         cancel_status: cancel_status,
+        image_url: image_url,
       };
     });
 

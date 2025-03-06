@@ -10,7 +10,7 @@ owner_id: 6
 branch_id: 3
 
 ## GET ALL ORDERS
-GET http://localhost:3000/owner/stock-orders/2025-02-28
+GET http://localhost:3000/owner/stock-orders/2025-03-07
 Content-Type: application/json
 owner_id: 1
 branch_id: 3
@@ -39,9 +39,9 @@ Content-Type: application/json
 owner_id: 6
 branch_id: 3
 
-GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/8
+GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/6
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
 # getIngredientsCategories
@@ -59,7 +59,7 @@ branch_id: 3
 
 #getUpdateIngredient
 ## fix
-GET http://localhost:3000/owner/update-stock-ingredients/5
+GET http://localhost:3000/owner/update-stock-ingredients/1
 Content-Type: application/json
 owner_id: 1
 branch_id: 3
@@ -89,14 +89,14 @@ branch_id: 1
 POST http://localhost:3000/owner/create-stock-ingredients
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 {
   "image_url": "imagepath/image.png",
-  "ingredient_name": "นมข้นหวาน",
+  "ingredient_name": "นมสด",
   "net_volume": 250,
   "unit": "g",
   "quantity_in_stock": 4,
-  "category_name": "เครื่องครัว",
+  "category_name": "",
   "expiration_date": "2025-05-29"
 }
 
