@@ -1,0 +1,17 @@
+### Test basic print with default text
+GET http://localhost:3000/print
+
+### Test print with custom text
+GET http://localhost:3000/print?text=Hello from HTTP test!
+
+### Test print with special characters
+GET http://localhost:3000/print?text=Special chars: !@#$%^&*()
+
+### Test print with empty text (should use default)
+GET http://localhost:3000/print?text=
+
+### Test print with long text
+GET http://localhost:3000/print?text=This is a very long text that will test how the printer handles extended content. It should be able to handle multiple lines and proper text wrapping if needed.
+
+### Test print with spaces and URL encoding
+GET http://localhost:3000/print?text=Testing spaces and encoding in the text message

@@ -15,6 +15,7 @@ import { MenuCustomerModule } from './customer-side/menus/menu-customer.module';
 // import { MinioModule } from './minio/minio.module';
 import { ImageModule } from './images/image.module';
 import { JwtModule } from '@nestjs/jwt';
+import { PrinterModule } from './printer/printer.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { JwtModule } from '@nestjs/jwt';
     OrderModule,
     OwnerModule,
     PauseModule,
+    PrinterModule,
   ],
 })
 export class AppModule {}
