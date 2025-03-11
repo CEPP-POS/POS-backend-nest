@@ -9,6 +9,15 @@ const execAsync = promisify(exec);
 
 @Injectable()
 export class PrinterService {
+  private async printOnWindows(tempFile: string): Promise<void> {
+    await execAsync(`notepad /p "${tempFile}"`);
+  }
+
+  private async printOnLinux(tempFile: string): Promise<void> {
+    // Using lp command which is part of CUPS
+    await execAsync(`lp "${tempFile}"`);
+  }
+
   async printText(text: string): Promise<void> {
     try {
       const tempFile = path.join(os.tmpdir(), `print_${Date.now()}.txt`);
@@ -17,8 +26,14 @@ export class PrinterService {
       await fs.promises.writeFile(tempFile, text);
 
       try {
-        // Use notepad's print command for Windows
-        await execAsync(`notepad /p "${tempFile}"`);
+        const platform = os.platform();
+        if (platform === 'win32') {
+          await this.printOnWindows(tempFile);
+        } else if (platform === 'linux') {
+          await this.printOnLinux(tempFile);
+        } else {
+          throw new Error(`Unsupported platform: ${platform}`);
+        }
         console.log('Print job sent successfully');
       } finally {
         // Clean up the temporary file
