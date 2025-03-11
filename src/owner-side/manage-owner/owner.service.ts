@@ -320,5 +320,25 @@ export class OwnerService {
     return { message: 'Temporary password sent to your email.' };
   }
 
-  
+  async assignBranch(ownerId: number, branchId: number) {
+    const owner = await this.ownerRepository.findOne({
+      where: { owner_id: ownerId },
+      relations: ['branch'],
+    });
+    if (!owner) {
+      throw new NotFoundException(`Owner with ID ${ownerId} not found`);
+    }
+
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id: branchId },
+    });
+    if (!branch) {
+      throw new NotFoundException(`Branch with ID ${branchId} not found`);
+    }
+
+    owner.branch_id = branch.branch_id;
+    owner.branch = branch;
+
+    return this.ownerRepository.save(owner);
+  }
 }
