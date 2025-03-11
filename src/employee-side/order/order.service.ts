@@ -83,6 +83,11 @@ export class OrderService {
       where: { branch_id },
     });
 
+    // Set default values if not provided
+    createOrderDto.order_date = createOrderDto.order_date || new Date();
+    createOrderDto.queue_number = createOrderDto.queue_number || 1; // Default to 1 if not provided
+    createOrderDto.status = createOrderDto.status || 'รอทำ'; // Default status
+
     // Convert order_date to Date if it's a string
     if (typeof createOrderDto.order_date === 'string') {
       const parsedDate = new Date(createOrderDto.order_date);
@@ -740,5 +745,26 @@ export class OrderService {
     }
 
     return this.paymentRepository.save(payment);
+  }
+
+  async getLatestOrder(owner_id: number, branch_id: number): Promise<{ order_id: number; queue_number: number }> {
+    const latestOrder = await this.orderRepository.findOne({
+      where: {
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+      order: {
+        order_date: 'DESC', // Get the latest order by order_date
+      },
+    });
+
+    if (!latestOrder) {
+      throw new NotFoundException('No orders found for the specified owner and branch');
+    }
+
+    return {
+      order_id: latestOrder.order_id,
+      queue_number: latestOrder.queue_number,
+    };
   }
 }

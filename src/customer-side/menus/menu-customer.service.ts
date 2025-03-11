@@ -17,6 +17,7 @@ import { SizeGroup } from 'src/entities/size-group.entity';
 import { AddOn } from 'src/entities/add-on.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { MenuCategory } from 'src/entities/menu_category';
+import { Order } from 'src/entities/order.entity';
 
 @Injectable()
 export class MenuCustomerService {
@@ -56,6 +57,9 @@ export class MenuCustomerService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
+
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
   ) {}
 
   async getCustomerMenus(ownerId: number, branchId: number) {
@@ -314,6 +318,27 @@ export class MenuCustomerService {
       sweetness_group: sweetnessLevels,
       size_group: sizes,
       add_on: addOns,
+    };
+  }
+
+  async getLatestOrder(ownerId: number, branchId: number): Promise<{ order_id: number; queue_number: number }> {
+    const latestOrder = await this.orderRepository.findOne({
+      where: {
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      order: {
+        order_date: 'DESC', // Get the latest order by order_date
+      },
+    });
+
+    if (!latestOrder) {
+      throw new NotFoundException('No orders found for the specified owner and branch');
+    }
+
+    return {
+      order_id: latestOrder.order_id,
+      queue_number: latestOrder.queue_number,
     };
   }
 

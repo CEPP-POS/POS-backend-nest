@@ -12,7 +12,7 @@ export class PauseService {
 
     @InjectRepository(Menu)
     private readonly menuRepository: Repository<Menu>,
-  ) {}
+  ) { }
 
   async getAllIngredient(owner_id: number, branch_id: number) {
     const ingredients = await this.ingredientRepository.find({

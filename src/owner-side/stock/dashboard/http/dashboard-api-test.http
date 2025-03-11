@@ -1,28 +1,31 @@
 ### Get Stock Summary by Date
-GET http://localhost:3000/owner/stock-summary/2025-03-01
+GET http://localhost:3000/owner/stock-summary/2025-03-03
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
 
-GET http://localhost:3000/owner/stock-sale/2025-03-01
+GET http://localhost:3000/owner/stock-sale/2025/02
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
 
 ## GET ALL ORDERS
-GET http://localhost:3000/owner/stock-orders/2025-03-01
+GET http://localhost:3000/owner/stock-orders/2025-03-07
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 
 ## get menu ingredient by ingredient id
-GET http://localhost:3000/owner/stock-ingredients/16
+GET http://localhost:3000/owner/stock-ingredients/28
+Content-Type: application/json
+owner_id: 6
+branch_id: 3
 
 ## GET ALL CANCEL ORDERS
 GET http://localhost:3000/owner/stock-cancel-orders
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 
 ## get menu detail
 GET http://localhost:3000/owner/orders/68
@@ -33,49 +36,46 @@ branch_id: 1
 ## GET ALL INGREDIENT
 GET http://localhost:3000/owner/stock-ingredients
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
 
-GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/9
+GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/6
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 
 # getIngredientsCategories
 GET http://localhost:3000/owner/stock-ingredients/categories
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
 
 # getIngredientDetails
 ## fix
-GET http://localhost:3000/owner/stock-ingredients/10
+GET http://localhost:3000/owner/stock-ingredients/30
+Content-Type: application/json
+owner_id: 6
+branch_id: 3
+
+#getUpdateIngredient
+## fix
+GET http://localhost:3000/owner/update-stock-ingredients/1
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 
-# #getUpdateIngredient
-# ## fix
-GET http://localhost:3000/owner/update-stock-ingredients/8
+## update ingredient popup
+PATCH http://localhost:3000/owner/update-stock-ingredients/1
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
-
-
-
-
-PATCH http://localhost:3000/owner/update-stock-ingredients/10
-Content-Type: application/json
-owner_id: 1
-branch_id: 1
+branch_id: 3
 {
-  "quantity_in_stock": 4,
-  "net_volume": 250,
-  "total_volume": 3000,
-  "expiration_date": "2026-02-26"
+  "update_id": 1,
+  "quantity_in_stock": 52,
+  "total_volume": 50000,
+  "net_volume": 1000,
+  "expiration_date": "2026-02-27"
 }
-
-
 
 POST http://localhost:3000/owner/stock-group
 Content-Type: application/json
@@ -89,14 +89,14 @@ branch_id: 1
 POST http://localhost:3000/owner/create-stock-ingredients
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 {
   "image_url": "imagepath/image.png",
-  "ingredient_name": "นมจืดสดวิป",
+  "ingredient_name": "นมสด",
   "net_volume": 250,
   "unit": "g",
   "quantity_in_stock": 4,
-  "category_name": "น้ำชง",
+  "category_name": "",
   "expiration_date": "2025-05-29"
 }
 
@@ -108,4 +108,10 @@ branch_id: 1
 {
   "cancel_status": "คืนเงินเสร็จสิ้น"
 }
+
+## DELETE Ingredient
+PATCH http://localhost:3000/owner/stock-ingredients/1
+Content-Type: application/json
+owner_id: 1
+branch_id: 3
 

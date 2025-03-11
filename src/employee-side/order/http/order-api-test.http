@@ -1,8 +1,8 @@
 ### Create Order with QRCODE PAY
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id:3
 {
   "createOrderDto": {
     "order_date": "2025-03-03T08:00:00Z",
@@ -15,22 +15,13 @@ branch_id: 1
   },
   "items": [
     {
-      "menu_id": 1,
-      "sweetness_id": 88,
-      "size_id": 1,
-      "add_on_id": [1,2],  
-      "menu_type_id": 3,
+      "menu_id": 7,
+      "sweetness_id": 3,
+      "size_id": 121,
+      "add_on_id": [],  
+      "menu_type_id": 21,
       "quantity": 1,
       "price": 100
-    },
-    {
-      "menu_id": 2,
-      "sweetness_id": 88,
-      "size_id": 1,
-      "add_on_id": [1],  
-      "menu_type_id": 2,
-      "quantity": 2,
-      "price": 60
     }
   ]
 }
@@ -38,13 +29,13 @@ branch_id: 1
 ### Create Order WITH CASH PAY
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
 {
   "createOrderDto": {
     "order_date": "2025-03-01T08:00:00Z",
     "total_price": 260,
-    "queue_number": 4,
+    "queue_number": null,
     "status": "รอทำ",
     "payment_method": "cash",
     "cash_given": 500,
@@ -53,22 +44,13 @@ branch_id: 1
   },
   "items": [
     {
-      "menu_id": 1,
-      "sweetness_id": 1,
-      "size_id": 1,
-      "add_on_id": [1,2],  
-      "menu_type_id": 39,
+      "menu_id": 7,
+      "sweetness_id": 3,
+      "size_id": 121,
+      "add_on_id": [],  
+      "menu_type_id": 21,
       "quantity": 1,
       "price": 100
-    },
-    {
-      "menu_id": 2,
-      "sweetness_id": 1,
-      "size_id": 1,
-      "add_on_id": [1],  
-      "menu_type_id": 39,
-      "quantity": 2,
-      "price": 60
     }
   ]
 }
@@ -77,7 +59,7 @@ branch_id: 1
 GET http://localhost:3000/employee/orders
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 
 
 ### Get Order by ID
@@ -94,14 +76,14 @@ Content-Type: application/json
 ### Delete Order
 DELETE http://localhost:3000/employee/orders/1
 
-
-PATCH http://localhost:3000/employee/orders/56/cancel
+## cancel order
+PATCH http://localhost:3000/employee/orders/15/cancel
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 {
   "customer_name": "John Doe",
-  "contact": "081-234-5678"
+  "contact": "0812345678"
 }
 
 ### Get Order Item 

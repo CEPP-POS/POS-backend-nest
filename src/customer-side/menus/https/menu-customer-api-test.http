@@ -1,9 +1,14 @@
 GET http://localhost:3000/customer/menus
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 6
+branch_id: 3
 
-GET http://localhost:3000/customer/menus/2
+GET http://localhost:3000/customer/menus/7
+Content-Type: application/json
+owner_id: 6
+branch_id: 3
+
+GET http://localhost:3000/customer/menus/queue
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3

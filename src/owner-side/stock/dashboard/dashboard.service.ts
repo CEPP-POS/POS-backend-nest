@@ -56,7 +56,7 @@ export class DashboardService {
 
     @InjectRepository(Owner)
     private ownerRepository: Repository<Owner>,
-  ) {}
+  ) { }
 
   private async calculateMonthlyRevenue(
     year: number,
@@ -181,24 +181,41 @@ export class DashboardService {
   }
 
   async getStockLineGraph(
-    date: Date,
+    year: number,
+    month: number,
     ownerId: number,
     branchId: number,
   ): Promise<Linegraph> {
-    const year = date.getFullYear();
-    const monthlyRevenue = await this.calculateMonthlyRevenue(
-      year,
-      ownerId,
-      branchId,
-    );
-    const { totalRevenue, totalOrders, canceledOrders } =
-      await this.calculateDailyStats(date, ownerId, branchId);
+    const monthlyRevenue = await this.calculateMonthlyRevenue(year, ownerId, branchId);
+
+    const dailyStats = [];
+    const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
+
+    let totalRevenue = 0;
+    let totalOrders = 0;
+    let canceledOrders = 0;
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month - 1, day); // month is 0-indexed
+      const { totalRevenue: dailyRevenue, totalOrders: dailyOrders, canceledOrders: dailyCanceledOrders } = await this.calculateDailyStats(date, ownerId, branchId);
+
+      // Accumulate totals
+      totalRevenue += dailyRevenue;
+      totalOrders += dailyOrders;
+      canceledOrders += dailyCanceledOrders;
+
+      dailyStats.push({
+        date: date.toISOString().split('T')[0], // Format date as YYYY-MM-DD
+        totalRevenue: dailyRevenue, // Only include totalRevenue
+      });
+    }
 
     return {
       total_revenue: totalRevenue,
       total_orders: totalOrders,
       canceled_orders: canceledOrders,
-      monthly_revenue: monthlyRevenue,
+      // monthly_revenue: monthlyRevenue,
+      daily_stats: dailyStats,
     };
   }
 
@@ -243,6 +260,7 @@ export class DashboardService {
       const amount = order.payment.amount;
       const total_amount = order.payment.total_amount;
       const cancel_status = order.cancel_status;
+      const image_url = order.payment.path_img;
 
       return {
         order_id: order.order_id,
@@ -252,6 +270,7 @@ export class DashboardService {
         total_amount: total_amount,
         payment_method: paymentMethod,
         cancel_status: cancel_status,
+        image_url: image_url,
       };
     });
 
@@ -437,7 +456,7 @@ export class DashboardService {
         owner: { owner_id },
         branch: { branch_id },
       },
-      relations: ['ingredientCategory', 'owner', 'branch'], // เพิ่ม owner และ branch ใน relations
+      relations: ['ingredientCategory', 'owner', 'branch'], // Include relations as needed
     });
 
     if (!ingredient) {
@@ -453,7 +472,7 @@ export class DashboardService {
         expiration_date: MoreThan(today),
         quantity_in_stock: MoreThan(0),
       },
-      order: { expiration_date: 'ASC' }, // เปลี่ยนเป็น 'ASC'
+      order: { expiration_date: 'ASC' }, // Order by expiration date
     });
 
     let stock_data = []; // Initialize stock_data as an empty array
@@ -492,8 +511,8 @@ export class DashboardService {
       category_name:
         menuIng.menu.menuCategory.length > 0
           ? menuIng.menu.menuCategory
-              .map((cat) => cat.category.category_name)
-              .join(', ')
+            .map((cat) => cat.category.category_name)
+            .join(', ')
           : 'Unknown',
     }));
 
@@ -505,6 +524,8 @@ export class DashboardService {
         : 'Unknown',
       stock_data,
       menu_ingredients,
+      image_url: ingredient.image_url,
+      unit: ingredient.unit,
     };
   }
 
@@ -968,6 +989,29 @@ export class DashboardService {
         .toISOString()
         .split('T')[0],
       unit: ingredient.unit,
+      image_url: ingredient.image_url
     };
+  }
+
+  // Method to mark an ingredient as deleted
+  async deleteIngredient(ingredient_id: number, owner_id: number, branch_id: number): Promise<{ message: string }> {
+    const ingredient = await this.ingredientRepository.findOne({
+      where: {
+        ingredient_id,
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+    });
+
+    if (!ingredient) {
+      throw new NotFoundException(`Ingredient with ID ${ingredient_id} not found for owner ID ${owner_id} and branch ID ${branch_id}`);
+    }
+
+    // Set is_delete to true
+    ingredient.is_delete = true;
+
+    await this.ingredientRepository.save(ingredient);
+
+    return { message: `Ingredient with ID ${ingredient_id} has been marked as deleted` };
   }
 }

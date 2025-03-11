@@ -10,6 +10,9 @@ import {
   Headers,
   Query,
   NotFoundException,
+  Delete,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { Overview } from './dto/overview.dto';
@@ -25,7 +28,7 @@ import { UpdateIngredientDto } from './dto/update-ingredient.dto';
 
 @Controller('owner')
 export class DashboardController {
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(private readonly dashboardService: DashboardService) { }
 
   @Get('stock-summary/:date')
   async getStockSummary(
@@ -49,17 +52,18 @@ export class DashboardController {
     );
   }
 
-  @Get('stock-sale/:date')
+  @Get('stock-sale/:year/:month')
   async getStockLineGraph(
-    @Param('date') date: string,
+    @Param('year') year: string,
+    @Param('month') month: string,
     @Req() request: Request,
   ): Promise<Linegraph> {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
-    date = date + 'T08:00:00.000Z';
     return this.dashboardService.getStockLineGraph(
-      new Date(date),
+      Number(year),
+      Number(month),
       Number(ownerId),
       Number(branchId),
     );
@@ -303,5 +307,18 @@ export class DashboardController {
       );
     }
     return result;
+  }
+
+  @Patch('stock-ingredients/:ingredient_id')
+  @HttpCode(HttpStatus.OK)
+  async deleteIngredient(@Param('ingredient_id') ingredient_id: number, @Headers() headers: Record<string, string>) {
+    const ownerId = headers['owner_id'];
+    const branchId = headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.dashboardService.deleteIngredient(ingredient_id, Number(ownerId), Number(branchId));
   }
 }

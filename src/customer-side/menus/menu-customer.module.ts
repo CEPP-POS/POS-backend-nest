@@ -14,6 +14,7 @@ import { SizeGroup } from 'src/entities/size-group.entity';
 import { AddOn } from 'src/entities/add-on.entity';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { MenuCategory } from 'src/entities/menu_category';
+import { Order } from 'src/entities/order.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -29,6 +30,7 @@ import { MenuCategory } from 'src/entities/menu_category';
       SizeGroup,
       AddOn,
       Ingredient,
+      Order,
     ]),
   ],
   controllers: [MenuCustomerController],
