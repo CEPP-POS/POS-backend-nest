@@ -16,6 +16,7 @@ import { MenuCustomerModule } from './customer-side/menus/menu-customer.module';
 import { ImageModule } from './images/image.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PrinterModule } from './printer/printer.module';
+import { ThermalModule } from './thermal/thermal.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { PrinterModule } from './printer/printer.module';
     OwnerModule,
     PauseModule,
     PrinterModule,
+    ThermalModule,
   ],
 })
 export class AppModule {}

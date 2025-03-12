@@ -1,0 +1,20 @@
+### ทดสอบพิมพ์ใบเสร็จ
+POST http://localhost:3000/thermal/print
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "name": "ข้าวผัดหมู",
+      "price": 50
+    },
+    {
+      "name": "น้ำเปล่า",
+      "price": 10
+    },
+    {
+      "name": "ไข่ดาว",
+      "price": 10
+    }
+  ]
+} 

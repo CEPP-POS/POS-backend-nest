@@ -15,3 +15,581 @@ GET http://localhost:3000/print?text=This is a very long text that will test how
 
 ### Test print with spaces and URL encoding
 GET http://localhost:3000/print?text=Testing spaces and encoding in the text message
+
+### Test print with layout formatting
+POST http://localhost:3000/print
+Content-Type: application/json
+
+[
+  {
+    "text": "ร้านกาแฟ Coffee Shop",
+    "align": "center",
+    "font": "A",
+    "bold": true
+  },
+  {
+    "text": "123 ถนนสุขุมวิท กรุงเทพฯ",
+    "align": "center",
+    "font": "B"
+  },
+  {
+    "text": "โทร: 02-123-4567",
+    "align": "center",
+    "font": "B"
+  },
+  {
+    "text": "--------------------------------",
+    "align": "center"
+  },
+  {
+    "text": "ใบเสร็จรับเงิน",
+    "align": "center",
+    "font": "A",
+    "bold": true
+  },
+  {
+    "text": "วันที่: 2024-03-20 15:30:00",
+    "align": "left",
+    "font": "B"
+  },
+  {
+    "text": "เลขที่: INV-2024-001",
+    "align": "left",
+    "font": "B"
+  },
+  {
+    "text": "--------------------------------",
+    "align": "center"
+  },
+  {
+    "text": "ลาเต้เย็น x 1          ฿60.00",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "ชาเขียวปั่น x 2       ฿120.00",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "--------------------------------",
+    "align": "center"
+  },
+  {
+    "text": "รวมทั้งสิ้น:          ฿180.00",
+    "align": "right",
+    "font": "A",
+    "bold": true
+  },
+  {
+    "text": "เงินสด:              ฿200.00",
+    "align": "right",
+    "font": "A"
+  },
+  {
+    "text": "เงินทอน:             ฿20.00",
+    "align": "right",
+    "font": "A"
+  },
+  {
+    "text": "--------------------------------",
+    "align": "center"
+  },
+  {
+    "text": "ขอบคุณที่ใช้บริการ",
+    "align": "center",
+    "font": "A"
+  }
+]
+
+### Test print with simple center alignment
+POST http://localhost:3000/print
+Content-Type: application/json
+
+[
+  {
+    "text": "ทดสอบการพิมพ์กึ่งกลาง",
+    "align": "center"
+  }
+]
+
+### Test print with right alignment and bold
+POST http://localhost:3000/print
+Content-Type: application/json
+
+[
+  {
+    "text": "ทดสอบการพิมพ์ชิดขวาตัวหนา",
+    "align": "right",
+    "bold": true
+  }
+]
+
+### Test print with different fonts
+POST http://localhost:3000/print
+Content-Type: application/json
+
+[
+  {
+    "text": "ตัวอักษรขนาด A",
+    "font": "A"
+  },
+  {
+    "text": "ตัวอักษรขนาด B",
+    "font": "B"
+  }
+]
+
+### Test print with full width layout
+POST http://localhost:3000/print
+Content-Type: application/json
+
+[
+  {
+    "text": "ร้านกาแฟ Coffee Shop",
+    "align": "center",
+    "font": "A",
+    "bold": true
+  },
+  {
+    "text": "--------------------------------",
+    "align": "center",
+    "font": "A"
+  },
+  {
+    "text": "เลขที่: INV-2024-001",
+    "align": "left",
+    "font": "B"
+  },
+  {
+    "text": "วันที่: 20/03/2024 15:30",
+    "align": "left",
+    "font": "B"
+  },
+  {
+    "text": "--------------------------------",
+    "align": "center",
+    "font": "A"
+  },
+  {
+    "text": "ลาเต้เย็น",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "1 x 60.00            60.00",
+    "align": "right",
+    "font": "A"
+  },
+  {
+    "text": "ชาเขียวปั่น",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "2 x 60.00           120.00",
+    "align": "right",
+    "font": "A"
+  },
+  {
+    "text": "--------------------------------",
+    "align": "center",
+    "font": "A"
+  },
+  {
+    "text": "รวมทั้งสิ้น          180.00",
+    "align": "right",
+    "font": "A",
+    "bold": true
+  },
+  {
+    "text": "เงินสด              200.00",
+    "align": "right",
+    "font": "A"
+  },
+  {
+    "text": "เงินทอน             20.00",
+    "align": "right",
+    "font": "A"
+  },
+  {
+    "text": "--------------------------------",
+    "align": "center",
+    "font": "A"
+  },
+  {
+    "text": "ขอบคุณที่ใช้บริการ",
+    "align": "center",
+    "font": "A"
+  }
+]
+
+### Test print with manual line breaks and side-by-side text
+POST http://localhost:3000/print
+Content-Type: application/json
+
+[
+  {
+    "text": "ร้านกาแฟ Coffee Shop",
+    "align": "center",
+    "font": "A",
+    "bold": true
+  },
+  {
+    "text": "--------------------------------",
+    "align": "center",
+    "font": "A"
+  },
+  {
+    "text": "เลขที่: INV-2024-001    ",
+    "align": "left",
+    "font": "B",
+    "newLine": false
+  },
+  {
+    "text": "20/03/2024",
+    "align": "right",
+    "font": "B"
+  },
+  {
+    "text": "--------------------------------",
+    "align": "center",
+    "font": "A"
+  },
+  {
+    "text": "ลาเต้เย็น",
+    "align": "left",
+    "font": "A",
+    "newLine": false
+  },
+  {
+    "text": "60.00",
+    "align": "right",
+    "font": "A"
+  },
+  {
+    "text": "  จำนวน: 1",
+    "align": "left",
+    "font": "B",
+    "newLine": false
+  },
+  {
+    "text": "60.00",
+    "align": "right",
+    "font": "B"
+  },
+  {
+    "text": "ชาเขียวปั่น",
+    "align": "left",
+    "font": "A",
+    "newLine": false
+  },
+  {
+    "text": "60.00",
+    "align": "right",
+    "font": "A"
+  },
+  {
+    "text": "  จำนวน: 2",
+    "align": "left",
+    "font": "B",
+    "newLine": false
+  },
+  {
+    "text": "120.00",
+    "align": "right",
+    "font": "B"
+  },
+  {
+    "text": "--------------------------------",
+    "align": "center",
+    "font": "A"
+  },
+  {
+    "text": "รวมทั้งสิ้น",
+    "align": "left",
+    "font": "A",
+    "bold": true,
+    "newLine": false
+  },
+  {
+    "text": "180.00",
+    "align": "right",
+    "font": "A",
+    "bold": true
+  },
+  {
+    "text": "เงินสด",
+    "align": "left",
+    "font": "A",
+    "newLine": false
+  },
+  {
+    "text": "200.00",
+    "align": "right",
+    "font": "A"
+  },
+  {
+    "text": "เงินทอน",
+    "align": "left",
+    "font": "A",
+    "newLine": false
+  },
+  {
+    "text": "20.00",
+    "align": "right",
+    "font": "A"
+  },
+  {
+    "text": "--------------------------------",
+    "align": "center",
+    "font": "A"
+  },
+  {
+    "text": "ขอบคุณที่ใช้บริการ",
+    "align": "center",
+    "font": "A"
+  }
+]
+
+### Test side-by-side printing
+POST http://localhost:3000/print
+Content-Type: application/json
+
+[
+  {
+    "text": "รายการ:",
+    "align": "left",
+    "font": "A",
+    "newLine": false
+  },
+  {
+    "text": "100.00",
+    "align": "right",
+    "font": "A"
+  }
+]
+
+### Test print receipt with proper layout
+POST http://localhost:3000/print
+Content-Type: application/json
+
+[
+  {
+    "text": "@M0*E1",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "ร้านกาแฟ",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "Coffee",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "Shop",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "*E0",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "------------------------",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "@P",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "เลขที่:",
+    "align": "left",
+    "font": "A",
+    "newLine": false
+  },
+  {
+    "text": "INV-2024-001",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "วันที่:",
+    "align": "left",
+    "font": "A",
+    "newLine": false
+  },
+  {
+    "text": "20/03/2024 15:30",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "------------------------",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "ลาเต้เย็น",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "1 x 60.00",
+    "align": "left",
+    "font": "A",
+    "charSpacing": 1
+  },
+  {
+    "text": "@P",
+    "align": "left",
+    "font": "A"
+  },
+  {
+    "text": "------------------------",
+    "align": "left",
+    "font": "A"
+  }
+]
+
+### Test simple left-aligned text
+POST http://localhost:3000/print
+Content-Type: application/json
+
+[
+  {
+    "text": "ทดสอบการพิมพ์ชิดซ้าย",
+    "align": "left",
+    "font": "A",
+    "charSpacing": 0
+  }
+]
+
+### Test ESC/POS commands directly
+POST http://localhost:3000/print
+Content-Type: application/json
+
+{
+  "commands": [
+    "\x1B\x45\x01Hello, Goojprt!\x1B\x45\x00\n",
+    "\x1B\x2D\x01This is underlined text.\x1B\x2D\x00\n",
+    "\x1B\x61\x01Centered Text\n",
+    "\x1B\x61\x00Left Aligned Text\n",
+    "\x1B\x61\x02Right Aligned Text\n"
+  ]
+}
+
+### Test formatting
+POST http://localhost:3000/print
+Content-Type: application/json
+
+[
+  {
+    "text": "Hello, Goojprt!",
+    "bold": true,
+    "align": "center"
+  },
+  {
+    "text": "This is underlined text.",
+    "underline": true,
+    "align": "left"
+  },
+  {
+    "text": "Right Aligned Text",
+    "align": "right"
+  }
+]
+
+### Test Thai text with formatting
+POST http://localhost:3000/print
+Content-Type: application/json
+
+[
+  {
+    "text": "ร้านกาแฟ",
+    "bold": true,
+    "align": "center"
+  },
+  {
+    "text": "รายการ: ลาเต้เย็น",
+    "align": "left"
+  },
+  {
+    "text": "ราคา: 60 บาท",
+    "align": "right"
+  }
+]
+
+### Test print like Python example
+GET http://localhost:3000/print/test
+
+### Test custom print
+POST http://localhost:3000/print
+Content-Type: application/json
+
+[
+  {
+    "text": "ร้านกาแฟ",
+    "align": "left",
+    "bold": true
+  },
+  {
+    "text": "รายการ: ลาเต้เย็น",
+    "align": "left"
+  },
+  {
+    "text": "ราคา: 60 บาท",
+    "align": "right"
+  }
+]
+
+### Test receipt printing
+POST http://localhost:3000/print
+Content-Type: application/json
+
+[
+  {
+    "text": "ร้านกาแฟ",
+    "align": "center",
+    "bold": true,
+    "size": 20
+  },
+  {
+    "text": "Coffee Shop",
+    "align": "center",
+    "size": 18
+  },
+  {
+    "text": "------------------------",
+    "align": "center"
+  },
+  {
+    "text": "รายการ: ลาเต้เย็น",
+    "align": "left"
+  },
+  {
+    "text": "จำนวน: 1",
+    "align": "left"
+  },
+  {
+    "text": "ราคา: 60 บาท",
+    "align": "right",
+    "bold": true
+  },
+  {
+    "text": "------------------------",
+    "align": "center"
+  },
+  {
+    "text": "ขอบคุณที่ใช้บริการ",
+    "align": "center"
+  }
+]
