@@ -47,31 +47,31 @@ branch_id: 3
 # getIngredientsCategories
 GET http://localhost:3000/owner/stock-ingredients/categories
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: 1
+branch_id: 1
 
 # getIngredientDetails
 ## fix
-GET http://localhost:3000/owner/stock-ingredients/30
+GET http://localhost:3000/owner/stock-ingredients/8
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: 1
+branch_id: 1
 
 #getUpdateIngredient
 ## fix
-GET http://localhost:3000/owner/update-stock-ingredients/1
+GET http://localhost:3000/owner/update-stock-ingredients/15
 Content-Type: application/json
 owner_id: 1
-branch_id: 3
+branch_id: 1
 
 ## update ingredient popup
-PATCH http://localhost:3000/owner/update-stock-ingredients/1
+PATCH http://localhost:3000/owner/update-stock-ingredients/15
 Content-Type: application/json
 owner_id: 1
-branch_id: 3
+branch_id: 1
 {
-  "update_id": 1,
-  "quantity_in_stock": 52,
+  "update_id": 12,
+  "quantity_in_stock": 92,
   "total_volume": 50000,
   "net_volume": 1000,
   "expiration_date": "2026-02-27"
@@ -82,21 +82,21 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-    "category_name": "น้ำชง"
+    "category_name": "น้ำหวาน"
 }
 
 ## create new ingredient
 POST http://localhost:3000/owner/create-stock-ingredients
 Content-Type: application/json
 owner_id: 1
-branch_id: 3
+branch_id: 1
 {
   "image_url": "imagepath/image.png",
   "ingredient_name": "นมสด",
   "net_volume": 250,
   "unit": "g",
   "quantity_in_stock": 4,
-  "category_name": "",
+  "category_name": "น้ำหวาน",
   "expiration_date": "2025-05-29"
 }
 

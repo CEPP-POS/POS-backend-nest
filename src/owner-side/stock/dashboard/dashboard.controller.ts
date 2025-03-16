@@ -28,7 +28,7 @@ import { UpdateIngredientDto } from './dto/update-ingredient.dto';
 
 @Controller('owner')
 export class DashboardController {
-  constructor(private readonly dashboardService: DashboardService) { }
+  constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('stock-summary/:date')
   async getStockSummary(
@@ -311,14 +311,23 @@ export class DashboardController {
 
   @Patch('stock-ingredients/:ingredient_id')
   @HttpCode(HttpStatus.OK)
-  async deleteIngredient(@Param('ingredient_id') ingredient_id: number, @Headers() headers: Record<string, string>) {
+  async deleteIngredient(
+    @Param('ingredient_id') ingredient_id: number,
+    @Headers() headers: Record<string, string>,
+  ) {
     const ownerId = headers['owner_id'];
     const branchId = headers['branch_id'];
 
     if (!ownerId || !branchId) {
-      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
     }
 
-    return this.dashboardService.deleteIngredient(ingredient_id, Number(ownerId), Number(branchId));
+    return this.dashboardService.deleteIngredient(
+      ingredient_id,
+      Number(ownerId),
+      Number(branchId),
+    );
   }
 }
