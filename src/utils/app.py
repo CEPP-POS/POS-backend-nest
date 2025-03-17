@@ -4,6 +4,7 @@ from PIL import Image
 import tempfile
 
 def print_image(image_path):
+    import win32print
     try:
         # Open the image
         image = Image.open(image_path)

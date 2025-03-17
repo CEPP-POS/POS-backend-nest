@@ -7,7 +7,6 @@ import platform
 import tempfile
 
 def create_receipt_image(data: Dict[str, Any]) -> str:
-    print("Debug: Starting create_receipt_image")
     
     # Get absolute path for receipts folder
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -15,19 +14,18 @@ def create_receipt_image(data: Dict[str, Any]) -> str:
     
     # Create receipts directory if it doesn't exist
     if not os.path.exists(receipts_dir):
-        print(f"Debug: Creating receipts directory at {receipts_dir}")
         os.makedirs(receipts_dir)
 
     # Calculate dynamic height
     width = 400  # Fixed width
-    base_height = 210  # Space for headers, queue number, and footer
+    base_height = 206  # Space for headers, queue number, and footer
     line_height = 26   # Height per order item
-    detail_height = 16  # Additional height per extra detail
+    detail_height = 16  # Additional height per extra detail (sweetness, size, addon)
     
     # Calculate required height
     item_count = len(data['order'])
-    extra_details = sum(1 for item in data['order'] if len(item) > 3)  # Count items with additional details
-    content_height = item_count * line_height + extra_details * 3 * detail_height  # Assuming 3 extra details per item
+    extra_details = sum(len(item) - 3 for item in data['order'] if len(item) > 3)  # Count additional details
+    content_height = item_count * line_height + extra_details * detail_height
 
     total_height = base_height + content_height
     
@@ -37,16 +35,15 @@ def create_receipt_image(data: Dict[str, Any]) -> str:
     
     try:
         # Load fonts
+        print("usingggggggggg tahomaaaaaaaaaaaaaaa")
         font_path = os.path.join(current_dir, "tahoma.ttf")
         font_path_bold = os.path.join(current_dir, "tahomabd.ttf")
-        print(f"Debug: Loading font from {font_path}")
         font = ImageFont.truetype(font_path, 18)
         small_font = ImageFont.truetype(font_path_bold, 18)
         normal_font = ImageFont.truetype(font_path, 18)
         detail_font = ImageFont.truetype(font_path, 16)
         queue_font = ImageFont.truetype(font_path_bold, 26)
     except Exception as e:
-        print(f"Debug: Font loading failed - {str(e)}")
         # Use default font if custom font fails
         font = ImageFont.load_default()
         small_font = ImageFont.load_default()
@@ -55,7 +52,6 @@ def create_receipt_image(data: Dict[str, Any]) -> str:
         queue_font = ImageFont.load_default()
 
     # Draw store name
-    print(f"Debug: Drawing store info - {data['store_name']}")
     draw.text((width//2, 15), data['store_name'], font=font, fill='black', anchor='mm')
 
     # Draw queue number
@@ -76,7 +72,6 @@ def create_receipt_image(data: Dict[str, Any]) -> str:
     draw.text((width, y_pos), "ราคารวม", font=small_font, fill='black', anchor='rm')
 
     # Draw order items
-    print("Debug: Drawing order items")
     y_pos += 20
     for item in data['order']:
         quantity, name, unit_price = item[:3]
@@ -123,13 +118,10 @@ def create_receipt_image(data: Dict[str, Any]) -> str:
 
     # Save the image
     output_path = os.path.join(receipts_dir, 'receipt.png')
-    print(f"Debug: Saving image to {output_path}")
     image.save(output_path)
     return output_path
 
 def transform_order_to_receipt_data(order_data: Dict[str, Any]) -> Dict[str, Any]:
-    print("Debug: Starting transform_order_to_receipt_data")
-    print(f"Debug: Input data - {json.dumps(order_data, indent=2)}")
     
     receipt_data = {
         "store_name": order_data["branch_name"],
@@ -156,10 +148,10 @@ def transform_order_to_receipt_data(order_data: Dict[str, Any]) -> Dict[str, Any
         ]
         receipt_data["order"].append(order_line)
     
-    print(f"Debug: Transformed data - {json.dumps(receipt_data, indent=2)}")
     return receipt_data
 
 def print_image_window(image_path):
+    import win32print
     try:
         # Open the image
         image = Image.open(image_path)
@@ -219,12 +211,12 @@ def print_image_window(image_path):
         finally:
             win32print.ClosePrinter(printer_handle)
 
-        print(f"Successfully sent {image_path} to printer {printer_name}")
 
     except Exception as e:
         print(f"Error printing image: {str(e)}")
 
 def print_image_pi(image_path):
+    import cups
     try:
         # Open the image
         image = Image.open(image_path)
@@ -279,19 +271,15 @@ def print_image_pi(image_path):
                 # Feed and cut paper
                 printer.write(bytes([0x1B, 0x64, 0x05]))  # Feed 5 lines
 
-            print(f"Successfully sent {image_path} to printer at {printer_device}")
 
     except Exception as e:
         print(f"Error printing image: {str(e)}")
 
 if __name__ == "__main__":
-    print("Debug: Script started")
     # Get order data from command line argument
     if len(sys.argv) > 1:
-        print(f"Debug: Received argument length: {len(sys.argv[1])}")
         try:
             order_data = json.loads(sys.argv[1])
-            print("Debug: Successfully parsed JSON input")
             receipt_data = transform_order_to_receipt_data(order_data)
             image_path = create_receipt_image(receipt_data)
             print(image_path)  # Return path to Node.js
@@ -299,11 +287,9 @@ if __name__ == "__main__":
             # Determine the OS and run the appropriate script
             os_name = platform.system()
             if os_name == 'Windows':
-                import win32print
                 print_image_window(image_path)
                 
             elif os_name == 'Linux':
-                import cups
                 print_image_pi(image_path)
         except Exception as e:
             print(f"Error: {str(e)}", file=sys.stderr)
