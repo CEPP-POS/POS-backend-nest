@@ -9,7 +9,7 @@ def create_receipt_image(data: Dict[str, Any]) -> str:
     
     # Get absolute path for receipts folder
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    receipts_dir = os.path.join(current_dir, '..', '..', 'receipts')
+    receipts_dir = os.path.join(current_dir, 'receipts')
     
     # Create receipts directory if it doesn't exist
     if not os.path.exists(receipts_dir):
