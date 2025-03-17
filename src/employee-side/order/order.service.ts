@@ -27,6 +27,8 @@ import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
 import { OrderItemAddOn } from 'src/entities/order-item-add-on.entity';
 import { PaymentMethod } from './dto/create-order/create-order.dto';
 import { Ingredient } from 'src/entities/ingredient.entity';
+import { spawn } from 'child_process';
+import * as path from 'path';
 
 @Injectable()
 export class OrderService {
@@ -677,6 +679,58 @@ export class OrderService {
           : [],
       })),
     };
+
+    // Generate receipt image
+    try {
+      await new Promise((resolve, reject) => {
+        console.log('Starting Python process...');
+        // แก้ไข path ให้ชี้ไปที่ src แทน dist
+        const pythonPath = path.join(
+          process.cwd(),
+          'src',
+          'utils',
+          'slip_image.py',
+        );
+        console.log('Python script path:', pythonPath);
+
+        const pythonProcess = spawn('python', [
+          pythonPath,
+          JSON.stringify(transformedOrder),
+        ]);
+
+        let outputData = '';
+        let errorData = '';
+
+        pythonProcess.stdout.on('data', (data) => {
+          console.log('Python output:', data.toString());
+          outputData += data.toString();
+        });
+
+        pythonProcess.stderr.on('data', (data) => {
+          console.error('Python error:', data.toString());
+          errorData += data.toString();
+        });
+
+        pythonProcess.on('close', (code) => {
+          console.log(`Python process exited with code ${code}`);
+          if (code === 0) {
+            const lines = outputData.trim().split('\n');
+            const image_path = lines[lines.length - 1]; // Get the last line
+            transformedOrder['receipt_image_path'] = image_path;
+            resolve(image_path);
+          } else {
+            reject(new Error(`Python process failed: ${errorData}`));
+          }
+        });
+
+        pythonProcess.on('error', (error) => {
+          console.error('Failed to start Python process:', error);
+          reject(error);
+        });
+      });
+    } catch (error) {
+      console.error('Failed to generate receipt image:', error);
+    }
 
     return transformedOrder as any;
   }
