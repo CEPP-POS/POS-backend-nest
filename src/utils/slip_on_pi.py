@@ -6,7 +6,7 @@ import tempfile
 if platform.system() == "Linux":
     import cups
 
-def print_image(image_path):
+def print_image_pi(image_path):
     try:
         # Open the image
         image = Image.open(image_path)
@@ -67,5 +67,5 @@ def print_image(image_path):
         print(f"Error printing image: {str(e)}")
 
 if __name__ == "__main__":
-    print_image("receipt.png")
+    print_image_pi("receipt.png")
 
