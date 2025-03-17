@@ -16,6 +16,7 @@ import { SalesSummary } from 'src/entities/sales-summary.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { OrderItemAddOn } from 'src/entities/order-item-add-on.entity';
+import { Ingredient } from 'src/entities/ingredient.entity';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { OrderItemAddOn } from 'src/entities/order-item-add-on.entity';
       MenuIngredient,
       IngredientUpdate,
       OrderItemAddOn,
+      Ingredient,
     ]),
   ],
 

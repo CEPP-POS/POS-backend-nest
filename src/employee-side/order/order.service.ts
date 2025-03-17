@@ -26,6 +26,7 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
 import { OrderItemAddOn } from 'src/entities/order-item-add-on.entity';
 import { PaymentMethod } from './dto/create-order/create-order.dto';
+import { Ingredient } from 'src/entities/ingredient.entity';
 
 @Injectable()
 export class OrderService {
@@ -69,6 +70,8 @@ export class OrderService {
     private readonly menuIngredientRepository: Repository<MenuIngredient>,
     @InjectRepository(IngredientUpdate)
     private readonly ingredientUpdateRepository: Repository<IngredientUpdate>,
+    @InjectRepository(Ingredient)
+    private readonly ingredientRepository: Repository<Ingredient>,
   ) {}
 
   async create(
@@ -519,13 +522,28 @@ export class OrderService {
         // Create order item add-ons with reference to saved order item
         const orderItemAddOns = await Promise.all(
           item.add_on_id.map(async (addon_id) => {
+            const ingredient = await this.ingredientRepository.findOne({
+              where: { ingredient_id: addon_id },
+            });
+
+            if (!ingredient) {
+              throw new NotFoundException(
+                `Ingredient with ID ${addon_id} not found`,
+              );
+            }
+
             const addon = this.orderItemAddOnRepository.create({
               order_item_id: savedOrderItem.order_item_id,
               ingredient_id: addon_id,
               owner,
               branch,
             });
-            return await this.orderItemAddOnRepository.save(addon);
+            const savedAddon = await this.orderItemAddOnRepository.save(addon);
+
+            return {
+              ...savedAddon,
+              ingredient_name: ingredient.ingredient_name,
+            };
           }),
         );
 
@@ -571,6 +589,8 @@ export class OrderService {
         'order_item.sweetnessLevel',
         'order_item.size',
         'order_item.menuType',
+        'order_item.orderItem',
+        'order_item.orderItem.ingredient',
       ],
       select: {
         order_id: true,
@@ -588,7 +608,12 @@ export class OrderService {
           menu_name: item.menu.menu_name,
           quantity: item.quantity,
         },
-
+        add_ons: item.orderItem
+          ? item.orderItem.map((addon) => ({
+              ingredient_id: addon.ingredient.ingredient_id,
+              ingredient_name: addon.ingredient.ingredient_name,
+            }))
+          : [],
         details: [
           item.sweetnessLevel
             ? {
@@ -626,7 +651,9 @@ export class OrderService {
         'order_item.sweetnessLevel',
         'order_item.size',
         'order_item.orderItem',
+        'order_item.orderItem.ingredient',
         'order_item.menuType',
+        'branch',
       ],
     });
 
@@ -634,7 +661,24 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${order_id} not found`);
     }
 
-    return order;
+    // Create a deep copy and transform
+    const { branch, ...orderWithoutBranch } = order;
+    const transformedOrder = {
+      branch_name: branch?.branch_name,
+      ...orderWithoutBranch,
+      order_item: order.order_item.map((item) => ({
+        ...item,
+        orderItem: item.orderItem
+          ? item.orderItem.map((addon) => ({
+              order_item_id: addon.order_item_id,
+              ingredient_id: addon.ingredient_id,
+              ingredient_name: addon.ingredient?.ingredient_name,
+            }))
+          : [],
+      })),
+    };
+
+    return transformedOrder as any;
   }
 
   async completeOrder(
@@ -747,7 +791,10 @@ export class OrderService {
     return this.paymentRepository.save(payment);
   }
 
-  async getLatestOrder(owner_id: number, branch_id: number): Promise<{ order_id: number; queue_number: number }> {
+  async getLatestOrder(
+    owner_id: number,
+    branch_id: number,
+  ): Promise<{ order_id: number; queue_number: number }> {
     const latestOrder = await this.orderRepository.findOne({
       where: {
         owner: { owner_id },
@@ -759,7 +806,9 @@ export class OrderService {
     });
 
     if (!latestOrder) {
-      throw new NotFoundException('No orders found for the specified owner and branch');
+      throw new NotFoundException(
+        'No orders found for the specified owner and branch',
+      );
     }
 
     return {
