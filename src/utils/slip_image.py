@@ -18,7 +18,7 @@ def create_receipt_image(data: Dict[str, Any]) -> str:
 
     # Calculate dynamic height
     width = 400  # Fixed width
-    base_height = 206  # Space for headers, queue number, and footer
+    base_height = 210  # Space for headers, queue number, and footer
     line_height = 26   # Height per order item
     detail_height = 16  # Additional height per extra detail (sweetness, size, addon)
     
@@ -35,7 +35,6 @@ def create_receipt_image(data: Dict[str, Any]) -> str:
     
     try:
         # Load fonts
-        print("usingggggggggg tahomaaaaaaaaaaaaaaa")
         font_path = os.path.join(current_dir, "tahoma.ttf")
         font_path_bold = os.path.join(current_dir, "tahomabd.ttf")
         font = ImageFont.truetype(font_path, 18)

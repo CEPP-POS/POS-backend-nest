@@ -40,49 +40,13 @@ branch_id:1
       "quantity": 3,
       "price": 111.50
     },
-    {
-      "menu_id": 4,
+        {
+      "menu_id": 3,
       "sweetness_id": 68,
       "size_id": 2,
       "add_on_id": [2,3],  
       "menu_type_id": 2,
       "quantity": 3,
-      "price": 111.50
-    },
-    {
-      "menu_id": 4,
-      "sweetness_id": 68,
-      "size_id": 1,
-      "add_on_id": [2,3],  
-      "menu_type_id": 2,
-      "quantity": 4,
-      "price": 111.50
-    },
-    {
-      "menu_id": 4,
-      "sweetness_id": 68,
-      "size_id": 1,
-      "add_on_id": [2,3],  
-      "menu_type_id": 2,
-      "quantity": 4,
-      "price": 111.50
-    },
-    {
-      "menu_id": 4,
-      "sweetness_id": 68,
-      "size_id": 1,
-      "add_on_id": [2,3],  
-      "menu_type_id": 2,
-      "quantity": 4,
-      "price": 111.50
-    },
-    {
-      "menu_id": 4,
-      "sweetness_id": 68,
-      "size_id": 1,
-      "add_on_id": [2,3],  
-      "menu_type_id": 2,
-      "quantity": 4,
       "price": 111.50
     }
   ]
