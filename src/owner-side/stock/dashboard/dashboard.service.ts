@@ -513,7 +513,7 @@ export class DashboardService {
           ? menuIng.menu.menuCategory
             .map((cat) => cat.category.category_name)
             .join(', ')
-          : 'Unknown',
+          : '',
     }));
 
     return {
@@ -521,7 +521,7 @@ export class DashboardService {
       ingredient_name: ingredient.ingredient_name,
       category_name: ingredient.ingredientCategory
         ? ingredient.ingredientCategory.ingredient_category_name
-        : 'Unknown',
+        : '',
       stock_data,
       menu_ingredients,
       image_url: ingredient.image_url,
