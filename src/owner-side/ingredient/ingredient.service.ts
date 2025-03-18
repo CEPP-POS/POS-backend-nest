@@ -85,6 +85,7 @@ export class IngredientService {
       return ingredients.map(ingredient => ({
         ingredient_id: ingredient.ingredient_id,
         ingredient_name: ingredient.ingredient_name,
+        unit: ingredient.unit
       }));
     } catch (error) {
       throw new HttpException(

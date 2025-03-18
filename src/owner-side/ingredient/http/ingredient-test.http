@@ -6,6 +6,6 @@ GET http://localhost:3000/owner/ingredient/menu/16
 
 GET http://localhost:3000/owner/ingredient
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 

@@ -4,9 +4,9 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 3
 
-GET http://localhost:3000/owner/stock-sale/2025/02
+GET http://localhost:3000/owner/stock-sale/2025/03
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
 ## GET ALL ORDERS
@@ -52,9 +52,9 @@ branch_id: 3
 
 # getIngredientDetails
 ## fix
-GET http://localhost:3000/owner/stock-ingredients/30
+GET http://localhost:3000/owner/stock-ingredients/4
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
 #getUpdateIngredient
