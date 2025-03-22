@@ -1,24 +1,24 @@
 ### Get Stock Summary by Date
-GET http://localhost:3000/owner/stock-summary/2025-03-03
+GET http://localhost:3000/owner/stock-summary/2025-03-17
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
-GET http://localhost:3000/owner/stock-sale/2025/02
+GET http://localhost:3000/owner/stock-sale/2025/03
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
 ## GET ALL ORDERS
-GET http://localhost:3000/owner/stock-orders/2025-03-07
+GET http://localhost:3000/owner/stock-orders/2025-03-08
 Content-Type: application/json
 owner_id: 1
 branch_id: 3
 
 ## get menu ingredient by ingredient id
-GET http://localhost:3000/owner/stock-ingredients/28
+GET http://localhost:3000/owner/stock-ingredients/9
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
 ## GET ALL CANCEL ORDERS
@@ -36,7 +36,7 @@ branch_id: 1
 ## GET ALL INGREDIENT
 GET http://localhost:3000/owner/stock-ingredients
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
 GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/6
@@ -52,9 +52,9 @@ branch_id: 3
 
 # getIngredientDetails
 ## fix
-GET http://localhost:3000/owner/stock-ingredients/30
+GET http://localhost:3000/owner/stock-ingredients/4
 Content-Type: application/json
-owner_id: 6
+owner_id: 1
 branch_id: 3
 
 #getUpdateIngredient
