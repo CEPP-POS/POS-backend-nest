@@ -519,8 +519,8 @@ export class DashboardService {
       category_name:
         menuIng.menu.menuCategory.length > 0
           ? menuIng.menu.menuCategory
-            .map((cat) => cat.category.category_name)
-            .join(', ')
+              .map((cat) => cat.category.category_name)
+              .join(', ')
           : '',
     }));
 
@@ -761,17 +761,10 @@ export class DashboardService {
         ? updateIngredientDto.net_volume
         : old_net_volume;
 
-    let new_total_volume = old_total_volume;
-
-    if (
-      updateIngredientDto.total_volume !== undefined &&
-      new_quantity === old_quantity &&
-      new_net_volume === old_net_volume
-    ) {
-      new_total_volume = updateIngredientDto.total_volume;
-    } else {
-      new_total_volume = new_quantity * new_net_volume;
-    }
+    const new_total_volume =
+      updateIngredientDto.total_volume !== undefined
+        ? updateIngredientDto.total_volume
+        : old_total_volume;
 
     console.log(
       ` New Data - quantity: ${new_quantity}, net_volume: ${new_net_volume}, total_volume: ${new_total_volume}`,

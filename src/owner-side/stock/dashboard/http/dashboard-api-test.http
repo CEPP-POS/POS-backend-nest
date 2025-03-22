@@ -68,13 +68,12 @@ branch_id: 3
 PATCH http://localhost:3000/owner/update-stock-ingredients/1
 Content-Type: application/json
 owner_id: 1
-branch_id: 3
+branch_id: 1
 {
-  "update_id": 1,
-  "quantity_in_stock": 52,
-  "total_volume": 50000,
-  "net_volume": 1000,
-  "expiration_date": "2026-02-27"
+  "quantity_in_stock": 100,
+  "total_volume": 10000,
+  "net_volume": 100,
+  "expiration_date": "2026-02-28"
 }
 
 POST http://localhost:3000/owner/stock-group
