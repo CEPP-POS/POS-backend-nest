@@ -114,3 +114,14 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 3
 
+
+PATCH http://localhost:3000/owner/edit-stock-ingredients/3
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+{
+  "image_url": "https://www.starbucks.co.th/stb-media/2020/08/81.Iced-Green-Tea-Latte1080.png",
+  "ingredient_name" : "ไข่มุก",
+  "unit": "g",
+  "category_name": "ท็อปปิ้ง"
+}

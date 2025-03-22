@@ -23,6 +23,7 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { IngredientCategoriesDto } from './dto/ingredients-categories.dto';
 import { Branch } from 'src/entities/branch.entity';
 import { CancelStatus } from 'src/employee-side/order/dto/create-order/create-order.dto';
+import { EditIngredientDto } from './dto/edit-ingredient.dto';
 
 @Injectable()
 export class DashboardService {
@@ -1138,6 +1139,62 @@ export class DashboardService {
       total_orders: totalOrders,
       canceled_orders: canceledOrders,
       order_topic: orderTopic,
+    };
+  }
+
+  async editIngredient(
+    ingredient_id: number,
+    editIngredientDto: EditIngredientDto,
+    owner_id: number,
+    branch_id: number,
+  ) {
+    // ตรวจสอบว่ามีวัตถุดิบนี้อยู่จริงหรือไม่
+    const ingredient = await this.ingredientRepository.findOne({
+      where: {
+        ingredient_id: ingredient_id,
+        owner: { owner_id },
+        branch: { branch_id },
+        is_delete: false,
+      },
+      relations: ['ingredientCategory'],
+    });
+
+    if (!ingredient) {
+      throw new NotFoundException('ไม่พบวัตถุดิบที่ต้องการแก้ไข');
+    }
+
+    // ค้นหาหรือสร้าง category ใหม่
+    let category = await this.ingredientCategoryRepository.findOne({
+      where: {
+        ingredient_category_name: editIngredientDto.category_name,
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+    });
+
+    if (!category) {
+      // สร้าง category ใหม่ถ้าไม่มี
+      category = this.ingredientCategoryRepository.create({
+        ingredient_category_name: editIngredientDto.category_name,
+        owner: { owner_id },
+        branch: { branch_id },
+      });
+      await this.ingredientCategoryRepository.save(category);
+    }
+
+    // อัพเดทข้อมูล
+    ingredient.image_url = editIngredientDto.image_url;
+    ingredient.ingredient_name = editIngredientDto.ingredient_name;
+    ingredient.unit = editIngredientDto.unit;
+    ingredient.ingredientCategory = category;
+
+    await this.ingredientRepository.save(ingredient);
+
+    return {
+      image_url: ingredient.image_url,
+      ingredient_name: ingredient.ingredient_name,
+      unit: ingredient.unit,
+      category_name: ingredient.ingredientCategory.ingredient_category_name,
     };
   }
 }

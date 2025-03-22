@@ -25,6 +25,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
+import { EditIngredientDto } from './dto/edit-ingredient.dto';
 
 @Controller('owner')
 export class DashboardController {
@@ -327,6 +328,29 @@ export class DashboardController {
 
     return this.dashboardService.deleteIngredient(
       ingredient_id,
+      Number(ownerId),
+      Number(branchId),
+    );
+  }
+
+  @Patch('edit-stock-ingredients/:ingredient_id')
+  async editIngredient(
+    @Param('ingredient_id') ingredient_id: number,
+    @Body() editIngredientDto: EditIngredientDto,
+    @Headers() headers: Record<string, string>,
+  ) {
+    const ownerId = headers['owner_id'];
+    const branchId = headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    return this.dashboardService.editIngredient(
+      ingredient_id,
+      editIngredientDto,
       Number(ownerId),
       Number(branchId),
     );
