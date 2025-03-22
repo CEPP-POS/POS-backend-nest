@@ -1041,4 +1041,103 @@ export class DashboardService {
       message: `Ingredient with ID ${ingredient_id} has been marked as deleted`,
     };
   }
+
+  async getOrderTopicWithFilter(
+    date: Date,
+    filter: 'year' | 'month' | 'date' | 'all',
+    ownerId: number,
+    branchId: number,
+  ): Promise<any> {
+    let startDate: Date;
+    let endDate: Date;
+
+    switch (filter) {
+      case 'year':
+        startDate = new Date(date.getFullYear(), 0, 1);
+        endDate = new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
+        break;
+      case 'month':
+        startDate = new Date(date.getFullYear(), date.getMonth(), 1);
+        endDate = new Date(
+          date.getFullYear(),
+          date.getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999,
+        );
+        break;
+      case 'date':
+        startDate = new Date(date.setHours(0, 0, 0, 0));
+        endDate = new Date(date.setHours(23, 59, 59, 999));
+        break;
+      case 'all':
+        // ดึงข้อมูลทั้งหมดโดยไม่มีการกรองวันที่
+        startDate = new Date(0);
+        endDate = new Date();
+        break;
+    }
+
+    const salesSummary = await this.salesSummaryRepository.find({
+      where: {
+        date: Between(startDate, endDate),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+    });
+
+    const totalOrders = salesSummary.reduce(
+      (sum, sale) => sum + sale.total_orders,
+      0,
+    );
+    const canceledOrders = salesSummary.reduce(
+      (sum, sale) => sum + sale.canceled_orders,
+      0,
+    );
+
+    const orders = await this.orderRepository.find({
+      where: {
+        order_date: Between(startDate, endDate),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['order_item', 'payment'],
+      order: {
+        order_date: 'DESC', // เพิ่มการเรียงลำดับตามวันที่ล่าสุด
+      },
+    });
+
+    const orderTopic = orders.map((order) => {
+      const totalQuantity = order.order_item.reduce(
+        (sum, item) => sum + item.quantity,
+        0,
+      );
+      const paymentMethod = order.payment
+        ? order.payment.payment_method
+        : 'Unknown';
+
+      const amount = order.payment.amount;
+      const total_amount = order.payment.total_amount;
+      const cancel_status = order.cancel_status;
+      const image_url = order.payment.path_img;
+
+      return {
+        order_id: order.order_id,
+        order_date: order.order_date,
+        quantity: totalQuantity,
+        amount: amount,
+        total_amount: total_amount,
+        payment_method: paymentMethod,
+        cancel_status: cancel_status,
+        image_url: image_url,
+      };
+    });
+
+    return {
+      total_orders: totalOrders,
+      canceled_orders: canceledOrders,
+      order_topic: orderTopic,
+    };
+  }
 }
