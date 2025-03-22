@@ -89,11 +89,11 @@ branch_id: 1
 POST http://localhost:3000/owner/create-stock-ingredients
 Content-Type: application/json
 owner_id: 1
-branch_id: 3
+branch_id: 1
 {
   "image_url": "imagepath/image.png",
   "ingredient_name": "นมสด",
-  "net_volume": 250,
+  "net_volume": 100,
   "unit": "g",
   "quantity_in_stock": 4,
   "category_name": "",

@@ -56,7 +56,7 @@ export class DashboardService {
 
     @InjectRepository(Owner)
     private ownerRepository: Repository<Owner>,
-  ) { }
+  ) {}
 
   private async calculateMonthlyRevenue(
     year: number,
@@ -186,7 +186,11 @@ export class DashboardService {
     ownerId: number,
     branchId: number,
   ): Promise<Linegraph> {
-    const monthlyRevenue = await this.calculateMonthlyRevenue(year, ownerId, branchId);
+    const monthlyRevenue = await this.calculateMonthlyRevenue(
+      year,
+      ownerId,
+      branchId,
+    );
 
     const dailyStats = [];
     const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
@@ -197,7 +201,11 @@ export class DashboardService {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month - 1, day); // month is 0-indexed
-      const { totalRevenue: dailyRevenue, totalOrders: dailyOrders, canceledOrders: dailyCanceledOrders } = await this.calculateDailyStats(date, ownerId, branchId);
+      const {
+        totalRevenue: dailyRevenue,
+        totalOrders: dailyOrders,
+        canceledOrders: dailyCanceledOrders,
+      } = await this.calculateDailyStats(date, ownerId, branchId);
 
       // Accumulate totals
       totalRevenue += dailyRevenue;
@@ -511,8 +519,8 @@ export class DashboardService {
       category_name:
         menuIng.menu.menuCategory.length > 0
           ? menuIng.menu.menuCategory
-            .map((cat) => cat.category.category_name)
-            .join(', ')
+              .map((cat) => cat.category.category_name)
+              .join(', ')
           : 'Unknown',
     }));
 
@@ -645,11 +653,20 @@ export class DashboardService {
 
       await this.ingredientUpdateRepository.save(existingUpdate);
 
+      // คำนวณ total_volume ใหม่จากทุก records ที่มี ingredient_id เดียวกัน
+      const totalVolumeResult = await this.ingredientUpdateRepository
+        .createQueryBuilder('update')
+        .select('SUM(update.total_volume)', 'total')
+        .where('update.ingredient.ingredient_id = :ingredientId', {
+          ingredientId: ingredient.ingredient_id,
+        })
+        .getRawOne();
+
       return {
         message: 'Stock updated successfully',
         ingredient_id: ingredient.ingredient_id,
         update_id: existingUpdate.update_id,
-        total_volume: existingUpdate.total_volume,
+        total_volume: totalVolumeResult.total || 0,
       };
     } else {
       const total_volume = net_volume * quantity_in_stock;
@@ -666,11 +683,20 @@ export class DashboardService {
 
       await this.ingredientUpdateRepository.save(newUpdate);
 
+      // คำนวณ total_volume ใหม่จากทุก records ที่มี ingredient_id เดียวกัน
+      const totalVolumeResult = await this.ingredientUpdateRepository
+        .createQueryBuilder('update')
+        .select('SUM(update.total_volume)', 'total')
+        .where('update.ingredient.ingredient_id = :ingredientId', {
+          ingredientId: ingredient.ingredient_id,
+        })
+        .getRawOne();
+
       return {
         message: 'Ingredient created successfully',
         ingredient_id: ingredient.ingredient_id,
         update_id: newUpdate.update_id,
-        total_volume: newUpdate.total_volume,
+        total_volume: totalVolumeResult.total || 0,
       };
     }
   }
@@ -989,12 +1015,16 @@ export class DashboardService {
         .toISOString()
         .split('T')[0],
       unit: ingredient.unit,
-      image_url: ingredient.image_url
+      image_url: ingredient.image_url,
     };
   }
 
   // Method to mark an ingredient as deleted
-  async deleteIngredient(ingredient_id: number, owner_id: number, branch_id: number): Promise<{ message: string }> {
+  async deleteIngredient(
+    ingredient_id: number,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<{ message: string }> {
     const ingredient = await this.ingredientRepository.findOne({
       where: {
         ingredient_id,
@@ -1004,7 +1034,9 @@ export class DashboardService {
     });
 
     if (!ingredient) {
-      throw new NotFoundException(`Ingredient with ID ${ingredient_id} not found for owner ID ${owner_id} and branch ID ${branch_id}`);
+      throw new NotFoundException(
+        `Ingredient with ID ${ingredient_id} not found for owner ID ${owner_id} and branch ID ${branch_id}`,
+      );
     }
 
     // Set is_delete to true
@@ -1012,6 +1044,8 @@ export class DashboardService {
 
     await this.ingredientRepository.save(ingredient);
 
-    return { message: `Ingredient with ID ${ingredient_id} has been marked as deleted` };
+    return {
+      message: `Ingredient with ID ${ingredient_id} has been marked as deleted`,
+    };
   }
 }
