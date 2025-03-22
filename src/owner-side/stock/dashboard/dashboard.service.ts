@@ -228,68 +228,6 @@ export class DashboardService {
     };
   }
 
-  // Entity order total price
-  async getOrderTopic(
-    date: Date,
-    ownerId: number,
-    branchId: number,
-  ): Promise<any> {
-    const startOfDay = new Date(date.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
-
-    const salesSummary = await this.salesSummaryRepository.findOne({
-      where: {
-        date: Between(startOfDay, endOfDay),
-        owner: { owner_id: ownerId },
-        branch: { branch_id: branchId },
-      },
-    });
-
-    const totalOrders = salesSummary?.total_orders || 0;
-    const canceledOrders = salesSummary?.canceled_orders || 0;
-
-    const orders = await this.orderRepository.find({
-      where: {
-        order_date: Between(startOfDay, endOfDay),
-        owner: { owner_id: ownerId },
-        branch: { branch_id: branchId },
-      },
-      relations: ['order_item', 'payment'],
-    });
-
-    const orderTopic = orders.map((order) => {
-      const totalQuantity = order.order_item.reduce(
-        (sum, item) => sum + item.quantity,
-        0,
-      );
-      const paymentMethod = order.payment
-        ? order.payment.payment_method
-        : 'Unknown';
-
-      const amount = order.payment.amount;
-      const total_amount = order.payment.total_amount;
-      const cancel_status = order.cancel_status;
-      const image_url = order.payment.path_img;
-
-      return {
-        order_id: order.order_id,
-        order_date: order.order_date,
-        quantity: totalQuantity,
-        amount: amount,
-        total_amount: total_amount,
-        payment_method: paymentMethod,
-        cancel_status: cancel_status,
-        image_url: image_url,
-      };
-    });
-
-    return {
-      total_orders: totalOrders,
-      canceled_orders: canceledOrders,
-      order_topic: orderTopic,
-    };
-  }
-
   // ENTITY ORDER TOTAL PRICE
   async getCancelOrders(ownerId: number, branchId: number) {
     const orders = await this.orderRepository.find({

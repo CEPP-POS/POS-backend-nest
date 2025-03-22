@@ -10,7 +10,6 @@ import {
   Headers,
   Query,
   NotFoundException,
-  Delete,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
