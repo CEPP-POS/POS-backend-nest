@@ -76,4 +76,15 @@ export class BranchController {
     // return this.branchService.findOwnerBranches(user.owner_id);
     return this.branchService.findOwnerBranches(ownerIdNum, branchIdNum);
   }
+
+  @Get('owner/get-branch-setup/:selected_branch_id')
+  async getBranchSetup(
+    @Param('selected_branch_id') selectedBranchId: string,
+    @Req() request: Request,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const ownerIdNum = Number(ownerId);
+    const selectedBranchIdNum = Number(selectedBranchId);
+    return this.branchService.getBranchSetup(ownerIdNum, selectedBranchIdNum);
+  }
 }

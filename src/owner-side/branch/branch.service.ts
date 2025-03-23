@@ -5,11 +5,24 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not, Equal } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { Branch } from '../../entities/branch.entity';
 import { CreateBranchDto } from './dto/create-branch/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch/update-branch.dto';
 import { Owner } from '../../entities/owner.entity';
+import { Size } from '../../entities/size.entity';
+import { SizeGroup } from '../../entities/size-group.entity';
+import { SweetnessLevel } from '../../entities/sweetness-level.entity';
+import { SweetnessGroup } from '../../entities/sweetness-group.entity';
+import { MenuType } from '../../entities/menu-type.entity';
+import { MenuTypeGroup } from '../../entities/menu-type-group.entity';
+import { IngredientCategory } from '../../entities/ingredient-category.entity';
+import { Ingredient } from '../../entities/ingredient.entity';
+import { AddOn } from '../../entities/add-on.entity';
+import { Category } from '../../entities/category.entity';
+import { Menu } from '../../entities/menu.entity';
+import { MenuCategory } from 'src/entities/menu_category';
+import { MenuIngredient } from '../../entities/menu-ingredient.entity';
 
 @Injectable()
 export class BranchService {
@@ -19,6 +32,45 @@ export class BranchService {
 
     @InjectRepository(Owner)
     private readonly ownerRepository: Repository<Owner>,
+
+    @InjectRepository(Size)
+    private readonly sizeRepository: Repository<Size>,
+
+    @InjectRepository(SizeGroup)
+    private readonly sizeGroupRepository: Repository<SizeGroup>,
+
+    @InjectRepository(SweetnessLevel)
+    private readonly sweetnessLevelRepository: Repository<SweetnessLevel>,
+
+    @InjectRepository(SweetnessGroup)
+    private readonly sweetnessGroupRepository: Repository<SweetnessGroup>,
+
+    @InjectRepository(MenuType)
+    private readonly menuTypeRepository: Repository<MenuType>,
+
+    @InjectRepository(MenuTypeGroup)
+    private readonly menuTypeGroupRepository: Repository<MenuTypeGroup>,
+
+    @InjectRepository(IngredientCategory)
+    private readonly ingredientCategoryRepository: Repository<IngredientCategory>,
+
+    @InjectRepository(Ingredient)
+    private readonly ingredientRepository: Repository<Ingredient>,
+
+    @InjectRepository(AddOn)
+    private readonly addOnRepository: Repository<AddOn>,
+
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+
+    @InjectRepository(Menu)
+    private readonly menuRepository: Repository<Menu>,
+
+    @InjectRepository(MenuCategory)
+    private readonly menuCategoryRepository: Repository<MenuCategory>,
+
+    @InjectRepository(MenuIngredient)
+    private readonly menuIngredientRepository: Repository<MenuIngredient>,
   ) {}
   // * Create Branch (Owner Only)
   async create(createBranchDto: CreateBranchDto): Promise<Branch> {
@@ -105,6 +157,123 @@ export class BranchService {
     return {
       current_branch: currentBranch,
       other_branches: otherBranches,
+    };
+  }
+
+  async getBranchSetup(ownerId: number, selectedBranchId: number) {
+    if (isNaN(ownerId) || isNaN(selectedBranchId)) {
+      throw new BadRequestException('Invalid owner_id or selected_branch_id');
+    }
+
+    const [
+      sizes,
+      sizeGroups,
+      sweetnessLevels,
+      sweetnessGroups,
+      menuTypes,
+      menuTypeGroups,
+      ingredientCategories,
+      ingredients,
+      addOns,
+      categories,
+      menus,
+      menuCategories,
+      menuIngredients,
+    ] = await Promise.all([
+      this.sizeRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+      }),
+      this.sizeGroupRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+      }),
+      this.sweetnessLevelRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+      }),
+      this.sweetnessGroupRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+      }),
+      this.menuTypeRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+      }),
+      this.menuTypeGroupRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+      }),
+      this.ingredientCategoryRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+      }),
+      this.ingredientRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+      }),
+      this.addOnRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+      }),
+      this.categoryRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+      }),
+      this.menuRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+      }),
+      this.menuCategoryRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+      }),
+      this.menuIngredientRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+      }),
+    ]);
+
+    return {
+      size: sizes,
+      size_group: sizeGroups,
+      sweetness_level: sweetnessLevels,
+      sweetness_group: sweetnessGroups,
+      menu_type: menuTypes,
+      menu_type_group: menuTypeGroups,
+      ingredient_category: ingredientCategories,
+      ingredient: ingredients,
+      add_on: addOns,
+      category: categories,
+      menu: menus,
+      menu_category: menuCategories,
+      menu_ingredient: menuIngredients,
     };
   }
 }
