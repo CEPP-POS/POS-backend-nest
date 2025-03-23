@@ -26,3 +26,10 @@ Content-Type: application/json
 
 ### Delete a Branch by ID
 DELETE http://localhost:3000/branches/4
+
+### Get Owner's Branches (อื่นๆที่ไม่ใช่ตัวเอง)
+GET http://localhost:3000/branches/owner/my-branches
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+

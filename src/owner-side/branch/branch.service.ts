@@ -2,9 +2,10 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not, Equal } from 'typeorm';
 import { Branch } from '../../entities/branch.entity';
 import { CreateBranchDto } from './dto/create-branch/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch/update-branch.dto';
@@ -74,5 +75,36 @@ export class BranchService {
       );
     }
     await this.branchRepository.remove(branch);
+  }
+
+  async findOwnerBranches(ownerId: number, branchId: number) {
+    if (isNaN(ownerId) || isNaN(branchId)) {
+      throw new BadRequestException('Invalid owner_id or branch_id');
+    }
+
+    const currentBranch = await this.branchRepository.findOne({
+      where: {
+        owner: { owner_id: ownerId },
+        branch_id: branchId,
+      },
+      select: ['branch_id', 'branch_name'],
+    });
+
+    if (!currentBranch) {
+      throw new NotFoundException(`Branch with ID ${branchId} not found`);
+    }
+
+    const otherBranches = await this.branchRepository.find({
+      where: {
+        owner: { owner_id: ownerId },
+        branch_id: Not(branchId),
+      },
+      select: ['branch_id', 'branch_name'],
+    });
+
+    return {
+      current_branch: currentBranch,
+      other_branches: otherBranches,
+    };
   }
 }
