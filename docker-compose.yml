@@ -1,6 +1,33 @@
-version: "3.8"
-
 services:
+  backend:
+    build: .
+    container_name: nest-backend
+    ports:
+      - "3000:3000"
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: myuser
+      DB_PASSWORD: mypass
+      DB_DATABASE: mydb
+      JWT_SECRET: mysecret
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypass
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   minio:
     image: quay.io/minio/minio
     container_name: minio_server
@@ -16,4 +43,5 @@ services:
       - minio_data:/data
 
 volumes:
+  postgres_data:
   minio_data:
