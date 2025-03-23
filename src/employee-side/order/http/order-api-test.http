@@ -6,7 +6,7 @@ branch_id:1
 {
   "createOrderDto": {
     "order_date": "2025-03-03T08:00:00Z",
-    "total_price": 260,
+    "total_price": 100,
     "status": "รอทำ",
     "payment_method": "qr-code",
     "path_img": "https://image/payment",
@@ -17,37 +17,10 @@ branch_id:1
       "menu_id": 1,
       "sweetness_id": 79,
       "size_id": 1,
-      "add_on_id": [1,2],  
+      "add_on_id": [],  
       "menu_type_id": 1,
-      "quantity": 2,
-      "price": 111.50
-    },
-    {
-      "menu_id": 2,
-      "sweetness_id": 68,
-      "size_id": 2,
-      "add_on_id": [2,3],  
-      "menu_type_id": 2,
-      "quantity": 3,
-      "price": 111.50
-    },
-        {
-      "menu_id": 3,
-      "sweetness_id": 68,
-      "size_id": 2,
-      "add_on_id": [2,3],  
-      "menu_type_id": 2,
-      "quantity": 3,
-      "price": 111.50
-    },
-        {
-      "menu_id": 3,
-      "sweetness_id": 68,
-      "size_id": 2,
-      "add_on_id": [2,3],  
-      "menu_type_id": 2,
-      "quantity": 3,
-      "price": 111.50
+      "quantity": 1,
+      "price": 100
     }
   ]
 }

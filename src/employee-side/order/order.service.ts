@@ -157,14 +157,16 @@ export class OrderService {
     orderQuantity: number,
     orderDate: any,
     addOnIds: number[] = [],
+    menuTypeId: number,
   ) {
-    // 1. Find all ingredients for the menu and size combination
+    // 1. Find all ingredients for the menu menu_type and size combination
     const menuIngredients = await this.menuIngredientRepository.find({
       where: [
         {
           menu: Equal(menuId),
           size: Equal(sizeId),
           is_addon: false,
+          menu_type: Equal(menuTypeId),
         },
         {
           ingredient: In(addOnIds),
@@ -175,6 +177,7 @@ export class OrderService {
         ingredient: true,
         menu: true,
         size: true,
+        menu_type: true,
       },
     });
 
@@ -416,6 +419,7 @@ export class OrderService {
             item.quantity,
             savedOrder.order_date,
             item.add_on_id,
+            item.menu_type_id,
           );
         } catch (error) {
           console.error(`Failed to update ingredient stock: ${error.message}`);
