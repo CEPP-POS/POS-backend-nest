@@ -181,19 +181,52 @@ export class BranchService {
       menuCategories,
       menuIngredients,
     ] = await Promise.all([
-      this.sizeRepository.find({
-        where: {
-          owner: { owner_id: ownerId },
-          branch: { branch_id: selectedBranchId },
-        },
-        relations: ['owner', 'branch'],
-      }),
+      this.sizeRepository
+        .createQueryBuilder('size')
+        .select([
+          'size.size_id',
+          'size.size_name',
+          'size.size_price',
+          'size.is_delete',
+          'owner.owner_id',
+          'branch.branch_id',
+        ])
+        .leftJoin('size.owner', 'owner')
+        .leftJoin('size.branch', 'branch')
+        .where('owner.owner_id = :ownerId', { ownerId })
+        .andWhere('branch.branch_id = :branchId', {
+          branchId: selectedBranchId,
+        })
+        .getRawMany()
+        .then((sizes) =>
+          sizes.map((size) => ({
+            size_id: size.size_size_id,
+            size_name: size.size_size_name,
+            size_price: size.size_size_price,
+            is_delete: size.size_is_delete,
+            owner_id: size.owner_owner_id,
+            branch_id: size.branch_branch_id,
+          })),
+        ),
       this.sizeGroupRepository.find({
         where: {
           owner: { owner_id: ownerId },
           branch: { branch_id: selectedBranchId },
         },
-        relations: ['owner', 'branch'],
+        relations: ['owner', 'branch', 'size'],
+        select: {
+          size_group_id: true,
+          size_group_name: true,
+          size: {
+            size_id: true,
+          },
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
       }),
       this.sweetnessLevelRepository.find({
         where: {
