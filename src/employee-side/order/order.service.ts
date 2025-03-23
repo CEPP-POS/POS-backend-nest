@@ -159,6 +159,19 @@ export class OrderService {
     addOnIds: number[] = [],
     menuTypeId: number,
   ) {
+    const addOnIngredients = await this.addOnRepository.find({
+      where: {
+        add_on_id: In(addOnIds),
+      },
+      relations: {
+        ingredient: true, // เพิ่ม relations เพื่อให้เข้าถึง ingredient ได้
+      },
+    });
+
+    const ingredientIds = addOnIngredients.map(
+      (addon) => addon.ingredient.ingredient_id,
+    );
+    console.log(ingredientIds);
     // 1. Find all ingredients for the menu menu_type and size combination
     const menuIngredients = await this.menuIngredientRepository.find({
       where: [
@@ -169,7 +182,8 @@ export class OrderService {
           menu_type: Equal(menuTypeId),
         },
         {
-          ingredient: In(addOnIds),
+          menu: Equal(menuId),
+          ingredient: In(ingredientIds),
           is_addon: true,
         },
       ],

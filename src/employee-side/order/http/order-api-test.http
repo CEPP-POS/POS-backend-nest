@@ -17,9 +17,9 @@ branch_id:1
       "menu_id": 1,
       "sweetness_id": 79,
       "size_id": 1,
-      "add_on_id": [],  
+      "add_on_id": [3,4],  
       "menu_type_id": 1,
-      "quantity": 1,
+      "quantity": 2,
       "price": 100
     }
   ]
@@ -46,9 +46,9 @@ branch_id: 1
       "menu_id": 1,
       "sweetness_id": 79,
       "size_id": 1,
-      "add_on_id": [2,3],  
+      "add_on_id": [3,4],  
       "menu_type_id": 1,
-      "quantity": 1,
+      "quantity": 2,
       "price": 100
     }
   ]

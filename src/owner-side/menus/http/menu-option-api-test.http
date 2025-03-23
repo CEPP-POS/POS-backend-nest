@@ -48,10 +48,10 @@ branch_id: 1
 
 {
   "options": [
-    { "บุก": { "price": "10.00", "unit": "กรัม", "quantity":12 } },
-    { "ไข่มุก": { "price": "20.00", "unit": "กรัม", "quantity":15 } }
+    { "บุก2": { "price": "10.00", "unit": "กรัม", "quantity":12 } },
+    { "ไข่มุก2": { "price": "20.00", "unit": "กรัม", "quantity":15 } }
   ],
-  "menu_id": [1,2],
+  "menu_id": [1],
   "is_required":true,
   "is_multipled":true
 }
