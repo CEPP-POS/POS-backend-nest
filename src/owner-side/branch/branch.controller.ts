@@ -87,4 +87,21 @@ export class BranchController {
     const selectedBranchIdNum = Number(selectedBranchId);
     return this.branchService.getBranchSetup(ownerIdNum, selectedBranchIdNum);
   }
+
+  @Post('owner/clone-branch-setup/:selected_branch_id')
+  async cloneBranchSetup(
+    @Param('selected_branch_id') selectedBranchId: string,
+    @Req() request: Request,
+  ) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+    const ownerIdNum = Number(ownerId);
+    const selectedBranchIdNum = Number(selectedBranchId);
+    const branchIdNum = Number(branchId);
+    return this.branchService.cloneBranchSetup(
+      ownerIdNum,
+      selectedBranchIdNum,
+      branchIdNum,
+    );
+  }
 }

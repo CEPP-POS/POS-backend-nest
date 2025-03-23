@@ -39,6 +39,12 @@ owner_id: 1
 branch_id: 4
 
 ### Get Branch Setup
-GET http://localhost:3000/branches/owner/get-branch-setup/1
+GET http://192.168.1.43:3000/branches/owner/get-branch-setup/1
 Content-Type: application/json
 owner_id: 1
+
+### Clone Branch Setup
+POST http://localhost:3000/branches/owner/clone-branch-setup/1
+Content-Type: application/json
+owner_id: 1
+branch_id: 4

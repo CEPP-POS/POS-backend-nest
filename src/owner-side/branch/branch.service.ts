@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
+import axios from 'axios';
 import { Branch } from '../../entities/branch.entity';
 import { CreateBranchDto } from './dto/create-branch/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch/update-branch.dto';
@@ -275,5 +276,47 @@ export class BranchService {
       menu_category: menuCategories,
       menu_ingredient: menuIngredients,
     };
+  }
+
+  async cloneBranchSetup(
+    ownerId: number,
+    selectedBranchId: number,
+    targetBranchId: number,
+  ) {
+    if (isNaN(ownerId) || isNaN(selectedBranchId) || isNaN(targetBranchId)) {
+      throw new BadRequestException(
+        'Invalid owner_id, selected_branch_id or target_branch_id',
+      );
+    }
+
+    try {
+      // เรียก GET endpoint จาก server อื่น
+      const response = await axios.get(
+        `http://192.168.1.43:3000/branches/owner/get-branch-setup/${selectedBranchId}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            owner_id: ownerId.toString(),
+          },
+        },
+      );
+
+      const sourceSetup = response.data;
+
+      // Log ข้อมูลออกมา
+      console.log('Source Branch Setup:', JSON.stringify(sourceSetup, null, 2));
+
+      return {
+        message: 'Branch setup cloned successfully',
+        source_branch_id: selectedBranchId,
+        target_branch_id: targetBranchId,
+        setup_data: sourceSetup,
+      };
+    } catch (error) {
+      console.error('Error fetching branch setup:', error.message);
+      throw new BadRequestException(
+        'Failed to fetch branch setup from source server',
+      );
+    }
   }
 }
