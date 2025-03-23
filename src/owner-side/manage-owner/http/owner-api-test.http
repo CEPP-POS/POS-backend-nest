@@ -6,7 +6,7 @@ Content-Type: multipart/form-data; boundary=boundary
 Content-Disposition: form-data; name="file"; filename="owners.csv"
 Content-Type: text/csv
 
-< /Users/watcharapolyotadee/Development/POS/POS-backend-nest/src/uploads/owners.csv
+< /Users/pimolnutsriphadej/Desktop/POS-backend-nest/src/uploads/owners.csv
 --boundary--
 
 ### 2. Owner เข้าสู่ระบบ (Login)
@@ -14,36 +14,36 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-  "email": "charlie.white@example.com",
-  "password": "g888bswf"
+  "email": "new@gmail.com",
+  "password": "SecureWhite1232"
 }
 
 ### 3. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน (Forgot Password)
 POST http://localhost:3000/owner/forgot-password
 Content-Type: application/json
-owner_id: 6
-branch_id: 6
+owner_id: 48
+branch_id: 22
 {
-  "usernameOrEmail": "charlie.white@example.com"
+  "usernameOrEmail": "new@gmail.com"
 }
 ### 4. Owner ยืนยัน OTP
 POST http://localhost:3000/owner/verify-otp
 Content-Type: application/json
-owner_id: 6
-branch_id: 6
+owner_id: 48
+branch_id: 22
 {
-  "usernameOrEmail": "charlie.white@example.com",
-  "otp": "888977"
+  "usernameOrEmail": "new@gmail.com",
+  "otp": "317311"
 }
 
 ### 5. Owner รีเซ็ตรหัสผ่านใหม่
 PATCH http://localhost:3000/owner/reset-password
 Content-Type: application/json
-owner_id: 6
-branch_id: 6
+owner_id: 48
+branch_id: 22
 {
-  "email": "charlie.white@example.com",
-  "newPassword": "SecureWhite123!"
+  "email": "new@gmail.com",
+  "newPassword": "SecureWhite1232"
 }
 ### 6. Owner เข้าสู่ระบบ (Login)
 POST http://localhost:3000/auth/login
@@ -55,11 +55,20 @@ Content-Type: application/json
 }
 ### 7. Owner สร้าง Employee (ต้องแนบ Token)
 POST http://localhost:3000/owner/create-employee
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6NiwiZW1haWwiOiJjaGFybGllLndoaXRlQGV4YW1wbGUuY29tIiwiYnJhbmNoX2lkIjo2LCJyb2xlcyI6WyJvd25lciJdLCJpYXQiOjE3NDA1OTQyMzcsImV4cCI6MTc0MDY4MDYzN30.Ug1donayg6_dhz0aCtMftFtY6YiAyAT5ma0oni80UrI
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lcl9pZCI6MzUsImVtYWlsIjoibWljaGFlbC5ncmVlbkBleGFtcGxlLmNvbSIsImJyYW5jaF9pZCI6MTAsInJvbGVzIjpbIm93bmVyIl0sImlhdCI6MTc0MDYzODg4MywiZXhwIjoxNzQwNzI1MjgzfQ.H0MupVW1zHDHfIDrWwmc9uP57kqiR13WiTW94lnp90Y
 Content-Type: application/json
 
 {
   "email": "MemeeEmployee2@example.com",
   "password": "Employee2",
-  "branch_id": 6
+  "branch_id": 10
+}
+
+
+POST http://localhost:3000/owner/branch
+Content-Type: application/json
+owner_id: 39
+
+{
+  "branch_id": 14
 }

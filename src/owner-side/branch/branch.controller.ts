@@ -61,4 +61,9 @@ export class BranchController {
     const user = req.user as { owner_id: number };
     return this.branchService.remove(+id, user.owner_id);
   }
+
+  @Get('owner/:ownerId')
+  async getBranchesByOwner(@Param('ownerId') ownerId: number) {
+    return this.branchService.getBranchesByOwnerId(ownerId);
+  }
 }

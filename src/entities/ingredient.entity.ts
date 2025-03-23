@@ -49,10 +49,11 @@ export class Ingredient {
     (ingredientUpdate) => ingredientUpdate.ingredient,
     { cascade: true },
   )
+  ingredientUpdate: IngredientUpdate[]; // เพิ่มความสัมพันธ์กับ AddOn
   @OneToMany(
     () => OrderItemAddOn,
     (orderItemAddon) => orderItemAddon.ingredient,
     { cascade: true },
   )
-  ingredientUpdate: IngredientUpdate[]; // เพิ่มความสัมพันธ์กับ AddOn
+  orderItemAddon: OrderItemAddOn[]; // เพิ่มความสัมพันธ์กับ AddOn
 }

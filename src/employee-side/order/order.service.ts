@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, Between, Equal, MoreThan } from 'typeorm';
 import { Order } from '../../entities/order.entity';
-import { CreateOrderDto } from './dto/create-order/create-order.dto';
+import {
+  CancelStatus,
+  CreateOrderDto,
+} from './dto/create-order/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order/update-order.dto';
 import { CancelOrderDto } from './dto/cancel-order/Cancel-order.dto';
 import { OrderItem } from '../../entities/order-item.entity';
@@ -19,9 +22,10 @@ import { Owner } from 'src/entities/owner.entity';
 import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
 import { Payment } from 'src/entities/payment.entity';
 import { SalesSummary } from 'src/entities/sales-summary.entity';
-import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
+import { OrderItemAddOn } from 'src/entities/order-item-add-on.entity';
+import { PaymentMethod } from './dto/create-order/create-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -31,6 +35,9 @@ export class OrderService {
 
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
+
+    @InjectRepository(OrderItemAddOn)
+    private readonly orderItemAddOnRepository: Repository<OrderItemAddOn>,
 
     @InjectRepository(AddOn)
     private readonly addOnRepository: Repository<AddOn>,
@@ -64,13 +71,22 @@ export class OrderService {
     private readonly ingredientUpdateRepository: Repository<IngredientUpdate>,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto): Promise<Order> {
+  async create(
+    createOrderDto: CreateOrderDto,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<Order> {
     const owner = await this.ownerRepository.findOne({
-      where: { owner_id: 1 },
+      where: { owner_id },
     });
     const branch = await this.branchRepository.findOne({
-      where: { branch_id: 1 },
+      where: { branch_id },
     });
+
+    // Set default values if not provided
+    createOrderDto.order_date = createOrderDto.order_date || new Date();
+    createOrderDto.queue_number = createOrderDto.queue_number || 1; // Default to 1 if not provided
+    createOrderDto.status = createOrderDto.status || 'รอทำ'; // Default status
 
     // Convert order_date to Date if it's a string
     if (typeof createOrderDto.order_date === 'string') {
@@ -87,6 +103,23 @@ export class OrderService {
     );
     const startOfDay = new Date(orderDateOnly.setHours(0, 0, 0, 0));
     const endOfDay = new Date(orderDateOnly.setHours(23, 59, 59, 999));
+
+    // Find the latest queue number for the current day
+    const latestOrder = await this.orderRepository.findOne({
+      where: {
+        order_date: Between(startOfDay, endOfDay),
+        branch: { branch_id: branch.branch_id },
+        owner: { owner_id: owner.owner_id },
+      },
+      order: {
+        queue_number: 'DESC',
+      },
+    });
+
+    // Set queue number to latest + 1 or 1 if no orders exist for today
+    createOrderDto.queue_number = latestOrder
+      ? latestOrder.queue_number + 1
+      : 1;
 
     let salesSummary = await this.salesSummaryRepository.findOne({
       where: {
@@ -115,8 +148,10 @@ export class OrderService {
     }
 
     // Proceed to create the order
-    const newOrder = this.orderRepository.create(createOrderDto);
-    console.log(newOrder.order_date);
+    const newOrder = this.orderRepository.create({
+      ...createOrderDto,
+      cancel_status: createOrderDto.cancel_status || null,
+    });
     return this.orderRepository.save(newOrder);
   }
 
@@ -169,30 +204,30 @@ export class OrderService {
   async cancelOrder(
     orderId: number,
     cancelOrderDto: CancelOrderDto,
+    owner_id: number,
+    branch_id: number,
   ): Promise<Order> {
     const order = await this.orderRepository.findOne({
-      where: { order_id: orderId },
+      where: { order_id: orderId, owner: { owner_id }, branch: { branch_id } },
     });
 
     if (!order) {
-      throw new NotFoundException(`Order with ID ${orderId} not found`);
+      throw new NotFoundException(
+        `Order with order_id ${orderId} or owner_id ${owner_id} or ${branch_id} not found`,
+      );
     }
 
     // ตรวจสอบสถานะ หากคำสั่งซื้อชำระเงินแล้ว
-    if (order.status === 'paid' || order.status === 'processing') {
+    if (order.status === 'paid' || order.status === 'รอทำ') {
       order.status = 'canceled';
       order.customer_name = cancelOrderDto.customer_name;
       order.customer_contact = cancelOrderDto.contact;
+      order.cancel_status = CancelStatus.RefundPending;
     } else {
       throw new Error('Cannot cancel an unpaid order');
     }
 
-    await this.orderRepository.save(order);
-
-    // ดึงข้อมูลคำสั่งซื้อที่อัปเดตพร้อมทุกฟิลด์
-    return this.orderRepository.findOne({
-      where: { order_id: orderId },
-    });
+    return await this.orderRepository.save(order);
   }
 
   async updateIngredientStock(
@@ -200,13 +235,21 @@ export class OrderService {
     sizeId: number,
     orderQuantity: number,
     orderDate: any,
+    addOnIds: number[] = [],
   ) {
     // 1. Find all ingredients for the menu and size combination
     const menuIngredients = await this.menuIngredientRepository.find({
-      where: {
-        menu: Equal(menuId),
-        size: Equal(sizeId),
-      },
+      where: [
+        {
+          menu: Equal(menuId),
+          size: Equal(sizeId),
+          is_addon: false,
+        },
+        {
+          ingredient: In(addOnIds),
+          is_addon: true,
+        },
+      ],
       relations: {
         ingredient: true,
         menu: true,
@@ -275,130 +318,303 @@ export class OrderService {
     }
   }
 
-  // EDIT ENTITY
   async createOrder(
     createOrderDto: CreateOrderDto,
     items: OrderItemDto[],
+    owner_id: number,
+    branch_id: number,
   ): Promise<any> {
+    // Verify owner and branch
+    const owner = await this.ownerRepository.findOne({
+      where: { owner_id },
+    });
+
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id, owner: { owner_id } },
+    });
+
+    if (!owner || !branch) {
+      throw new NotFoundException('Invalid owner or branch');
+    }
+
+    // Convert order_date to Date if it's a string
+    if (typeof createOrderDto.order_date === 'string') {
+      const parsedDate = new Date(createOrderDto.order_date);
+      if (isNaN(parsedDate.getTime())) {
+        throw new Error('Invalid date format');
+      }
+      createOrderDto.order_date = parsedDate;
+    }
+
+    // Calculate start and end of the day for comparison
+    const orderDate = new Date(createOrderDto.order_date);
+    const startOfDay = new Date(orderDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(orderDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Find the latest queue number for the current day
+    const latestOrder = await this.orderRepository.findOne({
+      where: {
+        order_date: Between(startOfDay, endOfDay),
+        branch: { branch_id },
+        owner: { owner_id },
+      },
+      order: {
+        queue_number: 'DESC',
+      },
+    });
+
+    // Set queue number to latest + 1 or 1 if no orders exist for today
+    createOrderDto.queue_number = latestOrder
+      ? latestOrder.queue_number + 1
+      : 1;
+
+    // ค้นหา sales summary สำหรับวันนี้
+    let salesSummary = await this.salesSummaryRepository.findOne({
+      where: {
+        date: Between(startOfDay, endOfDay),
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+    });
+
+    // ถ้าไม่มี sales summary สำหรับวันนี้ ให้สร้างใหม่
+    if (!salesSummary) {
+      salesSummary = this.salesSummaryRepository.create({
+        date: startOfDay,
+        total_revenue: createOrderDto.total_price,
+        total_orders: 1,
+        canceled_orders: createOrderDto.cancel_status ? 1 : 0,
+        owner,
+        branch,
+      });
+    } else {
+      // อัพเดทข้อมูลที่มีอยู่
+      salesSummary.total_revenue += createOrderDto.total_price;
+      salesSummary.total_orders += 1;
+      if (createOrderDto.cancel_status) {
+        salesSummary.canceled_orders += 1;
+      }
+    }
+
+    // บันทึก sales summary
+    await this.salesSummaryRepository.save(salesSummary);
+
+    // Proceed to create the order
     const newOrder = this.orderRepository.create({
       ...createOrderDto,
       is_paid: false,
+      cancel_status: createOrderDto.cancel_status || null,
+      owner,
+      branch,
     });
 
     const savedOrder = await this.orderRepository.save(newOrder);
 
-    // const allAddOns = await this.addOnRepository.findBy({
-    //   add_on_id: In(items.flatMap((item) => item.add_on_id || [])),
-    // });
+    // คำนวณ total_amount รวม VAT 7%
+    const totalAmount = createOrderDto.total_price * 1.07;
 
-    const orderItems = await Promise.all(
+    // สร้าง payment record ตามวิธีการชำระเงิน
+    const payment = this.paymentRepository.create({
+      order: savedOrder,
+      payment_method: createOrderDto.payment_method,
+      status:
+        createOrderDto.payment_method === PaymentMethod.CASH
+          ? 'cash'
+          : 'pending',
+      path_img: createOrderDto.path_img,
+      amount: createOrderDto.total_price,
+      total_amount: totalAmount,
+      payment_date: new Date(),
+      owner,
+      branch,
+      // เพิ่มข้อมูลการชำระเงินสดถ้าเป็นการชำระด้วยเงินสด
+      ...(createOrderDto.payment_method === PaymentMethod.CASH && {
+        cash_given: createOrderDto.cash_given,
+        change: createOrderDto.change,
+      }),
+    });
+
+    await this.paymentRepository.save(payment);
+
+    // ถ้าเป็นการชำระเงินสด ให้อัพเดทสถานะ order เป็น paid ทันที
+    if (createOrderDto.payment_method === PaymentMethod.CASH) {
+      savedOrder.status = 'รอทำ';
+      savedOrder.is_paid = true;
+      if (savedOrder.cancel_status !== null) {
+        savedOrder.is_paid = false;
+      }
+      await this.orderRepository.save(savedOrder);
+    }
+
+    await Promise.all(
       items.map(async (item) => {
-        const menu = await this.menuRepository.findOneBy({
-          menu_id: item.menu_id,
+        const menu = await this.menuRepository.findOne({
+          where: {
+            menu_id: item.menu_id,
+            owner: { owner_id },
+            branch: { branch_id },
+          },
         });
-        const sweetness = await this.sweetnessRepository.findOneBy({
-          sweetness_id: item.sweetness_id,
+
+        const sweetness = await this.sweetnessRepository.findOne({
+          where: {
+            sweetness_id: item.sweetness_id,
+            owner: { owner_id },
+            branch: { branch_id },
+          },
         });
-        const size = await this.sizeRepository.findOneBy({
-          size_id: item.size_id,
+
+        const size = await this.sizeRepository.findOne({
+          where: {
+            size_id: item.size_id,
+            owner: { owner_id },
+            branch: { branch_id },
+          },
         });
-        const menuType = await this.menuTypeRepository.findOneBy({
-          menu_type_id: item.menu_type_id,
+
+        const menuType = await this.menuTypeRepository.findOne({
+          where: {
+            menu_type_id: item.menu_type_id,
+            owner: { owner_id },
+            branch: { branch_id },
+          },
         });
 
         if (!menu || !sweetness || !size || !menuType) {
-          console.warn(
-            `⚠️ Skipping invalid OrderItem: ${JSON.stringify(item)}`,
+          throw new NotFoundException(
+            'One or more order item components not found',
           );
-          return null;
         }
 
         try {
-          // Update ingredient stock levels
           await this.updateIngredientStock(
             item.menu_id,
             item.size_id,
             item.quantity,
             savedOrder.order_date,
+            item.add_on_id,
           );
         } catch (error) {
           console.error(`Failed to update ingredient stock: ${error.message}`);
-          // You might want to handle this error differently
+          throw error;
         }
+        // console.log(orderItems);
+        // Create order item first
+        const orderItem = this.orderItemRepository.create({
+          quantity: item.quantity,
+          price: item.price,
+          menu,
+          sweetnessLevel: sweetness,
+          size,
+          menuType,
+          owner,
+          branch,
+          order: savedOrder,
+        });
 
-        // const relatedAddOns = allAddOns.filter((addon) =>
-        //   item.add_on_id.includes(addon.add_on_id),
-        // );
+        const savedOrderItem = await this.orderItemRepository.save(orderItem);
 
-        // edit entity
-        // return this.orderItemRepository.create({
-        //   quantity: item.quantity,
-        //   price: item.price,
-        //   menu,
-        //   sweetness,
-        //   size,
-        //   menu_type: menuType,
-        //   addOns: relatedAddOns,
-        //   order: savedOrder,
-        // });
+        // Create order item add-ons with reference to saved order item
+        const orderItemAddOns = await Promise.all(
+          item.add_on_id.map(async (addon_id) => {
+            const addon = this.orderItemAddOnRepository.create({
+              order_item_id: savedOrderItem.order_item_id,
+              ingredient_id: addon_id,
+              owner,
+              branch,
+            });
+            return await this.orderItemAddOnRepository.save(addon);
+          }),
+        );
+
+        return {
+          ...savedOrderItem,
+          orderItem: orderItemAddOns,
+        };
       }),
     );
 
-    // Filter out null items and save valid order items
-    const validOrderItems = orderItems.filter((item) => item !== null);
-    await this.orderItemRepository.save(validOrderItems);
-
-    return savedOrder;
+    return this.findOrderById(savedOrder.order_id);
   }
-  // EDIT ENTITY
-  async findAllOrders(): Promise<Order[]> {
-    return this.orderRepository.find({
+  async findAllOrders(
+    owner_id: number,
+    branch_id: number,
+  ): Promise<{
+    total_orders: number;
+    pending_orders: number;
+    completed_orders: number;
+    orders: any[];
+  }> {
+    const totalOrders = await this.orderRepository.count({
+      where: { owner: { owner_id }, branch: { branch_id } },
+    });
+
+    const pendingOrders = await this.orderRepository.count({
+      where: { owner: { owner_id }, branch: { branch_id }, status: 'รอทำ' },
+    });
+
+    const completedOrders = await this.orderRepository.count({
+      where: {
+        owner: { owner_id },
+        branch: { branch_id },
+        status: 'เสร็จสิ้น',
+      },
+    });
+
+    const orders = await this.orderRepository.find({
+      where: { owner: { owner_id }, branch: { branch_id } },
       relations: [
         'order_item',
         'order_item.menu',
-        'order_item.sweetness',
+        'order_item.sweetnessLevel',
         'order_item.size',
-        'order_item.addOns',
-        'order_item.menu_type',
+        'order_item.menuType',
       ],
       select: {
         order_id: true,
         order_date: true,
-        // total_price: true,
         queue_number: true,
         status: true,
-        customer_name: true,
-        customer_contact: true,
         cancel_status: true,
-        // edit entity
-        // order_item: {
-        //   order_item_id: true,
-        //   quantity: true,
-        //   price: true,
-        //   menu: {
-        //     menu_id: true,
-        //     menu_name: true, // ✅ เอาเฉพาะ `menu_id` และ `menu_name`
-        //   },
-        // sweetness: {
-        //   sweetness_id: true,
-        //   level_name: true,
-        // },
-        // size: {
-        //   size_id: true,
-        //   size_name: true,
-        // },
-        // edit entity
-        // addOns: {
-        //   add_on_id: true,
-        //   add_on_name: true,
-        // },
-        // menuType: {
-        //   menu_type_id: true,
-        //   type_name: true,
-        // },
-        // },
       },
     });
+    const formattedOrders = orders.map((order) => ({
+      ...order,
+      order_item: order.order_item.map((item) => ({
+        menu_name: {
+          menu_id: item.menu.menu_id,
+          menu_name: item.menu.menu_name,
+          quantity: item.quantity,
+        },
+
+        details: [
+          item.sweetnessLevel
+            ? {
+                sweetness_id: item.sweetnessLevel.sweetness_id,
+                level_name: item.sweetnessLevel.level_name,
+              }
+            : null,
+          item.size
+            ? { size_id: item.size.size_id, size_name: item.size.size_name }
+            : null,
+          item.menuType
+            ? {
+                menu_type_id: item.menuType.menu_type_id,
+                type_name: item.menuType.type_name,
+              }
+            : null,
+        ].filter(Boolean),
+      })),
+    }));
+
+    return {
+      total_orders: totalOrders,
+      pending_orders: pendingOrders,
+      completed_orders: completedOrders,
+      orders: formattedOrders,
+    };
   }
 
   async findOrderById(order_id: number): Promise<Order> {
@@ -407,10 +623,10 @@ export class OrderService {
       relations: [
         'order_item',
         'order_item.menu',
-        'order_item.sweetness',
+        'order_item.sweetnessLevel',
         'order_item.size',
-        'order_item.addOns',
-        'order_item.menu_type',
+        'order_item.orderItem',
+        'order_item.menuType',
       ],
     });
 
@@ -421,37 +637,38 @@ export class OrderService {
     return order;
   }
 
-  //--------- change status to complete order --------//
   async completeOrder(
     order_id: number,
-    completeOrderDto: CompleteOrderDto,
+    owner_id: number,
+    branch_id: number,
   ): Promise<Order> {
     const order = await this.orderRepository.findOne({
-      where: { order_id: order_id },
+      where: { order_id: order_id, owner: { owner_id }, branch: { branch_id } },
     });
     if (!order) {
-      throw new NotFoundException(`Order with ID ${order_id} not found`);
+      throw new NotFoundException(
+        `Order with ID ${order_id} or owner_id ${owner_id} or branch_id ${branch_id} not found`,
+      );
     }
 
-    if (order.status === 'paid' || order.status === 'processing') {
-      order.status = 'success';
+    if (order.status === 'paid' || order.status === 'รอทำ') {
+      order.status = 'เสร็จสิ้น';
     } else {
-      throw new Error('Cannot make order successful');
+      throw new Error('ออร์เดอร์อาจเสร็จสิ้นไปแล้ว');
     }
 
-    await this.orderRepository.save(order);
-
-    return this.orderRepository.findOne({ where: { order_id: order_id } });
+    return await this.orderRepository.save(order);
   }
 
-  //--------- pay with cash --------//
   async payWithCash(
     order_id: number,
     payWithCashDto: PayWithCashDto,
   ): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { order_id: order_id },
+      relations: ['owner', 'branch'],
     });
+
     if (!order) {
       throw new NotFoundException(`Order with ID ${order_id} not found`);
     }
@@ -460,32 +677,94 @@ export class OrderService {
       where: { order: { order_id: order_id } },
     });
 
+    // คำนวณ total_amount รวม VAT 7%
+    const totalAmount = payWithCashDto.amount * 1.07;
+
     if (!payment) {
       // If no payment exists, create a new one
       payment = this.paymentRepository.create({
         order,
         cash_given: payWithCashDto.cash_given,
         change: payWithCashDto.change,
-        payment_method: 'cash',
+        payment_method: 'CASH',
         status: 'cash',
         payment_date: new Date(),
         amount: payWithCashDto.amount,
-        total_amount: payWithCashDto.total_amount,
+        total_amount: totalAmount,
+        owner: order.owner,
+        branch: order.branch,
       });
-      await this.paymentRepository.save(payment);
     } else {
       // Update the existing payment
-      payment.cash_given = payWithCashDto.cash_given;
-      payment.change = payWithCashDto.change;
-      payment.payment_method = 'cash';
-      payment.status = 'cash';
-      payment.payment_date = new Date();
-      payment.amount = payWithCashDto.amount;
-      payment.total_amount = payWithCashDto.total_amount;
-
-      await this.paymentRepository.save(payment);
+      Object.assign(payment, {
+        cash_given: payWithCashDto.cash_given,
+        change: payWithCashDto.change,
+        payment_method: 'CASH',
+        status: 'cash',
+        payment_date: new Date(),
+        amount: payWithCashDto.amount,
+        total_amount: totalAmount,
+        owner: order.owner,
+        branch: order.branch,
+      });
     }
 
-    return this.orderRepository.findOne({ where: { order_id: order_id } });
+    // Save payment
+    const savedPayment = await this.paymentRepository.save(payment);
+
+    // Update order status
+    order.status = 'paid';
+    await this.orderRepository.save(order);
+
+    return this.orderRepository.findOne({
+      where: { order_id: order_id },
+      relations: ['owner', 'branch'],
+    });
+  }
+
+  // เพิ่มฟังก์ชันสำหรับอัพเดทสถานะการชำระเงิน
+  async updatePaymentStatus(
+    order_id: number,
+    status: string,
+  ): Promise<Payment> {
+    const payment = await this.paymentRepository.findOne({
+      where: { order: { order_id } },
+      relations: ['order'],
+    });
+
+    if (!payment) {
+      throw new NotFoundException(`Payment for order ${order_id} not found`);
+    }
+
+    payment.status = status;
+
+    // ถ้าชำระเงินสำเร็จ อัพเดทสถานะ order ด้วย
+    if (status === 'success') {
+      payment.order.status = 'paid';
+      await this.orderRepository.save(payment.order);
+    }
+
+    return this.paymentRepository.save(payment);
+  }
+
+  async getLatestOrder(owner_id: number, branch_id: number): Promise<{ order_id: number; queue_number: number }> {
+    const latestOrder = await this.orderRepository.findOne({
+      where: {
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+      order: {
+        order_date: 'DESC', // Get the latest order by order_date
+      },
+    });
+
+    if (!latestOrder) {
+      throw new NotFoundException('No orders found for the specified owner and branch');
+    }
+
+    return {
+      order_id: latestOrder.order_id,
+      queue_number: latestOrder.queue_number,
+    };
   }
 }

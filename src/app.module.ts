@@ -15,6 +15,8 @@ import { MenuCustomerModule } from './customer-side/menus/menu-customer.module';
 // import { MinioModule } from './minio/minio.module';
 import { ImageModule } from './images/image.module';
 import { JwtModule } from '@nestjs/jwt';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -44,5 +46,7 @@ import { JwtModule } from '@nestjs/jwt';
     OwnerModule,
     PauseModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

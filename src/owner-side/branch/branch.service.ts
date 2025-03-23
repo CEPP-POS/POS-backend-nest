@@ -75,4 +75,16 @@ export class BranchService {
     }
     await this.branchRepository.remove(branch);
   }
+
+  async getBranchesByOwnerId(ownerId: number) {
+    const branches = await this.branchRepository.find({
+      where: { owner: { owner_id: ownerId } },
+    });
+
+    return branches.map((branch) => ({
+      branch_id: branch.branch_id,
+      branch_name: branch.branch_name,
+      branch_address: branch.branch_address,
+    }));
+  }
 }

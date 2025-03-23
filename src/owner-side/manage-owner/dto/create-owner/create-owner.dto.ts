@@ -16,4 +16,6 @@ export class CreateOwnerDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  roles?: string[];
 }

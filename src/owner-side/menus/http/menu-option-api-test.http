@@ -1,14 +1,36 @@
 POST http://localhost:3000/owner/menus/options/sweetness
 Content-Type: application/json
-
+owner_id: 1
+branch_id: 1
 {
-"options": [
-    "น้อยร้อยเปอร์999%",
-    "มากถวายชีวิต999%"
+  "sweetness_group_name": "ความหวานกาแฟ",
+  "options": [
+    "หวานน้อยกาแฟ",
+    "หวานกลางกาแฟ",
+    "หวานมากกาแฟ"
   ],
-  "menu_id": [1,15],
-  "is_required":true
+  "menu_id": [1,2]
 }
+
+PATCH http://localhost:3000/owner/menus/options/sweetness
+Content-Type: application/json
+owner_id: 6
+branch_id: 3
+{
+  "old_sweetness_group_name": "ความหวานสำหรับกลุ่มนมเฉยๆ",
+  "new_sweetness_group_name": "ความหวานสำหรับกลุ่มนมเฉยๆ",
+  "options": [
+    { "sweetness_id": 3, "level_name": "หวานน้อย" },
+    { "sweetness_id": 4, "level_name": "หวานกลาง" },
+    { "sweetness_id": 5, "level_name": "หวานมาก" }
+  ],
+  "menu_id": [2,3]
+}
+
+DELETE http://localhost:3000/owner/menus/options/sweetness/ความหวาน
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 GET http://localhost:3000/owner/menus/15
 PATCH http://localhost:3000/owner/menus/options/sweetness/104
@@ -18,64 +40,88 @@ Content-Type: application/json
   "menu_id": [15, 16, 10],
   "is_required":true
 }
-//pass////////////////////////
-// GET http://localhost:3000/sweetness-levels
-
-
-# GET http://localhost:3000/sweetness-levels/menu/25 
-
-
-# DELETE http://localhost:3000/sweetness-levels/1
-
 
 POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
 {
   "options": [
-    { "ไข่มุกสีสันสดใสๆๆ": { "price": "10.00", "unit": 20 } },
-    { "ขนมปังกรอบฝุดๆๆๆ": { "price": "20.00", "unit": 50 } }
+    { "บุก": { "price": "10.00", "unit": "กรัม", "quantity":12 } },
+    { "ไข่มุก": { "price": "20.00", "unit": "กรัม", "quantity":15 } }
   ],
-  "menu_id": [16,15],
+  "menu_id": [1,2],
   "is_required":true,
   "is_multipled":true
-  
 }
 
-PATCH http://localhost:3000/owner/menus/options/add-ons/114
+# edit add on option
+PATCH http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
-
+owner_id: 1
+branch_id: 1
 {
   "options": [
-    { "ไข่มุกบราวชูการ์": { "price": "20.00", "unit": 20 } },
-    { "ขนมปังกรอบ": { "price": "20.00", "unit": 50 } }
+    { 
+      "add_on_id": "26",
+      "add_on_name": "บุก",
+      "price": "10.00",
+      "quantity": 20,
+      "unit": "กรัม"
+    },
+    { 
+      "add_on_id": "27",
+      "add_on_name": "ไข่มุก",
+      "price": "25.00",
+      "quantity": 12,
+      "unit": "กรัม"
+    },
+    { 
+      "add_on_id": "28",
+      "add_on_name": "ว่านบุกใส",
+      "price": "20.00",
+      "quantity": 30,
+      "unit": "มิลลิลิตร"
+    }
   ],
-  "menu_id": [16,15],
-  "is_required":true
+  "menu_id": [1,2],
+  "is_require": false,
+  "is_multiple": true
 }
-
 
 POST http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
 {
+  "size_group_name": "ขนาดแก้วสำหรับนม",
    "options": [
-    { "small mak":  { "price": "5.00" } },
-    { "mid mak":  { "price": "20.00" } }
+    { "s":  { "price": "5.00" } },
+    { "m":  { "price": "10.00" } },
+    { "l":  { "price": "15.00" } }
   ],
-  "menu_id": [17, 16],
-  "is_required": true
-}
-PATCH http://localhost:3000/owner/menus/options/size/130
-Content-Type: application/json
-{
-  "options": [
-    { "biggg": { "price": "20.00"} },
-    { "so small": { "price": "20.00" } }
-  ],
-  "menu_id": [16, 15],
-  "is_required":true
+  "menu_id": [1]
 }
 
+# edit size option
+PATCH http://localhost:3000/owner/menus/options/size
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+{
+  "old_size_group_name": "ขนาดแก้วสำหรับนมจ้า",
+  "new_size_group_name": "ขนาดแก้วสำหรับนมจ้า",
+   "options": [
+    { "size_id": "96", "size_name":"m",  "price": "25.00" },
+    { "size_id": "97", "size_name":"l",  "price": "35.00" },
+    { "size_id": "98", "size_name":"xl",  "price": "45.00" },
+    { "size_id": "null", "size_name":"xs",  "price": "45.00" }
+  ],
+  "menu_id": [1]
+}
 
 POST http://localhost:3000/owner/menus/options/menu_type
 Content-Type: application/json
@@ -90,7 +136,8 @@ branch_id: 1
   "menu_id": [1, 2]
 }
 
-DELETE http://localhost:3000/owner/menus/options/menu_type/ปั่นรักสุขภาพ
+# delete size group
+DELETE http://localhost:3000/owner/menus/options/size/ขนาดแก้วสำหรับนม
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
@@ -109,14 +156,59 @@ branch_id: 1
   "menu_id": [1, 2]
 }
 
+DELETE http://localhost:3000/owner/menus/options/menu_type/ปั่นรักสุขภาพ
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
 
+# GET http://localhost:3000/owner/menus/14
 
-GET http://localhost:3000/owner/menus/14
+# GET http://localhost:3000/owner/menus/options/add-ons
 
-GET http://localhost:3000/owner/menus/options/add-ons
+# GET http://localhost:3000/owner/menus/options/size
 
-GET http://localhost:3000/owner/menus/options/size
+# GET http://localhost:3000/owner/menus/options/sweetness
 
-GET http://localhost:3000/owner/menus/options/sweetness
+# GET http://localhost:3000/owner/menus/options/menu-type
 
-GET http://localhost:3000/owner/menus/options/menu-type
+# Delete all add-ons
+DELETE http://localhost:3000/owner/menus/options/add-ons
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+### Get sweetness group data
+GET http://localhost:3000/owner/menus/options/sweetness/ระดับความหวานทั่วไป
+Content-Type: application/json
+owner_id: 1
+branch_id: 3
+
+### Get size group data
+GET http://localhost:3000/owner/menus/options/size/ขนาดแก้วสำหรับนม
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+### Get menu type group data
+GET http://localhost:3000/owner/menus/options/menu-type/ชนิดเครื่องดื่มสำหรับทั่วไป
+Content-Type: application/json
+owner_id: 1
+branch_id: 3
+
+### Get add-on group data
+GET http://localhost:3000/owner/menus/options/add-on
+Content-Type: application/json
+owner_id: 1
+branch_id: 3
+
+### Get all option groups
+GET http://localhost:3000/owner/menus/options/groups
+Content-Type: application/json
+owner_id: 6
+branch_id: 3
+
+### Get menu options by menu id for cut stock
+GET http://localhost:3000/owner/menus/stock/option/7
+Content-Type: application/json
+owner_id: 6
+branch_id: 3

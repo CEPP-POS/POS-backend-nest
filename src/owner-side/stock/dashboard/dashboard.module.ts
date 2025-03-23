@@ -11,6 +11,7 @@ import { IngredientCategory } from 'src/entities/ingredient-category.entity';
 import { IngredientUpdate } from 'src/entities/ingredient-update.entity';
 import { Owner } from 'src/entities/owner.entity';
 import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
+import { Branch } from 'src/entities/branch.entity';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
       IngredientUpdate,
       Owner,
       MenuIngredient,
+      Branch,
     ]),
   ],
   controllers: [DashboardController],

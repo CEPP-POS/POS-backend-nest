@@ -4,14 +4,11 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
-  ManyToMany,
-  JoinTable,
   OneToMany,
 } from 'typeorm';
 import { Order } from './order.entity';
 import { Menu } from './menu.entity';
 import { MenuType } from './menu-type.entity';
-import { AddOn } from './add-on.entity';
 import { Size } from './size.entity';
 import { SweetnessLevel } from './sweetness-level.entity';
 import { OrderItemAddOn } from './order-item-add-on.entity';

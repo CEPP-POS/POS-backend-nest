@@ -14,7 +14,7 @@ import { BranchService } from '../branch/branch.service';
     forwardRef(() => AuthModule),
   ],
   controllers: [OwnerController],
-  providers: [OwnerService,BranchService],
+  providers: [OwnerService, BranchService],
   exports: [OwnerService, TypeOrmModule],
 })
 export class OwnerModule {}

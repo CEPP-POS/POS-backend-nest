@@ -9,6 +9,8 @@ import {
   HttpCode,
   HttpStatus,
   Res,
+  Headers,
+  BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { OrderService } from './order.service';
@@ -17,31 +19,16 @@ import { UpdateOrderDto } from './dto/update-order/update-order.dto';
 import { CancelOrderDto } from './dto/cancel-order/Cancel-order.dto';
 import { OrderItemDto } from './dto/order-item/order-item.dto';
 import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
-import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
+// import { CompleteOrderDto } from './dto/complete-order/complete-order.dto';
 
 @Controller('employee/orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) { }
-
-  // @Post()
-  // @HttpCode(HttpStatus.CREATED)
-  // async create(@Body() createOrderDto: CreateOrderDto) {
-  //   return this.orderService.create(createOrderDto);
-  // }
-  // @Get()
-  // @HttpCode(HttpStatus.OK)
-  // async findAll() {
-  //   return this.orderService.findAll();
-  // }
-
-  // @Post()
-  // @HttpCode(HttpStatus.CREATED)
-  // async create(@Body() createOrderDto: CreateOrderDto) {
-  //   return this.orderService.create(createOrderDto);
-  // }
+  constructor(private readonly orderService: OrderService) {}
 
   @Post()
   async createOrder(
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
     @Body()
     {
       createOrderDto,
@@ -51,26 +38,20 @@ export class OrderController {
       items: OrderItemDto[];
     },
   ) {
-    return this.orderService.createOrder(createOrderDto, items);
+    return this.orderService.createOrder(
+      createOrderDto,
+      items,
+      owner_id,
+      branch_id,
+    );
   }
 
-  // @Post()
-  // async createOrderItem(
-  //   @Body()
-  //   {
-  //     createOrderDto,
-  //     items,
-  //   }: {
-  //     createOrderDto: CreateOrderDto;
-  //     items: OrderItemDto[];
-  //   },
-  // ) {
-  //   return this.orderService.createOrder(createOrderDto, items);
-  // }
-
   @Get()
-  async findAllOrders() {
-    return this.orderService.findAllOrders();
+  async findAllOrders(
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
+  ) {
+    return this.orderService.findAllOrders(owner_id, branch_id);
   }
 
   @Get(':id')
@@ -112,21 +93,29 @@ export class OrderController {
     await this.orderService.remove(+id);
     return res.status(HttpStatus.NO_CONTENT).send();
   }
-
-  @Patch(':id/cancel')
+  //
+  @Patch(':order_id/cancel')
   async cancelOrder(
-    @Param('id') id: number,
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
+    @Param('order_id') id: number,
     @Body() cancelOrderDto: CancelOrderDto,
   ) {
-    return this.orderService.cancelOrder(id, cancelOrderDto);
+    return this.orderService.cancelOrder(
+      id,
+      cancelOrderDto,
+      owner_id,
+      branch_id,
+    );
   }
 
-  @Patch(':id/complete')
+  @Patch(':order_id/complete')
   async completeOrder(
-    @Param('id') id: number,
-    @Body() completeOrderDto: CompleteOrderDto,
+    @Param('order_id') id: number,
+    @Headers('owner_id') owner_id: number,
+    @Headers('branch_id') branch_id: number,
   ) {
-    return this.orderService.completeOrder(id, completeOrderDto);
+    return this.orderService.completeOrder(id, owner_id, branch_id);
   }
 
   @Post(':id/cash')
@@ -135,5 +124,17 @@ export class OrderController {
     @Body() payWithCashDto: PayWithCashDto,
   ) {
     return this.orderService.payWithCash(id, payWithCashDto);
+  }
+
+  @Get('latest')
+  async getLatestOrder(@Headers() headers: Record<string, string>) {
+    const ownerId = headers['owner_id'];
+    const branchId = headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+    }
+
+    return this.orderService.getLatestOrder(Number(ownerId), Number(branchId));
   }
 }

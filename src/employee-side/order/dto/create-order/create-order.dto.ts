@@ -1,10 +1,19 @@
-import { IsEnum, IsInt, IsNotEmpty, IsDate } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsDate,
+  IsString,
+  IsOptional,
+  IsNumber,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { Column } from 'typeorm';
 
 export enum CancelStatus {
-  RefundComplete = 'คืนเงินเสร็จสิ้น',
   RefundPending = 'ยังไม่คืนเงิน',
+  Refunded = 'คืนเงินเสร็จสิ้น',
+  CancelByEmployee = 'ยกเลิกโดยพนักงาน',
 }
 export enum PaymentMethod {
   CASH = 'cash',
@@ -12,6 +21,7 @@ export enum PaymentMethod {
 }
 
 export class CreateOrderDto {
+  @IsOptional()
   @IsDate()
   @Type(() => Date)
   order_date: Date;
@@ -20,15 +30,14 @@ export class CreateOrderDto {
   total_price: number;
 
   @IsInt()
-  @IsNotEmpty()
-  queue_number: number;
+  queue_number?: number;
 
   @Column({ default: 'รอทำ' }) // สถานะเริ่มต้น
   status: string;
 
+  @IsOptional()
   @IsEnum(CancelStatus)
-  @IsNotEmpty()
-  cancel_status: CancelStatus;
+  cancel_status?: CancelStatus;
 
   @IsEnum(PaymentMethod)
   @IsNotEmpty()
@@ -39,4 +48,16 @@ export class CreateOrderDto {
 
   @Column({ nullable: true })
   contact: string;
+
+  @IsString()
+  @IsOptional()
+  path_img?: string;
+
+  @IsNumber()
+  @IsOptional()
+  cash_given?: number;
+
+  @IsNumber()
+  @IsOptional()
+  change?: number;
 }

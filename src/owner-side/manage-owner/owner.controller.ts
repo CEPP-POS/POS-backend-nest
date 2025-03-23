@@ -28,10 +28,7 @@ import { CreateEmployeeDto } from './dto/create-employee/create-employee.dto';
 import { UserPayload } from '../../auth/interfaces/user.interface';
 import { BranchService } from '../branch/branch.service';
 import { UpdatePasswordDto } from '../../auth/dto/password.dto';
-import {
-  ForgotPasswordDto,
-  VerifyOtpDto,
-} from '../../auth/dto/auth.dto';
+import { ForgotPasswordDto, VerifyOtpDto } from '../../auth/dto/auth.dto';
 
 @Controller('owner')
 export class OwnerController {
@@ -68,7 +65,7 @@ export class OwnerController {
           owner_name: owner.owner_name,
           contact_info: owner.contact_info,
           email: owner.email,
-          password: '***flukelovememee***',
+          password: '***temp password send tto email***',
         });
       }
 
@@ -207,5 +204,17 @@ export class OwnerController {
   @Post('request-temp-password')
   async requestTempPassword(@Body() { email }: { email: string }) {
     return this.ownerService.requestTempPassword(email);
+  }
+
+  @Post('branch')
+  async assignBranch(@Body('branch_id') branchId: number, @Req() req: Request) {
+    const ownerId = req.headers['owner_id'];
+    if (!ownerId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+    await this.ownerService.assignBranch(Number(ownerId), Number(branchId));
+    return { message: 'Branch assigned successfully' };
   }
 }

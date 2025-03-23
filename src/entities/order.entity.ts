@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import {
   CancelStatus,
-  PaymentMethod,
+  // PaymentMethod,
 } from '../employee-side/order/dto/create-order/create-order.dto';
 import { OrderItem } from './order-item.entity';
 import { Payment } from './payment.entity';
@@ -20,13 +20,11 @@ import { Owner } from './owner.entity';
 
 @Entity()
 export class Order {
-  
   @PrimaryGeneratedColumn()
   order_id: number;
 
   @CreateDateColumn()
   order_date: Date;
-
 
   @Column()
   queue_number: number;

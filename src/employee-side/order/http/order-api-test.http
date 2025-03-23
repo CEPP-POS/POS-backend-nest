@@ -1,38 +1,66 @@
-### Create Order
+### Create Order with QRCODE PAY
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
+owner_id: 6
+branch_id:3
+{
+  "createOrderDto": {
+    "order_date": "2025-03-03T08:00:00Z",
+    "total_price": 260,
+    "queue_number": 4,
+    "status": "รอทำ",
+    "payment_method": "qr-code",
+    "path_img": "https://image/payment",
+    "cancel_status": null
+  },
+  "items": [
+    {
+      "menu_id": 7,
+      "sweetness_id": 3,
+      "size_id": 121,
+      "add_on_id": [],  
+      "menu_type_id": 21,
+      "quantity": 1,
+      "price": 100
+    }
+  ]
+}
 
+### Create Order WITH CASH PAY
+POST http://localhost:3000/employee/orders
+Content-Type: application/json
+owner_id: 6
+branch_id: 3
 {
   "createOrderDto": {
     "order_date": "2025-03-01T08:00:00Z",
     "total_price": 260,
-    "queue_number": 4,
-    "status": "รอทำ"
+    "queue_number": null,
+    "status": "รอทำ",
+    "payment_method": "cash",
+    "cash_given": 500,
+    "change": 240,
+    "cancel_status": "ยกเลิกโดยพนักงาน"
   },
   "items": [
     {
-      "menu_id": 15,
-      "sweetness_id": 2,
-      "size_id": 1,
-      "add_on_id": [1,3],  
-      "menu_type_id": 2,
+      "menu_id": 7,
+      "sweetness_id": 3,
+      "size_id": 121,
+      "add_on_id": [],  
+      "menu_type_id": 21,
       "quantity": 1,
       "price": 100
-    },
-    {
-      "menu_id": 11,
-      "sweetness_id": 1,
-      "size_id": 1,
-      "add_on_id": [1,2],  
-      "menu_type_id": 1,
-      "quantity": 1,
-      "price": 60
     }
   ]
 }
 
 ### Get All Orders
 GET http://localhost:3000/employee/orders
+Content-Type: application/json
+owner_id: 1
+branch_id: 3
+
 
 ### Get Order by ID
 GET http://localhost:3000/employee/orders/5
@@ -48,25 +76,24 @@ Content-Type: application/json
 ### Delete Order
 DELETE http://localhost:3000/employee/orders/1
 
-
+## cancel order
 PATCH http://localhost:3000/employee/orders/15/cancel
 Content-Type: application/json
+owner_id: 1
+branch_id: 3
 {
-  "order_id": 15,
   "customer_name": "John Doe",
-  "contact": "123456789"
+  "contact": "0812345678"
 }
 
 ### Get Order Item 
 GET http://localhost:3000/employee/orders/item
 
 ### complete order
-PATCH http://localhost:3000/employee/orders/1/complete
+PATCH http://localhost:3000/employee/orders/55/complete
 Content-Type: application/json
-{
-  "order_id": 15,
-  "status": "success"
-}
+owner_id: 1
+branch_id: 1
 
 ### pay with cash
 POST http://localhost:3000/employee/orders/1/cash
