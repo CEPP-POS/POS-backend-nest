@@ -15,7 +15,7 @@ import { UpdateBranchDto } from './dto/update-branch/update-branch.dto';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { request, Request } from 'express';
+import { Request } from 'express';
 
 @Controller('branches')
 export class BranchController {
