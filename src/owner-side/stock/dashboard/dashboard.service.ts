@@ -901,6 +901,7 @@ export class DashboardService {
     return {
       ingredient_id: ingredient.ingredient_id,
       ingredient_name: ingredient.ingredient_name,
+      ingredient_img: ingredient.image_url,
       updates: validUpdates.map((update) => ({
         update_id: update.update_id,
         quantity_in_stock: update.quantity_in_stock,
