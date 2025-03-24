@@ -1,0 +1,16 @@
+GET http://192.168.1.41:3000/sync/check-connection
+Content-Type: application/json
+# owner_id: 1
+# branch_id: 1
+
+### Get sync status for a branch
+GET http://localhost:3000/sync/status
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
+
+### Manually trigger data sync
+POST http://localhost:3000/sync/sync-now
+Content-Type: application/json
+owner_id: 1
+branch_id: 1
