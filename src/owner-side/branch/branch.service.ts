@@ -208,17 +208,61 @@ export class BranchService {
             branch_id: size.branch_branch_id,
           })),
         ),
-      this.sizeGroupRepository.find({
+      this.sizeGroupRepository
+        .createQueryBuilder('sizeGroup')
+        .select([
+          'sizeGroup.size_group_id',
+          'sizeGroup.size_group_name',
+          'size.size_id',
+          'owner.owner_id',
+          'branch.branch_id',
+        ])
+        .leftJoin('sizeGroup.size', 'size')
+        .leftJoin('sizeGroup.owner', 'owner')
+        .leftJoin('sizeGroup.branch', 'branch')
+        .where('owner.owner_id = :ownerId', { ownerId })
+        .andWhere('branch.branch_id = :branchId', {
+          branchId: selectedBranchId,
+        })
+        .getRawMany()
+        .then((groups) =>
+          groups.map((group) => ({
+            size_group_id: group.sizeGroup_size_group_id,
+            size_group_name: group.sizeGroup_size_group_name,
+            size_id: group.size_size_id,
+            owner_id: group.owner_owner_id,
+            branch_id: group.branch_branch_id,
+          })),
+        ),
+      this.sweetnessLevelRepository.find({
         where: {
           owner: { owner_id: ownerId },
           branch: { branch_id: selectedBranchId },
         },
-        relations: ['owner', 'branch', 'size'],
+        relations: ['owner', 'branch'],
         select: {
-          size_group_id: true,
-          size_group_name: true,
-          size: {
-            size_id: true,
+          sweetness_id: true,
+          level_name: true,
+          is_delete: true,
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
+      }),
+      this.sweetnessGroupRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+        relations: ['owner', 'branch', 'sweetnessLevel'],
+        select: {
+          sweetness_group_id: true,
+          sweetness_group_name: true,
+          sweetnessLevel: {
+            sweetness_id: true,
           },
           owner: {
             owner_id: true,
@@ -228,39 +272,44 @@ export class BranchService {
           },
         },
       }),
-      this.sweetnessLevelRepository.find({
-        where: {
-          owner: { owner_id: ownerId },
-          branch: { branch_id: selectedBranchId },
-        },
-        relations: ['owner', 'branch', 'sweetnessGroup'],
-      }),
-      this.sweetnessGroupRepository.find({
-        where: {
-          owner: { owner_id: ownerId },
-          branch: { branch_id: selectedBranchId },
-        },
-        relations: ['owner', 'branch', 'sweetnessLevel', 'menu'],
-      }),
       this.menuTypeRepository.find({
         where: {
           owner: { owner_id: ownerId },
           branch: { branch_id: selectedBranchId },
         },
-        relations: [
-          'owner',
-          'branch',
-          'menuTypeGroup',
-          'orderItem',
-          'menuIngredient',
-        ],
+        relations: ['owner', 'branch'],
+        select: {
+          menu_type_id: true,
+          type_name: true,
+          price_difference: true,
+          is_delete: true,
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
       }),
       this.menuTypeGroupRepository.find({
         where: {
           owner: { owner_id: ownerId },
           branch: { branch_id: selectedBranchId },
         },
-        relations: ['owner', 'branch', 'menuType', 'menu'],
+        relations: ['owner', 'branch', 'menuType'],
+        select: {
+          menu_type_group_id: true,
+          menu_type_group_name: true,
+          menuType: {
+            menu_type_id: true,
+          },
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
       }),
       this.ingredientCategoryRepository.find({
         where: {
@@ -268,27 +317,79 @@ export class BranchService {
           branch: { branch_id: selectedBranchId },
         },
         relations: ['owner', 'branch'],
+        select: {
+          ingredient_category_id: true,
+          ingredient_category_name: true,
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
       }),
       this.ingredientRepository.find({
         where: {
           owner: { owner_id: ownerId },
           branch: { branch_id: selectedBranchId },
         },
-        relations: ['owner', 'branch', 'ingredientUpdate', 'orderItemAddon'],
+        relations: ['owner', 'branch', 'ingredientCategory'],
+        select: {
+          ingredient_id: true,
+          ingredient_name: true,
+          image_url: true,
+          unit: true,
+          paused: true,
+          is_delete: true,
+          ingredientCategory: {
+            ingredient_category_id: true,
+          },
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
       }),
       this.addOnRepository.find({
         where: {
           owner: { owner_id: ownerId },
           branch: { branch_id: selectedBranchId },
         },
-        relations: ['owner', 'branch'],
+        relations: ['owner', 'branch', 'ingredient'],
+        select: {
+          add_on_id: true,
+          is_required: true,
+          is_multipled: true,
+          add_on_price: true,
+          ingredient: {
+            ingredient_id: true,
+          },
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
       }),
       this.categoryRepository.find({
         where: {
           owner: { owner_id: ownerId },
           branch: { branch_id: selectedBranchId },
         },
-        relations: ['owner', 'branch', 'menuCategory'],
+        relations: ['owner', 'branch'],
+        select: {
+          category_id: true,
+          category_name: true,
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
       }),
       this.menuRepository.find({
         where: {
@@ -301,18 +402,53 @@ export class BranchService {
           'menuTypeGroup',
           'sweetnessGroup',
           'sizeGroup',
-          'menuIngredient',
-          'orderItem',
-          'menuCategory',
         ],
-      }),
-      this.menuCategoryRepository.find({
-        where: {
-          owner: { owner_id: ownerId },
-          branch: { branch_id: selectedBranchId },
+        select: {
+          menu_id: true,
+          menu_name: true,
+          description: true,
+          price: true,
+          image_url: true,
+          paused: true,
+          is_delete: true,
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+          menuTypeGroup: {
+            menu_type_group_id: true,
+          },
+          sweetnessGroup: {
+            sweetness_group_id: true,
+          },
+          sizeGroup: {
+            size_group_id: true,
+          },
         },
-        relations: ['owner', 'branch', 'menu', 'category'],
       }),
+      this.menuCategoryRepository
+        .createQueryBuilder('menuCategory')
+        .select([
+          'menuCategory.category_id',
+          'menuCategory.menu_id',
+          'menuCategory.owner_id',
+          'menuCategory.branch_id',
+        ])
+        .where('menuCategory.owner_id = :ownerId', { ownerId })
+        .andWhere('menuCategory.branch_id = :branchId', {
+          branchId: selectedBranchId,
+        })
+        .getRawMany()
+        .then((items) =>
+          items.map((item) => ({
+            category_id: item.menuCategory_category_id,
+            menu_id: item.menuCategory_menu_id,
+            owner_id: item.menuCategory_owner_id,
+            branch_id: item.menuCategory_branch_id,
+          })),
+        ),
       this.menuIngredientRepository.find({
         where: {
           owner: { owner_id: ownerId },
@@ -326,6 +462,29 @@ export class BranchService {
           'size',
           'menu_type',
         ],
+        select: {
+          menu_ingredient_id: true,
+          is_addon: true,
+          quantity_used: true,
+          menu: {
+            menu_id: true,
+          },
+          ingredient: {
+            ingredient_id: true,
+          },
+          size: {
+            size_id: true,
+          },
+          menu_type: {
+            menu_type_id: true,
+          },
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
       }),
     ]);
 

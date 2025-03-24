@@ -2,7 +2,7 @@
 GET http://localhost:3000/owner/ingredient/4
 
 
-GET http://localhost:3000/owner/ingredient/menu/16
+GET http://localhost:3000/owner/ingredient/menu/1
 
 GET http://localhost:3000/owner/ingredient
 Content-Type: application/json
