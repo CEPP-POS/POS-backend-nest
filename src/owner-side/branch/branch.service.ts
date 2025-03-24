@@ -595,8 +595,21 @@ export class BranchService {
 
       const sourceSetup = response.data;
 
-      // Log ข้อมูลออกมา
-      console.log('Source Branch Setup:', JSON.stringify(sourceSetup, null, 2));
+      // แปลง branch_id ทั้งหมดให้เป็น targetBranchId
+      const updateBranchId = (obj: any) => {
+        if (obj && typeof obj === 'object') {
+          if ('branch_id' in obj) {
+            obj.branch_id = targetBranchId;
+          }
+          Object.values(obj).forEach((value) => {
+            if (Array.isArray(value) || typeof value === 'object') {
+              updateBranchId(value);
+            }
+          });
+        }
+      };
+
+      updateBranchId(sourceSetup);
 
       return {
         message: 'Branch setup cloned successfully',
