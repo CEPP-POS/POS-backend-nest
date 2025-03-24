@@ -10,7 +10,6 @@ import {
   Headers,
   Query,
   NotFoundException,
-  Delete,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -25,10 +24,11 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
+import { EditIngredientDto } from './dto/edit-ingredient.dto';
 
 @Controller('owner')
 export class DashboardController {
-  constructor(private readonly dashboardService: DashboardService) { }
+  constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('stock-summary/:date')
   async getStockSummary(
@@ -69,9 +69,10 @@ export class DashboardController {
     );
   }
 
-  @Get('stock-orders/:date')
-  async getOrderTopic(
+  @Get('stock-orders/:date/:filter')
+  async getOrderTopicWithFilter(
     @Param('date') date: string,
+    @Param('filter') filter: 'year' | 'month' | 'date' | 'all',
     @Req() request: Request,
   ): Promise<OrderItemDto> {
     const ownerId = request.headers['owner_id'];
@@ -83,9 +84,9 @@ export class DashboardController {
       );
     }
 
-    date = date + 'T08:00:00.000Z';
-    return this.dashboardService.getOrderTopic(
+    return this.dashboardService.getOrderTopicWithFilter(
       new Date(date),
+      filter,
       Number(ownerId),
       Number(branchId),
     );
@@ -311,14 +312,46 @@ export class DashboardController {
 
   @Patch('stock-ingredients/:ingredient_id')
   @HttpCode(HttpStatus.OK)
-  async deleteIngredient(@Param('ingredient_id') ingredient_id: number, @Headers() headers: Record<string, string>) {
+  async deleteIngredient(
+    @Param('ingredient_id') ingredient_id: number,
+    @Headers() headers: Record<string, string>,
+  ) {
     const ownerId = headers['owner_id'];
     const branchId = headers['branch_id'];
 
     if (!ownerId || !branchId) {
-      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
     }
 
-    return this.dashboardService.deleteIngredient(ingredient_id, Number(ownerId), Number(branchId));
+    return this.dashboardService.deleteIngredient(
+      ingredient_id,
+      Number(ownerId),
+      Number(branchId),
+    );
+  }
+
+  @Patch('edit-stock-ingredients/:ingredient_id')
+  async editIngredient(
+    @Param('ingredient_id') ingredient_id: number,
+    @Body() editIngredientDto: EditIngredientDto,
+    @Headers() headers: Record<string, string>,
+  ) {
+    const ownerId = headers['owner_id'];
+    const branchId = headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    return this.dashboardService.editIngredient(
+      ingredient_id,
+      editIngredientDto,
+      Number(ownerId),
+      Number(branchId),
+    );
   }
 }

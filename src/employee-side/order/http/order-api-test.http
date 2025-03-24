@@ -1,13 +1,12 @@
 ### Create Order with QRCODE PAY
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
-owner_id: 6
-branch_id:3
+owner_id: 1
+branch_id:1
 {
   "createOrderDto": {
     "order_date": "2025-03-03T08:00:00Z",
-    "total_price": 260,
-    "queue_number": 4,
+    "total_price": 100,
     "status": "รอทำ",
     "payment_method": "qr-code",
     "path_img": "https://image/payment",
@@ -15,12 +14,12 @@ branch_id:3
   },
   "items": [
     {
-      "menu_id": 7,
-      "sweetness_id": 3,
-      "size_id": 121,
-      "add_on_id": [],  
-      "menu_type_id": 21,
-      "quantity": 1,
+      "menu_id": 1,
+      "sweetness_id": 79,
+      "size_id": 1,
+      "add_on_id": [3,4],  
+      "menu_type_id": 1,
+      "quantity": 2,
       "price": 100
     }
   ]
@@ -29,8 +28,8 @@ branch_id:3
 ### Create Order WITH CASH PAY
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: 1
+branch_id: 1
 {
   "createOrderDto": {
     "order_date": "2025-03-01T08:00:00Z",
@@ -40,16 +39,16 @@ branch_id: 3
     "payment_method": "cash",
     "cash_given": 500,
     "change": 240,
-    "cancel_status": "ยกเลิกโดยพนักงาน"
+    "cancel_status": null
   },
   "items": [
     {
-      "menu_id": 7,
-      "sweetness_id": 3,
-      "size_id": 121,
-      "add_on_id": [],  
-      "menu_type_id": 21,
-      "quantity": 1,
+      "menu_id": 1,
+      "sweetness_id": 79,
+      "size_id": 1,
+      "add_on_id": [3,4],  
+      "menu_type_id": 1,
+      "quantity": 2,
       "price": 100
     }
   ]

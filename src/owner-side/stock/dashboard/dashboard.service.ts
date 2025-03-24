@@ -23,6 +23,7 @@ import { MenuIngredient } from 'src/entities/menu-ingredient.entity';
 import { IngredientCategoriesDto } from './dto/ingredients-categories.dto';
 import { Branch } from 'src/entities/branch.entity';
 import { CancelStatus } from 'src/employee-side/order/dto/create-order/create-order.dto';
+import { EditIngredientDto } from './dto/edit-ingredient.dto';
 
 @Injectable()
 export class DashboardService {
@@ -56,7 +57,7 @@ export class DashboardService {
 
     @InjectRepository(Owner)
     private ownerRepository: Repository<Owner>,
-  ) { }
+  ) {}
 
   private async calculateMonthlyRevenue(
     year: number,
@@ -186,7 +187,11 @@ export class DashboardService {
     ownerId: number,
     branchId: number,
   ): Promise<Linegraph> {
-    const monthlyRevenue = await this.calculateMonthlyRevenue(year, ownerId, branchId);
+    const monthlyRevenue = await this.calculateMonthlyRevenue(
+      year,
+      ownerId,
+      branchId,
+    );
 
     const dailyStats = [];
     const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
@@ -197,7 +202,11 @@ export class DashboardService {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month - 1, day); // month is 0-indexed
-      const { totalRevenue: dailyRevenue, totalOrders: dailyOrders, canceledOrders: dailyCanceledOrders } = await this.calculateDailyStats(date, ownerId, branchId);
+      const {
+        totalRevenue: dailyRevenue,
+        totalOrders: dailyOrders,
+        canceledOrders: dailyCanceledOrders,
+      } = await this.calculateDailyStats(date, ownerId, branchId);
 
       // Accumulate totals
       totalRevenue += dailyRevenue;
@@ -216,68 +225,6 @@ export class DashboardService {
       canceled_orders: canceledOrders,
       // monthly_revenue: monthlyRevenue,
       daily_stats: dailyStats,
-    };
-  }
-
-  // Entity order total price
-  async getOrderTopic(
-    date: Date,
-    ownerId: number,
-    branchId: number,
-  ): Promise<any> {
-    const startOfDay = new Date(date.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
-
-    const salesSummary = await this.salesSummaryRepository.findOne({
-      where: {
-        date: Between(startOfDay, endOfDay),
-        owner: { owner_id: ownerId },
-        branch: { branch_id: branchId },
-      },
-    });
-
-    const totalOrders = salesSummary?.total_orders || 0;
-    const canceledOrders = salesSummary?.canceled_orders || 0;
-
-    const orders = await this.orderRepository.find({
-      where: {
-        order_date: Between(startOfDay, endOfDay),
-        owner: { owner_id: ownerId },
-        branch: { branch_id: branchId },
-      },
-      relations: ['order_item', 'payment'],
-    });
-
-    const orderTopic = orders.map((order) => {
-      const totalQuantity = order.order_item.reduce(
-        (sum, item) => sum + item.quantity,
-        0,
-      );
-      const paymentMethod = order.payment
-        ? order.payment.payment_method
-        : 'Unknown';
-
-      const amount = order.payment.amount;
-      const total_amount = order.payment.total_amount;
-      const cancel_status = order.cancel_status;
-      const image_url = order.payment.path_img;
-
-      return {
-        order_id: order.order_id,
-        order_date: order.order_date,
-        quantity: totalQuantity,
-        amount: amount,
-        total_amount: total_amount,
-        payment_method: paymentMethod,
-        cancel_status: cancel_status,
-        image_url: image_url,
-      };
-    });
-
-    return {
-      total_orders: totalOrders,
-      canceled_orders: canceledOrders,
-      order_topic: orderTopic,
     };
   }
 
@@ -511,8 +458,8 @@ export class DashboardService {
       category_name:
         menuIng.menu.menuCategory.length > 0
           ? menuIng.menu.menuCategory
-            .map((cat) => cat.category.category_name)
-            .join(', ')
+              .map((cat) => cat.category.category_name)
+              .join(', ')
           : '',
     }));
 
@@ -645,11 +592,20 @@ export class DashboardService {
 
       await this.ingredientUpdateRepository.save(existingUpdate);
 
+      // คำนวณ total_volume ใหม่จากทุก records ที่มี ingredient_id เดียวกัน
+      const totalVolumeResult = await this.ingredientUpdateRepository
+        .createQueryBuilder('update')
+        .select('SUM(update.total_volume)', 'total')
+        .where('update.ingredient.ingredient_id = :ingredientId', {
+          ingredientId: ingredient.ingredient_id,
+        })
+        .getRawOne();
+
       return {
         message: 'Stock updated successfully',
         ingredient_id: ingredient.ingredient_id,
         update_id: existingUpdate.update_id,
-        total_volume: existingUpdate.total_volume,
+        total_volume: totalVolumeResult.total || 0,
       };
     } else {
       const total_volume = net_volume * quantity_in_stock;
@@ -666,11 +622,20 @@ export class DashboardService {
 
       await this.ingredientUpdateRepository.save(newUpdate);
 
+      // คำนวณ total_volume ใหม่จากทุก records ที่มี ingredient_id เดียวกัน
+      const totalVolumeResult = await this.ingredientUpdateRepository
+        .createQueryBuilder('update')
+        .select('SUM(update.total_volume)', 'total')
+        .where('update.ingredient.ingredient_id = :ingredientId', {
+          ingredientId: ingredient.ingredient_id,
+        })
+        .getRawOne();
+
       return {
         message: 'Ingredient created successfully',
         ingredient_id: ingredient.ingredient_id,
         update_id: newUpdate.update_id,
-        total_volume: newUpdate.total_volume,
+        total_volume: totalVolumeResult.total || 0,
       };
     }
   }
@@ -735,17 +700,10 @@ export class DashboardService {
         ? updateIngredientDto.net_volume
         : old_net_volume;
 
-    let new_total_volume = old_total_volume;
-
-    if (
-      updateIngredientDto.total_volume !== undefined &&
-      new_quantity === old_quantity &&
-      new_net_volume === old_net_volume
-    ) {
-      new_total_volume = updateIngredientDto.total_volume;
-    } else {
-      new_total_volume = new_quantity * new_net_volume;
-    }
+    const new_total_volume =
+      updateIngredientDto.total_volume !== undefined
+        ? updateIngredientDto.total_volume
+        : old_total_volume;
 
     console.log(
       ` New Data - quantity: ${new_quantity}, net_volume: ${new_net_volume}, total_volume: ${new_total_volume}`,
@@ -989,12 +947,16 @@ export class DashboardService {
         .toISOString()
         .split('T')[0],
       unit: ingredient.unit,
-      image_url: ingredient.image_url
+      image_url: ingredient.image_url,
     };
   }
 
   // Method to mark an ingredient as deleted
-  async deleteIngredient(ingredient_id: number, owner_id: number, branch_id: number): Promise<{ message: string }> {
+  async deleteIngredient(
+    ingredient_id: number,
+    owner_id: number,
+    branch_id: number,
+  ): Promise<{ message: string }> {
     const ingredient = await this.ingredientRepository.findOne({
       where: {
         ingredient_id,
@@ -1004,7 +966,9 @@ export class DashboardService {
     });
 
     if (!ingredient) {
-      throw new NotFoundException(`Ingredient with ID ${ingredient_id} not found for owner ID ${owner_id} and branch ID ${branch_id}`);
+      throw new NotFoundException(
+        `Ingredient with ID ${ingredient_id} not found for owner ID ${owner_id} and branch ID ${branch_id}`,
+      );
     }
 
     // Set is_delete to true
@@ -1012,6 +976,163 @@ export class DashboardService {
 
     await this.ingredientRepository.save(ingredient);
 
-    return { message: `Ingredient with ID ${ingredient_id} has been marked as deleted` };
+    return {
+      message: `Ingredient with ID ${ingredient_id} has been marked as deleted`,
+    };
+  }
+
+  async getOrderTopicWithFilter(
+    date: Date,
+    filter: 'year' | 'month' | 'date' | 'all',
+    ownerId: number,
+    branchId: number,
+  ): Promise<any> {
+    let startDate: Date;
+    let endDate: Date;
+
+    switch (filter) {
+      case 'year':
+        startDate = new Date(date.getFullYear(), 0, 1);
+        endDate = new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
+        break;
+      case 'month':
+        startDate = new Date(date.getFullYear(), date.getMonth(), 1);
+        endDate = new Date(
+          date.getFullYear(),
+          date.getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999,
+        );
+        break;
+      case 'date':
+        startDate = new Date(date.setHours(0, 0, 0, 0));
+        endDate = new Date(date.setHours(23, 59, 59, 999));
+        break;
+      case 'all':
+        // ดึงข้อมูลทั้งหมดโดยไม่มีการกรองวันที่
+        startDate = new Date(0);
+        endDate = new Date();
+        break;
+    }
+
+    const salesSummary = await this.salesSummaryRepository.find({
+      where: {
+        date: Between(startDate, endDate),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+    });
+
+    const totalOrders = salesSummary.reduce(
+      (sum, sale) => sum + sale.total_orders,
+      0,
+    );
+    const canceledOrders = salesSummary.reduce(
+      (sum, sale) => sum + sale.canceled_orders,
+      0,
+    );
+
+    const orders = await this.orderRepository.find({
+      where: {
+        order_date: Between(startDate, endDate),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['order_item', 'payment'],
+      order: {
+        order_date: 'DESC', // เพิ่มการเรียงลำดับตามวันที่ล่าสุด
+      },
+    });
+
+    const orderTopic = orders.map((order) => {
+      const totalQuantity = order.order_item.reduce(
+        (sum, item) => sum + item.quantity,
+        0,
+      );
+      const paymentMethod = order.payment
+        ? order.payment.payment_method
+        : 'Unknown';
+
+      const amount = order.payment.amount;
+      const total_amount = order.payment.total_amount;
+      const cancel_status = order.cancel_status;
+      const image_url = order.payment.path_img;
+
+      return {
+        order_id: order.order_id,
+        order_date: order.order_date,
+        quantity: totalQuantity,
+        amount: amount,
+        total_amount: total_amount,
+        payment_method: paymentMethod,
+        cancel_status: cancel_status,
+        image_url: image_url,
+      };
+    });
+
+    return {
+      total_orders: totalOrders,
+      canceled_orders: canceledOrders,
+      order_topic: orderTopic,
+    };
+  }
+
+  async editIngredient(
+    ingredient_id: number,
+    editIngredientDto: EditIngredientDto,
+    owner_id: number,
+    branch_id: number,
+  ) {
+    // ตรวจสอบว่ามีวัตถุดิบนี้อยู่จริงหรือไม่
+    const ingredient = await this.ingredientRepository.findOne({
+      where: {
+        ingredient_id: ingredient_id,
+        owner: { owner_id },
+        branch: { branch_id },
+        is_delete: false,
+      },
+      relations: ['ingredientCategory'],
+    });
+
+    if (!ingredient) {
+      throw new NotFoundException('ไม่พบวัตถุดิบที่ต้องการแก้ไข');
+    }
+
+    // ค้นหาหรือสร้าง category ใหม่
+    let category = await this.ingredientCategoryRepository.findOne({
+      where: {
+        ingredient_category_name: editIngredientDto.category_name,
+        owner: { owner_id },
+        branch: { branch_id },
+      },
+    });
+
+    if (!category) {
+      // สร้าง category ใหม่ถ้าไม่มี
+      category = this.ingredientCategoryRepository.create({
+        ingredient_category_name: editIngredientDto.category_name,
+        owner: { owner_id },
+        branch: { branch_id },
+      });
+      await this.ingredientCategoryRepository.save(category);
+    }
+
+    // อัพเดทข้อมูล
+    ingredient.image_url = editIngredientDto.image_url;
+    ingredient.ingredient_name = editIngredientDto.ingredient_name;
+    ingredient.unit = editIngredientDto.unit;
+    ingredient.ingredientCategory = category;
+
+    await this.ingredientRepository.save(ingredient);
+
+    return {
+      image_url: ingredient.image_url,
+      ingredient_name: ingredient.ingredient_name,
+      unit: ingredient.unit,
+      category_name: ingredient.ingredientCategory.ingredient_category_name,
+    };
   }
 }

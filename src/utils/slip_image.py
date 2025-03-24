@@ -1,0 +1,298 @@
+from PIL import Image, ImageDraw, ImageFont
+import json
+import sys
+import os
+from typing import List, Dict, Any
+import platform
+import tempfile
+
+def create_receipt_image(data: Dict[str, Any]) -> str:
+    
+    # Get absolute path for receipts folder
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    receipts_dir = os.path.join(current_dir)
+    
+    # Create receipts directory if it doesn't exist
+    if not os.path.exists(receipts_dir):
+        os.makedirs(receipts_dir)
+
+    # Calculate dynamic height
+    width = 400  # Fixed width
+    base_height = 210  # Space for headers, queue number, and footer
+    line_height = 26   # Height per order item
+    detail_height = 16  # Additional height per extra detail (sweetness, size, addon)
+    
+    # Calculate required height
+    item_count = len(data['order'])
+    extra_details = sum(len(item) - 3 for item in data['order'] if len(item) > 3)  # Count additional details
+    content_height = item_count * line_height + extra_details * detail_height
+
+    total_height = base_height + content_height
+    
+    # Create image with dynamic height
+    image = Image.new('RGB', (width, total_height), 'white')
+    draw = ImageDraw.Draw(image)
+    
+    try:
+        # Load fonts
+        font_path = os.path.join(current_dir, "tahoma.ttf")
+        font_path_bold = os.path.join(current_dir, "tahomabd.ttf")
+        font = ImageFont.truetype(font_path, 18)
+        small_font = ImageFont.truetype(font_path_bold, 18)
+        normal_font = ImageFont.truetype(font_path, 18)
+        detail_font = ImageFont.truetype(font_path, 16)
+        queue_font = ImageFont.truetype(font_path_bold, 26)
+    except Exception as e:
+        # Use default font if custom font fails
+        font = ImageFont.load_default()
+        small_font = ImageFont.load_default()
+        normal_font = ImageFont.load_default()
+        detail_font = ImageFont.load_default()
+        queue_font = ImageFont.load_default()
+
+    # Draw store name
+    draw.text((width//2, 15), data['store_name'], font=font, fill='black', anchor='mm')
+
+    # Draw queue number
+    draw.text((width//2, 35), f"** คิวที่ {data['queue_number']} **", font=queue_font, fill='black', anchor='mm')
+
+    # Draw order ID
+    draw.text((width//2, 55), f"Order ID: {data['order_id']}", font=normal_font, fill='black', anchor='mm')
+
+    # Draw separator line
+    y_pos = 70
+    draw.line([(0, y_pos), (width, y_pos)], fill='black', width=1)
+
+    # Draw headers
+    y_pos += 15
+    draw.text((0, y_pos), "รายการสั่งซื้อ", font=small_font, fill='black', anchor='lm')
+    draw.text((width-272, y_pos), "ราคาต่อหน่วย", font=small_font, fill='black', anchor='lm')
+    draw.text((width-95, y_pos), "จำนวน", font=small_font, fill='black', anchor='rm')
+    draw.text((width, y_pos), "ราคารวม", font=small_font, fill='black', anchor='rm')
+
+    # Draw order items
+    y_pos += 20
+    for item in data['order']:
+        quantity, name, unit_price = item[:3]
+        total = quantity * unit_price
+        
+        # Draw main item details
+        draw.text((0, y_pos), name, font=font, fill='black', anchor='lm')
+        draw.text((width-205, y_pos), f"{unit_price:.2f} ฿", font=font, fill='black', anchor='lm')
+        draw.text((width-95, y_pos), f"x {quantity}", font=font, fill='black', anchor='rm')
+        draw.text((width, y_pos), f"{total:.2f} ฿", font=font, fill='black', anchor='rm')
+        # Draw additional details
+        if len(item) > 3:
+            if item[3]:  # Type
+                y_pos += detail_height
+                draw.text((20, y_pos), f"ประเภท: {item[3]}", font=detail_font, fill='black', anchor='lm')
+                
+            if len(item) > 4 and item[4]:  # Sweetness
+                y_pos += detail_height
+                draw.text((20, y_pos), f"ความหวาน: {item[4]}", font=detail_font, fill='black', anchor='lm')
+                
+            if len(item) > 5 and item[5]:  # Size
+                y_pos += detail_height
+                draw.text((20, y_pos), f"ขนาด: {item[5]}", font=detail_font, fill='black', anchor='lm')
+                
+            if len(item) > 6 and item[6] and item[6] != "-":  # Toppings
+                y_pos += detail_height
+                draw.text((20, y_pos), f"เพิ่มเติม: {item[6]}", font=detail_font, fill='black', anchor='lm')
+
+        y_pos += line_height
+
+    # Draw separator line
+    y_pos += 5
+    draw.line([(0, y_pos), (width, y_pos)], fill='black', width=1)
+
+    # Calculate total
+    y_pos += 20
+    total = sum(item[0] * item[2] for item in data['order'])
+    draw.text((width-110, y_pos), "ยอดรวม", font=font, fill='black', anchor='rm')
+    draw.text((width-15, y_pos), f"{total:.2f} ฿", font=font, fill='black', anchor='rm')
+
+    # Draw thank you message
+    y_pos += 30
+    draw.text((width//2, y_pos), "ขอบคุณที่ใช้บริการค่ะ", font=font, fill='black', anchor='mm')
+
+    # Save the image
+    output_path = os.path.join(receipts_dir, 'receipt.png')
+    image.save(output_path)
+    return output_path
+
+def transform_order_to_receipt_data(order_data: Dict[str, Any]) -> Dict[str, Any]:
+    
+    receipt_data = {
+        "store_name": order_data["branch_name"],
+        "order_id": order_data["order_id"],
+        "queue_number": order_data["queue_number"],
+        "order": []
+    }
+    
+    for item in order_data["order_item"]:
+        toppings = [topping["ingredient_name"] for topping in item["orderItem"]]
+        toppings_str = ", ".join(toppings) if toppings else "-"
+        
+        # Create order line with price per unit (not total price)
+        price_per_unit = round(float(item["price"]) / item["quantity"], 2)
+        
+        order_line = [
+            item["quantity"],
+            item["menu"]["menu_name"],
+            price_per_unit,
+            item["menuType"]["type_name"],
+            item["sweetnessLevel"]["level_name"],
+            item["size"]["size_name"].upper(),
+            toppings_str
+        ]
+        receipt_data["order"].append(order_line)
+    
+    return receipt_data
+
+def print_image_window(image_path):
+    import win32print
+    try:
+        # Open the image
+        image = Image.open(image_path)
+        
+        # Convert the image to monochrome (1-bit)
+        image = image.convert('1')
+        
+        # Resize image if needed (adjust width according to your printer's specs)
+        MAX_WIDTH = 384  # Standard width for many thermal printers
+        if image.size[0] > MAX_WIDTH:
+            ratio = MAX_WIDTH / float(image.size[0])
+            height = int(float(image.size[1]) * ratio)
+            image = image.resize((MAX_WIDTH, height), Image.Resampling.LANCZOS)
+
+        system_name = platform.system()
+
+        # Windows printing using win32print
+        printer_name = win32print.GetDefaultPrinter()
+        printer_handle = win32print.OpenPrinter(printer_name)
+        try:
+            job_info = win32print.StartDocPrinter(printer_handle, 1, ("Image", None, "RAW"))
+            try:
+                win32print.StartPagePrinter(printer_handle)
+                
+                # Initialize printer
+                init_commands = bytes([0x1B, 0x40])  # ESC @ - Initialize printer
+                win32print.WritePrinter(printer_handle, init_commands)
+
+                # Convert image to bytes
+                pixels = list(image.getdata())
+                width, height = image.size
+                bytes_per_line = (width + 7) // 8
+                raster_mode = bytes([0x1D, 0x76, 0x30, 0x00])
+                header = raster_mode + bytes([bytes_per_line & 0xFF, bytes_per_line >> 8, height & 0xFF, height >> 8])
+                win32print.WritePrinter(printer_handle, header)
+
+                # Convert to byte data
+                bytes_data = bytearray()
+                for y in range(height):
+                    for x in range(0, width, 8):
+                        byte = 0
+                        for bit in range(8):
+                            if x + bit < width:
+                                if pixels[y * width + x + bit] == 0:
+                                    byte |= (1 << (7 - bit))
+                        bytes_data.append(byte)
+                
+                win32print.WritePrinter(printer_handle, bytes(bytes_data))
+
+                # Feed and cut paper
+                end_commands = bytes([0x1B, 0x64, 0x05])  # Feed 5 lines
+                win32print.WritePrinter(printer_handle, end_commands)
+
+                win32print.EndPagePrinter(printer_handle)
+            finally:
+                win32print.EndDocPrinter(printer_handle)
+        finally:
+            win32print.ClosePrinter(printer_handle)
+
+
+    except Exception as e:
+        print(f"Error printing image: {str(e)}")
+
+def print_image_pi(image_path):
+    import cups
+    try:
+        # Open the image
+        image = Image.open(image_path)
+        
+        # Convert the image to monochrome (1-bit)
+        image = image.convert('1')
+        
+        # Resize image if needed (adjust width according to your printer's specs)
+        MAX_WIDTH = 384  # Standard width for many thermal printers
+        if image.size[0] > MAX_WIDTH:
+            ratio = MAX_WIDTH / float(image.size[0])
+            height = int(float(image.size[1]) * ratio)
+            image = image.resize((MAX_WIDTH, height), Image.Resampling.LANCZOS)
+
+        system_name = platform.system()
+
+        if system_name == "Windows":
+            # Windows printing using win32print (unchanged)
+            pass
+
+        elif system_name == "Linux":
+            # Directly send ESC/POS commands to the printer
+            printer_device = "/dev/usb/lp0"  # Check with `ls /dev/usb/`
+            if not os.path.exists(printer_device):
+                raise Exception("Printer device not found at /dev/usb/lp0. Check `ls /dev/usb/`.")
+
+            with open(printer_device, "wb") as printer:
+                # Initialize printer
+                printer.write(bytes([0x1B, 0x40]))  # ESC @
+
+                # Convert image to bytes
+                pixels = list(image.getdata())
+                width, height = image.size
+                bytes_per_line = (width + 7) // 8
+                raster_mode = bytes([0x1D, 0x76, 0x30, 0x00])
+                header = raster_mode + bytes([bytes_per_line & 0xFF, bytes_per_line >> 8, height & 0xFF, height >> 8])
+                printer.write(header)
+
+                # Convert to byte data
+                bytes_data = bytearray()
+                for y in range(height):
+                    for x in range(0, width, 8):
+                        byte = 0
+                        for bit in range(8):
+                            if x + bit < width:
+                                if pixels[y * width + x + bit] == 0:
+                                    byte |= (1 << (7 - bit))
+                        bytes_data.append(byte)
+                
+                printer.write(bytes(bytes_data))
+
+                # Feed and cut paper
+                printer.write(bytes([0x1B, 0x64, 0x05]))  # Feed 5 lines
+
+
+    except Exception as e:
+        print(f"Error printing image: {str(e)}")
+
+if __name__ == "__main__":
+    # Get order data from command line argument
+    if len(sys.argv) > 1:
+        try:
+            order_data = json.loads(sys.argv[1])
+            receipt_data = transform_order_to_receipt_data(order_data)
+            image_path = create_receipt_image(receipt_data)
+            print(image_path)  # Return path to Node.js
+
+            # Determine the OS and run the appropriate script
+            os_name = platform.system()
+            if os_name == 'Windows':
+                print_image_window(image_path)
+                
+            elif os_name == 'Linux':
+                print_image_pi(image_path)
+        except Exception as e:
+            print(f"Error: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print("Error: No input data provided", file=sys.stderr)
+        sys.exit(1)
