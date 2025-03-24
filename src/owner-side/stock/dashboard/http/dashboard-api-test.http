@@ -10,10 +10,10 @@ owner_id: 1
 branch_id: 3
 
 ## GET ALL ORDERS
-GET http://localhost:3000/owner/stock-orders/2025-04-01/month
+GET http://localhost:3000/owner/stock-orders/2025-03-07/year
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 
 ## get menu ingredient by ingredient id
 GET http://localhost:3000/owner/stock-ingredients/10

@@ -57,7 +57,7 @@ export class DashboardService {
 
     @InjectRepository(Owner)
     private ownerRepository: Repository<Owner>,
-  ) {}
+  ) { }
 
   private async calculateMonthlyRevenue(
     year: number,
@@ -458,8 +458,8 @@ export class DashboardService {
       category_name:
         menuIng.menu.menuCategory.length > 0
           ? menuIng.menu.menuCategory
-              .map((cat) => cat.category.category_name)
-              .join(', ')
+            .map((cat) => cat.category.category_name)
+            .join(', ')
           : '',
     }));
 
@@ -1055,6 +1055,13 @@ export class DashboardService {
       const paymentMethod = order.payment
         ? order.payment.payment_method
         : 'Unknown';
+
+      console.log("ORDER DETAILS:", order)
+      console.log("ORDER AMOUNT:", order.payment)
+
+      if (order.payment.amount === null) {
+        console.log("ORDER AMOUNT NULL FOUND:", order.payment);
+      }
 
       const amount = order.payment.amount;
       const total_amount = order.payment.total_amount;
