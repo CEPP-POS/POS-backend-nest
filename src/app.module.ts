@@ -17,8 +17,7 @@ import { ImageModule } from './images/image.module';
 import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SyncModule } from './sync/sync.module';
-import { SyncStatusModule } from './sync-status/sync-status.module';
+import { SyncModule } from './sync-status/sync.module';
 
 @Module({
   imports: [
@@ -43,7 +42,6 @@ import { SyncStatusModule } from './sync-status/sync-status.module';
     ImageModule,
     IngredientModule,
     PauseModule,
-    SyncStatusModule,
     // MinioModule,
     OrderModule,
     OwnerModule,

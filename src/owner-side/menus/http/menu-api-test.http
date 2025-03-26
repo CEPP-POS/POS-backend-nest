@@ -1,8 +1,8 @@
 ### Create a new Menu
-POST http://localhost:3000/owner/menus
+POST http://192.168.3.80:3000/owner/menus
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: 13
+branch_id: 7
 {
   "menu_name": "ชานมไต้หวันmmm",
   "description": "Delicious ไต้หวัน",
