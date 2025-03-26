@@ -192,12 +192,6 @@ export class DashboardService {
       ownerId,
       branchId,
     );
-    const monthlyRevenue = await this.calculateMonthlyRevenue(
-      year,
-      ownerId,
-      branchId,
-    );
-
     const dailyStats = [];
     const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
 
@@ -207,11 +201,6 @@ export class DashboardService {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month - 1, day); // month is 0-indexed
-      const {
-        totalRevenue: dailyRevenue,
-        totalOrders: dailyOrders,
-        canceledOrders: dailyCanceledOrders,
-      } = await this.calculateDailyStats(date, ownerId, branchId);
       const {
         totalRevenue: dailyRevenue,
         totalOrders: dailyOrders,
