@@ -81,14 +81,18 @@ export class SyncService {
   async sendRequestToServer(data: SyncStatus) {
     try {
       // การส่ง request พร้อมกับ headers ที่ได้รับจากข้อมูล
+      const headers = {
+        'Content-Type': 'application/json',
+        ...data.headers, // ใช้ headers ที่ส่งมาจากฐานข้อมูล
+        'owner-id': data.headers?.['owner-id'] || 'default_owner_id', // เพิ่ม owner-id ถ้าไม่มี
+        'branch-id': data.headers?.['branch-id'] || 'default_branch_id', // เพิ่ม branch-id ถ้าไม่มี
+      };
+
       const response = await axios({
         method: data.method.toLowerCase(),
         url: data.path,
         data: data.payload,
-        headers: {
-          'Content-Type': 'application/json',
-          ...data.headers,  // ใช้ headers ที่ส่งมาในข้อมูล
-        },
+        headers: headers,  // ส่ง headers ที่แก้ไขแล้ว
       });
 
       // ถ้าส่งข้อมูลสำเร็จ
@@ -117,6 +121,10 @@ export class SyncService {
     // ให้เวลาเล็กน้อยก่อนจะส่งข้อมูลถัดไป (หน่วงเวลา 1 วินาที)
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
+
+
+
+
 
   async getPendingSyncs() {
     return await this.syncRepo.find({
