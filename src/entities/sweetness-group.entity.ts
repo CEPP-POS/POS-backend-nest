@@ -10,11 +10,10 @@ import { SweetnessLevel } from './sweetness-level.entity';
 import { Menu } from './menu.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
-import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class SweetnessGroup {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   sweetness_group_id: string;
 
   @Column()

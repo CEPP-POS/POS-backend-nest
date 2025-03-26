@@ -11,11 +11,10 @@ import { MenuTypeGroup } from './menu-type-group.entity';
 import { MenuIngredient } from './menu-ingredient.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
-import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class MenuType {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   menu_type_id: string;
 
   @Column()

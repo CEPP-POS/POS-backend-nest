@@ -10,11 +10,10 @@ import {
 import { Order } from './order.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
-import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class Payment {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   payment_id: string;
 
   @OneToOne(() => Order, { nullable: false })

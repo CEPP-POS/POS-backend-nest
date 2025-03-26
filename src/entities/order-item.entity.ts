@@ -14,11 +14,10 @@ import { SweetnessLevel } from './sweetness-level.entity';
 import { OrderItemAddOn } from './order-item-add-on.entity';
 import { Branch } from './branch.entity';
 import { Owner } from './owner.entity';
-import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class OrderItem {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   order_item_id: string;
 
   @ManyToOne(() => Order, (order) => order.order_item, {

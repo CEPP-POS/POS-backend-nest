@@ -9,11 +9,10 @@ import {
 import { Ingredient } from './ingredient.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
-import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class IngredientUpdate {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   update_id: string;
 
   @ManyToOne(() => Ingredient, { nullable: false })

@@ -9,11 +9,10 @@ import {
 import { Ingredient } from './ingredient.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
-import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class IngredientCategory {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   ingredient_category_id: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })

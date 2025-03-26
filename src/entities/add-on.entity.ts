@@ -2,10 +2,9 @@ import { Entity, PrimaryColumn, Column, JoinColumn, ManyToOne } from 'typeorm';
 import { Ingredient } from './ingredient.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
-import { v4 as uuidv4 } from 'uuid';
 @Entity()
 export class AddOn {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   add_on_id: string;
 
   @ManyToOne(() => Ingredient, { nullable: false })
