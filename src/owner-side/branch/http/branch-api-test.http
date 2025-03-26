@@ -39,12 +39,12 @@ owner_id: 1
 branch_id: 4
 
 ### Get Branch Setup
-GET http://192.168.1.43:3000/branches/owner/get-branch-setup/1
+GET http://192.168.1.53:3000/branches/owner/get-branch-setup/d458dffa-855b-4040-afba-dbf97055a820
 Content-Type: application/json
-owner_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 
-### Clone Branch Setup
-POST http://localhost:3000/branches/owner/clone-branch-setup/1
+### Clone Branch Setup /branch ที่ต้องการจะ clone
+POST http://192.168.1.53:3000/branches/owner/clone-branch-setup/d458dffa-855b-4040-afba-dbf97055a820
 Content-Type: application/json
-owner_id: 1
-branch_id: 4
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820

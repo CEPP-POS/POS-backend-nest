@@ -181,376 +181,335 @@ export class BranchService {
       menuCategories,
       menuIngredients,
     ] = await Promise.all([
-      this.sizeRepository
-        .createQueryBuilder('size')
-        .select([
-          'size.size_id',
-          'size.size_name',
-          'size.size_price',
-          'size.is_delete',
-          'owner.owner_id',
-          'branch.branch_id',
-        ])
-        .leftJoin('size.owner', 'owner')
-        .leftJoin('size.branch', 'branch')
-        .where('owner.owner_id = :ownerId', { ownerId })
-        .andWhere('branch.branch_id = :branchId', {
-          branchId: selectedBranchId,
-        })
-        .getRawMany()
-        .then((sizes) =>
-          sizes.map((size) => ({
-            size_id: size.size_size_id,
-            size_name: size.size_size_name,
-            size_price: size.size_size_price,
-            is_delete: size.size_is_delete,
-            owner_id: size.owner_owner_id,
-            branch_id: size.branch_branch_id,
-          })),
-        ),
-      this.sizeGroupRepository
-        .createQueryBuilder('sizeGroup')
-        .select([
-          'sizeGroup.size_group_id',
-          'sizeGroup.size_group_name',
-          'size.size_id',
-          'owner.owner_id',
-          'branch.branch_id',
-        ])
-        .leftJoin('sizeGroup.size', 'size')
-        .leftJoin('sizeGroup.owner', 'owner')
-        .leftJoin('sizeGroup.branch', 'branch')
-        .where('owner.owner_id = :ownerId', { ownerId })
-        .andWhere('branch.branch_id = :branchId', {
-          branchId: selectedBranchId,
-        })
-        .getRawMany()
-        .then((groups) =>
-          groups.map((group) => ({
-            size_group_id: group.sizeGroup_size_group_id,
-            size_group_name: group.sizeGroup_size_group_name,
-            size_id: group.size_size_id,
-            owner_id: group.owner_owner_id,
-            branch_id: group.branch_branch_id,
-          })),
-        ),
-      this.sweetnessLevelRepository
-        .createQueryBuilder('sweetnessLevel')
-        .select([
-          'sweetnessLevel.sweetness_id',
-          'sweetnessLevel.level_name',
-          'sweetnessLevel.is_delete',
-          'owner.owner_id',
-          'branch.branch_id',
-        ])
-        .leftJoin('sweetnessLevel.owner', 'owner')
-        .leftJoin('sweetnessLevel.branch', 'branch')
-        .where('owner.owner_id = :ownerId', { ownerId })
-        .andWhere('branch.branch_id = :branchId', {
-          branchId: selectedBranchId,
-        })
-        .getRawMany()
-        .then((items) =>
-          items.map((item) => ({
-            sweetness_id: item.sweetnessLevel_sweetness_id,
-            level_name: item.sweetnessLevel_level_name,
-            is_delete: item.sweetnessLevel_is_delete,
-            owner_id: item.owner_owner_id,
-            branch_id: item.branch_branch_id,
-          })),
-        ),
-      this.sweetnessGroupRepository
-        .createQueryBuilder('sweetnessGroup')
-        .select([
-          'sweetnessGroup.sweetness_group_id',
-          'sweetnessGroup.sweetness_group_name',
-          'sweetnessLevel.sweetness_id',
-          'owner.owner_id',
-          'branch.branch_id',
-        ])
-        .leftJoin('sweetnessGroup.sweetnessLevel', 'sweetnessLevel')
-        .leftJoin('sweetnessGroup.owner', 'owner')
-        .leftJoin('sweetnessGroup.branch', 'branch')
-        .where('owner.owner_id = :ownerId', { ownerId })
-        .andWhere('branch.branch_id = :branchId', {
-          branchId: selectedBranchId,
-        })
-        .getRawMany()
-        .then((items) =>
-          items.map((item) => ({
-            sweetness_group_id: item.sweetnessGroup_sweetness_group_id,
-            sweetness_group_name: item.sweetnessGroup_sweetness_group_name,
-            sweetness_id: item.sweetnessLevel_sweetness_id,
-            owner_id: item.owner_owner_id,
-            branch_id: item.branch_branch_id,
-          })),
-        ),
-      this.menuTypeRepository
-        .createQueryBuilder('menuType')
-        .select([
-          'menuType.menu_type_id',
-          'menuType.type_name',
-          'menuType.price_difference',
-          'menuType.is_delete',
-          'owner.owner_id',
-          'branch.branch_id',
-        ])
-        .leftJoin('menuType.owner', 'owner')
-        .leftJoin('menuType.branch', 'branch')
-        .where('owner.owner_id = :ownerId', { ownerId })
-        .andWhere('branch.branch_id = :branchId', {
-          branchId: selectedBranchId,
-        })
-        .getRawMany()
-        .then((items) =>
-          items.map((item) => ({
-            menu_type_id: item.menuType_menu_type_id,
-            type_name: item.menuType_type_name,
-            price_difference: item.menuType_price_difference,
-            is_delete: item.menuType_is_delete,
-            owner_id: item.owner_owner_id,
-            branch_id: item.branch_branch_id,
-          })),
-        ),
-      this.menuTypeGroupRepository
-        .createQueryBuilder('menuTypeGroup')
-        .select([
-          'menuTypeGroup.menu_type_group_id',
-          'menuTypeGroup.menu_type_group_name',
-          'menuType.menu_type_id',
-          'owner.owner_id',
-          'branch.branch_id',
-        ])
-        .leftJoin('menuTypeGroup.menuType', 'menuType')
-        .leftJoin('menuTypeGroup.owner', 'owner')
-        .leftJoin('menuTypeGroup.branch', 'branch')
-        .where('owner.owner_id = :ownerId', { ownerId })
-        .andWhere('branch.branch_id = :branchId', {
-          branchId: selectedBranchId,
-        })
-        .getRawMany()
-        .then((items) =>
-          items.map((item) => ({
-            menu_type_group_id: item.menuTypeGroup_menu_type_group_id,
-            menu_type_group_name: item.menuTypeGroup_menu_type_group_name,
-            menu_type_id: item.menuType_menu_type_id,
-            owner_id: item.owner_owner_id,
-            branch_id: item.branch_branch_id,
-          })),
-        ),
-      this.ingredientCategoryRepository
-        .createQueryBuilder('ingredientCategory')
-        .select([
-          'ingredientCategory.ingredient_category_id',
-          'ingredientCategory.ingredient_category_name',
-          'owner.owner_id',
-          'branch.branch_id',
-        ])
-        .leftJoin('ingredientCategory.owner', 'owner')
-        .leftJoin('ingredientCategory.branch', 'branch')
-        .where('owner.owner_id = :ownerId', { ownerId })
-        .andWhere('branch.branch_id = :branchId', {
-          branchId: selectedBranchId,
-        })
-        .getRawMany()
-        .then((items) =>
-          items.map((item) => ({
-            ingredient_category_id:
-              item.ingredientCategory_ingredient_category_id,
-            ingredient_category_name:
-              item.ingredientCategory_ingredient_category_name,
-            owner_id: item.owner_owner_id,
-            branch_id: item.branch_branch_id,
-          })),
-        ),
-      this.ingredientRepository
-        .createQueryBuilder('ingredient')
-        .select([
-          'ingredient.ingredient_id',
-          'ingredient.ingredient_name',
-          'ingredient.image_url',
-          'ingredient.unit',
-          'ingredient.paused',
-          'ingredient.is_delete',
-          'ingredientCategory.ingredient_category_id',
-          'owner.owner_id',
-          'branch.branch_id',
-        ])
-        .leftJoin('ingredient.ingredientCategory', 'ingredientCategory')
-        .leftJoin('ingredient.owner', 'owner')
-        .leftJoin('ingredient.branch', 'branch')
-        .where('owner.owner_id = :ownerId', { ownerId })
-        .andWhere('branch.branch_id = :branchId', {
-          branchId: selectedBranchId,
-        })
-        .getRawMany()
-        .then((items) =>
-          items.map((item) => ({
-            ingredient_id: item.ingredient_ingredient_id,
-            ingredient_name: item.ingredient_ingredient_name,
-            image_url: item.ingredient_image_url,
-            unit: item.ingredient_unit,
-            paused: item.ingredient_paused,
-            is_delete: item.ingredient_is_delete,
-            ingredient_category_id:
-              item.ingredientCategory_ingredient_category_id,
-            owner_id: item.owner_owner_id,
-            branch_id: item.branch_branch_id,
-          })),
-        ),
-      this.addOnRepository
-        .createQueryBuilder('addOn')
-        .select([
-          'addOn.add_on_id',
-          'addOn.is_required',
-          'addOn.is_multipled',
-          'addOn.add_on_price',
-          'ingredient.ingredient_id',
-          'owner.owner_id',
-          'branch.branch_id',
-        ])
-        .leftJoin('addOn.ingredient', 'ingredient')
-        .leftJoin('addOn.owner', 'owner')
-        .leftJoin('addOn.branch', 'branch')
-        .where('owner.owner_id = :ownerId', { ownerId })
-        .andWhere('branch.branch_id = :branchId', {
-          branchId: selectedBranchId,
-        })
-        .getRawMany()
-        .then((items) =>
-          items.map((item) => ({
-            add_on_id: item.addOn_add_on_id,
-            is_required: item.addOn_is_required,
-            is_multipled: item.addOn_is_multipled,
-            add_on_price: item.addOn_add_on_price,
-            ingredient_id: item.ingredient_ingredient_id,
-            owner_id: item.owner_owner_id,
-            branch_id: item.branch_branch_id,
-          })),
-        ),
-      this.categoryRepository
-        .createQueryBuilder('category')
-        .select([
-          'category.category_id',
-          'category.category_name',
-          'owner.owner_id',
-          'branch.branch_id',
-        ])
-        .leftJoin('category.owner', 'owner')
-        .leftJoin('category.branch', 'branch')
-        .where('owner.owner_id = :ownerId', { ownerId })
-        .andWhere('branch.branch_id = :branchId', {
-          branchId: selectedBranchId,
-        })
-        .getRawMany()
-        .then((items) =>
-          items.map((item) => ({
-            category_id: item.category_category_id,
-            category_name: item.category_category_name,
-            owner_id: item.owner_owner_id,
-            branch_id: item.branch_branch_id,
-          })),
-        ),
-      this.menuRepository
-        .createQueryBuilder('menu')
-        .select([
-          'menu.menu_id',
-          'menu.menu_name',
-          'menu.description',
-          'menu.price',
-          'menu.image_url',
-          'menu.paused',
-          'menu.is_delete',
-          'menuTypeGroup.menu_type_group_id',
-          'sweetnessGroup.sweetness_group_id',
-          'sizeGroup.size_group_id',
-          'owner.owner_id',
-          'branch.branch_id',
-        ])
-        .leftJoin('menu.menuTypeGroup', 'menuTypeGroup')
-        .leftJoin('menu.sweetnessGroup', 'sweetnessGroup')
-        .leftJoin('menu.sizeGroup', 'sizeGroup')
-        .leftJoin('menu.owner', 'owner')
-        .leftJoin('menu.branch', 'branch')
-        .where('owner.owner_id = :ownerId', { ownerId })
-        .andWhere('branch.branch_id = :branchId', {
-          branchId: selectedBranchId,
-        })
-        .getRawMany()
-        .then((items) =>
-          items.map((item) => ({
-            menu_id: item.menu_menu_id,
-            menu_name: item.menu_menu_name,
-            description: item.menu_description,
-            price: item.menu_price,
-            image_url: item.menu_image_url,
-            paused: item.menu_paused,
-            is_delete: item.menu_is_delete,
-            menu_type_group_id: item.menuTypeGroup_menu_type_group_id,
-            sweetness_group_id: item.sweetnessGroup_sweetness_group_id,
-            size_group_id: item.sizeGroup_size_group_id,
-            owner_id: item.owner_owner_id,
-            branch_id: item.branch_branch_id,
-          })),
-        ),
-      this.menuCategoryRepository
-        .createQueryBuilder('menuCategory')
-        .select([
-          'menuCategory.category_id',
-          'menuCategory.menu_id',
-          'menuCategory.owner_id',
-          'menuCategory.branch_id',
-        ])
-        .where('menuCategory.owner_id = :ownerId', { ownerId })
-        .andWhere('menuCategory.branch_id = :branchId', {
-          branchId: selectedBranchId,
-        })
-        .getRawMany()
-        .then((items) =>
-          items.map((item) => ({
-            category_id: item.menuCategory_category_id,
-            menu_id: item.menuCategory_menu_id,
-            owner_id: item.menuCategory_owner_id,
-            branch_id: item.menuCategory_branch_id,
-          })),
-        ),
-      this.menuIngredientRepository
-        .createQueryBuilder('menuIngredient')
-        .select([
-          'menuIngredient.menu_ingredient_id',
-          'menuIngredient.is_addon',
-          'menuIngredient.quantity_used',
-          'menu.menu_id',
-          'ingredient.ingredient_id',
-          'size.size_id',
-          'menuType.menu_type_id',
-          'owner.owner_id',
-          'branch.branch_id',
-        ])
-        .leftJoin('menuIngredient.menu', 'menu')
-        .leftJoin('menuIngredient.ingredient', 'ingredient')
-        .leftJoin('menuIngredient.size', 'size')
-        .leftJoin('menuIngredient.menu_type', 'menuType')
-        .leftJoin('menuIngredient.owner', 'owner')
-        .leftJoin('menuIngredient.branch', 'branch')
-        .where('owner.owner_id = :ownerId', { ownerId })
-        .andWhere('branch.branch_id = :branchId', {
-          branchId: selectedBranchId,
-        })
-        .getRawMany()
-        .then((items) =>
-          items.map((item) => ({
-            menu_ingredient_id: item.menuIngredient_menu_ingredient_id,
-            is_addon: item.menuIngredient_is_addon,
-            quantity_used: item.menuIngredient_quantity_used,
-            menu_id: item.menu_menu_id,
-            ingredient_id: item.ingredient_ingredient_id,
-            size_id: item.size_size_id,
-            menu_type_id: item.menuType_menu_type_id,
-            owner_id: item.owner_owner_id,
-            branch_id: item.branch_branch_id,
-          })),
-        ),
+      this.sizeRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+        relations: {
+          owner: true,
+          branch: true,
+        },
+        select: {
+          size_id: true,
+          size_name: true,
+          size_price: true,
+          is_delete: true,
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
+      }),
+
+      this.sizeGroupRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+        relations: {
+          size: true,
+          owner: true,
+          branch: true,
+        },
+        select: {
+          size_group_id: true,
+          size_group_name: true,
+          size: {
+            size_id: true,
+          },
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
+      }),
+
+      this.sweetnessLevelRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+        relations: {
+          owner: true,
+          branch: true,
+        },
+        select: {
+          sweetness_id: true,
+          level_name: true,
+          is_delete: true,
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
+      }),
+
+      this.sweetnessGroupRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+        relations: {
+          sweetnessLevel: true,
+          owner: true,
+          branch: true,
+        },
+        select: {
+          sweetness_group_id: true,
+          sweetness_group_name: true,
+          sweetnessLevel: {
+            sweetness_id: true,
+          },
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
+      }),
+
+      this.menuTypeRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+        relations: {
+          owner: true,
+          branch: true,
+        },
+        select: {
+          menu_type_id: true,
+          type_name: true,
+          price_difference: true,
+          is_delete: true,
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
+      }),
+
+      this.menuTypeGroupRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+        relations: {
+          menuType: true,
+          owner: true,
+          branch: true,
+        },
+        select: {
+          menu_type_group_id: true,
+          menu_type_group_name: true,
+          menuType: {
+            menu_type_id: true,
+          },
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
+      }),
+
+      this.ingredientCategoryRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+        relations: {
+          owner: true,
+          branch: true,
+        },
+        select: {
+          ingredient_category_id: true,
+          ingredient_category_name: true,
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
+      }),
+
+      this.ingredientRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+        relations: {
+          ingredientCategory: true,
+          owner: true,
+          branch: true,
+        },
+        select: {
+          ingredient_id: true,
+          ingredient_name: true,
+          image_url: true,
+          unit: true,
+          paused: true,
+          is_delete: true,
+          ingredientCategory: {
+            ingredient_category_id: true,
+          },
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
+      }),
+
+      this.addOnRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+        relations: {
+          ingredient: true,
+          owner: true,
+          branch: true,
+        },
+        select: {
+          add_on_id: true,
+          is_required: true,
+          is_multipled: true,
+          add_on_price: true,
+          ingredient: {
+            ingredient_id: true,
+          },
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
+      }),
+
+      this.categoryRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+        relations: {
+          owner: true,
+          branch: true,
+        },
+        select: {
+          category_id: true,
+          category_name: true,
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
+      }),
+
+      this.menuRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+        relations: {
+          menuTypeGroup: true,
+          sweetnessGroup: true,
+          sizeGroup: true,
+          owner: true,
+          branch: true,
+        },
+        select: {
+          menu_id: true,
+          menu_name: true,
+          description: true,
+          price: true,
+          image_url: true,
+          paused: true,
+          is_delete: true,
+          menuTypeGroup: {
+            menu_type_group_id: true,
+          },
+          sweetnessGroup: {
+            sweetness_group_id: true,
+          },
+          sizeGroup: {
+            size_group_id: true,
+          },
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
+      }),
+
+      this.menuCategoryRepository.find({
+        where: {
+          owner_id: ownerId,
+          branch_id: selectedBranchId,
+        },
+        select: {
+          category_id: true,
+          menu_id: true,
+          owner_id: true,
+          branch_id: true,
+        },
+      }),
+
+      this.menuIngredientRepository.find({
+        where: {
+          owner: { owner_id: ownerId },
+          branch: { branch_id: selectedBranchId },
+        },
+        relations: {
+          menu: true,
+          ingredient: true,
+          size: true,
+          menu_type: true,
+          owner: true,
+          branch: true,
+        },
+        select: {
+          menu_ingredient_id: true,
+          is_addon: true,
+          quantity_used: true,
+          menu: {
+            menu_id: true,
+          },
+          ingredient: {
+            ingredient_id: true,
+          },
+          size: {
+            size_id: true,
+          },
+          menu_type: {
+            menu_type_id: true,
+          },
+          owner: {
+            owner_id: true,
+          },
+          branch: {
+            branch_id: true,
+          },
+        },
+      }),
     ]);
 
     return {
