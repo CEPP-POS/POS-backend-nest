@@ -69,14 +69,6 @@ export class MenuController {
   ) {
     return this.menuService.updateOption(type, optionId, updateOptionDto);
   }
-  // @Patch('options/:type/:id')
-  // async updateOption(
-  //   @Param('type') type: 'sweetness' | 'add-ons' | 'size' | 'menu-type',
-  //   @Param('id') id: number,
-  //   @Body() updateOptionDto: any,
-  // ) {
-  //   return this.menuService.updateOption(type, id, updateOptionDto);
-  // }
 
   @Get('options/add-on')
   async getAddOnDetails(@Req() request: Request) {

@@ -32,6 +32,7 @@ import { CreateSweetnessDto } from './dto/create-option/create-sweetness-dto';
 import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
 import { UpdateSizeDto } from './dto/update-option/update-size.dto';
 import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class MenuService {
@@ -134,8 +135,9 @@ export class MenuService {
       );
     }
 
-    // Create new menu
+    // Create new menu with generated UUID
     const newMenu = this.menuRepository.create({
+      menu_id: uuidv4(), // เพิ่มการสร้าง UUID ตรงนี้
       ...menuData,
       menu_name,
       owner,
@@ -490,6 +492,7 @@ export class MenuService {
 
     // Step 1: Insert sizes name and size price into the size table
     const sizes = createSizeDto.options.map((option) => ({
+      size_id: uuidv4(),
       size_name: Object.keys(option)[0],
       size_price: parseFloat(Object.values(option)[0].price),
       owner: { owner_id: ownerId },
@@ -501,6 +504,7 @@ export class MenuService {
 
     // Step 2: Create size groups for each size
     const sizeGroups = savedSizes.map((size) => ({
+      size_group_id: uuidv4(),
       size_group_name: createSizeDto.size_group_name,
       size: size,
       owner: { owner_id: ownerId },
@@ -558,6 +562,7 @@ export class MenuService {
 
       if (!ingredient) {
         ingredient = this.ingredientRepository.create({
+          ingredient_id: uuidv4(),
           ingredient_name: ingredientName,
           unit: ingredientData.unit,
           owner: { owner_id: ownerId },
@@ -570,6 +575,7 @@ export class MenuService {
 
       // save ingredient_id in table add on
       const addOn = this.addOnRepository.create({
+        add_on_id: uuidv4(),
         ingredient: ingredient,
         add_on_price: parseFloat(ingredientData.price),
         is_required: is_required,
@@ -606,6 +612,7 @@ export class MenuService {
           }
 
           const menuIngredient = this.menuIngredientRepository.create({
+            menu_ingredient_id: uuidv4(),
             menu: { menu_id: menuId },
             ingredient: { ingredient_id: ingredient.ingredient_id },
             is_addon: true,
@@ -666,115 +673,6 @@ export class MenuService {
     };
   }
 
-  // * link menu for auto cut stock
-  // async updateStock(
-  //   menu_id: number,
-  //   owner_id: number,
-  //   branch_id: number,
-  //   linkMenuToStockDtoList: LinkMenuToStockDto[],
-  // ) {
-  //   const queryRunner = this.dataSource.createQueryRunner();
-  //   await queryRunner.startTransaction();
-
-  //   try {
-  //     for (const linkMenuToStockDto of linkMenuToStockDtoList) {
-  //       const { ingredient_name, unit, ingredientListForStock } = linkMenuToStockDto;
-
-  //       // Find the menu
-  //       const menu = await this.menuRepository.findOne({ where: { menu_id } });
-  //       if (!menu) {
-  //         throw new NotFoundException(`Menu with ID ${menu_id} not found`);
-  //       }
-
-  //       // Find the owner
-  //       const owner = await this.ownerRepository.findOne({ where: { owner_id } });
-  //       if (!owner) {
-  //         throw new NotFoundException(`Owner with ID ${owner_id} not found`);
-  //       }
-
-  //       // Validate ingredient list items
-  //       for (const property of ingredientListForStock) {
-  //         const size = await this.sizeRepository.findOne({
-  //           where: { size_id: property.size_id },
-  //         });
-  //         if (!size) {
-  //           throw new NotFoundException(`Size with ID ${property.size_id} not found`);
-  //         }
-
-  //         const menuType = await this.menuTypeRepository.findOne({
-  //           where: { menu_type_id: property.menu_type_id },
-  //         });
-  //         if (!menuType) {
-  //           throw new NotFoundException(`MenuType with ID ${property.menu_type_id} not found`);
-  //         }
-  //       }
-
-  //       // Find or create the ingredient
-  //       let ingredient = await this.ingredientRepository.findOne({
-  //         where: { ingredient_name },
-  //       });
-
-  //       if (!ingredient) {
-  //         ingredient = this.ingredientRepository.create({
-  //           ingredient_name,
-  //           unit,
-  //           owner_id: owner,
-  //         });
-  //         ingredient = await this.ingredientRepository.save(ingredient);
-  //       } else {
-  //         // Update the unit in the ingredient table if needed
-  //         if (ingredient.unit !== unit) {
-  //           ingredient.unit = unit;
-  //           await this.ingredientRepository.save(ingredient);
-  //         }
-  //       }
-
-  //       // Process the ingredient list for stock and link them
-  //       for (const property of ingredientListForStock) {
-  //         let menuIngredient = await this.menuIngredientRepository.findOne({
-  //           where: {
-  //             menu_id: menu,
-  //             ingredient_id: ingredient,
-  //             size_id: Equal(property.size_id),
-  //             menu_type_id: Equal(property.menu_type_id),
-  //           },
-  //         });
-
-  //         if (menuIngredient) {
-  //           // If the ingredient already exists, update quantity_used
-  //           menuIngredient.quantity_used = property.quantity_used;
-  //           await this.menuIngredientRepository.save(menuIngredient);
-  //         } else {
-  //           // Create a new menu ingredient if it doesn't exist
-  //           menuIngredient = this.menuIngredientRepository.create({
-  //             menu_id: menu,
-  //             ingredient_id: ingredient,
-  //             size_id: { size_id: property.size_id },
-  //             menu_type_id: { menu_type_id: property.menu_type_id },
-  //             quantity_used: property.quantity_used,
-  //           });
-  //           await this.menuIngredientRepository.save(menuIngredient);
-  //         }
-  //       }
-
-  //       // Create the ingredient-menu link if necessary
-  //       const ingredientMenuLinkToSave = {
-  //         menu_id: { menu_id: menu.menu_id },
-  //         ingredient_id: { ingredient_id: ingredient.ingredient_id },
-  //       };
-  //       await this.ingredientMenuLinkRepository.save(ingredientMenuLinkToSave);
-  //     }
-
-  //     await queryRunner.commitTransaction();
-  //     return { message: 'Link Stock successfully' };
-  //   } catch (error) {
-  //     await queryRunner.rollbackTransaction();
-  //     throw error;
-  //   } finally {
-  //     await queryRunner.release();
-  //   }
-  // }
-
   // EDIT ENTITY INGREDIENT_MENULINK
   async linkIngredientToStock(
     menu_id: string,
@@ -816,6 +714,7 @@ export class MenuService {
       // ถ้าไม่มี ingredient ให้สร้างใหม่
       if (!ingredient) {
         ingredient = this.ingredientRepository.create({
+          ingredient_id: uuidv4(),
           ingredient_name,
           unit,
           owner,
@@ -864,6 +763,7 @@ export class MenuService {
         } else {
           // ถ้าไม่มีให้สร้างใหม่
           menuIngredient = this.menuIngredientRepository.create({
+            menu_ingredient_id: uuidv4(),
             menu,
             ingredient,
             size,
@@ -1088,8 +988,9 @@ export class MenuService {
       });
       if (!branch) throw new NotFoundException('Branch not found');
 
-      // Save menu types first
+      // Save menu types first with UUID
       const menuTypes = dto.options.map((option) => ({
+        menu_type_id: uuidv4(), // เพิ่ม UUID สำหรับ menu_type_id
         type_name: Object.keys(option)[0],
         price_difference: parseFloat(Object.values(option)[0]),
         is_delete: false,
@@ -1101,6 +1002,7 @@ export class MenuService {
 
       // Create menu type group entries for each menu type
       const menuTypeGroupEntries = savedMenuTypes.map((menuType) => ({
+        menu_type_group_id: uuidv4(), // เพิ่ม UUID สำหรับ menu_type_group_id
         menu_type_group_name: dto.menu_type_group_name,
         menuType: menuType,
         owner,
