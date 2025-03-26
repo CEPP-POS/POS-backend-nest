@@ -137,7 +137,7 @@ export class MenuService {
 
     // Create new menu with generated UUID
     const newMenu = this.menuRepository.create({
-      menu_id: uuidv4(), // เพิ่มการสร้าง UUID ตรงนี้
+      menu_id: menuData.menu_id || uuidv4(),
       ...menuData,
       menu_name,
       owner,
@@ -562,7 +562,7 @@ export class MenuService {
 
       if (!ingredient) {
         ingredient = this.ingredientRepository.create({
-          ingredient_id: uuidv4(),
+          ingredient_id: ingredientData.ingredient_id || uuidv4(),
           ingredient_name: ingredientName,
           unit: ingredientData.unit,
           owner: { owner_id: ownerId },
@@ -575,7 +575,7 @@ export class MenuService {
 
       // save ingredient_id in table add on
       const addOn = this.addOnRepository.create({
-        add_on_id: uuidv4(),
+        add_on_id: ingredientData.add_on_id || uuidv4(),
         ingredient: ingredient,
         add_on_price: parseFloat(ingredientData.price),
         is_required: is_required,

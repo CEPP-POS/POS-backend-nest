@@ -3,7 +3,16 @@ import { IsArray, IsBoolean, IsString } from 'class-validator';
 export class CreateAddOnDto {
   @IsArray()
   options: Array<
-    Record<string, { price: string; unit: string; quantity: string }>
+    Record<
+      string,
+      {
+        ingredient_id?: string;
+        add_on_id?: string;
+        price: string;
+        unit: string;
+        quantity: string;
+      }
+    >
   >;
 
   @IsString()

@@ -323,7 +323,7 @@ export class OrderService {
     // ถ้าไม่มี sales summary สำหรับวันนี้ ให้สร้างใหม่
     if (!salesSummary) {
       salesSummary = this.salesSummaryRepository.create({
-        sales_summary_id: uuidv4(),
+        sales_summary_id: createOrderDto.sales_summary_id || uuidv4(),
         date: startOfDay,
         total_revenue: createOrderDto.total_price,
         total_orders: 1,

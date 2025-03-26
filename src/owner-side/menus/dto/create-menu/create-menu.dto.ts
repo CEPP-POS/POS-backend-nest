@@ -7,6 +7,8 @@ import {
 } from 'class-validator';
 
 export class CreateMenuDto {
+  menu_id?: string;
+
   @IsNotEmpty()
   @IsString()
   menu_name: string;
