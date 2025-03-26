@@ -27,10 +27,10 @@ branch_id: 3
   "menu_id": [2,3]
 }
 
-DELETE http://localhost:3000/owner/menus/options/sweetness/ความหวาน
+DELETE http://localhost:3000/owner/menus/options/sweetness/ทดสอบจ้า
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 
 GET http://localhost:3000/owner/menus/15
 PATCH http://localhost:3000/owner/menus/options/sweetness/104

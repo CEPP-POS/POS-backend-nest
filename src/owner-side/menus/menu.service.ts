@@ -1827,6 +1827,8 @@ export class MenuService {
       );
     }
 
+    console.log("DELETE SWEETNESS GROUP:", sweetnessGroup)
+
     // 2. Get all sweetness levels that belong to this group
     const sweetnessLevels = await this.sweetnessLevelRepository
       .createQueryBuilder('sl')
