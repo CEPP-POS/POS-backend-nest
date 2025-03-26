@@ -57,7 +57,7 @@ export class DashboardService {
 
     @InjectRepository(Owner)
     private ownerRepository: Repository<Owner>,
-  ) { }
+  ) {}
 
   private async calculateMonthlyRevenue(
     year: number,
@@ -192,6 +192,11 @@ export class DashboardService {
       ownerId,
       branchId,
     );
+    const monthlyRevenue = await this.calculateMonthlyRevenue(
+      year,
+      ownerId,
+      branchId,
+    );
 
     const dailyStats = [];
     const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
@@ -202,6 +207,11 @@ export class DashboardService {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month - 1, day); // month is 0-indexed
+      const {
+        totalRevenue: dailyRevenue,
+        totalOrders: dailyOrders,
+        canceledOrders: dailyCanceledOrders,
+      } = await this.calculateDailyStats(date, ownerId, branchId);
       const {
         totalRevenue: dailyRevenue,
         totalOrders: dailyOrders,
@@ -552,6 +562,8 @@ export class DashboardService {
       where: { ingredient_category_name: category_name },
     });
 
+    console.log('Found category:', category_name);
+
     if (!category) {
       category = this.ingredientCategoryRepository.create({
         ingredient_category_name: category_name,
@@ -576,8 +588,15 @@ export class DashboardService {
       });
 
       await this.ingredientRepository.save(ingredient);
+    } else {
+      // Update the ingredient's category if it exists
+      ingredient.ingredientCategory = category;
+      ingredient.image_url = image_url || ingredient.image_url;
+      ingredient.unit = unit || ingredient.unit;
+      await this.ingredientRepository.save(ingredient);
     }
 
+    console.log('Ingredient to Save:', ingredient);
     const existingUpdate = await this.ingredientUpdateRepository.findOne({
       where: {
         ingredient: { ingredient_id: ingredient.ingredient_id },
@@ -802,7 +821,6 @@ export class DashboardService {
     const today = new Date();
     console.log(ingredients);
 
-    // สร้าง Map เพื่อจัดกลุ่มตาม category
     const categoryMap = new Map();
 
     ingredients.forEach((ingredient) => {
@@ -839,7 +857,6 @@ export class DashboardService {
       const categoryName =
         ingredient.ingredientCategory?.ingredient_category_name ||
         'ไม่ระบุหมวดหมู่';
-
       // ถ้ายังไม่มี category นี้ใน Map ให้สร้างใหม่
       if (!categoryMap.has(categoryId)) {
         categoryMap.set(categoryId, {
@@ -933,6 +950,10 @@ export class DashboardService {
     }
 
     const ingredient = ingredientUpdate.ingredient;
+    console.log(
+      'Ingredient:',
+      ingredient.ingredientCategory.ingredient_category_name,
+    );
 
     return {
       ingredient_id: ingredient.ingredient_id,
@@ -967,6 +988,9 @@ export class DashboardService {
     });
 
     if (!ingredient) {
+      throw new NotFoundException(
+        `Ingredient with ID ${ingredient_id} not found for owner ID ${owner_id} and branch ID ${branch_id}`,
+      );
       throw new NotFoundException(
         `Ingredient with ID ${ingredient_id} not found for owner ID ${owner_id} and branch ID ${branch_id}`,
       );

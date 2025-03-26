@@ -27,24 +27,6 @@ Content-Type: application/json
 ### Delete a Branch by ID
 DELETE http://localhost:3000/branches/4
 
-### Get Owner's Branches (อื่นๆที่ไม่ใช่ตัวเอง)
-GET http://localhost:3000/branches/owner/my-branches
-Content-Type: application/json
-owner_id: 1
-branch_id: 1
 
-POST http://localhost:3000/branches/owner/clone-branch-setup/1
-Content-Type: application/json
-owner_id: 1
-branch_id: 4
+GET http://localhost:3000/branches/owner/28
 
-### Get Branch Setup
-GET http://192.168.1.43:3000/branches/owner/get-branch-setup/1
-Content-Type: application/json
-owner_id: 1
-
-### Clone Branch Setup
-POST http://localhost:3000/branches/owner/clone-branch-setup/1
-Content-Type: application/json
-owner_id: 1
-branch_id: 4

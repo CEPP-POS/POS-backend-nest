@@ -205,4 +205,16 @@ export class OwnerController {
   async requestTempPassword(@Body() { email }: { email: string }) {
     return this.ownerService.requestTempPassword(email);
   }
+
+  @Post('branch')
+  async assignBranch(@Body('branch_id') branchId: number, @Req() req: Request) {
+    const ownerId = req.headers['owner_id'];
+    if (!ownerId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+    await this.ownerService.assignBranch(Number(ownerId), Number(branchId));
+    return { message: 'Branch assigned successfully' };
+  }
 }

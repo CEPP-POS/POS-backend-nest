@@ -62,46 +62,8 @@ export class BranchController {
     return this.branchService.remove(+id, user.owner_id);
   }
 
-  // * Get Owner's Branches
-  @Get('owner/my-branches')
-  // @UseGuards(JwtGuard, RolesGuard)
-  // @Roles('owner')
-  async getOwnerBranches(@Req() request: Request) {
-    // const user = req.user as { owner_id: number };
-    const ownerId = request.headers['owner_id'];
-    const branch_id = request.headers['branch_id'];
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branch_id);
-    console.log(ownerIdNum, branchIdNum);
-    // return this.branchService.findOwnerBranches(user.owner_id);
-    return this.branchService.findOwnerBranches(ownerIdNum, branchIdNum);
-  }
-
-  @Get('owner/get-branch-setup/:selected_branch_id')
-  async getBranchSetup(
-    @Param('selected_branch_id') selectedBranchId: string,
-    @Req() request: Request,
-  ) {
-    const ownerId = request.headers['owner_id'];
-    const ownerIdNum = Number(ownerId);
-    const selectedBranchIdNum = Number(selectedBranchId);
-    return this.branchService.getBranchSetup(ownerIdNum, selectedBranchIdNum);
-  }
-
-  @Post('owner/clone-branch-setup/:selected_branch_id')
-  async cloneBranchSetup(
-    @Param('selected_branch_id') selectedBranchId: string,
-    @Req() request: Request,
-  ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
-    const ownerIdNum = Number(ownerId);
-    const selectedBranchIdNum = Number(selectedBranchId);
-    const branchIdNum = Number(branchId);
-    return this.branchService.cloneBranchSetup(
-      ownerIdNum,
-      selectedBranchIdNum,
-      branchIdNum,
-    );
+  @Get('owner/:ownerId')
+  async getBranchesByOwner(@Param('ownerId') ownerId: number) {
+    return this.branchService.getBranchesByOwnerId(ownerId);
   }
 }
