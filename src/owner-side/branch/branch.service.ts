@@ -547,7 +547,7 @@ export class BranchService {
     try {
       // เรียก GET endpoint จาก server อื่น
       const response = await axios.get(
-        `http://192.168.1.43:3000/branches/owner/get-branch-setup/${selectedBranchId}`,
+        `http://192.168.1.185:3000/branches/owner/get-branch-setup/${selectedBranchId}`,
         {
           headers: {
             'Content-Type': 'application/json',
