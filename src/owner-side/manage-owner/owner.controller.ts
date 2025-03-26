@@ -48,6 +48,7 @@ export class OwnerController {
 
     const owners: CreateOwnerDto[] = [];
     const stream = Readable.from(file.buffer.toString());
+    let newOwnersCount = 0;
 
     try {
       for await (const row of stream.pipe(csvParser())) {
@@ -60,20 +61,28 @@ export class OwnerController {
 
         console.log(`✅ Adding new owner: ${row.email}`);
         const owner = await this.ownerService.createOwnerWithBranch(row);
+        newOwnersCount++;
 
         owners.push({
           owner_name: owner.owner_name,
           contact_info: owner.contact_info,
           email: owner.email,
-          password: '***temp password send tto email***',
+          password: '***temp password send to email***',
         });
       }
 
-      if (owners.length === 0) {
-        throw new BadRequestException('No new owners were added.');
+      if (newOwnersCount === 0) {
+        return { 
+          message: 'No new owners were added. All owners already exist in the system.',
+          existingOwners: true 
+        };
       }
 
-      return { message: 'CSV data uploaded successfully', newOwners: owners };
+      return { 
+        message: 'CSV data uploaded successfully', 
+        newOwners: owners,
+        count: newOwnersCount
+      };
     } catch (error) {
       console.error('Error uploading CSV data:', error);
       throw new BadRequestException('Error processing CSV file');

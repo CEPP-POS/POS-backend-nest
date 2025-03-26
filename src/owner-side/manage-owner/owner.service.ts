@@ -33,60 +33,42 @@ export class OwnerService {
     const tempPassword = Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-    const createOwnerDto: CreateOwnerDto = {
-      owner_name: `${row.first_name} ${row.last_name}`,   // สร้างชื่อเจ้าของ
-      contact_info: row.phone,                              // ใช้หมายเลขโทรศัพท์
-      email: row.email,                                     // ใช้อีเมล
-      password: hashedPassword,                             // รหัสผ่านที่ถูกแฮช
-      owner_id: row.owner_id || uuidv4(),                   // ถ้าไม่มี owner_id ให้ใช้ uuidv4
-      branch_id: row.branch_name,                           // ใช้ชื่อสาขาจาก CSV
-    };
-    
-    // ตรวจสอบว่ามี owner_id นี้อยู่แล้วหรือไม่
-    const existingOwnerById = await this.ownerRepository.findOne({
-      where: { owner_id: createOwnerDto.owner_id }
-    });
+    // สร้าง UUID ใหม่ถ้าไม่มีหรือไม่ถูกต้อง
+    const ownerId = row.owner_id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(row.owner_id) 
+      ? row.owner_id 
+      : uuidv4();
 
-    if (existingOwnerById) {
-      console.log(`🔍 Owner with ID ${createOwnerDto.owner_id} already exists, skipping...`);
-      return existingOwnerById;
-    }
+    const createOwnerDto: CreateOwnerDto = {
+      owner_name: `${row.first_name} ${row.last_name}`,
+      contact_info: row.phone,
+      email: row.email,
+      password: hashedPassword,
+      owner_id: ownerId,
+    };
 
     let owner = await this.findByEmail(createOwnerDto.email);
     if (!owner) {
       owner = this.ownerRepository.create({
-        owner_id: row.owner_id || uuidv4(),
         ...createOwnerDto,
       });
       owner = await this.ownerRepository.save(owner);
-      await sendTemporaryPasswordEmail(owner.email, tempPassword);
+
+      await sendTemporaryPasswordEmail(row.email, tempPassword);
     }
 
-    const branchName = row.branch_name || `${owner.owner_name}'s New Branch`;
-
-    let branch = await this.branchRepository.findOne({
-      where: {
-        branch_name: branchName,
-        owner: { owner_id: owner.owner_id },
-      },
+    // สร้าง branch หลังจากมี owner แล้ว
+    const branchName = row.branch_name || `${row.first_name} ${row.last_name}'s Branch`;
+    const branch = await this.branchService.create({
+      branch_id: uuidv4(),
+      branch_name: branchName,
+      branch_address: row.address || 'N/A',
+      branch_phone_number: row.phone || 'N/A',
+      owner_id: owner.owner_id,
     });
 
-    if (!branch) {
-      branch = await this.branchService.create({
-        branch_id: createOwnerDto.branch_id || uuidv4(),
-        owner_id: owner.owner_id,
-        branch_name: row.branchName,
-        branch_address: row.address || 'N/A',
-        branch_phone_number: row.phone || 'N/A',
-      });
-      const employeeCount = await this.countEmployeesInBranch(branch.branch_id);
-      if (employeeCount === 0) {
-        await this.createDefaultEmployee(owner, branch.branch_id);
-      }
-    }
-
+    // อัพเดท branch_id ของ owner
     owner.branch_id = branch.branch_id;
-    await this.updateBranchId(owner.owner_id, branch.branch_id);
+    await this.ownerRepository.save(owner);
 
     return owner;
   }
