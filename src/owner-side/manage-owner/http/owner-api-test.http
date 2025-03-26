@@ -14,8 +14,8 @@ POST http://192.168.3.80:3000/auth/login
 Content-Type: application/json
 
 {
-  "email": "new2@gmail.com",
-  "password": "23gcsl7t"
+  "email": "michael2.green@example.com",
+  "password": "gqkpxwit"
 }
 
 ### 3. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน (Forgot Password)

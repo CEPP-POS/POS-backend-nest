@@ -161,7 +161,7 @@ export class OwnerService {
       password: hashedPassword,
       roles: ['employee'],
       manager,
-      branch,
+      branch_id: branch_id || uuidv4(),
     });
 
     return this.ownerRepository.save(newEmployee);
