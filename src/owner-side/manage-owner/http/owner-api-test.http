@@ -1,5 +1,5 @@
 ### 1. Owner อัปโหลดไฟล์ CSV
-POST http://localhost:3000/owner/upload-csv
+POST http://192.168.3.80:3000/owner/upload-csv
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
@@ -10,40 +10,40 @@ Content-Type: text/csv
 --boundary--
 
 ### 2. Owner เข้าสู่ระบบ (Login)
-POST http://localhost:3000/auth/login
+POST http://192.168.3.80:3000/auth/login
 Content-Type: application/json
 
 {
-  "email": "michael.green@example.com",
-  "password": "SecureWhite123!2"
+  "email": "new2@gmail.com",
+  "password": "23gcsl7t"
 }
 
 ### 3. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน (Forgot Password)
 POST http://localhost:3000/owner/forgot-password
 Content-Type: application/json
-owner_id: 35
-branch_id: 10
+owner_id: 48
+branch_id: 22
 {
-  "usernameOrEmail": "michael.green@example.com"
+  "usernameOrEmail": "new@gmail.com"
 }
 ### 4. Owner ยืนยัน OTP
 POST http://localhost:3000/owner/verify-otp
 Content-Type: application/json
-owner_id: 35
-branch_id: 10
+owner_id: 48
+branch_id: 22
 {
-  "usernameOrEmail": "michael.green@example.com",
-  "otp": "389217"
+  "usernameOrEmail": "new@gmail.com",
+  "otp": "317311"
 }
 
 ### 5. Owner รีเซ็ตรหัสผ่านใหม่
 PATCH http://localhost:3000/owner/reset-password
 Content-Type: application/json
-owner_id: 35
-branch_id: 10
+owner_id: 48
+branch_id: 22
 {
-  "email": "michael.green@example.com",
-  "newPassword": "SecureWhite123!2"
+  "email": "new@gmail.com",
+  "newPassword": "SecureWhite1232"
 }
 ### 6. Owner เข้าสู่ระบบ (Login)
 POST http://localhost:3000/auth/login
@@ -62,4 +62,13 @@ Content-Type: application/json
   "email": "MemeeEmployee2@example.com",
   "password": "Employee2",
   "branch_id": 10
+}
+
+
+POST http://localhost:3000/owner/branch
+Content-Type: application/json
+owner_id: 39
+
+{
+  "branch_id": 14
 }

@@ -125,4 +125,9 @@ export class BranchController {
       branchId,
     );
   }
+
+  // @Get('owner/:ownerId')
+  // async getBranchesByOwner(@Param('ownerId') ownerId: number) {
+  //   return this.branchService.getBranchesByOwnerId(ownerId);
+  // }
 }

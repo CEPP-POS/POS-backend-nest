@@ -1,8 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { OwnerService } from 'src/owner-side/manage-owner/owner.service';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/auth.dto';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -39,6 +44,7 @@ export class AuthService {
 
     const token = await this.jwtService.signAsync(payload);
     console.log('[Auth Service] GENERATED TOKEN:', token);
+
     return {
       token,
       owner_id: user.owner_id,

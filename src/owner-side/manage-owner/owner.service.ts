@@ -53,16 +53,27 @@ export class OwnerService {
       await sendTemporaryPasswordEmail(owner.email, tempPassword);
     }
 
-    let branch = await this.branchRepository.findOne({ where: { owner } });
+    const branchName = row.branch_name || `${owner.owner_name}'s New Branch`;
+
+    let branch = await this.branchRepository.findOne({
+      where: {
+        branch_name: branchName,
+        owner: { owner_id: owner.owner_id },
+      },
+    });
 
     if (!branch) {
       branch = await this.branchService.create({
         branch_id: createOwnerDto.branch_id || uuidv4(),
         owner_id: owner.owner_id,
-        branch_name: `${owner.owner_name}'s Branch`,
+        branch_name: branchName,
         branch_address: row.address || 'N/A',
         branch_phone_number: row.phone || 'N/A',
       });
+      const employeeCount = await this.countEmployeesInBranch(branch.branch_id);
+      if (employeeCount === 0) {
+        await this.createDefaultEmployee(owner, branch.branch_id);
+      }
     }
 
     owner.branch_id = branch.branch_id;
@@ -73,6 +84,32 @@ export class OwnerService {
 
   async updateBranchId(ownerId: string, branchId: string): Promise<void> {
     await this.ownerRepository.update(ownerId, { branch_id: branchId });
+  }
+
+  async countEmployeesInBranch(branchId: string): Promise<number> {
+    return this.ownerRepository.count({
+      where: {
+        branch: { branch_id: branchId },
+        roles: Raw((alias) => `:role = ANY(${alias})`, { role: 'employee' }),
+      },
+    });
+  }
+
+  async createDefaultEmployee(owner: Owner, branchId: string): Promise<Owner> {
+    const tempPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+    const newEmployee = this.ownerRepository.create({
+      email: `${owner.email.split('@')[0]}+emp@${owner.email.split('@')[1]}`,
+      password: hashedPassword,
+      roles: ['employee'],
+      manager: owner,
+      branch: { branch_id: branchId },
+    });
+
+    const savedEmployee = await this.ownerRepository.save(newEmployee);
+    console.log(`📌 สร้าง Employee อัตโนมัติให้กับสาขาใหม่: ${savedEmployee.email}`);
+    return savedEmployee;
   }
 
   // * Create Employee
@@ -286,5 +323,27 @@ export class OwnerService {
     await this.ownerRepository.save(user);
     await sendTemporaryPasswordEmail(user.email, tempPassword);
     return { message: 'Temporary password sent to your email.' };
+  }
+
+  async assignBranch(ownerId: string, branchId: string) {
+    const owner = await this.ownerRepository.findOne({
+      where: { owner_id: ownerId },
+      relations: ['branch'],
+    });
+    if (!owner) {
+      throw new NotFoundException(`Owner with ID ${ownerId} not found`);
+    }
+
+    const branch = await this.branchRepository.findOne({
+      where: { branch_id: branchId },
+    });
+    if (!branch) {
+      throw new NotFoundException(`Branch with ID ${branchId} not found`);
+    }
+
+    owner.branch_id = branch.branch_id;
+    owner.branch = branch;
+
+    return this.ownerRepository.save(owner);
   }
 }

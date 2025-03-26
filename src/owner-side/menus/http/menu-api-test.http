@@ -1,5 +1,5 @@
 ### Create a new Menu
-POST http://localhost:3000/owner/menus
+POST http://192.168.3.80:3000/owner/menus
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820

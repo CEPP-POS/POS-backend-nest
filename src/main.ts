@@ -26,6 +26,6 @@ async function bootstrap() {
 
   // access image in local
   app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
-  await app.listen(3000);
+  await app.listen(3000,'0.0.0.0');
 }
 bootstrap();

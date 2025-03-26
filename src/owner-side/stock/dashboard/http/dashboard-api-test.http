@@ -47,25 +47,25 @@ branch_id: 3
 # getIngredientsCategories
 GET http://localhost:3000/owner/stock-ingredients/categories
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: 1
+branch_id: 1
 
 # getIngredientDetails
 ## fix
-GET http://localhost:3000/owner/stock-ingredients/4
+GET http://localhost:3000/owner/stock-ingredients/8
 Content-Type: application/json
 owner_id: 1
-branch_id: 3
+branch_id: 1
 
 #getUpdateIngredient
 ## fix
-GET http://localhost:3000/owner/update-stock-ingredients/1
+GET http://localhost:3000/owner/update-stock-ingredients/15
 Content-Type: application/json
 owner_id: 1
-branch_id: 3
+branch_id: 1
 
 ## update ingredient popup
-PATCH http://localhost:3000/owner/update-stock-ingredients/1
+PATCH http://localhost:3000/owner/update-stock-ingredients/15
 Content-Type: application/json
 owner_id: 1
 branch_id: 1
@@ -81,7 +81,7 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 {
-    "category_name": "น้ำชง"
+    "category_name": "น้ำหวาน"
 }
 
 ## create new ingredient
@@ -94,8 +94,8 @@ branch_id: 1
   "ingredient_name": "ไข่มุก2",
   "net_volume": 100,
   "unit": "g",
-  "quantity_in_stock": 10,
-  "category_name": "",
+  "quantity_in_stock": 4,
+  "category_name": "น้ำหวาน",
   "expiration_date": "2025-05-29"
 }
 

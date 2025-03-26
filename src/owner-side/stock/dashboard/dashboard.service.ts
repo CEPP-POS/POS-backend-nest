@@ -555,6 +555,8 @@ export class DashboardService {
       where: { ingredient_category_name: category_name },
     });
 
+    console.log('Found category:', category_name);
+
     if (!category) {
       category = this.ingredientCategoryRepository.create({
         ingredient_category_id:
@@ -582,8 +584,15 @@ export class DashboardService {
       });
 
       await this.ingredientRepository.save(ingredient);
+    } else {
+      // Update the ingredient's category if it exists
+      ingredient.ingredientCategory = category;
+      ingredient.image_url = image_url || ingredient.image_url;
+      ingredient.unit = unit || ingredient.unit;
+      await this.ingredientRepository.save(ingredient);
     }
 
+    console.log('Ingredient to Save:', ingredient);
     const existingUpdate = await this.ingredientUpdateRepository.findOne({
       where: {
         ingredient: { ingredient_id: ingredient.ingredient_id },
@@ -809,7 +818,6 @@ export class DashboardService {
     const today = new Date();
     console.log(ingredients);
 
-    // สร้าง Map เพื่อจัดกลุ่มตาม category
     const categoryMap = new Map();
 
     ingredients.forEach((ingredient) => {
@@ -846,7 +854,6 @@ export class DashboardService {
       const categoryName =
         ingredient.ingredientCategory?.ingredient_category_name ||
         'ไม่ระบุหมวดหมู่';
-
       // ถ้ายังไม่มี category นี้ใน Map ให้สร้างใหม่
       if (!categoryMap.has(categoryId)) {
         categoryMap.set(categoryId, {
@@ -939,6 +946,10 @@ export class DashboardService {
     }
 
     const ingredient = ingredientUpdate.ingredient;
+    console.log(
+      'Ingredient:',
+      ingredient.ingredientCategory.ingredient_category_name,
+    );
 
     return {
       ingredient_id: ingredient.ingredient_id,
