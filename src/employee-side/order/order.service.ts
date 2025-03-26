@@ -344,9 +344,12 @@ export class OrderService {
       ...createOrderDto,
       is_paid: false,
       cancel_status: createOrderDto.cancel_status || null,
+      status: createOrderDto.status,
       owner,
       branch,
     });
+
+    console.log("SAVE NEW ORDER:", newOrder)
 
     const savedOrder = await this.orderRepository.save(newOrder);
 
@@ -378,7 +381,7 @@ export class OrderService {
 
     // ถ้าเป็นการชำระเงินสด ให้อัพเดทสถานะ order เป็น paid ทันที
     if (createOrderDto.payment_method === PaymentMethod.CASH) {
-      savedOrder.status = 'รอทำ';
+      // savedOrder.status = 'รอทำ';
       savedOrder.is_paid = true;
       if (savedOrder.cancel_status !== null) {
         savedOrder.is_paid = false;
