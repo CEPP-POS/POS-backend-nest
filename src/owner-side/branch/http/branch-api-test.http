@@ -39,7 +39,7 @@ owner_id: 1
 branch_id: 4
 
 ### Get Branch Setup
-GET http://192.168.1.53:3000/branches/owner/get-branch-setup/d458dffa-855b-4040-afba-dbf97055a820
+GET http://192.168.1.185:3000/branches/owner/get-branch-setup/d458dffa-855b-4040-afba-dbf97055a820
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 
@@ -47,4 +47,4 @@ owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 POST http://localhost:3000/branches/owner/clone-branch-setup/d458dffa-855b-4040-afba-dbf97055a820
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
-branch_id: d458dffa-855b-4040-afba-dbf97055a820
+branch_id: 25b217e3-6158-4edb-98e2-5fad824f8d92

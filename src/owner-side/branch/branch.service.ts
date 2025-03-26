@@ -557,33 +557,148 @@ export class BranchService {
       );
 
       const sourceSetup = response.data;
+      const owner = await this.ownerRepository.findOne({ where: { owner_id: ownerId } });
+      const branch = await this.branchRepository.findOne({ where: { branch_id: targetBranchId } });
 
-      // แปลง branch_id ทั้งหมดให้เป็น targetBranchId
-      const updateBranchId = (obj: any) => {
-        if (obj && typeof obj === 'object') {
-          if ('branch_id' in obj) {
-            obj.branch_id = targetBranchId;
-          }
-          Object.values(obj).forEach((value) => {
-            if (Array.isArray(value) || typeof value === 'object') {
-              updateBranchId(value);
-            }
-          });
-        }
-      };
+      // บันทึกข้อมูล Size
+      if (sourceSetup.size && sourceSetup.size.length > 0) {
+        const sizes = sourceSetup.size.map(size => ({
+          ...size,
+          owner,
+          branch,
+        }));
+        await this.sizeRepository.save(sizes);
+      }
 
-      updateBranchId(sourceSetup);
+      // บันทึกข้อมูล SizeGroup
+      if (sourceSetup.size_group && sourceSetup.size_group.length > 0) {
+        const sizeGroups = sourceSetup.size_group.map(group => ({
+          ...group,
+          owner,
+          branch,
+        }));
+        await this.sizeGroupRepository.save(sizeGroups);
+      }
+
+      // บันทึกข้อมูล SweetnessLevel
+      if (sourceSetup.sweetness_level && sourceSetup.sweetness_level.length > 0) {
+        const sweetnessLevels = sourceSetup.sweetness_level.map(level => ({
+          ...level,
+          owner,
+          branch,
+        }));
+        await this.sweetnessLevelRepository.save(sweetnessLevels);
+      }
+
+      // บันทึกข้อมูล SweetnessGroup
+      if (sourceSetup.sweetness_group && sourceSetup.sweetness_group.length > 0) {
+        const sweetnessGroups = sourceSetup.sweetness_group.map(group => ({
+          ...group,
+          owner,
+          branch,
+        }));
+        await this.sweetnessGroupRepository.save(sweetnessGroups);
+      }
+
+      // บันทึกข้อมูล MenuType
+      if (sourceSetup.menu_type && sourceSetup.menu_type.length > 0) {
+        const menuTypes = sourceSetup.menu_type.map(type => ({
+          ...type,
+          owner,
+          branch,
+        }));
+        await this.menuTypeRepository.save(menuTypes);
+      }
+
+      // บันทึกข้อมูล MenuTypeGroup
+      if (sourceSetup.menu_type_group && sourceSetup.menu_type_group.length > 0) {
+        const menuTypeGroups = sourceSetup.menu_type_group.map(group => ({
+          ...group,
+          owner,
+          branch,
+        }));
+        await this.menuTypeGroupRepository.save(menuTypeGroups);
+      }
+
+      // บันทึกข้อมูล IngredientCategory
+      if (sourceSetup.ingredient_category && sourceSetup.ingredient_category.length > 0) {
+        const ingredientCategories = sourceSetup.ingredient_category.map(category => ({
+          ...category,
+          owner,
+          branch,
+        }));
+        await this.ingredientCategoryRepository.save(ingredientCategories);
+      }
+
+      // บันทึกข้อมูล Ingredient
+      if (sourceSetup.ingredient && sourceSetup.ingredient.length > 0) {
+        const ingredients = sourceSetup.ingredient.map(ingredient => ({
+          ...ingredient,
+          owner,
+          branch,
+        }));
+        await this.ingredientRepository.save(ingredients);
+      }
+
+      // บันทึกข้อมูล AddOn
+      if (sourceSetup.add_on && sourceSetup.add_on.length > 0) {
+        const addOns = sourceSetup.add_on.map(addon => ({
+          ...addon,
+          owner,
+          branch,
+        }));
+        await this.addOnRepository.save(addOns);
+      }
+
+      // บันทึกข้อมูล Category
+      if (sourceSetup.category && sourceSetup.category.length > 0) {
+        const categories = sourceSetup.category.map(category => ({
+          ...category,
+          owner,
+          branch,
+        }));
+        await this.categoryRepository.save(categories);
+      }
+
+      // บันทึกข้อมูล Menu
+      if (sourceSetup.menu && sourceSetup.menu.length > 0) {
+        const menus = sourceSetup.menu.map(menu => ({
+          ...menu,
+          owner,
+          branch,
+        }));
+        await this.menuRepository.save(menus);
+      }
+
+      // บันทึกข้อมูล MenuCategory
+      if (sourceSetup.menu_category && sourceSetup.menu_category.length > 0) {
+        const menuCategories = sourceSetup.menu_category.map(category => ({
+          ...category,
+          owner_id: ownerId,
+          branch_id: targetBranchId,
+        }));
+        await this.menuCategoryRepository.save(menuCategories);
+      }
+
+      // บันทึกข้อมูล MenuIngredient
+      if (sourceSetup.menu_ingredient && sourceSetup.menu_ingredient.length > 0) {
+        const menuIngredients = sourceSetup.menu_ingredient.map(ingredient => ({
+          ...ingredient,
+          owner,
+          branch,
+        }));
+        await this.menuIngredientRepository.save(menuIngredients);
+      }
 
       return {
         message: 'Branch setup cloned successfully',
         source_branch_id: selectedBranchId,
         target_branch_id: targetBranchId,
-        setup_data: sourceSetup,
       };
     } catch (error) {
-      console.error('Error fetching branch setup:', error.message);
+      console.error('Error cloning branch setup:', error.message);
       throw new BadRequestException(
-        'Failed to fetch branch setup from source server',
+        'Failed to clone branch setup',
       );
     }
   }
