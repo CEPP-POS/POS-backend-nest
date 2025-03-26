@@ -6,6 +6,7 @@ import {
   JoinColumn,
   CreateDateColumn,
   OneToMany,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Branch } from './branch.entity';
 import { LocalData } from './local-data.entity';
