@@ -42,6 +42,16 @@ export class OwnerService {
       branch_id: row.branch_id,
     };
 
+    // ตรวจสอบว่ามี owner_id นี้อยู่แล้วหรือไม่
+    const existingOwnerById = await this.ownerRepository.findOne({
+      where: { owner_id: createOwnerDto.owner_id }
+    });
+
+    if (existingOwnerById) {
+      console.log(`🔍 Owner with ID ${createOwnerDto.owner_id} already exists, skipping...`);
+      return existingOwnerById;
+    }
+
     let owner = await this.findByEmail(createOwnerDto.email);
     if (!owner) {
       owner = this.ownerRepository.create({
