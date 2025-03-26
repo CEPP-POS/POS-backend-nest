@@ -34,14 +34,14 @@ export class OwnerService {
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
     const createOwnerDto: CreateOwnerDto = {
-      owner_name: `${row.first_name} ${row.last_name}`,
-      contact_info: row.phone,
-      email: row.email,
-      password: hashedPassword,
-      owner_id: row.owner_id,
-      branch_id: row.branch_id,
+      owner_name: `${row.first_name} ${row.last_name}`,   // สร้างชื่อเจ้าของ
+      contact_info: row.phone,                              // ใช้หมายเลขโทรศัพท์
+      email: row.email,                                     // ใช้อีเมล
+      password: hashedPassword,                             // รหัสผ่านที่ถูกแฮช
+      owner_id: row.owner_id || uuidv4(),                   // ถ้าไม่มี owner_id ให้ใช้ uuidv4
+      branch_id: row.branch_name,                           // ใช้ชื่อสาขาจาก CSV
     };
-
+    
     // ตรวจสอบว่ามี owner_id นี้อยู่แล้วหรือไม่
     const existingOwnerById = await this.ownerRepository.findOne({
       where: { owner_id: createOwnerDto.owner_id }
@@ -55,11 +55,10 @@ export class OwnerService {
     let owner = await this.findByEmail(createOwnerDto.email);
     if (!owner) {
       owner = this.ownerRepository.create({
-        owner_id: createOwnerDto.owner_id || uuidv4(),
+        owner_id: row.owner_id || uuidv4(),
         ...createOwnerDto,
       });
       owner = await this.ownerRepository.save(owner);
-
       await sendTemporaryPasswordEmail(owner.email, tempPassword);
     }
 
@@ -76,7 +75,7 @@ export class OwnerService {
       branch = await this.branchService.create({
         branch_id: createOwnerDto.branch_id || uuidv4(),
         owner_id: owner.owner_id,
-        branch_name: branchName,
+        branch_name: row.branchName,
         branch_address: row.address || 'N/A',
         branch_phone_number: row.phone || 'N/A',
       });
