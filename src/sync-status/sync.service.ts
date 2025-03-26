@@ -84,26 +84,30 @@ export class SyncService {
       // การส่ง request พร้อมกับ headers ที่ได้รับจากข้อมูล
       const headers = {
         'Content-Type': 'application/json',
-        ...data.headers, // ใช้ headers ที่ส่งมาจากฐานข้อมูล
-        'owner-id': data.headers?.['owner-id'] || 'default_owner_id', // เพิ่ม owner-id ถ้าไม่มี
-        'branch-id': data.headers?.['branch-id'] || 'default_branch_id', // เพิ่ม branch-id ถ้าไม่มี
+        ...data.headers,
+        'owner-id': data.headers?.['owner-id'] || 'default_owner_id',
+        'branch-id': data.headers?.['branch-id'] || 'default_branch_id',
       };
 
       const response = await axios({
         method: data.method.toLowerCase(),
         url: data.path,
         data: data.payload,
-        headers: headers, // ส่ง headers ที่แก้ไขแล้ว
+        headers: headers,
       });
 
       // ถ้าส่งข้อมูลสำเร็จ
       if (response.status >= 200 && response.status < 300) {
-        data.synced = true; // เปลี่ยนสถานะ synced เป็น true
+        data.synced = true;
         console.log(`✅ Successfully synced: ${data.path}`);
-
-        // ลบข้อมูลออกจากฐานข้อมูลหลังจากส่งสำเร็จ
-        await this.syncRepo.delete(data.id); // ลบข้อมูลจากฐานข้อมูล
-        console.log(`✅ Data deleted successfully for ID: ${data.id}`);
+        
+        // ตรวจสอบว่า id เป็น UUID หรือไม่
+        if (typeof data.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.id)) {
+          await this.syncRepo.delete(data.id);
+          console.log(`✅ Deleted sync record with ID: ${data.id}`);
+        } else {
+          console.log(`⚠️ Invalid UUID format for ID: ${data.id}, skipping deletion`);
+        }
       }
     } catch (error) {
       // ถ้าส่งไม่สำเร็จ, เพิ่ม retryCount
