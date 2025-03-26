@@ -292,8 +292,6 @@ export class OrderService {
     const endOfDay = new Date(orderDate);
     endOfDay.setHours(23, 59, 59, 999);
 
-    // Generate order_id
-    const order_id = `${orderDate}${branch_id}${owner_id}`;
     // Find the latest queue number for the current day
     const latestOrder = await this.orderRepository.findOne({
       where: {
@@ -345,7 +343,7 @@ export class OrderService {
 
     // Proceed to create the order
     const newOrder = this.orderRepository.create({
-      order_id: uuidv4(),
+      order_id: createOrderDto.order_id || uuidv4(),
       ...createOrderDto,
       is_paid: false,
       cancel_status: createOrderDto.cancel_status || null,
@@ -360,7 +358,7 @@ export class OrderService {
 
     // สร้าง payment record ตามวิธีการชำระเงิน
     const payment = this.paymentRepository.create({
-      payment_id: uuidv4(),
+      payment_id: createOrderDto.payment_id || uuidv4(),
       order: savedOrder,
       payment_method: createOrderDto.payment_method,
       status:
@@ -373,7 +371,6 @@ export class OrderService {
       payment_date: new Date(),
       owner,
       branch,
-      // เพิ่มข้อมูลการชำระเงินสดถ้าเป็นการชำระด้วยเงินสด
       ...(createOrderDto.payment_method === PaymentMethod.CASH && {
         cash_given: createOrderDto.cash_given,
         change: createOrderDto.change,
@@ -448,7 +445,7 @@ export class OrderService {
         // console.log(orderItems);
         // Create order item first
         const orderItem = this.orderItemRepository.create({
-          order_item_id: uuidv4(),
+          order_item_id: item.order_item_id || uuidv4(),
           quantity: item.quantity,
           price: item.price,
           menu,
@@ -722,7 +719,7 @@ export class OrderService {
     if (!payment) {
       // If no payment exists, create a new one
       payment = this.paymentRepository.create({
-        payment_id: uuidv4(),
+        payment_id: payWithCashDto.payment_id || uuidv4(),
         order,
         cash_given: payWithCashDto.cash_given,
         change: payWithCashDto.change,
@@ -750,7 +747,7 @@ export class OrderService {
     }
 
     // Save payment
-    const savedPayment = await this.paymentRepository.save(payment);
+    await this.paymentRepository.save(payment);
 
     // Update order status
     order.status = 'paid';

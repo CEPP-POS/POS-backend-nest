@@ -80,7 +80,7 @@ export class CategoryService {
 
     if (!category) {
       category = this.categoryRepository.create({
-        category_id: uuidv4(),
+        category_id: createCategoryDto.category_id || uuidv4(),
         category_name,
         owner,
         branch,

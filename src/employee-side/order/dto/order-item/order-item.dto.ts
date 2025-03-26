@@ -1,8 +1,16 @@
-import { IsNotEmpty, IsInt, Min, IsArray } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsInt,
+  Min,
+  IsArray,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class OrderItemDto {
-  @IsNotEmpty()
-  order_item_id: string;
+  @IsOptional()
+  @IsString()
+  order_item_id?: string;
 
   @IsInt()
   @Min(1)

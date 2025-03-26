@@ -84,7 +84,7 @@ export class BranchService {
     }
 
     const newBranch = this.branchRepository.create({
-      branch_id: uuidv4(),
+      branch_id: createBranchDto.branch_id || uuidv4(),
       ...branchData,
       owner,
     });

@@ -1,6 +1,8 @@
 import { ArrayNotEmpty, IsArray, IsOptional, IsString } from 'class-validator';
 
 export class CreateCategoryDto {
+  category_id?: string;
+
   @IsString()
   category_name: string;
 
