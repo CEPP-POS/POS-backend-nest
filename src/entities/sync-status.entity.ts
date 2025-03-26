@@ -16,7 +16,7 @@ export class SyncStatus {
   @Column({ type: 'int' })
   statusCode: number;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column('jsonb')
   payload: any;
 
   @Column({ default: false })
@@ -27,6 +27,9 @@ export class SyncStatus {
 
   @Column({ nullable: true })
   errorMessage: string;
+
+  @Column('jsonb', { nullable: true })
+  headers: any;
 
   @CreateDateColumn()
   createdAt: Date;

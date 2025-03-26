@@ -23,16 +23,16 @@ export class SyncController {
     return { message: 'Saved to retry queue' };
   }
 
-  @Post('test-send')
-  @HttpCode(200)
-  async testSendData(@Body() syncDto: SyncDataDto) {
-    const result = await this.syncService.sendRequestToServer(syncDto);
-    return result;
-  }
+//   @Post('test-send')
+//   @HttpCode(200)
+//   async testSendData(@Body() syncDto: SyncDataDto) {
+//     const result = await this.syncService.sendRequestToServer(syncDto);
+//     return result;
+//   }
 
   @Get('retry')
   async retryFailedData() {
-    await this.syncService.retryFailedQueue();  // เรียกฟังก์ชัน retryFailedQueue
-    return { message: 'Retrying failed data' };  // ส่งข้อความกลับว่า retry เรียบร้อย
+    await this.syncService.processSyncQueue();  // เรียกฟังก์ชัน retryFailedQueue
+    return { message: 'Retrying failed data' };
   }
 }
