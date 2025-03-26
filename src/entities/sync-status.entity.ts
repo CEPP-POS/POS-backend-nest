@@ -7,6 +7,7 @@ import {
   CreateDateColumn,
   OneToMany,
   UpdateDateColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Branch } from './branch.entity';
 import { LocalData } from './local-data.entity';
@@ -21,7 +22,13 @@ export enum syncStatus {
 @Entity('sync_status')
 export class SyncStatus {
   @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
-  sync_status_id: string;
+  id: string;
+
+  @Column()
+  path: string;
+
+  @Column()
+  method: string;
 
   @Column('jsonb')
   payload: any;

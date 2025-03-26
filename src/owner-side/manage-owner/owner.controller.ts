@@ -218,14 +218,15 @@ export class OwnerController {
   }
 
   @Post('branch')
-  async assignBranch(@Body('branch_id') branchId: number, @Req() req: Request) {
+  async assignBranch(@Body('branch_id') branchId: string, @Req() req: Request) {
     const ownerId = req.headers['owner_id'];
     if (!ownerId) {
       throw new BadRequestException(
         'Missing required headers: owner_id or branch_id',
       );
     }
-    await this.ownerService.assignBranch(Number(ownerId), Number(branchId));
+    const ownerIdStr = Array.isArray(ownerId) ? ownerId[0] : ownerId;
+    await this.ownerService.assignBranch(ownerIdStr, branchId);
     return { message: 'Branch assigned successfully' };
   }
 }
