@@ -5,11 +5,10 @@ import { Size } from './size.entity';
 import { MenuType } from './menu-type.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
-import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class MenuIngredient {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   menu_ingredient_id: string;
 
   @ManyToOne(() => Menu, { nullable: false })

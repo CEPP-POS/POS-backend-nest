@@ -3,16 +3,11 @@ import {
   PrimaryColumn,
   Column,
   ManyToOne,
-  JoinColumn,
   CreateDateColumn,
-  OneToMany,
   UpdateDateColumn,
-  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Branch } from './branch.entity';
-import { LocalData } from './local-data.entity';
 import { Owner } from './owner.entity';
-import { v4 as uuidv4 } from 'uuid';
 
 export enum syncStatus {
   'online',
@@ -21,7 +16,7 @@ export enum syncStatus {
 
 @Entity('sync_status')
 export class SyncStatus {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   id: string;
 
   @Column()

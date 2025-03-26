@@ -11,11 +11,10 @@ import { OrderItem } from './order-item.entity';
 import { MenuIngredient } from './menu-ingredient.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
-import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class Size {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   size_id: string;
 
   @Column({ nullable: false })

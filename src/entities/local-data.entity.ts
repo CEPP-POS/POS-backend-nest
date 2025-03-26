@@ -11,7 +11,6 @@ import { SyncStatus } from './sync-status.entity';
 import { Order } from './order.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
-import { v4 as uuidv4 } from 'uuid';
 
 export enum OperationType {
   INSERT = 'Insert',
@@ -26,7 +25,7 @@ export enum Status {
 
 @Entity()
 export class LocalData {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   local_data_id: string;
 
   @Column()

@@ -14,11 +14,10 @@ import { SizeGroup } from './size-group.entity';
 import { MenuIngredient } from './menu-ingredient.entity';
 import { OrderItem } from './order-item.entity';
 import { MenuCategory } from './menu_category';
-import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class Menu {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   menu_id: string;
 
   @Column()

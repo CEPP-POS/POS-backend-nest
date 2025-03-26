@@ -10,11 +10,10 @@ import { Size } from './size.entity';
 import { Menu } from './menu.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
-import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class SizeGroup {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   size_group_id: string;
 
   @Column()

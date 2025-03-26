@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('sync_queue')
 export class SyncQueue {
@@ -37,4 +43,4 @@ export class SyncQueue {
 
   @UpdateDateColumn()
   updated_at: Date;
-} 
+}

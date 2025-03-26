@@ -27,10 +27,9 @@ import { SweetnessLevel } from './sweetness-level.entity';
 import { MenuType } from './menu-type.entity';
 import { MenuTypeGroup } from './menu-type-group.entity';
 import { LocalData } from './local-data.entity';
-import { v4 as uuidv4 } from 'uuid';
 @Entity()
 export class Branch {
-  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  @PrimaryColumn({ type: 'uuid' })
   branch_id: string;
 
   @Column()
