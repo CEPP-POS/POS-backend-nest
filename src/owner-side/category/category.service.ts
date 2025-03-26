@@ -14,7 +14,7 @@ import { Owner } from 'src/entities/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 import { MenuCategory } from 'src/entities/menu_category';
 import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
-// import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class CategoryService {
@@ -80,6 +80,7 @@ export class CategoryService {
 
     if (!category) {
       category = this.categoryRepository.create({
+        category_id: uuidv4(),
         category_name,
         owner,
         branch,

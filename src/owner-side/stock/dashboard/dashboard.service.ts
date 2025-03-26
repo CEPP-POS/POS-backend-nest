@@ -24,6 +24,7 @@ import { IngredientCategoriesDto } from './dto/ingredients-categories.dto';
 import { Branch } from 'src/entities/branch.entity';
 import { CancelStatus } from 'src/employee-side/order/dto/create-order/create-order.dto';
 import { EditIngredientDto } from './dto/edit-ingredient.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class DashboardService {
@@ -506,6 +507,7 @@ export class DashboardService {
       throw new BadRequestException(`Branch ID ${branch_id} ไม่พบในระบบ`);
 
     const newCategory = this.ingredientCategoryRepository.create({
+      ingredient_category_id: uuidv4(),
       ingredient_category_name: category_name,
       owner,
       branch,
@@ -554,6 +556,7 @@ export class DashboardService {
 
     if (!category) {
       category = this.ingredientCategoryRepository.create({
+        ingredient_category_id: uuidv4(),
         ingredient_category_name: category_name,
         owner,
         branch,
@@ -567,6 +570,7 @@ export class DashboardService {
 
     if (!ingredient) {
       ingredient = this.ingredientRepository.create({
+        ingredient_id: uuidv4(),
         ingredient_name,
         ingredientCategory: category,
         owner,
@@ -611,6 +615,7 @@ export class DashboardService {
       const total_volume = net_volume * quantity_in_stock;
 
       const newUpdate = this.ingredientUpdateRepository.create({
+        update_id: uuidv4(),
         ingredient: ingredient,
         quantity_in_stock,
         net_volume,
@@ -1113,6 +1118,7 @@ export class DashboardService {
     if (!category) {
       // สร้าง category ใหม่ถ้าไม่มี
       category = this.ingredientCategoryRepository.create({
+        ingredient_category_id: uuidv4(),
         ingredient_category_name: editIngredientDto.category_name,
         owner: { owner_id },
         branch: { branch_id },
