@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, Get } from '@nestjs/common';
 import { SyncService } from './sync.service';
 import { StatusDto } from './dto/status.dto';
 import { SyncDataDto } from './dto/sync-data.dto';
@@ -21,5 +21,18 @@ export class SyncController {
   async saveOfflineData(@Body() syncDto: SyncDataDto) {
     await this.syncService.saveFailedRequest(syncDto);
     return { message: 'Saved to retry queue' };
+  }
+
+  @Post('test-send')
+  @HttpCode(200)
+  async testSendData(@Body() syncDto: SyncDataDto) {
+    const result = await this.syncService.sendRequestToServer(syncDto);
+    return result;
+  }
+
+  @Get('retry')
+  async retryFailedData() {
+    await this.syncService.retryFailedQueue();  // เรียกฟังก์ชัน retryFailedQueue
+    return { message: 'Retrying failed data' };  // ส่งข้อความกลับว่า retry เรียบร้อย
   }
 }

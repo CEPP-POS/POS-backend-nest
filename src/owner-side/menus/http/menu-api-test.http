@@ -4,7 +4,7 @@ Content-Type: application/json
 owner_id: 13
 branch_id: 7
 {
-  "menu_name": "ชานมไต้หวันmmm",
+  "menu_name": "milk",
   "description": "Delicious ไต้หวัน",
   "price": 40,
   "image_url": "http://example.com/spaghetti.jpg"
