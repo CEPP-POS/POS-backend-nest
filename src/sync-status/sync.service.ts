@@ -15,11 +15,11 @@ export class SyncService {
     private readonly httpService: HttpService,
   ) {}
 
-  async handleStatus(isOnline: boolean) {
-    if (isOnline) {
-      await this.retryFailedQueue();
-    }
-  }
+//   async handleStatus(isOnline: boolean) {
+//     if (isOnline) {
+//       await this.retryFailedQueue();
+//     }
+//   }
 
   async saveFailedRequest(data: SyncDataDto) {
     const syncStatus = this.syncRepo.create({
@@ -30,44 +30,44 @@ export class SyncService {
     return this.syncRepo.save(syncStatus);
   }
 
-  async retryFailedQueue() {
-    const failedItems = await this.syncRepo.find({
-      where: { synced: false },
-      order: { createdAt: 'ASC' },
-    });
+//   async retryFailedQueue() {
+//     const failedItems = await this.syncRepo.find({
+//       where: { synced: false },
+//       order: { createdAt: 'ASC' },
+//     });
 
-    for (const item of failedItems) {
-      try {
-        const response = await axios({
-          method: item.method.toLowerCase(),
-          url: item.path,
-          data: item.payload,
-          headers: {
-            'Content-Type': 'application/json',
+//     for (const item of failedItems) {
+//       try {
+//         const response = await axios({
+//           method: item.method.toLowerCase(),
+//           url: item.path,
+//           data: item.payload,
+//           headers: {
+//             'Content-Type': 'application/json',
             
-          },
-        });
+//           },
+//         });
 
-        if (response.status >= 200 && response.status < 300) {
-          item.synced = true;
-          console.log(`✅ Successfully synced: ${item.path}`);
-          await this.syncRepo.delete(item.id); 
-        }
-      } catch (error) {
-        item.retryCount += 1;
-        console.error(`❌ Retry failed for ${item.path}`, error.message);
+//         if (response.status >= 200 && response.status < 300) {
+//           item.synced = true;
+//           console.log(`✅ Successfully synced: ${item.path}`);
+//           await this.syncRepo.delete(item.id); 
+//         }
+//       } catch (error) {
+//         item.retryCount += 1;
+//         console.error(`❌ Retry failed for ${item.path}`, error.message);
         
-        if (item.retryCount >= 3) {
-          item.synced = true;
-          console.log(`⚠️ Max retry attempts reached for ${item.path}`);
-        }
-      }
+//         if (item.retryCount >= 3) {
+//           item.synced = true;
+//           console.log(`⚠️ Max retry attempts reached for ${item.path}`);
+//         }
+//       }
 
-      await this.syncRepo.save(item);
+//       await this.syncRepo.save(item);
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-  }
+//       await new Promise(resolve => setTimeout(resolve, 1000));
+//     }
+//   }
   async processSyncQueue() {
     const failedItems = await this.syncRepo.find({
       where: { synced: false },
@@ -102,6 +102,7 @@ export class SyncService {
 
         // ลบข้อมูลออกจากฐานข้อมูลหลังจากส่งสำเร็จ
         await this.syncRepo.delete(data.id);  // ลบข้อมูลจากฐานข้อมูล
+        console.log(`✅ Data deleted successfully for ID: ${data.id}`);
       }
     } catch (error) {
       // ถ้าส่งไม่สำเร็จ, เพิ่ม retryCount

@@ -8,12 +8,12 @@ export class SyncController {
   constructor(private readonly syncService: SyncService) {}
 
   // รับค่าจาก frontend ว่าออนไลน์หรือไม่
-  @Post()
-  @HttpCode(200)
-  async updateStatus(@Body() statusDto: StatusDto) {
-    await this.syncService.handleStatus(statusDto.isOnline);
-    return { message: 'Status updated' };
-  }
+//   @Post()
+//   @HttpCode(200)
+//   async updateStatus(@Body() statusDto: StatusDto) {
+//     await this.syncService.handleStatus(statusDto.isOnline);
+//     return { message: 'Status updated' };
+//   }
 
   // รับ path, statusCode, payload เวลา offline
   @Post('offline')
@@ -33,6 +33,6 @@ export class SyncController {
   @Get('retry')
   async retryFailedData() {
     await this.syncService.processSyncQueue();  // เรียกฟังก์ชัน retryFailedQueue
-    return { message: 'Retrying failed data' };
+    return { message: 'completed' };
   }
 }

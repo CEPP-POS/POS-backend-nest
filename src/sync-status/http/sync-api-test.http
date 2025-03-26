@@ -11,9 +11,9 @@ Content-Type: application/json
   "method": "POST",
   "statusCode": 404,
   "payload": {
-    "menu_name": "milo555",
-    "description": "Delicious milojaaa",
-    "price": 40,
+    "menu_name": "tea so hot",
+    "description": "Delicious tea so hot",
+    "price": 50,
     "image_url": "http://example.com/spaghetti.jpg"
   },
   "headers": {
@@ -23,18 +23,20 @@ Content-Type: application/json
 }
 
 
-POST http://192.168.3.80:3000/status
-Content-Type: application/json
-{
-  "isOnline": true
-}
+# POST http://192.168.3.80:3000/status
+# Content-Type: application/json
+# {
+#   "isOnline": false
+# }
 
 
 
 
 
 GET http://192.168.3.80:3000/status/retry
-
+Content-Type: application/json
+owner_id: default_owner_id
+branch_id: default_branch_id
 
 
 
