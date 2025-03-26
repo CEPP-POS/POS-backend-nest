@@ -1,7 +1,7 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -9,11 +9,12 @@ import {
 import { Owner } from './owner.entity';
 import { MenuCategory } from './menu_category';
 import { Branch } from './branch.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class Category {
-  @PrimaryGeneratedColumn()
-  category_id: number;
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  category_id: string;
 
   @Column()
   category_name: string;

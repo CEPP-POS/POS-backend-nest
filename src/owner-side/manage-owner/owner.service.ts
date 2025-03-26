@@ -14,6 +14,7 @@ import { sendTemporaryPasswordEmail } from '../../utils/send-email.util';
 import * as bcrypt from 'bcrypt';
 import { ForgotPasswordDto, VerifyOtpDto } from '../../auth/dto/auth.dto';
 import { UpdatePasswordDto } from '../../auth/dto/password.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class OwnerService {
@@ -32,17 +33,21 @@ export class OwnerService {
     const tempPassword = Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-    let owner = await this.findByEmail(row.email);
+    const createOwnerDto: CreateOwnerDto = {
+      owner_name: `${row.first_name} ${row.last_name}`,
+      contact_info: row.phone,
+      email: row.email,
+      password: hashedPassword,
+      owner_id: row.owner_id,
+      branch_id: row.branch_id,
+    };
 
+    let owner = await this.findByEmail(createOwnerDto.email);
     if (!owner) {
-      const createOwnerDto: CreateOwnerDto = {
-        owner_name: `${row.first_name} ${row.last_name}`,
-        contact_info: row.phone,
-        email: row.email,
-        password: hashedPassword,
-      };
-
-      owner = this.ownerRepository.create(createOwnerDto);
+      owner = this.ownerRepository.create({
+        owner_id: createOwnerDto.owner_id || uuidv4(),
+        ...createOwnerDto,
+      });
       owner = await this.ownerRepository.save(owner);
 
       await sendTemporaryPasswordEmail(owner.email, tempPassword);
@@ -59,6 +64,7 @@ export class OwnerService {
 
     if (!branch) {
       branch = await this.branchService.create({
+        branch_id: createOwnerDto.branch_id || uuidv4(),
         owner_id: owner.owner_id,
         branch_name: branchName,
         branch_address: row.address || 'N/A',
@@ -76,7 +82,7 @@ export class OwnerService {
     return owner;
   }
 
-  async updateBranchId(ownerId: number, branchId: number): Promise<void> {
+  async updateBranchId(ownerId: string, branchId: string): Promise<void> {
     await this.ownerRepository.update(ownerId, { branch_id: branchId });
   }
 
@@ -111,7 +117,8 @@ export class OwnerService {
 
   // * Create Employee
   async createEmployee(createEmployeeDto: CreateEmployeeDto): Promise<Owner> {
-    const { email, password, manager_id, branch_id } = createEmployeeDto;
+    const { email, password, manager_id, branch_id, owner_id } =
+      createEmployeeDto;
 
     const existingUser = await this.findByEmail(email);
     if (existingUser) {
@@ -142,6 +149,7 @@ export class OwnerService {
     }
 
     const newEmployee = this.ownerRepository.create({
+      owner_id: owner_id || uuidv4(),
       email,
       password: hashedPassword,
       roles: ['employee'],
@@ -173,8 +181,8 @@ export class OwnerService {
   // * forgot password
   async forgotPassword(
     forgotPasswordDto: ForgotPasswordDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ): Promise<void> {
     const { usernameOrEmail } = forgotPasswordDto;
 
@@ -211,8 +219,8 @@ export class OwnerService {
 
   async verifyOtp(
     verifyOtpDto: VerifyOtpDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ): Promise<void> {
     const { usernameOrEmail, otp } = verifyOtpDto;
 
@@ -240,7 +248,7 @@ export class OwnerService {
     await this.ownerRepository.save(user);
   }
 
-  async findEmployeesByManager(manager_id: number): Promise<Owner[]> {
+  async findEmployeesByManager(manager_id: string): Promise<Owner[]> {
     const employees = await this.ownerRepository.find({
       where: { manager: { owner_id: manager_id } },
       relations: ['manager', 'branch'],
@@ -256,8 +264,8 @@ export class OwnerService {
 
   async resetPassword(
     updatePasswordDto: UpdatePasswordDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ): Promise<{ message: string }> {
     const { email, newPassword } = updatePasswordDto;
     const user = await this.ownerRepository.findOne({
@@ -270,7 +278,7 @@ export class OwnerService {
   }
 
   async updatePassword(
-    ownerId: number,
+    ownerId: string,
     updatePasswordDto: UpdatePasswordDto,
   ): Promise<Owner> {
     const user = await this.ownerRepository.findOne({
@@ -286,7 +294,7 @@ export class OwnerService {
     return this.ownerRepository.save(user);
   }
 
-  async countEmployees(manager_id: number): Promise<number> {
+  async countEmployees(manager_id: string): Promise<number> {
     const manager = await this.ownerRepository.findOne({
       where: { owner_id: manager_id },
     });

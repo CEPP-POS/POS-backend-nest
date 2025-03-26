@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -11,11 +11,12 @@ import { IngredientUpdate } from './ingredient-update.entity';
 import { Branch } from './branch.entity';
 import { OrderItemAddOn } from './order-item-add-on.entity';
 import { Owner } from './owner.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class Ingredient {
-  @PrimaryGeneratedColumn()
-  ingredient_id: number;
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  ingredient_id: string;
 
   @Column()
   ingredient_name: string;

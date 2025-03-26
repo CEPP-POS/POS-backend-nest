@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -14,11 +14,12 @@ import { SweetnessLevel } from './sweetness-level.entity';
 import { OrderItemAddOn } from './order-item-add-on.entity';
 import { Branch } from './branch.entity';
 import { Owner } from './owner.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class OrderItem {
-  @PrimaryGeneratedColumn()
-  order_item_id: number;
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  order_item_id: string;
 
   @ManyToOne(() => Order, (order) => order.order_item, {
     nullable: false,

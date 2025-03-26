@@ -1,0 +1,95 @@
+import { NotFoundException } from '@nestjs/common';
+
+class OrderService {
+  async findOrderById(order_id: number): Promise<Order> {
+    const order = await this.orderRepository.findOne({
+      where: { order_id },
+      relations: [
+        'order_item',
+        'order_item.menu',
+        'order_item.sweetnessLevel',
+        'order_item.size',
+        'order_item.orderItem',
+        'order_item.orderItem.ingredient',
+        'order_item.menuType',
+        'branch',
+      ],
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${order_id} not found`);
+    }
+
+    // สร้างข้อมูลสำหรับ slip_image.py
+    const slipData = {
+      store_name: order.branch?.branch_name || '',
+      order_id: order.order_id.toString(),
+      queue_number: order.queue_number.toString(),
+      order: order.order_item.map(item => [
+        item.quantity,
+        item.menu?.menu_name || '',
+        item.price / item.quantity, // ราคาต่อหน่วย
+        item.menuType?.type_name || '',
+        item.sweetnessLevel?.level_name || '',
+        item.size?.size_name || '',
+        item.orderItem?.map(addon => addon.ingredient?.ingredient_name).join(', ') || ''
+      ])
+    };
+
+    console.log('Slip Data:', JSON.stringify(slipData, null, 2));
+
+    // เรียกใช้ slip_image.py เพื่อสร้างใบเสร็จ
+    const { PythonShell } = require('python-shell');
+    const path = require('path');
+
+    const scriptPath = path.join(__dirname, '../../../python_print');
+    console.log('Script Path:', scriptPath);
+
+    const options = {
+      mode: 'text',
+      pythonPath: 'python',
+      pythonOptions: ['-u'], // unbuffered output
+      scriptPath: scriptPath,
+      args: [JSON.stringify(slipData)]
+    };
+
+    try {
+      console.log('Attempting to run Python script...');
+      const receipt_path = await new Promise((resolve, reject) => {
+        PythonShell.run('slip_image.py', options, function (err, results) {
+          if (err) {
+            console.error('Python Error:', err);
+            reject(err);
+          }
+          console.log('Python Results:', results);
+          resolve(results ? results[0] : null);
+        });
+      });
+      console.log('Receipt Path:', receipt_path);
+
+      // Create a deep copy and transform for API response
+      const { branch, ...orderWithoutBranch } = order;
+      const transformedOrder = {
+        branch_name: branch?.branch_name,
+        ...orderWithoutBranch,
+        order_item: order.order_item.map((item) => ({
+          ...item,
+          orderItem: item.orderItem
+            ? item.orderItem.map((addon) => ({
+                order_item_id: addon.order_item_id,
+                ingredient_id: addon.ingredient_id,
+                ingredient_name: addon.ingredient?.ingredient_name,
+              }))
+            : [],
+        })),
+        slip_data: slipData,
+        receipt_path // เพิ่ม path ของใบเสร็จที่สร้างขึ้น
+      };
+
+      return transformedOrder as any;
+    } catch (error) {
+      console.error('Error generating receipt:', error);
+      throw new Error('Failed to generate receipt');
+    }
+  }
+} 

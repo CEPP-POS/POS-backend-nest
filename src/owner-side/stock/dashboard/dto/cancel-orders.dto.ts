@@ -1,5 +1,5 @@
 export class CancelOrderDto {
-  order_id: number;
+  order_id: string;
   order_date: Date;
   quantity: number;
   amount: number;

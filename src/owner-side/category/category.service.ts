@@ -14,7 +14,7 @@ import { Owner } from 'src/entities/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 import { MenuCategory } from 'src/entities/menu_category';
 import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
-// import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class CategoryService {
@@ -32,13 +32,13 @@ export class CategoryService {
 
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
-  ) { }
+  ) {}
 
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find();
   }
 
-  async findOne(id: number): Promise<Category> {
+  async findOne(id: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({
       where: { category_id: id },
     });
@@ -80,6 +80,7 @@ export class CategoryService {
 
     if (!category) {
       category = this.categoryRepository.create({
+        category_id: createCategoryDto.category_id || uuidv4(),
         category_name,
         owner,
         branch,
@@ -183,7 +184,7 @@ export class CategoryService {
     };
   }
 
-  async remove(id: number, owner_id: number, branch_id: number): Promise<void> {
+  async remove(id: string, owner_id: string, branch_id: string): Promise<void> {
     const category = await this.categoryRepository.findOne({
       where: {
         category_id: id,
@@ -221,9 +222,9 @@ export class CategoryService {
   }
 
   async updateCategory(
-    categoryId: number,
-    owner_id: number,
-    branch_id: number,
+    categoryId: string,
+    owner_id: string,
+    branch_id: string,
     updateCategoryDto: CreateCategoryDto,
   ): Promise<any> {
     const { category_name, menu_id } = updateCategoryDto;
@@ -327,15 +328,15 @@ export class CategoryService {
     };
   }
 
-  async getAllCategoriesWithMenus(ownerId: number, branchId: number) {
+  async getAllCategoriesWithMenus(ownerId: string, branchId: string) {
     try {
       // Get all categories with their menus
       const categories = await this.categoryRepository.find({
         where: {
           owner: { owner_id: ownerId },
-          branch: { branch_id: branchId }
+          branch: { branch_id: branchId },
         },
-        relations: ['menuCategory', 'menuCategory.menu']
+        relations: ['menuCategory', 'menuCategory.menu'],
       });
 
       // Get all menus for this owner/branch
@@ -343,43 +344,43 @@ export class CategoryService {
         where: {
           owner: { owner_id: ownerId },
           branch: { branch_id: branchId },
-          is_delete: false
+          is_delete: false,
         },
-        relations: ['menuCategory']
+        relations: ['menuCategory'],
       });
 
       // Find menus without categories
-      const menusWithoutCategory = allMenus.filter(menu =>
-        !menu.menuCategory || menu.menuCategory.length === 0
-      ).map(menu => ({
-        menu_id: menu.menu_id,
-        menu_name: menu.menu_name
-      }));
+      const menusWithoutCategory = allMenus
+        .filter((menu) => !menu.menuCategory || menu.menuCategory.length === 0)
+        .map((menu) => ({
+          menu_id: menu.menu_id,
+          menu_name: menu.menu_name,
+        }));
 
       // Get all category names for available_category array
-      const available_category = categories.map(cat => cat.category_name);
+      const available_category = categories.map((cat) => cat.category_name);
 
       // Format categories with their menus
-      const formattedCategories = categories.map(category => ({
+      const formattedCategories = categories.map((category) => ({
         name: category.category_name,
         id: category.category_name,
         menus: category.menuCategory
-          .filter(mc => mc.menu)
-          .map(mc => ({
+          .filter((mc) => mc.menu)
+          .map((mc) => ({
             menu_id: mc.menu.menu_id,
-            menu_name: mc.menu.menu_name
-          }))
+            menu_name: mc.menu.menu_name,
+          })),
       }));
 
       return {
         available_category,
         categories: formattedCategories,
-        menus: menusWithoutCategory // Add uncategorized menus directly here
+        menus: menusWithoutCategory, // Add uncategorized menus directly here
       };
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to get categories with menus',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   ManyToOne,
@@ -10,11 +10,12 @@ import {
 import { Order } from './order.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class Payment {
-  @PrimaryGeneratedColumn()
-  payment_id: number;
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  payment_id: string;
 
   @OneToOne(() => Order, { nullable: false })
   @JoinColumn({ name: 'order_id' })

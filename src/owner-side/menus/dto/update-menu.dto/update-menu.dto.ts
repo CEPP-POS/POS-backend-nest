@@ -1,9 +1,9 @@
-import { IsString, IsInt, IsOptional, IsDecimal, IsUrl } from 'class-validator';
+import { IsString, IsOptional, IsDecimal, IsUrl } from 'class-validator';
 
 export class UpdateMenuDto {
-  @IsInt()
+  @IsString()
   @IsOptional()
-  category_id?: number;
+  category_id?: string;
 
   @IsString()
   @IsOptional()
@@ -17,13 +17,13 @@ export class UpdateMenuDto {
   @IsOptional()
   price?: number;
 
-  @IsInt()
+  @IsString()
   @IsOptional()
-  owner_id?: number;
+  owner_id?: string;
 
-  @IsInt()
+  @IsString()
   @IsOptional()
-  branch_id?: number;
+  branch_id?: string;
 
   @IsUrl()
   @IsOptional()

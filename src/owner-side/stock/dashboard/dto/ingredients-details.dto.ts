@@ -1,6 +1,6 @@
 export class IngredientDetailsDto {
   // Ingredient details
-  ingredient_id: number;
+  ingredient_id: string;
   ingredient_name: string;
   net_volume: number;
   quantity_in_stock: number;

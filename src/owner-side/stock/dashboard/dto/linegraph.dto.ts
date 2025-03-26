@@ -1,12 +1,4 @@
-import {
-  IsArray,
-  IsNumber,
-  IsString,
-  ValidateNested,
-  IsOptional,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-
+import { IsArray, IsNumber } from 'class-validator';
 
 export class Linegraph {
   @IsNumber()
@@ -17,10 +9,6 @@ export class Linegraph {
 
   @IsNumber()
   canceled_orders: number;
-
-  // @IsArray()
-  // @IsNumber({}, { each: true })
-  // monthly_revenue: number[];
 
   @IsArray()
   daily_stats: DailyStat[];

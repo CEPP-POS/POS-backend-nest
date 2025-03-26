@@ -1,20 +1,30 @@
-import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsNumber, IsString, ValidateNested } from "class-validator";
-import { Size } from "src/entities/size.entity";
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { Size } from 'src/entities/size.entity';
 
 export class CreateSizeDto {
-    @IsString()
-    size_group_name: string;
+  @IsOptional()
+  @IsString()
+  size_group_id?: string;
 
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => Size)
-    options: Size[];
+  @IsString()
+  size_group_name: string;
 
-    @IsArray()
-    @IsNumber({}, { each: true })
-    menu_id: number[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => Size)
+  options: Size[];
 
-    @IsBoolean()
-    is_required: boolean;
+  @IsArray()
+  @IsString({ each: true })
+  menu_id: string[];
+
+  @IsBoolean()
+  is_required: boolean;
 }

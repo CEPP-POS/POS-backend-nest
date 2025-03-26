@@ -10,7 +10,6 @@ import {
   Headers,
   Query,
   NotFoundException,
-  Delete,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -25,6 +24,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
+import { EditIngredientDto } from './dto/edit-ingredient.dto';
 
 @Controller('owner')
 export class DashboardController {
@@ -47,8 +47,8 @@ export class DashboardController {
     date = date + 'T08:00:00.000Z';
     return this.dashboardService.getStockSummary(
       new Date(date),
-      Number(ownerId),
-      Number(branchId),
+      ownerId,
+      branchId,
     );
   }
 
@@ -64,14 +64,15 @@ export class DashboardController {
     return this.dashboardService.getStockLineGraph(
       Number(year),
       Number(month),
-      Number(ownerId),
-      Number(branchId),
+      ownerId,
+      branchId,
     );
   }
 
-  @Get('stock-orders/:date')
-  async getOrderTopic(
+  @Get('stock-orders/:date/:filter')
+  async getOrderTopicWithFilter(
     @Param('date') date: string,
+    @Param('filter') filter: 'year' | 'month' | 'date' | 'all',
     @Req() request: Request,
   ): Promise<OrderItemDto> {
     const ownerId = request.headers['owner_id'];
@@ -83,11 +84,11 @@ export class DashboardController {
       );
     }
 
-    date = date + 'T08:00:00.000Z';
-    return this.dashboardService.getOrderTopic(
+    return this.dashboardService.getOrderTopicWithFilter(
       new Date(date),
-      Number(ownerId),
-      Number(branchId),
+      filter,
+      ownerId,
+      branchId,
     );
   }
 
@@ -102,16 +103,13 @@ export class DashboardController {
       );
     }
 
-    return this.dashboardService.getCancelOrders(
-      Number(ownerId),
-      Number(branchId),
-    );
+    return this.dashboardService.getCancelOrders(ownerId, branchId);
   }
 
   // edit entity
   @Get('orders/:order_id')
   async getCancelOrderDetails(
-    @Param('order_id') order_id: number,
+    @Param('order_id') order_id: string,
     @Req() request: Request,
   ): Promise<any> {
     const ownerId = request.headers['owner_id'];
@@ -124,9 +122,9 @@ export class DashboardController {
     }
 
     return this.dashboardService.getCancelOrderDetails(
-      Number(order_id),
-      Number(ownerId),
-      Number(branchId),
+      order_id,
+      ownerId,
+      branchId,
     );
   }
 
@@ -141,10 +139,7 @@ export class DashboardController {
       );
     }
 
-    return this.dashboardService.getStockIngredients(
-      Number(ownerId),
-      Number(branchId),
-    );
+    return this.dashboardService.getStockIngredients(ownerId, branchId);
   }
 
   @Get('stock-ingredients/categories')
@@ -160,15 +155,12 @@ export class DashboardController {
       );
     }
 
-    return this.dashboardService.getIngredientsCategories(
-      Number(ownerId),
-      Number(branchId),
-    );
+    return this.dashboardService.getIngredientsCategories(ownerId, branchId);
   }
 
   @Get('stock-ingredients/:ingredient_id')
   async getIngredientDetails(
-    @Param('ingredient_id') ingredient_id: number,
+    @Param('ingredient_id') ingredient_id: string,
     @Headers() headers: Record<string, string>,
   ): Promise<any> {
     const ownerId = headers['owner_id'];
@@ -181,9 +173,9 @@ export class DashboardController {
     }
 
     return this.dashboardService.getIngredientDetails(
-      Number(ingredient_id),
-      Number(ownerId),
-      Number(branchId),
+      ingredient_id,
+      ownerId,
+      branchId,
     );
   }
 
@@ -192,8 +184,8 @@ export class DashboardController {
     @Body() createCategoryDto: CreateCategoryDto,
     @Req() request: Request,
   ) {
-    const owner_id = parseInt(request.headers['owner_id'] as string, 10);
-    const branch_id = parseInt(request.headers['branch_id'] as string, 10);
+    const owner_id = request.headers['owner_id'];
+    const branch_id = request.headers['branch_id'];
 
     if (!owner_id || !branch_id) {
       throw new BadRequestException(
@@ -222,8 +214,8 @@ export class DashboardController {
       );
     }
 
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
+    const ownerIdNum = ownerId;
+    const branchIdNum = branchId;
 
     return this.dashboardService.createIngredient(
       createIngredientDto,
@@ -234,9 +226,9 @@ export class DashboardController {
 
   @Patch('update-stock-ingredients/:update_id')
   async updateIngredient(
-    @Param('update_id') update_id: number,
-    @Headers('owner_id') owner_id: number,
-    @Headers('branch_id') branch_id: number,
+    @Param('update_id') update_id: string,
+    @Headers('owner_id') owner_id: string,
+    @Headers('branch_id') branch_id: string,
     @Body() body: UpdateIngredientDto,
   ) {
     if (!owner_id || !branch_id) {
@@ -256,7 +248,7 @@ export class DashboardController {
 
   @Patch('orders/:order_id')
   async updateCancelStatus(
-    @Param('order_id') order_id: number,
+    @Param('order_id') order_id: string,
     @Body() updateData: { cancel_status: string },
     @Req() request: Request,
   ): Promise<any> {
@@ -270,10 +262,10 @@ export class DashboardController {
     }
 
     return this.dashboardService.updateCancelStatus(
-      Number(order_id),
+      order_id,
       updateData.cancel_status,
-      Number(ownerId),
-      Number(branchId),
+      ownerId,
+      branchId,
     );
   }
 
@@ -284,17 +276,17 @@ export class DashboardController {
     @Headers('branch_id') branchId: string,
   ) {
     return await this.dashboardService.getSubIngredient(
-      parseInt(ingredientId),
-      parseInt(ownerId),
-      parseInt(branchId),
+      ingredientId,
+      ownerId,
+      branchId,
     );
   }
 
   @Get('update-stock-ingredients/:update_id')
   async getSubIngredientByID(
-    @Param('update_id') update_id: number,
-    @Query('owner_id') owner_id: number,
-    @Query('branch_id') branch_id: number,
+    @Param('update_id') update_id: string,
+    @Query('owner_id') owner_id: string,
+    @Query('branch_id') branch_id: string,
   ) {
     const result = await this.dashboardService.getSubIngredientByID(
       update_id,
@@ -312,7 +304,7 @@ export class DashboardController {
   @Patch('stock-ingredients/:ingredient_id')
   @HttpCode(HttpStatus.OK)
   async deleteIngredient(
-    @Param('ingredient_id') ingredient_id: number,
+    @Param('ingredient_id') ingredient_id: string,
     @Headers() headers: Record<string, string>,
   ) {
     const ownerId = headers['owner_id'];
@@ -326,8 +318,31 @@ export class DashboardController {
 
     return this.dashboardService.deleteIngredient(
       ingredient_id,
-      Number(ownerId),
-      Number(branchId),
+      ownerId,
+      branchId,
+    );
+  }
+
+  @Patch('edit-stock-ingredients/:ingredient_id')
+  async editIngredient(
+    @Param('ingredient_id') ingredient_id: string,
+    @Body() editIngredientDto: EditIngredientDto,
+    @Headers() headers: Record<string, string>,
+  ) {
+    const ownerId = headers['owner_id'];
+    const branchId = headers['branch_id'];
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    return this.dashboardService.editIngredient(
+      ingredient_id,
+      editIngredientDto,
+      ownerId,
+      branchId,
     );
   }
 }

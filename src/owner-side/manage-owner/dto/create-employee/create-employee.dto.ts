@@ -1,22 +1,23 @@
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateEmployeeDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
+  owner_id?: string;
+
+  @IsEmail()
+  @IsNotEmpty()
   email: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   password: string;
 
-  @IsNumber()
-  manager_id: number;
-
+  @IsString()
   @IsNotEmpty()
-  @IsNumber()
-  owner_id: number;
+  manager_id: string;
 
+  @IsString()
   @IsNotEmpty()
-  @IsNumber()
-  branch_id: number;
+  branch_id: string;
 }

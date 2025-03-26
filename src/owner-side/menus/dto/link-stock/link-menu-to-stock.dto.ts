@@ -2,28 +2,36 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsInt,
-  IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 
 export class IngredientListForStockDto {
-  @IsInt()
-  size_id: number;
+  @IsOptional()
+  @IsString()
+  menu_ingredient_id?: string;
 
-  @IsInt()
-  menu_type_id: number;
+  @IsString()
+  size_id: string;
+
+  @IsString()
+  menu_type_id: string;
 
   @IsInt()
   quantity_used: number;
 }
 
 export class LinkMenuToStockDto {
-  @IsInt()
-  owner_id: number;
+  @IsString()
+  @IsOptional()
+  ingredient_id?: string;
 
-  @IsInt()
-  branch_id: number;
+  @IsString()
+  owner_id: string;
+
+  @IsString()
+  branch_id: string;
 
   @IsString()
   ingredient_name: string;

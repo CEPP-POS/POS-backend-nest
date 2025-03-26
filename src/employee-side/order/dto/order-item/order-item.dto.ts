@@ -1,8 +1,16 @@
-import { IsNotEmpty, IsInt, Min, IsArray } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsInt,
+  Min,
+  IsArray,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class OrderItemDto {
-  @IsNotEmpty()
-  order_item_id: number;
+  @IsOptional()
+  @IsString()
+  order_item_id?: string;
 
   @IsInt()
   @Min(1)
@@ -11,18 +19,18 @@ export class OrderItemDto {
   @Min(0)
   price: number;
 
-  menu_id: number;
+  menu_id: string;
 
-  sweetness_id: number;
+  sweetness_id: string;
 
-  size_id: number;
+  size_id: string;
 
   @IsNotEmpty()
-  order_id: number;
+  order_id: string;
 
   @IsArray()
   @IsInt({ each: true })
-  add_on_id: number[];
+  add_on_id: string[];
 
-  menu_type_id: number;
+  menu_type_id: string;
 }

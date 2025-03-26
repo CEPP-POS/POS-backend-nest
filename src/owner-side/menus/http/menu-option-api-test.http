@@ -43,15 +43,15 @@ Content-Type: application/json
 
 POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 {
   "options": [
-    { "บุก": { "price": "10.00", "unit": "กรัม", "quantity":12 } },
-    { "ไข่มุก": { "price": "20.00", "unit": "กรัม", "quantity":15 } }
+    { "บุก2": { "price": "10.00", "unit": "กรัม", "quantity":12 } },
+    { "ไข่มุก2": { "price": "20.00", "unit": "กรัม", "quantity":15 } }
   ],
-  "menu_id": [1,2],
+  "menu_id": ["c91d73c1-7ff3-4868-8f0c-8849050c3f80","a02c06e1-e238-4aa3-a88f-2a5cbfd35f69"],
   "is_required":true,
   "is_multipled":true
 }
@@ -92,8 +92,8 @@ branch_id: 1
 
 POST http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 {
   "size_group_name": "ขนาดแก้วสำหรับนม",
@@ -102,7 +102,7 @@ branch_id: 1
     { "m":  { "price": "10.00" } },
     { "l":  { "price": "15.00" } }
   ],
-  "menu_id": [1]
+  "menu_id": ["d1eb4344-651c-4b97-9dc2-80d1a56a2720"]
 }
 
 # edit size option
@@ -125,15 +125,15 @@ branch_id: 1
 
 POST http://localhost:3000/owner/menus/options/menu_type
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "menu_type_group_name": "ปั่นสำหรับนม",
+  "menu_type_group_name": "ปั่นสำหรับ",
   "options": [
     { "ปั่นเย็น": "5.00" },
     { "iceน้อย": "20.00" }
   ],
-  "menu_id": [1, 2]
+  "menu_id": ["7f6d910d-fe60-4420-a614-312c8f47180e", "902a9067-112e-43ec-a3d9-100dcf833652"]
 }
 
 # delete size group

@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { Menu } from 'src/entities/menu.entity';
-import { Repository, Between, In } from 'typeorm';
+import { Repository, In } from 'typeorm';
 
 @Injectable()
 export class PauseService {
@@ -12,9 +12,9 @@ export class PauseService {
 
     @InjectRepository(Menu)
     private readonly menuRepository: Repository<Menu>,
-  ) { }
+  ) {}
 
-  async getAllIngredient(owner_id: number, branch_id: number) {
+  async getAllIngredient(owner_id: string, branch_id: string) {
     const ingredients = await this.ingredientRepository.find({
       select: ['ingredient_id', 'ingredient_name', 'paused'],
       where: {
@@ -28,9 +28,9 @@ export class PauseService {
   }
 
   async updateIngredient(
-    listIngredientUpdates: { ingredient_id: number; paused: boolean }[],
-    owner_id: number,
-    branch_id: number,
+    listIngredientUpdates: { ingredient_id: string; paused: boolean }[],
+    owner_id: string,
+    branch_id: string,
   ) {
     const listIngredientId = listIngredientUpdates.map(
       (item) => item.ingredient_id,
@@ -69,7 +69,7 @@ export class PauseService {
     return { message: 'Paused ingredients successfully' };
   }
 
-  async getAllMenu(owner_id: number, branch_id: number) {
+  async getAllMenu(owner_id: string, branch_id: string) {
     const menus = await this.menuRepository.find({
       select: ['menu_id', 'menu_name', 'paused'],
       where: {
@@ -83,9 +83,9 @@ export class PauseService {
   }
 
   async updateMenu(
-    listMenuUpdates: { menu_id: number; paused: boolean }[],
-    owner_id: number,
-    branch_id: number,
+    listMenuUpdates: { menu_id: string; paused: boolean }[],
+    owner_id: string,
+    branch_id: string,
   ) {
     const listMenuId = listMenuUpdates.map((item) => item.menu_id);
 

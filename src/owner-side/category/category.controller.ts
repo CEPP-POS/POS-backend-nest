@@ -17,7 +17,7 @@ import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-
 
 @Controller('owner/categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) { }
+  constructor(private readonly categoryService: CategoryService) {}
 
   @Post('link-menus')
   async linkMenusToCategory(
@@ -34,8 +34,8 @@ export class CategoryController {
       );
     }
 
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
+    const ownerIdNum = ownerId;
+    const branchIdNum = branchId;
 
     const categoryData = {
       ...linkMenuToCategoryDto,
@@ -54,11 +54,11 @@ export class CategoryController {
     if (!ownerId || !branchId) {
       throw new HttpException(
         'Missing required headers: owner_id or branch_id',
-        HttpStatus.BAD_REQUEST
+        HttpStatus.BAD_REQUEST,
       );
     }
 
-    return this.categoryService.getAllCategoriesWithMenus(+ownerId, +branchId);
+    return this.categoryService.getAllCategoriesWithMenus(ownerId, branchId);
   }
 
   @Get('')
@@ -68,12 +68,12 @@ export class CategoryController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.categoryService.findOne(+id);
+    return this.categoryService.findOne(id);
   }
 
   // edit entity
   @Get(':id/menus')
-  async getMenusByCategory(@Param('id') id: number, @Req() request: Request) {
+  async getMenusByCategory(@Param('id') id: string, @Req() request: Request) {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
@@ -116,8 +116,8 @@ export class CategoryController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
+    const ownerIdNum = ownerId;
+    const branchIdNum = branchId;
 
     const CategoryData = {
       ...createCategoryDto,
@@ -133,12 +133,12 @@ export class CategoryController {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
-    await this.categoryService.remove(+id, +ownerId, +branchId);
+    await this.categoryService.remove(id, ownerId, branchId);
   }
 
   @Patch(':id')
   async updateCategory(
-    @Param('id') categoryId: number,
+    @Param('id') categoryId: string,
     @Req() request: Request,
     @Body() updateCategoryDto: CreateCategoryDto,
   ) {
@@ -149,13 +149,10 @@ export class CategoryController {
       throw new Error('owner_id and branch_id must be provided in headers');
     }
 
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
-
     await this.categoryService.updateCategory(
       categoryId,
-      ownerIdNum,
-      branchIdNum,
+      ownerId,
+      branchId,
       updateCategoryDto,
     );
 

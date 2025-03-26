@@ -1,11 +1,23 @@
-import { IsArray, IsObject, IsBoolean, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsString } from 'class-validator';
 
 export class CreateAddOnDto {
   @IsArray()
-  options: Array<Record<string, { price: string, unit: string, quantity: string }>>;
+  options: Array<
+    Record<
+      string,
+      {
+        menu_ingredient_id?: string;
+        ingredient_id?: string;
+        add_on_id?: string;
+        price: string;
+        unit: string;
+        quantity: string;
+      }
+    >
+  >;
 
-  @IsArray()
-  menu_id: number[];
+  @IsString()
+  menu_id: string[];
 
   @IsBoolean()
   is_required: boolean;

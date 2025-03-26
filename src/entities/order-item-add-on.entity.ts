@@ -9,10 +9,10 @@ export class OrderItemAddOn {
   // @PrimaryGeneratedColumn()
   // order_item_add_on_id: number;
   @PrimaryColumn()
-  order_item_id: number;
+  order_item_id: string;
 
   @PrimaryColumn()
-  ingredient_id: number;
+  ingredient_id: string;
 
   @ManyToOne(() => OrderItem, (orderItem) => orderItem.orderItem, {
     nullable: false,

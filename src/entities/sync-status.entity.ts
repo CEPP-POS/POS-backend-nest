@@ -1,20 +1,26 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { Owner } from './owner.entity';
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import { Branch } from './branch.entity';
+import { LocalData } from './local-data.entity';
+import { Owner } from './owner.entity';
+import { v4 as uuidv4 } from 'uuid';
+
+export enum syncStatus {
+  'online',
+  'offline',
+}
 
 @Entity('sync_status')
 export class SyncStatus {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
-  path: string;
-
-  @Column()
-  method: string;
-
-  @Column({ type: 'int' })
-  statusCode: number;
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  sync_status_id: string;
 
   @Column('jsonb')
   payload: any;

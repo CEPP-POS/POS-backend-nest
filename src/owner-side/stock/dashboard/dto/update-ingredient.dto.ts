@@ -4,13 +4,11 @@ import {
   IsDateString,
   IsNumber,
   IsOptional,
-  IsArray,
-  ValidateNested,
 } from 'class-validator';
 
 export class UpdateIngredientDto {
-  @IsInt()
-  update_id: number;
+  @IsString()
+  update_id: string;
 
   @IsOptional()
   @IsInt()
@@ -28,4 +26,3 @@ export class UpdateIngredientDto {
   @IsNumber()
   net_volume?: number;
 }
-
