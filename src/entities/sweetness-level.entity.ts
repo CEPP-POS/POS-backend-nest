@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -10,11 +10,12 @@ import { SweetnessGroup } from './sweetness-group.entity';
 import { OrderItem } from './order-item.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class SweetnessLevel {
-  @PrimaryGeneratedColumn()
-  sweetness_id: number;
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  sweetness_id: string;
 
   @Column({ nullable: false })
   level_name: string;

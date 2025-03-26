@@ -1,21 +1,16 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Menu } from './menu.entity';
 import { Ingredient } from './ingredient.entity';
 import { Size } from './size.entity';
 import { MenuType } from './menu-type.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class MenuIngredient {
-  @PrimaryGeneratedColumn()
-  menu_ingredient_id: number;
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  menu_ingredient_id: string;
 
   @ManyToOne(() => Menu, { nullable: false })
   @JoinColumn({ name: 'menu_id' })

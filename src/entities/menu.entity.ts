@@ -1,7 +1,7 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   ManyToOne,
   JoinColumn,
   OneToMany,
@@ -14,11 +14,12 @@ import { SizeGroup } from './size-group.entity';
 import { MenuIngredient } from './menu-ingredient.entity';
 import { OrderItem } from './order-item.entity';
 import { MenuCategory } from './menu_category';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class Menu {
-  @PrimaryGeneratedColumn()
-  menu_id: number;
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  menu_id: string;
 
   @Column()
   menu_name: string;

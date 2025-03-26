@@ -1,10 +1,10 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
   OneToMany,
   ManyToOne,
   JoinColumn,
+  PrimaryColumn,
 } from 'typeorm';
 import { MenuIngredient } from './menu-ingredient.entity';
 import { Branch } from './branch.entity';
@@ -28,11 +28,11 @@ import { MenuType } from './menu-type.entity';
 import { MenuTypeGroup } from './menu-type-group.entity';
 import { LocalData } from './local-data.entity';
 import { SyncStatus } from './sync-status.entity';
-
+import { v4 as uuidv4 } from 'uuid';
 @Entity()
 export class Owner {
-  @PrimaryGeneratedColumn()
-  owner_id: number;
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  owner_id: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   owner_name: string;
@@ -52,30 +52,31 @@ export class Owner {
   @Column({ type: 'timestamp', nullable: true })
   otp_expiry: Date;
 
-  @Column('text', { array: true, default: () => "ARRAY['owner']"})
+  @Column('text', { array: true, default: () => "ARRAY['owner']" })
   roles: string[];
 
-  
   @OneToMany(() => Owner, (employee) => employee.manager, { cascade: true })
   employees: Owner[];
 
   @ManyToOne(() => Owner, (owner) => owner.employees, { nullable: true })
-  @JoinColumn({ name: 'manager_id' }) 
+  @JoinColumn({ name: 'manager_id' })
   manager: Owner;
 
   @Column({ nullable: true })
   branch_id: number;
 
-
   @ManyToOne(() => Branch, (branch) => branch.owner, { nullable: true })
-  @JoinColumn({ name: 'branch_id' }) 
+  @JoinColumn({ name: 'branch_id' })
   branch: Branch;
 
-
-  @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.owner, { cascade: true })
+  @OneToMany(() => MenuIngredient, (menuIngredient) => menuIngredient.owner, {
+    cascade: true,
+  })
   menuIngredient: MenuIngredient[];
 
-  @OneToMany(() => SalesSummary, (salesSummary) => salesSummary.owner, { cascade: true })
+  @OneToMany(() => SalesSummary, (salesSummary) => salesSummary.owner, {
+    cascade: true,
+  })
   salesSummary: SalesSummary[];
 
   @OneToMany(() => Menu, (menu) => menu.owner, { cascade: true })
@@ -90,7 +91,9 @@ export class Owner {
   @OneToMany(() => Order, (order) => order.owner, { cascade: true })
   order: Order[];
 
-  @OneToMany(() => Ingredient, (ingredient) => ingredient.owner, { cascade: true })
+  @OneToMany(() => Ingredient, (ingredient) => ingredient.owner, {
+    cascade: true,
+  })
   ingredient: Ingredient[];
 
   @OneToMany(() => OrderItem, (orderItem) => orderItem.owner, { cascade: true })
@@ -102,10 +105,14 @@ export class Owner {
   @OneToMany(() => Size, (size) => size.owner, { cascade: true })
   size: Size[];
 
-  @OneToMany(() => SweetnessGroup, (sweetnessGroup) => sweetnessGroup.owner, { cascade: true })
+  @OneToMany(() => SweetnessGroup, (sweetnessGroup) => sweetnessGroup.owner, {
+    cascade: true,
+  })
   sweetnessGroup: SweetnessGroup[];
 
-  @OneToMany(() => SweetnessLevel, (sweetnessLevel) => sweetnessLevel.owner, { cascade: true })
+  @OneToMany(() => SweetnessLevel, (sweetnessLevel) => sweetnessLevel.owner, {
+    cascade: true,
+  })
   sweetnessLevel: SweetnessLevel[];
 
   @OneToMany(() => MenuType, (menuType) => menuType.owner, { cascade: true })
@@ -114,6 +121,8 @@ export class Owner {
   @OneToMany(() => LocalData, (localData) => localData.owner, { cascade: true })
   localData: LocalData[];
 
-  @OneToMany(() => SyncStatus, (syncStatus) => syncStatus.owner, { cascade: true })
+  @OneToMany(() => SyncStatus, (syncStatus) => syncStatus.owner, {
+    cascade: true,
+  })
   syncStatus: SyncStatus[];
 }

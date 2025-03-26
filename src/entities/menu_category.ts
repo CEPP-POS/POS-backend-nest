@@ -3,10 +3,11 @@ import { Menu } from './menu.entity';
 import { Category } from './category.entity';
 import { Branch } from './branch.entity';
 import { Owner } from './owner.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class MenuCategory {
-  @PrimaryColumn()
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
   category_id: number;
 
   @PrimaryColumn()

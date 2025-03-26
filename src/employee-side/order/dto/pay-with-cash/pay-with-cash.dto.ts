@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsInt, Min, IS_ARRAY, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsInt, IsNumber } from 'class-validator';
 import { Column, CreateDateColumn, JoinColumn, OneToOne } from 'typeorm';
 import { Order } from 'src/entities/order.entity';
 

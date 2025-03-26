@@ -86,7 +86,7 @@ export class OrderService {
     });
   }
 
-  async findOne(id: number): Promise<Order | undefined> {
+  async findOne(id: string): Promise<Order | undefined> {
     return this.orderRepository.findOneBy({ order_id: id });
   }
 
@@ -94,7 +94,7 @@ export class OrderService {
     id: number,
     updateOrderDto: UpdateOrderDto,
   ): Promise<Order | undefined> {
-    const order = await this.findOne(id);
+    const order = await this.findOne(id.toString());
     if (!order) {
       return undefined;
     }
@@ -102,7 +102,7 @@ export class OrderService {
     return this.orderRepository.save(order);
   }
 
-  async getOrderDetails(order_id: number): Promise<Order> {
+  async getOrderDetails(order_id: string): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { order_id },
       relations: ['items'],
@@ -123,10 +123,10 @@ export class OrderService {
   }
 
   async cancelOrder(
-    orderId: number,
+    orderId: string,
     cancelOrderDto: CancelOrderDto,
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
   ): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { order_id: orderId, owner: { owner_id }, branch: { branch_id } },
@@ -152,12 +152,12 @@ export class OrderService {
   }
 
   async updateIngredientStock(
-    menuId: number,
-    sizeId: number,
+    menuId: string,
+    sizeId: string,
     orderQuantity: number,
     orderDate: any,
-    addOnIds: number[] = [],
-    menuTypeId: number,
+    addOnIds: string[] = [],
+    menuTypeId: string,
   ) {
     const addOnIngredients = await this.addOnRepository.find({
       where: {
@@ -259,8 +259,8 @@ export class OrderService {
   async createOrder(
     createOrderDto: CreateOrderDto,
     items: OrderItemDto[],
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
   ): Promise<any> {
     // Verify owner and branch
     const owner = await this.ownerRepository.findOne({
@@ -291,6 +291,8 @@ export class OrderService {
     const endOfDay = new Date(orderDate);
     endOfDay.setHours(23, 59, 59, 999);
 
+    // Generate order_id
+    const order_id = `${orderDate}${branch_id}${owner_id}`;
     // Find the latest queue number for the current day
     const latestOrder = await this.orderRepository.findOne({
       where: {
@@ -341,6 +343,7 @@ export class OrderService {
 
     // Proceed to create the order
     const newOrder = this.orderRepository.create({
+      order_id,
       ...createOrderDto,
       is_paid: false,
       cancel_status: createOrderDto.cancel_status || null,
@@ -493,8 +496,8 @@ export class OrderService {
     return this.findOrderById(savedOrder.order_id);
   }
   async findAllOrders(
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
   ): Promise<{
     total_orders: number;
     pending_orders: number;
@@ -578,7 +581,7 @@ export class OrderService {
     };
   }
 
-  async findOrderById(order_id: number): Promise<Order> {
+  async findOrderById(order_id: string): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { order_id },
       relations: [
@@ -670,9 +673,9 @@ export class OrderService {
   }
 
   async completeOrder(
-    order_id: number,
-    owner_id: number,
-    branch_id: number,
+    order_id: string,
+    owner_id: string,
+    branch_id: string,
   ): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { order_id: order_id, owner: { owner_id }, branch: { branch_id } },
@@ -693,7 +696,7 @@ export class OrderService {
   }
 
   async payWithCash(
-    order_id: number,
+    order_id: string,
     payWithCashDto: PayWithCashDto,
   ): Promise<Order> {
     const order = await this.orderRepository.findOne({
@@ -780,9 +783,9 @@ export class OrderService {
   }
 
   async getLatestOrder(
-    owner_id: number,
-    branch_id: number,
-  ): Promise<{ order_id: number; queue_number: number }> {
+    owner_id: string,
+    branch_id: string,
+  ): Promise<{ order_id: string; queue_number: number }> {
     const latestOrder = await this.orderRepository.findOne({
       where: {
         owner: { owner_id },

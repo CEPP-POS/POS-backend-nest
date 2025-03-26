@@ -1,18 +1,12 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  JoinColumn,
-  ManyToOne,
-} from 'typeorm';
+import { Entity, PrimaryColumn, Column, JoinColumn, ManyToOne } from 'typeorm';
 import { Ingredient } from './ingredient.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
-
+import { v4 as uuidv4 } from 'uuid';
 @Entity()
 export class AddOn {
-  @PrimaryGeneratedColumn()
-  add_on_id: number;
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  add_on_id: string;
 
   @ManyToOne(() => Ingredient, { nullable: false })
   @JoinColumn({ name: 'ingredient_id' })

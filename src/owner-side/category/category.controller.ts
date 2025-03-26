@@ -17,7 +17,7 @@ import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-
 
 @Controller('owner/categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) { }
+  constructor(private readonly categoryService: CategoryService) {}
 
   @Post('link-menus')
   async linkMenusToCategory(
@@ -34,8 +34,8 @@ export class CategoryController {
       );
     }
 
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
+    const ownerIdNum = ownerId;
+    const branchIdNum = branchId;
 
     const categoryData = {
       ...linkMenuToCategoryDto,
@@ -54,7 +54,7 @@ export class CategoryController {
     if (!ownerId || !branchId) {
       throw new HttpException(
         'Missing required headers: owner_id or branch_id',
-        HttpStatus.BAD_REQUEST
+        HttpStatus.BAD_REQUEST,
       );
     }
 

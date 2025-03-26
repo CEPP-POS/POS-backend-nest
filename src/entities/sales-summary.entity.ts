@@ -1,18 +1,13 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 
 import { Owner } from 'src/entities/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class SalesSummary {
-  @PrimaryGeneratedColumn()
-  sales_summary_id: number;
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  sales_summary_id: string;
 
   @ManyToOne(() => Owner, { nullable: false })
   @JoinColumn({ name: 'owner_id' })

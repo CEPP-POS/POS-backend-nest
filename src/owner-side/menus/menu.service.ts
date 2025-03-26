@@ -77,7 +77,7 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) { }
+  ) {}
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
@@ -178,12 +178,12 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-          menu_id: menu.menu_id,
-          menu_name: menu.menu_name,
-          description: menu.description,
-          image_url: menu.image_url,
-          price: menu.price,
-        };
+            menu_id: menu.menu_id,
+            menu_name: menu.menu_name,
+            description: menu.description,
+            image_url: menu.image_url,
+            price: menu.price,
+          };
     });
   }
 
@@ -654,7 +654,7 @@ export class MenuService {
       { sizeGroup: null },
     );
 
-    // delete all size group name in table size group 
+    // delete all size group name in table size group
     await this.sizeGroupRepository.delete({ size_group_name: sizeGroupName });
 
     return {
@@ -774,8 +774,8 @@ export class MenuService {
   // EDIT ENTITY INGREDIENT_MENULINK
   async linkIngredientToStock(
     menu_id: number,
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
     linkMenuToStockDtoList: LinkMenuToStockDto[],
   ) {
     // ตรวจสอบว่ามี menu, owner, branch อยู่จริง
@@ -1676,7 +1676,7 @@ export class MenuService {
       // Get IDs that will remain
       const keepAddOnIds = options
         .filter((opt) => opt.add_on_id !== 'null')
-        .map((opt) => parseInt(opt.add_on_id));
+        .map((opt) => opt.add_on_id);
 
       // 2. Handle deleted add-ons
       const addOnsToRemove = existingAddOns.filter(
@@ -1700,7 +1700,7 @@ export class MenuService {
         if (option.add_on_id !== 'null') {
           // Update existing add-on
           await this.addOnRepository.update(
-            { add_on_id: parseInt(option.add_on_id) },
+            { add_on_id: option.add_on_id },
             {
               add_on_price: parseFloat(option.price),
               is_required: is_require,
@@ -1710,7 +1710,7 @@ export class MenuService {
 
           // Get ingredient_id for this add-on
           const addOn = await this.addOnRepository.findOne({
-            where: { add_on_id: parseInt(option.add_on_id) },
+            where: { add_on_id: option.add_on_id },
             relations: ['ingredient'],
           });
 
@@ -2129,20 +2129,22 @@ export class MenuService {
         .getMany();
 
       // 3. Format the response
-      const options = addOns.map(addon => ({
+      const options = addOns.map((addon) => ({
         add_on_id: addon.add_on_id.toString(),
         add_on_name: addon.ingredient.ingredient_name,
         price: Number(addon.add_on_price).toFixed(2),
-        quantity: menuIngredients.find(mi =>
-          mi.ingredient.ingredient_id === addon.ingredient.ingredient_id
-        )?.quantity_used || 0,
-        unit: addon.ingredient.unit
+        quantity:
+          menuIngredients.find(
+            (mi) =>
+              mi.ingredient.ingredient_id === addon.ingredient.ingredient_id,
+          )?.quantity_used || 0,
+        unit: addon.ingredient.unit,
       }));
 
       // Get unique menu IDs from menu ingredients
-      const menuIds = [...new Set(
-        menuIngredients.map(mi => mi.menu.menu_id)
-      )];
+      const menuIds = [
+        ...new Set(menuIngredients.map((mi) => mi.menu.menu_id)),
+      ];
 
       // Get is_required and is_multiple from first add-on
       const firstAddOn = addOns[0];
@@ -2151,13 +2153,12 @@ export class MenuService {
         options,
         menu_id: menuIds,
         is_require: firstAddOn?.is_required || false,
-        is_multiple: firstAddOn?.is_multipled || false
+        is_multiple: firstAddOn?.is_multipled || false,
       };
-
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to get add-on details',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -2183,7 +2184,7 @@ export class MenuService {
         .createQueryBuilder('size')
         .leftJoin('size.sizeGroup', 'sg')
         .where('sg.size_group_name = :groupName', {
-          groupName: menu.sizeGroup?.size_group_name
+          groupName: menu.sizeGroup?.size_group_name,
         })
         .andWhere('size.owner.owner_id = :owner_id', { owner_id })
         .andWhere('size.branch.branch_id = :branch_id', { branch_id })
@@ -2196,7 +2197,7 @@ export class MenuService {
         .createQueryBuilder('mt')
         .leftJoin('mt.menuTypeGroup', 'mtg')
         .where('mtg.menu_type_group_name = :groupName', {
-          groupName: menu.menuTypeGroup?.menu_type_group_name
+          groupName: menu.menuTypeGroup?.menu_type_group_name,
         })
         .andWhere('mt.owner.owner_id = :owner_id', { owner_id })
         .andWhere('mt.branch.branch_id = :branch_id', { branch_id })
@@ -2205,20 +2206,19 @@ export class MenuService {
         .getMany();
 
       return {
-        sizes: sizes.map(size => ({
+        sizes: sizes.map((size) => ({
           size_id: size.size_id,
-          size_name: size.size_name
+          size_name: size.size_name,
         })),
-        menu_types: menuTypes.map(type => ({
+        menu_types: menuTypes.map((type) => ({
           type_id: type.menu_type_id,
-          type_name: type.type_name
-        }))
+          type_name: type.type_name,
+        })),
       };
-
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to get menu options',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

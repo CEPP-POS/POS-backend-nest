@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -10,6 +10,7 @@ import {
 import { Branch } from './branch.entity';
 import { LocalData } from './local-data.entity';
 import { Owner } from './owner.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 export enum syncStatus {
   'online',
@@ -18,8 +19,8 @@ export enum syncStatus {
 
 @Entity()
 export class SyncStatus {
-  @PrimaryGeneratedColumn()
-  sync_status_id: number;
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  sync_status_id: string;
 
   @ManyToOne(() => Owner, { nullable: false })
   @JoinColumn({ name: 'owner_id' })

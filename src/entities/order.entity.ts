@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   OneToMany,
@@ -20,8 +20,8 @@ import { Owner } from './owner.entity';
 
 @Entity()
 export class Order {
-  @PrimaryGeneratedColumn()
-  order_id: number;
+  @PrimaryColumn({ type: 'varchar', length: 255 })
+  order_id: string;
 
   @CreateDateColumn()
   order_date: Date;

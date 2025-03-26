@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -10,11 +10,12 @@ import { Size } from './size.entity';
 import { Menu } from './menu.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class SizeGroup {
-  @PrimaryGeneratedColumn()
-  size_group_id: number;
+  @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
+  size_group_id: string;
 
   @Column()
   size_group_name: string;
