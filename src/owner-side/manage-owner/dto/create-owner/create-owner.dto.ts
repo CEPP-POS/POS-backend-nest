@@ -1,6 +1,14 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateOwnerDto {
+  @IsOptional()
+  @IsString()
+  owner_id?: string;
+
+  @IsOptional()
+  @IsString()
+  branch_id?: string;
+
   @IsString()
   @IsNotEmpty()
   owner_name: string;

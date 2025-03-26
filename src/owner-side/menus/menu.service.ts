@@ -492,7 +492,7 @@ export class MenuService {
 
     // Step 1: Insert sizes name and size price into the size table
     const sizes = createSizeDto.options.map((option) => ({
-      size_id: uuidv4(),
+      size_id: option.size_id || uuidv4(),
       size_name: Object.keys(option)[0],
       size_price: parseFloat(Object.values(option)[0].price),
       owner: { owner_id: ownerId },
@@ -504,7 +504,7 @@ export class MenuService {
 
     // Step 2: Create size groups for each size
     const sizeGroups = savedSizes.map((size) => ({
-      size_group_id: uuidv4(),
+      size_group_id: createSizeDto.size_group_id || uuidv4(),
       size_group_name: createSizeDto.size_group_name,
       size: size,
       owner: { owner_id: ownerId },
@@ -612,7 +612,7 @@ export class MenuService {
           }
 
           const menuIngredient = this.menuIngredientRepository.create({
-            menu_ingredient_id: uuidv4(),
+            menu_ingredient_id: ingredientData.menu_ingredient_id || uuidv4(),
             menu: { menu_id: menuId },
             ingredient: { ingredient_id: ingredient.ingredient_id },
             is_addon: true,
@@ -714,7 +714,7 @@ export class MenuService {
       // ถ้าไม่มี ingredient ให้สร้างใหม่
       if (!ingredient) {
         ingredient = this.ingredientRepository.create({
-          ingredient_id: uuidv4(),
+          ingredient_id: linkMenuToStockDto.ingredient_id || uuidv4(),
           ingredient_name,
           unit,
           owner,
@@ -763,7 +763,7 @@ export class MenuService {
         } else {
           // ถ้าไม่มีให้สร้างใหม่
           menuIngredient = this.menuIngredientRepository.create({
-            menu_ingredient_id: uuidv4(),
+            menu_ingredient_id: stockItem.menu_ingredient_id || uuidv4(),
             menu,
             ingredient,
             size,
@@ -970,6 +970,7 @@ export class MenuService {
         : {}),
     }));
   }
+
   async createMenuTypeGroup(
     dto: CreateMenuTypeGroupDto,
     owner_id: string,
@@ -988,21 +989,23 @@ export class MenuService {
       });
       if (!branch) throw new NotFoundException('Branch not found');
 
-      // Save menu types first with UUID
-      const menuTypes = dto.options.map((option) => ({
-        menu_type_id: uuidv4(), // เพิ่ม UUID สำหรับ menu_type_id
-        type_name: Object.keys(option)[0],
-        price_difference: parseFloat(Object.values(option)[0]),
-        is_delete: false,
-        owner,
-        branch,
-      }));
+      const menuTypes = dto.options.map((option) => {
+        const typeName = Object.keys(option)[0];
+        return {
+          menu_type_id: option.menu_type_id || uuidv4(),
+          type_name: typeName,
+          price_difference: parseFloat(Object.values(option)[0]),
+          is_delete: false,
+          owner,
+          branch,
+        };
+      });
 
       const savedMenuTypes = await this.menuTypeRepository.save(menuTypes);
 
       // Create menu type group entries for each menu type
       const menuTypeGroupEntries = savedMenuTypes.map((menuType) => ({
-        menu_type_group_id: uuidv4(), // เพิ่ม UUID สำหรับ menu_type_group_id
+        menu_type_group_id: dto.menu_type_group_id || uuidv4(),
         menu_type_group_name: dto.menu_type_group_name,
         menuType: menuType,
         owner,

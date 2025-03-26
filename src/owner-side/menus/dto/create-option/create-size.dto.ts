@@ -1,8 +1,18 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Size } from 'src/entities/size.entity';
 
 export class CreateSizeDto {
+  @IsOptional()
+  @IsString()
+  size_group_id?: string;
+
   @IsString()
   size_group_name: string;
 

@@ -6,6 +6,7 @@ export class CreateAddOnDto {
     Record<
       string,
       {
+        menu_ingredient_id?: string;
         ingredient_id?: string;
         add_on_id?: string;
         price: string;

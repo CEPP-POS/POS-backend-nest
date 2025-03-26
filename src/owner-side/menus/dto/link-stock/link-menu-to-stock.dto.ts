@@ -1,7 +1,17 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsInt, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsInt,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export class IngredientListForStockDto {
+  @IsOptional()
+  @IsString()
+  menu_ingredient_id?: string;
+
   @IsString()
   size_id: string;
 
@@ -13,6 +23,10 @@ export class IngredientListForStockDto {
 }
 
 export class LinkMenuToStockDto {
+  @IsString()
+  @IsOptional()
+  ingredient_id?: string;
+
   @IsString()
   owner_id: string;
 

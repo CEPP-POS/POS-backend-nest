@@ -10,6 +10,10 @@ import {
 export class CreateIngredientDto {
   @IsOptional()
   @IsString()
+  update_id?: string;
+
+  @IsOptional()
+  @IsString()
   ingredient_id?: string;
 
   @IsOptional()

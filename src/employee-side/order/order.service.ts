@@ -442,7 +442,7 @@ export class OrderService {
           console.error(`Failed to update ingredient stock: ${error.message}`);
           throw error;
         }
-        // console.log(orderItems);
+
         // Create order item first
         const orderItem = this.orderItemRepository.create({
           order_item_id: item.order_item_id || uuidv4(),

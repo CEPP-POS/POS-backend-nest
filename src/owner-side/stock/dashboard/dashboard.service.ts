@@ -617,7 +617,7 @@ export class DashboardService {
       const total_volume = net_volume * quantity_in_stock;
 
       const newUpdate = this.ingredientUpdateRepository.create({
-        update_id: uuidv4(),
+        update_id: createIngredientDto.update_id || uuidv4(),
         ingredient: ingredient,
         quantity_in_stock,
         net_volume,

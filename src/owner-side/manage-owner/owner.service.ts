@@ -38,12 +38,14 @@ export class OwnerService {
       contact_info: row.phone,
       email: row.email,
       password: hashedPassword,
+      owner_id: row.owner_id,
+      branch_id: row.branch_id,
     };
 
     let owner = await this.findByEmail(createOwnerDto.email);
     if (!owner) {
       owner = this.ownerRepository.create({
-        owner_id: uuidv4(),
+        owner_id: createOwnerDto.owner_id || uuidv4(),
         ...createOwnerDto,
       });
       owner = await this.ownerRepository.save(owner);
@@ -55,7 +57,7 @@ export class OwnerService {
 
     if (!branch) {
       branch = await this.branchService.create({
-        branch_id: uuidv4(),
+        branch_id: createOwnerDto.branch_id || uuidv4(),
         owner_id: owner.owner_id,
         branch_name: `${owner.owner_name}'s Branch`,
         branch_address: row.address || 'N/A',
@@ -75,7 +77,8 @@ export class OwnerService {
 
   // * Create Employee
   async createEmployee(createEmployeeDto: CreateEmployeeDto): Promise<Owner> {
-    const { email, password, manager_id, branch_id } = createEmployeeDto;
+    const { email, password, manager_id, branch_id, owner_id } =
+      createEmployeeDto;
 
     const existingUser = await this.findByEmail(email);
     if (existingUser) {
@@ -106,7 +109,7 @@ export class OwnerService {
     }
 
     const newEmployee = this.ownerRepository.create({
-      owner_id: uuidv4(),
+      owner_id: owner_id || uuidv4(),
       email,
       password: hashedPassword,
       roles: ['employee'],
