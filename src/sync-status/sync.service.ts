@@ -50,6 +50,7 @@ export class SyncService {
         if (response.status >= 200 && response.status < 300) {
           item.synced = true;
           console.log(`✅ Successfully synced: ${item.path}`);
+          await this.syncRepo.delete(item.id); 
         }
       } catch (error) {
         item.retryCount += 1;
