@@ -257,6 +257,32 @@ export class OrderService {
     }
   }
 
+  // สร้างฟังก์ชันสำหรับสร้าง ID ด้วยวันที่ + อักษรสุ่ม 5 ตัว
+  private generateIdWithDateTimeAndRandomChars(dateTimeStr: string): string {
+    // แปลงวันที่และเวลาให้อยู่ในรูปแบบ YYYYMMDDHHmmss
+    const dateTime = new Date(dateTimeStr);
+    const year = dateTime.getFullYear();
+    const month = String(dateTime.getMonth() + 1).padStart(2, '0');
+    const day = String(dateTime.getDate()).padStart(2, '0');
+    const hours = String(dateTime.getHours()).padStart(2, '0');
+    const minutes = String(dateTime.getMinutes()).padStart(2, '0');
+    const seconds = String(dateTime.getSeconds()).padStart(2, '0');
+
+    const formattedDateTime = `${year}${month}${day}${hours}${minutes}${seconds}`;
+
+    // สร้างอักษรสุ่ม 5 ตัว
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let randomChars = '';
+    for (let i = 0; i < 5; i++) {
+      randomChars += characters.charAt(
+        Math.floor(Math.random() * characters.length),
+      );
+    }
+
+    // รวมวันที่เวลากับอักษรสุ่ม
+    return `${formattedDateTime}-${randomChars}`;
+  }
+
   async createOrder(
     createOrderDto: CreateOrderDto,
     items: OrderItemDto[],
@@ -341,9 +367,13 @@ export class OrderService {
     // บันทึก sales summary
     await this.salesSummaryRepository.save(salesSummary);
 
-    // Proceed to create the order
+    // ใช้ ID จาก JSON ถ้ามี หรือสร้างใหม่จากวันที่และอักษรสุ่ม
     const newOrder = this.orderRepository.create({
-      order_id: createOrderDto.order_id || uuidv4(),
+      order_id:
+        createOrderDto.order_id ||
+        this.generateIdWithDateTimeAndRandomChars(
+          createOrderDto.order_date.toISOString(),
+        ),
       ...createOrderDto,
       is_paid: false,
       cancel_status: createOrderDto.cancel_status || null,
