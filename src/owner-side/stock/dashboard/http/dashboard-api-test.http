@@ -28,10 +28,10 @@ owner_id: 1
 branch_id: 1
 
 ## get menu detail
-GET http://localhost:3000/owner/orders/68
+GET http://localhost:3000/owner/orders/78
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 
 ## GET ALL INGREDIENT
 GET http://localhost:3000/owner/stock-ingredients
