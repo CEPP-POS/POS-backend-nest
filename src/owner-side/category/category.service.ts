@@ -38,7 +38,7 @@ export class CategoryService {
     return this.categoryRepository.find();
   }
 
-  async findOne(id: number): Promise<Category> {
+  async findOne(id: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({
       where: { category_id: id },
     });
@@ -183,7 +183,7 @@ export class CategoryService {
     };
   }
 
-  async remove(id: number, owner_id: number, branch_id: number): Promise<void> {
+  async remove(id: string, owner_id: string, branch_id: string): Promise<void> {
     const category = await this.categoryRepository.findOne({
       where: {
         category_id: id,
@@ -221,9 +221,9 @@ export class CategoryService {
   }
 
   async updateCategory(
-    categoryId: number,
-    owner_id: number,
-    branch_id: number,
+    categoryId: string,
+    owner_id: string,
+    branch_id: string,
     updateCategoryDto: CreateCategoryDto,
   ): Promise<any> {
     const { category_name, menu_id } = updateCategoryDto;

@@ -94,7 +94,7 @@ export class BranchService {
     return this.branchRepository.find();
   }
   // * Find One Branch (Owner Only)
-  async findOne(id: number): Promise<Branch> {
+  async findOne(id: string): Promise<Branch> {
     const branch = await this.branchRepository.findOne({
       where: { branch_id: id },
       relations: ['owner'],
@@ -106,9 +106,9 @@ export class BranchService {
   }
   // * Update Branch (Owner Only)
   async update(
-    id: number,
+    id: string,
     updateBranchDto: UpdateBranchDto,
-    owner_id: number,
+    owner_id: string,
   ): Promise<Branch> {
     const branch = await this.findOne(id);
     if (branch.owner.owner_id !== owner_id) {
@@ -120,7 +120,7 @@ export class BranchService {
     return this.branchRepository.save(branch);
   }
   // * Remove Branch (Owner Only)
-  async remove(id: number, owner_id: number): Promise<void> {
+  async remove(id: string, owner_id: string): Promise<void> {
     const branch = await this.findOne(id);
     if (branch.owner.owner_id !== owner_id) {
       throw new ForbiddenException(
@@ -130,8 +130,8 @@ export class BranchService {
     await this.branchRepository.remove(branch);
   }
 
-  async findOwnerBranches(ownerId: number, branchId: number) {
-    if (isNaN(ownerId) || isNaN(branchId)) {
+  async findOwnerBranches(ownerId: string, branchId: string) {
+    if (ownerId == null || branchId == null) {
       throw new BadRequestException('Invalid owner_id or branch_id');
     }
 
@@ -161,8 +161,8 @@ export class BranchService {
     };
   }
 
-  async getBranchSetup(ownerId: number, selectedBranchId: number) {
-    if (isNaN(ownerId) || isNaN(selectedBranchId)) {
+  async getBranchSetup(ownerId: string, selectedBranchId: string) {
+    if (!ownerId || !selectedBranchId) {
       throw new BadRequestException('Invalid owner_id or selected_branch_id');
     }
 
@@ -571,11 +571,15 @@ export class BranchService {
   }
 
   async cloneBranchSetup(
-    ownerId: number,
-    selectedBranchId: number,
-    targetBranchId: number,
+    ownerId: string,
+    selectedBranchId: string,
+    targetBranchId: string,
   ) {
-    if (isNaN(ownerId) || isNaN(selectedBranchId) || isNaN(targetBranchId)) {
+    if (
+      ownerId == null ||
+      !selectedBranchId == null ||
+      targetBranchId == null
+    ) {
       throw new BadRequestException(
         'Invalid owner_id, selected_branch_id or target_branch_id',
       );

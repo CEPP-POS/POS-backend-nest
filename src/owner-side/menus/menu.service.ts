@@ -157,9 +157,13 @@ export class MenuService {
     };
   }
 
-  async findAll(p0: number, p1: number): Promise<any[]> {
+  async findAll(owner_id: string, branch_id: string): Promise<any[]> {
     const menus = await this.menuRepository.find({
-      where: { is_delete: false },
+      where: {
+        is_delete: false,
+        owner: { owner_id },
+        branch: { branch_id },
+      },
       relations: [
         'menuIngredient',
         'sweetnessGroup',
@@ -187,7 +191,7 @@ export class MenuService {
     });
   }
 
-  async findOne(menu_id: number): Promise<Menu> {
+  async findOne(menu_id: string): Promise<Menu> {
     const menu = await this.menuRepository.findOne({
       where: { menu_id },
       relations: ['menuTypeGroup', 'sweetnessGroup', 'sizeGroup'],
@@ -202,9 +206,9 @@ export class MenuService {
 
   // * อัปเดตเมนู
   async update(
-    menu_id: number,
-    owner_id: number,
-    branch_id: number,
+    menu_id: string,
+    owner_id: string,
+    branch_id: string,
     updateMenuDto: Partial<Menu>,
   ): Promise<Menu> {
     const menu = await this.menuRepository.findOne({
@@ -226,9 +230,9 @@ export class MenuService {
 
   // * ลบเมนู
   async remove(
-    menu_id: number,
-    owner_id: number,
-    branch_id: number,
+    menu_id: string,
+    owner_id: string,
+    branch_id: string,
   ): Promise<{ message: string }> {
     const menu = await this.menuRepository.findOne({
       where: { menu_id, owner: { owner_id }, branch: { branch_id } },
@@ -255,8 +259,8 @@ export class MenuService {
   async createSweetness(
     type: string,
     createSweetnessDto: CreateSweetnessDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     if (type !== 'sweetness') {
       throw new Error('Invalid option type');
@@ -309,8 +313,8 @@ export class MenuService {
   async updateSweetness(
     type: string,
     updateSweetnessDto: UpdateSweetnessDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     try {
       if (type !== 'sweetness') {
@@ -477,8 +481,8 @@ export class MenuService {
   async createSize(
     type: string,
     createSizeDto: CreateSizeDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     if (type !== 'size') {
       throw new Error('Invalid option type');
@@ -534,8 +538,8 @@ export class MenuService {
   async createAddOn(
     type: string,
     createAddOnDto: CreateAddOnDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     const { options, menu_id, is_required, is_multipled } = createAddOnDto;
 
@@ -621,8 +625,8 @@ export class MenuService {
 
   async deleteSizeGroup(
     sizeGroupName: string,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     // find all size group name
     const sizeGroups = await this.sizeGroupRepository.find({
@@ -773,7 +777,7 @@ export class MenuService {
 
   // EDIT ENTITY INGREDIENT_MENULINK
   async linkIngredientToStock(
-    menu_id: number,
+    menu_id: string,
     owner_id: string,
     branch_id: string,
     linkMenuToStockDtoList: LinkMenuToStockDto[],
@@ -1068,8 +1072,8 @@ export class MenuService {
   }
   async createMenuTypeGroup(
     dto: CreateMenuTypeGroupDto,
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
   ): Promise<any> {
     try {
       if (!dto.options || dto.options.length === 0) {
@@ -1138,8 +1142,8 @@ export class MenuService {
 
   async deleteMenuTypeGroup(
     menuTypeGroupName: string,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ): Promise<any> {
     const menuTypeGroups = await this.menuTypeGroupRepository.find({
       where: {
@@ -1186,8 +1190,8 @@ export class MenuService {
   }
 
   async updateMenuTypeGroup(
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
     updateMenuTypeGroupDto: UpdateMenuTypeGroupDto,
   ): Promise<any> {
     try {
@@ -1233,7 +1237,7 @@ export class MenuService {
       for (const option of options) {
         if (option.menu_type_id && option.menu_type_id !== 'null') {
           await this.menuTypeRepository.update(
-            { menu_type_id: parseInt(option.menu_type_id) },
+            { menu_type_id: option.menu_type_id },
             {
               type_name: option.type_name,
               price_difference: parseFloat(String(option.price_difference)),
@@ -1245,7 +1249,7 @@ export class MenuService {
 
       for (const existingMenuTypeId of existingMenuTypeIds) {
         if (!keepMenuTypeIds.includes(existingMenuTypeId)) {
-          const menuTypeIdNum = parseInt(existingMenuTypeId);
+          const menuTypeIdNum = existingMenuTypeId;
 
           await this.menuTypeRepository.update(
             { menu_type_id: menuTypeIdNum },
@@ -1363,7 +1367,7 @@ export class MenuService {
     }
   }
 
-  async findOptionById(type: string, menuId: number) {
+  async findOptionById(type: string, menuId: string) {
     const menu = await this.menuRepository.findOne({
       where: { menu_id: menuId },
       relations: ['menuTypeGroup', 'sweetnessGroup', 'sizeGroup'],
@@ -1395,8 +1399,8 @@ export class MenuService {
   }
 
   async updateSize(
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
     updateSizeDto: UpdateSizeDto,
   ) {
     try {
@@ -1441,7 +1445,7 @@ export class MenuService {
       for (const option of options) {
         if (option.size_id !== 'null') {
           await this.sizeRepository.update(
-            { size_id: parseInt(option.size_id) },
+            { size_id: option.size_id },
             {
               size_name: option.size_name,
               size_price: parseFloat(String(option.price)),
@@ -1454,7 +1458,7 @@ export class MenuService {
       // Handle deleted sizes
       for (const existingSizeId of existingSizeIds) {
         if (!keepSizeIds.includes(existingSizeId)) {
-          const sizeIdNum = parseInt(existingSizeId);
+          const sizeIdNum = existingSizeId;
 
           // 1. Mark size as deleted
           await this.sizeRepository.update(
@@ -1572,7 +1576,7 @@ export class MenuService {
     }
   }
 
-  async deleteAllAddOns(ownerId: number, branchId: number) {
+  async deleteAllAddOns(ownerId: string, branchId: string) {
     try {
       // 1. Find all add-ons for this owner/branch
       const addOns = await this.addOnRepository.find({
@@ -1629,8 +1633,8 @@ export class MenuService {
   }
 
   async updateAddOn(
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
     updateAddOnDto: UpdateAddOnDto,
   ) {
     try {
@@ -1867,9 +1871,9 @@ export class MenuService {
   }
 
   async getMenuIngredients(
-    menu_id: number,
-    owner_id: number,
-    branch_id: number,
+    menu_id: string,
+    owner_id: string,
+    branch_id: string,
   ) {
     // ตรวจสอบว่ามี menu, owner, branch อยู่จริง
     const menu = await this.menuRepository.findOne({ where: { menu_id } });
@@ -1932,8 +1936,8 @@ export class MenuService {
   async getGroupData(
     type: string,
     groupName: string,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     try {
       switch (type) {
@@ -2043,7 +2047,7 @@ export class MenuService {
     }
   }
 
-  async getAllOptionGroups(ownerId: number, branchId: number) {
+  async getAllOptionGroups(ownerId: string, branchId: string) {
     try {
       // Get all sweetness groups
       const sweetnessGroups = await this.sweetnessGroupRepository.find({
@@ -2106,7 +2110,7 @@ export class MenuService {
     }
   }
 
-  async getAddOnDetails(ownerId: number, branchId: number) {
+  async getAddOnDetails(ownerId: string, branchId: string) {
     try {
       // 1. Get all add-ons with ingredient info
       const addOns = await this.addOnRepository

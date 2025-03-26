@@ -1,9 +1,15 @@
-import { BadRequestException, Controller, Get, Param, Req } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Param,
+  Req,
+} from '@nestjs/common';
 import { IngredientService } from './ingredient.service';
 
 @Controller('owner/ingredient')
 export class IngredientController {
-  constructor(private readonly ingredientService: IngredientService) { }
+  constructor(private readonly ingredientService: IngredientService) {}
 
   // @Get()
   // async test() {
@@ -11,12 +17,12 @@ export class IngredientController {
   // }
 
   @Get('/:id')
-  async findIngredientById(@Param('id') menuId: number) {
+  async findIngredientById(@Param('id') menuId: string) {
     return this.ingredientService.findIngredientById(menuId);
   }
 
   @Get('/menu/:id')
-  async findAllMenuIngredientById(@Param('id') menuId: number) {
+  async findAllMenuIngredientById(@Param('id') menuId: string) {
     return this.ingredientService.findAllMenuIngredientById(menuId);
   }
 
@@ -26,8 +32,10 @@ export class IngredientController {
     const branchId = request.headers['branch_id'];
 
     if (!ownerId || !branchId) {
-      throw new BadRequestException('Missing required headers: owner_id or branch_id');
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
     }
-    return this.ingredientService.findIngredientsByOwnerId(+ownerId, +branchId);
+    return this.ingredientService.findIngredientsByOwnerId(ownerId, branchId);
   }
 }

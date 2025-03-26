@@ -1,20 +1,6 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Headers,
-  Param,
-  Delete,
-  HttpCode,
-  HttpStatus,
-  Res,
-} from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Get, Body, Patch, Headers } from '@nestjs/common';
+
 import { PauseService } from './pause.service';
-import { PauseIngredientDto } from './dto/pause-ingredient.dto';
-import { PauseMenuDto } from './dto/pause-menu.dto';
 
 @Controller('employee/pause')
 export class PauseController {
@@ -22,17 +8,17 @@ export class PauseController {
 
   @Get('ingredients')
   async getAllIngredients(
-    @Headers('owner_id') owner_id: number,
-    @Headers('branch_id') branch_id: number,
+    @Headers('owner_id') owner_id: string,
+    @Headers('branch_id') branch_id: string,
   ) {
     return this.pauseService.getAllIngredient(owner_id, branch_id);
   }
 
   @Patch('ingredients')
   async updateIngredients(
-    @Body() ingredientUpdates: { ingredient_id: number; paused: boolean }[],
-    @Headers('owner_id') owner_id: number,
-    @Headers('branch_id') branch_id: number,
+    @Body() ingredientUpdates: { ingredient_id: string; paused: boolean }[],
+    @Headers('owner_id') owner_id: string,
+    @Headers('branch_id') branch_id: string,
   ) {
     return this.pauseService.updateIngredient(
       ingredientUpdates,
@@ -41,24 +27,19 @@ export class PauseController {
     );
   }
 
-  // @Get('menu')
-  // async getMenu(): Promise<PauseMenuDto[]> {
-  //   return this.pauseService.getMenu();
-  // }
-
   @Get('menus')
   async getAllMenu(
-    @Headers('owner_id') owner_id: number,
-    @Headers('branch_id') branch_id: number,
+    @Headers('owner_id') owner_id: string,
+    @Headers('branch_id') branch_id: string,
   ) {
     return this.pauseService.getAllMenu(owner_id, branch_id);
   }
 
   @Patch('menus')
   async updateMenu(
-    @Body() MenuUpdates: { menu_id: number; paused: boolean }[],
-    @Headers('owner_id') owner_id: number,
-    @Headers('branch_id') branch_id: number,
+    @Body() MenuUpdates: { menu_id: string; paused: boolean }[],
+    @Headers('owner_id') owner_id: string,
+    @Headers('branch_id') branch_id: string,
   ) {
     return this.pauseService.updateMenu(MenuUpdates, owner_id, branch_id);
   }

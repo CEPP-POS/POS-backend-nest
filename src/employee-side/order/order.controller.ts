@@ -48,8 +48,8 @@ export class OrderController {
 
   @Get()
   async findAllOrders(
-    @Headers('owner_id') owner_id: number,
-    @Headers('branch_id') branch_id: number,
+    @Headers('owner_id') owner_id: string,
+    @Headers('branch_id') branch_id: string,
   ) {
     return this.orderService.findAllOrders(owner_id, branch_id);
   }
@@ -96,9 +96,9 @@ export class OrderController {
   //
   @Patch(':order_id/cancel')
   async cancelOrder(
-    @Headers('owner_id') owner_id: number,
-    @Headers('branch_id') branch_id: number,
-    @Param('order_id') id: number,
+    @Headers('owner_id') owner_id: string,
+    @Headers('branch_id') branch_id: string,
+    @Param('order_id') id: string,
     @Body() cancelOrderDto: CancelOrderDto,
   ) {
     return this.orderService.cancelOrder(

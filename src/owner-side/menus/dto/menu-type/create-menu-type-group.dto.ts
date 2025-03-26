@@ -26,6 +26,6 @@ export class CreateMenuTypeGroupDto {
   options: OptionDto[];
 
   @IsArray()
-  @IsNumber({}, { each: true })
-  menu_id: number[];
+  @IsString({ each: true })
+  menu_id: string[];
 }

@@ -759,7 +759,7 @@ export class OrderService {
 
   // เพิ่มฟังก์ชันสำหรับอัพเดทสถานะการชำระเงิน
   async updatePaymentStatus(
-    order_id: number,
+    order_id: string,
     status: string,
   ): Promise<Payment> {
     const payment = await this.paymentRepository.findOne({

@@ -63,7 +63,7 @@ export class Owner {
   manager: Owner;
 
   @Column({ nullable: true })
-  branch_id: number;
+  branch_id: string;
 
   @ManyToOne(() => Branch, (branch) => branch.owner, { nullable: true })
   @JoinColumn({ name: 'branch_id' })

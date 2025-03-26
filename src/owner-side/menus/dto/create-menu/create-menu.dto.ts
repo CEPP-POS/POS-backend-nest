@@ -36,10 +36,10 @@ export class CreateMenuDto {
   menu_type_group_name: string;
 
   @IsNotEmpty()
-  @IsNumber()
-  owner_id: number;
+  @IsString()
+  owner_id: string;
 
   @IsNotEmpty()
-  @IsNumber()
-  branch_id: number;
+  @IsString()
+  branch_id: string;
 }

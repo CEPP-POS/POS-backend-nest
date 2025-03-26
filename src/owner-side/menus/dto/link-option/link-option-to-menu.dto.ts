@@ -1,9 +1,9 @@
-import { IsInt } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class LinkOptionToMenuDto {
-  @IsInt()
-  menu_id: number;
+  @IsString()
+  menu_id: string;
 
-  @IsInt()
-  option_id: number;
+  @IsString()
+  option_id: string;
 }

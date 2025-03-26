@@ -1,10 +1,4 @@
-import {
-  ArrayNotEmpty,
-  IsArray,
-  IsInt,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsOptional, IsString } from 'class-validator';
 
 export class CreateCategoryDto {
   @IsString()
@@ -14,11 +8,11 @@ export class CreateCategoryDto {
   @IsOptional()
   @ArrayNotEmpty()
   // @IsInt({ each: true })
-  menu_id: number[];
+  menu_id: string[];
 
-  @IsInt()
-  owner_id: number;
+  @IsString()
+  owner_id: string;
 
-  @IsInt()
-  branch_id: number;
+  @IsString()
+  branch_id: string;
 }

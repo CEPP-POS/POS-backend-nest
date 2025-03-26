@@ -156,7 +156,7 @@ export class MenuCustomerService {
   }
 
   // EDIT ENTITY
-  async getMenuDetails(menuId: number, ownerId: number, branchId: number) {
+  async getMenuDetails(menuId: string, ownerId: string, branchId: string) {
     // ตรวจสอบค่าก่อนใช้งาน
     if (!menuId || !ownerId || !branchId) {
       throw new BadRequestException('Missing required parameters');
@@ -322,9 +322,9 @@ export class MenuCustomerService {
   }
 
   async getLatestOrder(
-    ownerId: number,
-    branchId: number,
-  ): Promise<{ order_id: number; queue_number: number }> {
+    ownerId: string,
+    branchId: string,
+  ): Promise<{ order_id: string; queue_number: number }> {
     const latestOrder = await this.orderRepository.findOne({
       where: {
         owner: { owner_id: ownerId },

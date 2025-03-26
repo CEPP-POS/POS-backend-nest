@@ -64,7 +64,7 @@ export class OwnerService {
     return owner;
   }
 
-  async updateBranchId(ownerId: number, branchId: number): Promise<void> {
+  async updateBranchId(ownerId: string, branchId: string): Promise<void> {
     await this.ownerRepository.update(ownerId, { branch_id: branchId });
   }
 
@@ -132,8 +132,8 @@ export class OwnerService {
   // * forgot password
   async forgotPassword(
     forgotPasswordDto: ForgotPasswordDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ): Promise<void> {
     const { usernameOrEmail } = forgotPasswordDto;
 
@@ -170,8 +170,8 @@ export class OwnerService {
 
   async verifyOtp(
     verifyOtpDto: VerifyOtpDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ): Promise<void> {
     const { usernameOrEmail, otp } = verifyOtpDto;
 
@@ -199,7 +199,7 @@ export class OwnerService {
     await this.ownerRepository.save(user);
   }
 
-  async findEmployeesByManager(manager_id: number): Promise<Owner[]> {
+  async findEmployeesByManager(manager_id: string): Promise<Owner[]> {
     const employees = await this.ownerRepository.find({
       where: { manager: { owner_id: manager_id } },
       relations: ['manager', 'branch'],
@@ -215,8 +215,8 @@ export class OwnerService {
 
   async resetPassword(
     updatePasswordDto: UpdatePasswordDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ): Promise<{ message: string }> {
     const { email, newPassword } = updatePasswordDto;
     const user = await this.ownerRepository.findOne({
@@ -229,7 +229,7 @@ export class OwnerService {
   }
 
   async updatePassword(
-    ownerId: number,
+    ownerId: string,
     updatePasswordDto: UpdatePasswordDto,
   ): Promise<Owner> {
     const user = await this.ownerRepository.findOne({
@@ -245,7 +245,7 @@ export class OwnerService {
     return this.ownerRepository.save(user);
   }
 
-  async countEmployees(manager_id: number): Promise<number> {
+  async countEmployees(manager_id: string): Promise<number> {
     const manager = await this.ownerRepository.findOne({
       where: { owner_id: manager_id },
     });

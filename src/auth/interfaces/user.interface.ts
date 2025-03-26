@@ -1,6 +1,6 @@
 export interface UserPayload {
-  owner_id: number;
+  owner_id: string;
   email: string;
-  branch_id?: number;
+  branch_id?: string;
   roles: string[];
 }

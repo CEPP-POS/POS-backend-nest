@@ -10,8 +10,8 @@ export class CreateIngredientDto {
   @IsString()
   image_url: string;
 
-  @IsInt()
-  owner_id: number;
+  @IsString()
+  owner_id: string;
 
   @IsString()
   ingredient_name: string;

@@ -8,16 +8,16 @@ import { v4 as uuidv4 } from 'uuid';
 @Entity()
 export class MenuCategory {
   @PrimaryColumn({ type: 'uuid', default: () => `'${uuidv4()}'` })
-  category_id: number;
+  category_id: string;
 
   @PrimaryColumn()
-  menu_id: number;
+  menu_id: string;
 
   @PrimaryColumn()
-  owner_id: number;
+  owner_id: string;
 
   @PrimaryColumn()
-  branch_id: number;
+  branch_id: string;
 
   @ManyToOne(() => Category, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'category_id' })
