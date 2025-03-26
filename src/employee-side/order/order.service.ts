@@ -29,6 +29,7 @@ import { PaymentMethod } from './dto/create-order/create-order.dto';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { spawn } from 'child_process';
 import * as path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class OrderService {
@@ -322,6 +323,7 @@ export class OrderService {
     // ถ้าไม่มี sales summary สำหรับวันนี้ ให้สร้างใหม่
     if (!salesSummary) {
       salesSummary = this.salesSummaryRepository.create({
+        sales_summary_id: uuidv4(),
         date: startOfDay,
         total_revenue: createOrderDto.total_price,
         total_orders: 1,
@@ -343,7 +345,7 @@ export class OrderService {
 
     // Proceed to create the order
     const newOrder = this.orderRepository.create({
-      order_id,
+      order_id: uuidv4(),
       ...createOrderDto,
       is_paid: false,
       cancel_status: createOrderDto.cancel_status || null,
@@ -358,6 +360,7 @@ export class OrderService {
 
     // สร้าง payment record ตามวิธีการชำระเงิน
     const payment = this.paymentRepository.create({
+      payment_id: uuidv4(),
       order: savedOrder,
       payment_method: createOrderDto.payment_method,
       status:
@@ -445,6 +448,7 @@ export class OrderService {
         // console.log(orderItems);
         // Create order item first
         const orderItem = this.orderItemRepository.create({
+          order_item_id: uuidv4(),
           quantity: item.quantity,
           price: item.price,
           menu,
@@ -718,6 +722,7 @@ export class OrderService {
     if (!payment) {
       // If no payment exists, create a new one
       payment = this.paymentRepository.create({
+        payment_id: uuidv4(),
         order,
         cash_given: payWithCashDto.cash_given,
         change: payWithCashDto.change,

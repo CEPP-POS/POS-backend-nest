@@ -24,6 +24,7 @@ import { Category } from '../../entities/category.entity';
 import { Menu } from '../../entities/menu.entity';
 import { MenuCategory } from 'src/entities/menu_category';
 import { MenuIngredient } from '../../entities/menu-ingredient.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class BranchService {
@@ -83,6 +84,7 @@ export class BranchService {
     }
 
     const newBranch = this.branchRepository.create({
+      branch_id: uuidv4(),
       ...branchData,
       owner,
     });
