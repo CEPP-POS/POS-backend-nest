@@ -698,7 +698,7 @@ export class BranchService {
         target_branch_id: targetBranchId,
       };
     } catch (error) {
-      console.error('Error cloning branch setup:', error.message);
+      console.error('Error cloning branch setup:', error);
       throw new BadRequestException(
         'Failed to clone branch setup',
       );
