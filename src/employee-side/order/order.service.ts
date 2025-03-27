@@ -75,7 +75,7 @@ export class OrderService {
     private readonly ingredientUpdateRepository: Repository<IngredientUpdate>,
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) { }
+  ) {}
 
   async findAll(): Promise<Order[]> {
     return this.orderRepository.find({
@@ -92,7 +92,7 @@ export class OrderService {
   }
 
   async update(
-    id: number,
+    id: string,
     updateOrderDto: UpdateOrderDto,
   ): Promise<Order | undefined> {
     const order = await this.findOne(id.toString());
@@ -116,7 +116,7 @@ export class OrderService {
     return order;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const result = await this.orderRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Order with ID ${id} not found`);
@@ -335,7 +335,7 @@ export class OrderService {
       ? latestOrder.queue_number + 1
       : 1;
 
-    // ค้นหา sales summary สำหรับวันนี้
+    // Find sales summary for today
     let salesSummary = await this.salesSummaryRepository.findOne({
       where: {
         date: Between(startOfDay, endOfDay),
@@ -344,7 +344,7 @@ export class OrderService {
       },
     });
 
-    // ถ้าไม่มี sales summary สำหรับวันนี้ ให้สร้างใหม่
+    // Create or update sales summary
     if (!salesSummary) {
       salesSummary = this.salesSummaryRepository.create({
         sales_summary_id: createOrderDto.sales_summary_id || uuidv4(),
@@ -356,7 +356,7 @@ export class OrderService {
         branch,
       });
     } else {
-      // อัพเดทข้อมูลที่มีอยู่
+      // Update existing sales summary
       salesSummary.total_revenue += createOrderDto.total_price;
       salesSummary.total_orders += 1;
       if (createOrderDto.cancel_status) {
@@ -364,10 +364,10 @@ export class OrderService {
       }
     }
 
-    // บันทึก sales summary
+    // Save sales summary
     await this.salesSummaryRepository.save(salesSummary);
 
-    // ใช้ ID จาก JSON ถ้ามี หรือสร้างใหม่จากวันที่และอักษรสุ่ม
+    // Create new order
     const newOrder = this.orderRepository.create({
       order_id:
         createOrderDto.order_id ||
@@ -382,14 +382,14 @@ export class OrderService {
       branch,
     });
 
-    console.log("SAVE NEW ORDER:", newOrder)
+    console.log('SAVE NEW ORDER:', newOrder);
 
     const savedOrder = await this.orderRepository.save(newOrder);
 
-    // คำนวณ total_amount รวม VAT 7%
+    // Calculate total amount with 7% VAT
     const totalAmount = createOrderDto.total_price * 1.07;
 
-    // สร้าง payment record ตามวิธีการชำระเงิน
+    // Create payment record
     const payment = this.paymentRepository.create({
       payment_id: createOrderDto.payment_id || uuidv4(),
       order: savedOrder,
@@ -412,7 +412,7 @@ export class OrderService {
 
     await this.paymentRepository.save(payment);
 
-    // ถ้าเป็นการชำระเงินสด ให้อัพเดทสถานะ order เป็น paid ทันที
+    // Update order paid status for cash payments
     if (createOrderDto.payment_method === PaymentMethod.CASH) {
       savedOrder.is_paid = true;
       if (savedOrder.cancel_status !== null) {
@@ -421,8 +421,10 @@ export class OrderService {
       await this.orderRepository.save(savedOrder);
     }
 
-    await Promise.all(
+    // Process order items
+    const savedOrderItems = await Promise.all(
       items.map(async (item) => {
+        // Validate menu, sweetness, size, and menu type
         const menu = await this.menuRepository.findOne({
           where: {
             menu_id: item.menu_id,
@@ -461,6 +463,7 @@ export class OrderService {
           );
         }
 
+        // Update ingredient stock
         try {
           await this.updateIngredientStock(
             item.menu_id,
@@ -475,7 +478,7 @@ export class OrderService {
           throw error;
         }
 
-        // Create order item first
+        // Create order item
         const orderItem = this.orderItemRepository.create({
           order_item_id: item.order_item_id || uuidv4(),
           quantity: item.quantity,
@@ -491,26 +494,47 @@ export class OrderService {
 
         const savedOrderItem = await this.orderItemRepository.save(orderItem);
 
-        // Create order item add-ons with reference to saved order item
+        // Process add-ons with ingredient retrieval from AddOn table
         const orderItemAddOns = await Promise.all(
           item.add_on_id.map(async (addon_id) => {
+            // Find AddOn with its related ingredient
+            const addon = await this.addOnRepository.findOne({
+              where: { add_on_id: addon_id },
+              relations: ['ingredient'], // Load related ingredient
+              select: {
+                ingredient: { ingredient_id: true },
+              },
+            });
+
+            if (!addon || !addon.ingredient) {
+              throw new NotFoundException(
+                `AddOn with ID ${addon_id} not found`,
+              );
+            }
+
+            const ingredientId = addon.ingredient.ingredient_id;
+
+            // Verify ingredient exists
             const ingredient = await this.ingredientRepository.findOne({
-              where: { ingredient_id: addon_id },
+              where: { ingredient_id: ingredientId },
             });
 
             if (!ingredient) {
               throw new NotFoundException(
-                `Ingredient with ID ${addon_id} not found`,
+                `Ingredient with ID ${ingredientId} not found`,
               );
             }
 
-            const addon = this.orderItemAddOnRepository.create({
+            // Create order item add-on
+            const orderItemAddOn = this.orderItemAddOnRepository.create({
               order_item_id: savedOrderItem.order_item_id,
-              ingredient_id: addon_id,
+              ingredient_id: ingredientId,
               owner,
               branch,
             });
-            const savedAddon = await this.orderItemAddOnRepository.save(addon);
+
+            const savedAddon =
+              await this.orderItemAddOnRepository.save(orderItemAddOn);
 
             return {
               ...savedAddon,
@@ -521,13 +545,15 @@ export class OrderService {
 
         return {
           ...savedOrderItem,
-          orderItem: orderItemAddOns,
+          orderItemAddOns,
         };
       }),
     );
 
+    // Retrieve and return the full order details
     return this.findOrderById(savedOrder.order_id);
   }
+
   async findAllOrders(
     owner_id: string,
     branch_id: string,
@@ -554,7 +580,7 @@ export class OrderService {
     });
 
     const orders = await this.orderRepository.find({
-      where: { owner: { owner_id }, branch: { branch_id }, status: "รอทำ" },
+      where: { owner: { owner_id }, branch: { branch_id }, status: 'รอทำ' },
       relations: [
         'order_item',
         'order_item.menu',
@@ -582,25 +608,25 @@ export class OrderService {
         },
         add_ons: item.orderItem
           ? item.orderItem.map((addon) => ({
-            ingredient_id: addon.ingredient.ingredient_id,
-            ingredient_name: addon.ingredient.ingredient_name,
-          }))
+              ingredient_id: addon.ingredient.ingredient_id,
+              ingredient_name: addon.ingredient.ingredient_name,
+            }))
           : [],
         details: [
           item.sweetnessLevel
             ? {
-              sweetness_id: item.sweetnessLevel.sweetness_id,
-              level_name: item.sweetnessLevel.level_name,
-            }
+                sweetness_id: item.sweetnessLevel.sweetness_id,
+                level_name: item.sweetnessLevel.level_name,
+              }
             : null,
           item.size
             ? { size_id: item.size.size_id, size_name: item.size.size_name }
             : null,
           item.menuType
             ? {
-              menu_type_id: item.menuType.menu_type_id,
-              type_name: item.menuType.type_name,
-            }
+                menu_type_id: item.menuType.menu_type_id,
+                type_name: item.menuType.type_name,
+              }
             : null,
         ].filter(Boolean),
       })),
@@ -642,10 +668,10 @@ export class OrderService {
         ...item,
         orderItem: item.orderItem
           ? item.orderItem.map((addon) => ({
-            order_item_id: addon.order_item_id,
-            ingredient_id: addon.ingredient_id,
-            ingredient_name: addon.ingredient?.ingredient_name,
-          }))
+              order_item_id: addon.order_item_id,
+              ingredient_id: addon.ingredient_id,
+              ingredient_name: addon.ingredient?.ingredient_name,
+            }))
           : [],
       })),
     };

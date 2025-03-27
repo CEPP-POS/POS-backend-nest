@@ -16,6 +16,11 @@ export class MenuCustomerController {
     @Headers('owner_id') ownerId: string,
     @Headers('branch_id') branchId: string,
   ) {
+    // ตรวจสอบและแปลงค่า
+
+    if (!ownerId || !branchId) {
+      throw new BadRequestException('Invalid owner_id or branch_id format');
+    }
 
     return this.menuCustomerService.getCustomerMenus(ownerId, branchId);
   }

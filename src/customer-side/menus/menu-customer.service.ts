@@ -76,22 +76,33 @@ export class MenuCustomerService {
       .andWhere('menu.branch_id = :branchId', { branchId })
       .getMany();
 
-    // กรองเมนูที่มีส่วนประกอบไม่พร้อมใช้งาน
+    // กรองเมนูที่มีส่วนประกอบพร้อมใช้งาน
     const filteredMenus = menus.filter((menu) => {
-      // ถ้าเมนูไม่มีส่วนประกอบใดๆ ให้แสดงเมนูนั้น
+      // ถ้าเมนูไม่มีส่วนประกอบใดๆ ให้ไม่แสดงเมนูนั้น
       if (!menu.menuIngredient || menu.menuIngredient.length === 0) {
         return true;
       }
 
-      // ตรวจสอบว่ามีส่วนประกอบที่ไม่ใช่ addon และถูก paused หรือ is_delete หรือไม่
-      const hasUnavailableIngredient = menu.menuIngredient.some(
-        (mi) =>
-          !mi.is_addon &&
-          mi.ingredient &&
-          (mi.ingredient.paused || mi.ingredient.is_delete),
+      // แยกส่วนประกอบออกเป็น non-addon
+      const nonAddonIngredients = menu.menuIngredient.filter(
+        (mi) => !mi.is_addon,
       );
 
-      return !hasUnavailableIngredient;
+      // ถ้าไม่มี non-addon ingredients เลย ให้ filter out
+      if (nonAddonIngredients.length === 0) {
+        return false;
+      }
+
+      // ตรวจสอบว่ามี non-addon ingredients ที่ถูก pause หรือ delete หรือไม่
+      const allNonAddonIngredientsAvailable = nonAddonIngredients.every(
+        (mi) =>
+          mi.ingredient &&
+          mi.ingredient.is_delete === false &&
+          mi.ingredient.paused === false,
+      );
+
+      // ถ้า non-addon ingredients ทุกตัวพร้อมใช้งาน ให้แสดงเมนู
+      return allNonAddonIngredientsAvailable;
     });
 
     // สร้าง Map เพื่อจัดกลุ่มเมนูตามหมวดหมู่

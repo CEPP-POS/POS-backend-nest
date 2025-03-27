@@ -1,47 +1,47 @@
 # GET http://localhost:3000/employee/pause/menu
 
 
-// * Get all ingredient and paused status
+### Get all ingredient and paused status👌
 GET http://localhost:3000/employee/pause/ingredients
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-// * update ingredient and paused status
+### update ingredient and paused status👌
 PATCH http://localhost:3000/employee/pause/ingredients
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 [
   {
-    "ingredient_id": 26,
+    "ingredient_id": "8ef90602-6b4b-4f4b-a588-32555dd2a7f3",
     "paused": true
   },
   {
-    "ingredient_id": 25,
+    "ingredient_id": "1dfef6a6-e7c8-4149-b1e6-f35526286cb0",
     "paused": true
   }
 ]
 
 
-// * Get all menu and paused status
+### Get all menu and paused status👌
 GET http://localhost:3000/employee/pause/menus
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-// * update menu and paused status
+### * update menu and paused status👌
 PATCH http://localhost:3000/employee/pause/menus
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 [
   {
-    "menu_id": 1,
+    "menu_id": "33769a3a-5bfb-41c8-8971-744dae1d92aa",
     "paused": true
   },
   {
-    "menu_id": 2,
+    "menu_id": "51d9180f-85e5-4ad8-832d-0a1e20ec1157",
     "paused": true
   }
 ]
