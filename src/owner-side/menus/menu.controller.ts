@@ -464,7 +464,7 @@ export class MenuController {
 
   @Get('stock/option/:menu_id')
   async getMenuOptions(
-    @Param('menu_id') menu_id: number,
+    @Param('menu_id') menu_id: string,
     @Req() request: Request,
   ) {
     const ownerId = request.headers['owner_id'];
@@ -476,6 +476,6 @@ export class MenuController {
       );
     }
 
-    return this.menuService.getMenuOptions(menu_id, +ownerId, +branchId);
+    return this.menuService.getMenuOptions(menu_id, ownerId, branchId);
   }
 }

@@ -554,11 +554,11 @@ export class MenuService {
   ) {
     const { options, menu_id, is_required, is_multipled } = createAddOnDto;
 
-    //save name in table ingredient
     const ingredientIds = [];
     for (const option of options) {
       const [ingredientName, ingredientData] = Object.entries(option)[0];
 
+      // ค้นหา ingredient โดยไม่สนใจสถานะ is_delete
       let ingredient = await this.ingredientRepository.findOne({
         where: {
           ingredient_name: ingredientName,
@@ -567,7 +567,9 @@ export class MenuService {
         },
       });
 
-      if (!ingredient) {
+      // หากไม่พบ ingredient หรือพบ ingredient ที่มี is_delete = true
+      if (!ingredient || (ingredient && ingredient.is_delete)) {
+        // สร้าง ingredient ใหม่
         ingredient = this.ingredientRepository.create({
           ingredient_id: ingredientData.ingredient_id || uuidv4(),
           ingredient_name: ingredientName,
@@ -594,7 +596,6 @@ export class MenuService {
 
       // Save menu id and ingredient id, quantity in table menu_ingredient
       for (const menuId of menu_id) {
-        // Check if the menuIngredient already exists to avoid duplicates
         const existingMenuIngredient =
           await this.menuIngredientRepository.findOne({
             where: {
@@ -2090,7 +2091,7 @@ export class MenuService {
     }
   }
 
-  async getMenuOptions(menu_id: number, owner_id: number, branch_id: number) {
+  async getMenuOptions(menu_id: string, owner_id: string, branch_id: string) {
     try {
       // Find the menu with its size group and menu type group
       const menu = await this.menuRepository

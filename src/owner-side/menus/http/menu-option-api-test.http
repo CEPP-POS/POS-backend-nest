@@ -71,14 +71,14 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
   "options": [
     { 
-      "add_on_id": "89c7a2de-9a35-42d4-b652-c74ce83a23ad",
+      "add_on_id": "9698b6ce-bbc2-4e12-a252-ebd26ccdde1b",
       "add_on_name": "บุก",
       "price": "10.00",
       "quantity": 20,
       "unit": "กรัม"
     },
     { 
-      "add_on_id": "884eb457-fd01-410c-8010-cb7900760baf",
+      "add_on_id": "1fda408a-8db2-4bc8-b17c-a1212099776e",
       "add_on_name": "ไข่มุก",
       "price": "25.00",
       "quantity": 12,
@@ -166,24 +166,14 @@ Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-# GET http://localhost:3000/owner/menus/14
-
-# GET http://localhost:3000/owner/menus/options/add-ons
-
-# GET http://localhost:3000/owner/menus/options/size
-
-# GET http://localhost:3000/owner/menus/options/sweetness
-
-# GET http://localhost:3000/owner/menus/options/menu-type
-
-# Delete all add-ons
+# Delete all add-ons👌
 DELETE http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-### Get sweetness group data
-GET http://localhost:3000/owner/menus/options/sweetness/ระดับความหวานทั่วไป
+### Get sweetness group data👌
+GET http://localhost:3000/owner/menus/options/sweetness/ความหวานนม
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
@@ -200,20 +190,20 @@ Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-### Get add-on group data
+### Get add-on group data👌
 GET http://localhost:3000/owner/menus/options/add-on
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-### Get all option groups
+### Get all option groups👌
 GET http://localhost:3000/owner/menus/options/groups
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-### Get menu options by menu id for cut stock
-GET http://localhost:3000/owner/menus/stock/option/7
+### Get menu options by menu id for cut stock 👌
+GET http://localhost:3000/owner/menus/stock/option/4158398f-a29e-42ed-a085-f168446527fc
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
