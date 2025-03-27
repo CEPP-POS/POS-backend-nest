@@ -17,7 +17,7 @@ import { CreateCategoryDto } from './dto/create-category/create-category.dto';
 
 @Controller('owner/categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) { }
 
   @Get('all/menus')
   async getAllCategoriesWithMenus(@Req() request: Request) {
@@ -36,8 +36,8 @@ export class CategoryController {
 
   @Get()
   async findAll(@Req() request: Request) {
-    const ownerId = Number(request.headers['owner_id']);
-    const branchId = Number(request.headers['branch_id']);
+    const ownerId = String(request.headers['owner_id']);
+    const branchId = String(request.headers['branch_id']);
     if (!ownerId || !branchId) {
       throw new BadRequestException(
         'Missing required headers: owner_id or branch_id',
