@@ -9,6 +9,7 @@ import {
   Req,
   HttpStatus,
   HttpException,
+  BadRequestException,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category/create-category.dto';
@@ -16,7 +17,7 @@ import { CreateCategoryDto } from './dto/create-category/create-category.dto';
 
 @Controller('owner/categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) { }
 
   @Get('all/menus')
   async getAllCategoriesWithMenus(@Req() request: Request) {
@@ -33,9 +34,17 @@ export class CategoryController {
     return this.categoryService.getAllCategoriesWithMenus(ownerId, branchId);
   }
 
-  @Get('')
-  async findAll() {
-    return this.categoryService.findAll();
+  @Get()
+  async findAll(@Req() request: Request) {
+    const ownerId = String(request.headers['owner_id']);
+    const branchId = String(request.headers['branch_id']);
+    if (!ownerId || !branchId) {
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
+    }
+
+    return this.categoryService.findAll(ownerId, branchId);
   }
 
   @Get(':id')

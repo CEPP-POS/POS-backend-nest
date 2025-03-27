@@ -2,6 +2,8 @@
 
 ### Get a specific Category by ID 👌
 GET http://localhost:3000/owner/categories
+owner_id: 1
+branch_id: 3
 
 ### Get a specific Category by ID 👌
 GET http://localhost:3000/owner/categories/05754dbe-c05d-4240-af6c-52dbf5dbe459

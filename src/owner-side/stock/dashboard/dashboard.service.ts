@@ -193,7 +193,6 @@ export class DashboardService {
       ownerId,
       branchId,
     );
-
     const dailyStats = [];
     const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
 
@@ -920,6 +919,7 @@ export class DashboardService {
     return {
       ingredient_id: ingredient.ingredient_id,
       ingredient_name: ingredient.ingredient_name,
+      ingredient_img: ingredient.image_url,
       updates: validUpdates.map((update) => ({
         update_id: update.update_id,
         quantity_in_stock: update.quantity_in_stock,
@@ -989,6 +989,9 @@ export class DashboardService {
     });
 
     if (!ingredient) {
+      throw new NotFoundException(
+        `Ingredient with ID ${ingredient_id} not found for owner ID ${owner_id} and branch ID ${branch_id}`,
+      );
       throw new NotFoundException(
         `Ingredient with ID ${ingredient_id} not found for owner ID ${owner_id} and branch ID ${branch_id}`,
       );
@@ -1078,6 +1081,13 @@ export class DashboardService {
       const paymentMethod = order.payment
         ? order.payment.payment_method
         : 'Unknown';
+
+      console.log("ORDER DETAILS:", order)
+      console.log("ORDER AMOUNT:", order.payment)
+
+      if (order.payment.amount === null) {
+        console.log("ORDER AMOUNT NULL FOUND:", order.payment);
+      }
 
       const amount = order.payment.amount;
       const total_amount = order.payment.total_amount;

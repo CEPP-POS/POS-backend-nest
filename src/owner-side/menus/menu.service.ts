@@ -163,8 +163,8 @@ export class MenuService {
     const menus = await this.menuRepository.find({
       where: {
         is_delete: false,
-        owner: { owner_id },
-        branch: { branch_id },
+        owner: { owner_id: owner_id },
+        branch: { branch_id: branch_id },
       },
       relations: [
         'menuIngredient',

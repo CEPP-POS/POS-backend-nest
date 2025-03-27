@@ -336,6 +336,9 @@ export class DashboardController {
       throw new BadRequestException(
         'Missing required headers: owner_id or branch_id',
       );
+      throw new BadRequestException(
+        'Missing required headers: owner_id or branch_id',
+      );
     }
 
     return this.dashboardService.editIngredient(

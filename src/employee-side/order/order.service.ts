@@ -75,7 +75,7 @@ export class OrderService {
     private readonly ingredientUpdateRepository: Repository<IngredientUpdate>,
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) {}
+  ) { }
 
   async findAll(): Promise<Order[]> {
     return this.orderRepository.find({
@@ -377,9 +377,12 @@ export class OrderService {
       ...createOrderDto,
       is_paid: false,
       cancel_status: createOrderDto.cancel_status || null,
+      status: createOrderDto.status,
       owner,
       branch,
     });
+
+    console.log("SAVE NEW ORDER:", newOrder)
 
     const savedOrder = await this.orderRepository.save(newOrder);
 
@@ -411,7 +414,6 @@ export class OrderService {
 
     // ถ้าเป็นการชำระเงินสด ให้อัพเดทสถานะ order เป็น paid ทันที
     if (createOrderDto.payment_method === PaymentMethod.CASH) {
-      savedOrder.status = 'รอทำ';
       savedOrder.is_paid = true;
       if (savedOrder.cancel_status !== null) {
         savedOrder.is_paid = false;
@@ -552,7 +554,7 @@ export class OrderService {
     });
 
     const orders = await this.orderRepository.find({
-      where: { owner: { owner_id }, branch: { branch_id } },
+      where: { owner: { owner_id }, branch: { branch_id }, status: "รอทำ" },
       relations: [
         'order_item',
         'order_item.menu',
@@ -580,25 +582,25 @@ export class OrderService {
         },
         add_ons: item.orderItem
           ? item.orderItem.map((addon) => ({
-              ingredient_id: addon.ingredient.ingredient_id,
-              ingredient_name: addon.ingredient.ingredient_name,
-            }))
+            ingredient_id: addon.ingredient.ingredient_id,
+            ingredient_name: addon.ingredient.ingredient_name,
+          }))
           : [],
         details: [
           item.sweetnessLevel
             ? {
-                sweetness_id: item.sweetnessLevel.sweetness_id,
-                level_name: item.sweetnessLevel.level_name,
-              }
+              sweetness_id: item.sweetnessLevel.sweetness_id,
+              level_name: item.sweetnessLevel.level_name,
+            }
             : null,
           item.size
             ? { size_id: item.size.size_id, size_name: item.size.size_name }
             : null,
           item.menuType
             ? {
-                menu_type_id: item.menuType.menu_type_id,
-                type_name: item.menuType.type_name,
-              }
+              menu_type_id: item.menuType.menu_type_id,
+              type_name: item.menuType.type_name,
+            }
             : null,
         ].filter(Boolean),
       })),
@@ -640,10 +642,10 @@ export class OrderService {
         ...item,
         orderItem: item.orderItem
           ? item.orderItem.map((addon) => ({
-              order_item_id: addon.order_item_id,
-              ingredient_id: addon.ingredient_id,
-              ingredient_name: addon.ingredient?.ingredient_name,
-            }))
+            order_item_id: addon.order_item_id,
+            ingredient_id: addon.ingredient_id,
+            ingredient_name: addon.ingredient?.ingredient_name,
+          }))
           : [],
       })),
     };

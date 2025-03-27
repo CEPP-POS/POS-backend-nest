@@ -20,7 +20,7 @@ import { Request } from 'express';
 
 @Controller('branches')
 export class BranchController {
-  constructor(private readonly branchService: BranchService) {}
+  constructor(private readonly branchService: BranchService) { }
   // * Create Branch (Owner Only)
   @Post()
   @UseGuards(JwtGuard, RolesGuard)
@@ -126,8 +126,8 @@ export class BranchController {
     );
   }
 
-  // @Get('owner/:ownerId')
-  // async getBranchesByOwner(@Param('ownerId') ownerId: number) {
-  //   return this.branchService.getBranchesByOwnerId(ownerId);
-  // }
+  @Get('owner/:ownerId')
+  async getBranchesByOwner(@Param('ownerId') ownerId: string) {
+    return this.branchService.getBranchesByOwnerId(ownerId);
+  }
 }

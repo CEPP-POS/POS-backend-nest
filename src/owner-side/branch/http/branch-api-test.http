@@ -12,8 +12,12 @@ Content-Type: application/json
 ### Get all Branches
 GET http://localhost:3000/branches
 
+### Get all Branches by owner_id
+GET http://localhost:3000/branches/owner/c630720f-f05d-4d91-ba66-8a7dd60c2353
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+
 ### Get a specific Branch by ID
-GET http://localhost:3000/branches/5
+GET http://localhost:3000/branches/3
 
 ### Update a Branch by ID
 PATCH http://localhost:3000/branches/5

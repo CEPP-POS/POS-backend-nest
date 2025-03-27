@@ -29,13 +29,13 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
 owner_id: 1
-branch_id: 1
+branch_id: 3
 {
   "createOrderDto": {
     "order_date": "2025-03-01T08:00:00Z",
     "total_price": 260,
     "queue_number": null,
-    "status": "รอทำ",
+    "status": "canceled",
     "payment_method": "cash",
     "cash_given": 500,
     "change": 240,
@@ -44,9 +44,9 @@ branch_id: 1
   "items": [
     {
       "menu_id": 1,
-      "sweetness_id": 79,
+      "sweetness_id": 1,
       "size_id": 1,
-      "add_on_id": [3,4],  
+      "add_on_id": [],  
       "menu_type_id": 1,
       "quantity": 2,
       "price": 100

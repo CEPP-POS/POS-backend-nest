@@ -34,9 +34,15 @@ export class CategoryService {
     private readonly branchRepository: Repository<Branch>,
   ) {}
 
-  async findAll(): Promise<Category[]> {
-    return this.categoryRepository.find();
+  async findAll(ownerId: string, branchId: string) {
+    return await this.categoryRepository.find({
+      where: {
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+    });
   }
+
 
   async findOne(id: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({
