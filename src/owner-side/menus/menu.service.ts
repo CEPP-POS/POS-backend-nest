@@ -270,16 +270,21 @@ export class MenuService {
 
     // Step 1: Insert sweetness levels
     const sweetnessLevels = createSweetnessDto.options.map((option) => ({
+      sweetness_id: createSweetnessDto.sweetness_id || uuidv4(),
       level_name: option,
       owner: { owner_id: ownerId },
       branch: { branch_id: branchId },
     }));
-
+    sweetnessLevels.forEach((sweetness) => {
+      console.log('Owner ID:', sweetness.owner.owner_id);
+      console.log('Branch ID:', sweetness.branch.branch_id);
+    });
     const savedSweetnessLevels =
       await this.sweetnessLevelRepository.save(sweetnessLevels);
-
+    console.log(savedSweetnessLevels);
     // Step 2: Create sweetness groups
     const sweetnessGroups = savedSweetnessLevels.map((sweetness) => ({
+      sweetness_group_id: createSweetnessDto.sweetness_group_id || uuidv4(),
       sweetness_group_name: createSweetnessDto.sweetness_group_name,
       sweetnessLevel: sweetness, // Correct reference
       owner: { owner_id: ownerId },
@@ -426,6 +431,7 @@ export class MenuService {
       for (const option of newOptions) {
         // สร้าง sweetness level ใหม่
         const newLevel = await this.sweetnessLevelRepository.save({
+          sweetness_id: uuidv4(),
           level_name: option.level_name,
           owner: { owner_id: ownerId },
           branch: { branch_id: branchId },
@@ -433,6 +439,7 @@ export class MenuService {
 
         // สร้าง sweetness group ใหม่และ link กับ level
         await this.sweetnessGroupRepository.save({
+          sweetness_group_id: uuidv4(),
           sweetness_group_name: updateSweetnessDto.new_sweetness_group_name,
           sweetnessLevel: newLevel,
           owner: { owner_id: ownerId },
@@ -1720,63 +1727,69 @@ export class MenuService {
 
   async deleteSweetness(
     sweetness_group_name: string,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
-    // 1. First find the sweetness group
-    const sweetnessGroup = await this.sweetnessGroupRepository
-      .createQueryBuilder('sg')
-      .leftJoinAndSelect('sg.owner', 'owner')
-      .leftJoinAndSelect('sg.branch', 'branch')
-      .where('sg.sweetness_group_name = :groupName', {
-        groupName: sweetness_group_name,
-      })
-      .andWhere('owner.owner_id = :ownerId', { ownerId })
-      .andWhere('branch.branch_id = :branchId', { branchId })
-      .getOne();
+    // 1. Find all sweetness groups with the given name and get their sweetness levels
+    const sweetnessGroups = await this.sweetnessGroupRepository.find({
+      where: {
+        sweetness_group_name,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['sweetnessLevel'],
+    });
 
-    if (!sweetnessGroup) {
+    if (!sweetnessGroups.length) {
       throw new NotFoundException(
         `Sweetness group "${sweetness_group_name}" not found`,
       );
     }
 
-    // 2. Get all sweetness levels that belong to this group
-    const sweetnessLevels = await this.sweetnessLevelRepository
-      .createQueryBuilder('sl')
-      .leftJoinAndSelect('sl.sweetnessGroup', 'sg')
-      .where('sg.sweetness_group_name = :groupName', {
-        groupName: sweetness_group_name,
-      })
-      .andWhere('sg.owner.owner_id = :ownerId', { ownerId })
-      .andWhere('sg.branch.branch_id = :branchId', { branchId })
-      .andWhere('sl.is_delete = :isDelete', { isDelete: false })
-      .select(['sl.sweetness_id', 'sl.level_name'])
-      .getMany();
+    // Get all sweetness level IDs from the groups
+    const sweetnessLevelIds = sweetnessGroups.map(
+      (group) => group.sweetnessLevel.sweetness_id,
+    );
 
-    // Get menus using this sweetness group
-    const menus = await this.menuRepository
-      .createQueryBuilder('m')
-      .leftJoinAndSelect('m.sweetnessGroup', 'sg')
-      .where('sg.sweetness_group_name = :groupName', {
-        groupName: sweetness_group_name,
-      })
-      .andWhere('sg.owner.owner_id = :ownerId', { ownerId })
-      .andWhere('sg.branch.branch_id = :branchId', { branchId })
-      .andWhere('m.is_delete = :isDelete', { isDelete: false })
-      .select(['m.menu_id', 'm.menu_name'])
-      .getMany();
+    // 1. Soft delete the sweetness levels
+    await this.sweetnessLevelRepository.update(
+      {
+        sweetness_id: In(sweetnessLevelIds),
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      { is_delete: true },
+    );
+
+    // 2. Find menus that use this sweetness group and set to null
+    const menusToUpdate = await this.menuRepository.find({
+      where: {
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+      relations: ['sweetnessGroup'],
+    });
+
+    const menusWithThisSweetnessGroup = menusToUpdate.filter(
+      (menu) =>
+        menu.sweetnessGroup?.sweetness_group_name === sweetness_group_name,
+    );
+
+    for (const menu of menusWithThisSweetnessGroup) {
+      menu.sweetnessGroup = null;
+      await this.menuRepository.save(menu);
+    }
+
+    // 3. Delete the sweetness groups
+    await this.sweetnessGroupRepository.delete({
+      sweetness_group_name,
+      owner: { owner_id: ownerId },
+      branch: { branch_id: branchId },
+    });
 
     return {
-      group_name: sweetness_group_name,
-      levels: sweetnessLevels.map((level) => ({
-        sweetness_id: level.sweetness_id,
-        level_name: level.level_name,
-      })),
-      menus: menus.map((menu) => ({
-        menu_id: menu.menu_id,
-        menu_name: menu.menu_name,
-      })),
+      message: `Sweetness group "${sweetness_group_name}" and its levels have been deleted`,
+      statusCode: HttpStatus.OK,
     };
   }
 

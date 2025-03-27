@@ -1,6 +1,20 @@
-import { IsString, IsArray, ArrayNotEmpty, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  ArrayNotEmpty,
+  IsBoolean,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateSweetnessDto {
+  @IsOptional()
+  @IsString()
+  sweetness_id?: string;
+
+  @IsOptional()
+  @IsString()
+  sweetness_group_id?: string;
+
   @IsString()
   sweetness_group_name: string;
 

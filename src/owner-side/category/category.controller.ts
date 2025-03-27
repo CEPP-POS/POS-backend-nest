@@ -12,36 +12,11 @@ import {
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category/create-category.dto';
-import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 // import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 
 @Controller('owner/categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
-
-  @Post('link-menus')
-  async linkMenusToCategory(
-    @Req() request: Request,
-    @Body() linkMenuToCategoryDto: LinkMenuToCategoryDto,
-  ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
-
-    if (!ownerId || !branchId) {
-      throw new HttpException(
-        'Missing required headers: owner_id or branch_id',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const categoryData = {
-      ...linkMenuToCategoryDto,
-      owner_id: ownerId,
-      branch_id: branchId,
-    };
-
-    return await this.categoryService.linkMenusToCategory(categoryData);
-  }
 
   @Get('all/menus')
   async getAllCategoriesWithMenus(@Req() request: Request) {

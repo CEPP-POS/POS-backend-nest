@@ -276,7 +276,7 @@ export class MenuController {
       'sweetness',
       createSweetnessDto,
       ownerId,
-      ownerId,
+      branchId,
     );
   }
 
@@ -440,13 +440,10 @@ export class MenuController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
-
     return await this.menuService.deleteSweetness(
       sweetness_group_name,
-      ownerIdNum,
-      branchIdNum,
+      ownerId,
+      branchId,
     );
   }
 

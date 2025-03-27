@@ -39,15 +39,6 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   "menu_id": ["bb24ae81-b635-49df-a74b-5b9cac4e4633","937a85a7-168c-4bc3-91c4-a5d0a66f6ef2"]
 }
 
-### Link menu to category
-POST http://localhost:3000/owner/categories/link-menus
-Content-Type: application/json
-owner_id: 1
-branch_id: 1
-{
-  "category_id": 1,
-  "menu_ids": [1,2,3]
-}
 
 ### Get all categories with their menus 👌
 GET http://localhost:3000/owner/categories/all/menus
