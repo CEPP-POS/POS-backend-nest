@@ -100,13 +100,20 @@ export class SyncService {
       if (response.status >= 200 && response.status < 300) {
         data.synced = true;
         console.log(`✅ Successfully synced: ${data.path}`);
-        
+
         // ตรวจสอบว่า id เป็น UUID หรือไม่
-        if (typeof data.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.id)) {
+        if (
+          typeof data.id === 'string' &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            data.id,
+          )
+        ) {
           await this.syncRepo.delete(data.id);
           console.log(`✅ Deleted sync record with ID: ${data.id}`);
         } else {
-          console.log(`⚠️ Invalid UUID format for ID: ${data.id}, skipping deletion`);
+          console.log(
+            `⚠️ Invalid UUID format for ID: ${data.id}, skipping deletion`,
+          );
         }
       }
     } catch (error) {
