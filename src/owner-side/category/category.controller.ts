@@ -34,13 +34,10 @@ export class CategoryController {
       );
     }
 
-    const ownerIdNum = ownerId;
-    const branchIdNum = branchId;
-
     const categoryData = {
       ...linkMenuToCategoryDto,
-      owner_id: ownerIdNum,
-      branch_id: branchIdNum,
+      owner_id: ownerId,
+      branch_id: branchId,
     };
 
     return await this.categoryService.linkMenusToCategory(categoryData);
@@ -84,11 +81,7 @@ export class CategoryController {
       );
     }
 
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
-    const categoryIdNum = Number(id);
-
-    if (isNaN(ownerIdNum) || isNaN(branchIdNum) || isNaN(categoryIdNum)) {
+    if (!ownerId || !branchId || !id) {
       throw new HttpException(
         'Invalid numeric values in headers or params',
         HttpStatus.BAD_REQUEST,
@@ -96,9 +89,9 @@ export class CategoryController {
     }
 
     const data = {
-      id: categoryIdNum,
-      owner_id: ownerIdNum,
-      branch_id: branchIdNum,
+      id: id,
+      owner_id: ownerId,
+      branch_id: branchId,
     };
 
     return this.categoryService.getMenusByCategory(data);
@@ -116,13 +109,10 @@ export class CategoryController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    const ownerIdNum = ownerId;
-    const branchIdNum = branchId;
-
     const CategoryData = {
       ...createCategoryDto,
-      owner_id: ownerIdNum,
-      branch_id: branchIdNum,
+      owner_id: ownerId,
+      branch_id: branchId,
     };
 
     return await this.categoryService.create(CategoryData), HttpStatus.CREATED;
