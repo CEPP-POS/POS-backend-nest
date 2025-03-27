@@ -569,7 +569,12 @@ export class DashboardService {
     }
 
     let ingredient = await this.ingredientRepository.findOne({
-      where: { ingredient_name, owner: { owner_id }, branch: { branch_id } },
+      where: {
+        ingredient_name,
+        owner: { owner_id },
+        branch: { branch_id },
+        is_delete: false,
+      },
     });
 
     if (!ingredient) {
