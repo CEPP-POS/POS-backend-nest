@@ -92,7 +92,7 @@ export class OrderService {
   }
 
   async update(
-    id: number,
+    id: string,
     updateOrderDto: UpdateOrderDto,
   ): Promise<Order | undefined> {
     const order = await this.findOne(id.toString());
@@ -116,7 +116,7 @@ export class OrderService {
     return order;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const result = await this.orderRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Order with ID ${id} not found`);

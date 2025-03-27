@@ -1,4 +1,4 @@
-### Create Order with QRCODE PAY
+### Create Order with QRCODE PAY👌
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
@@ -21,81 +21,89 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
       "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf",
       "quantity": 2,
       "price": 100
-    }
-  ]
-}
-
-### Create Order WITH CASH PAY
-POST http://localhost:3000/employee/orders
-Content-Type: application/json
-owner_id: 1
-branch_id: 3
-{
-  "createOrderDto": {
-    "order_date": "2025-03-01T08:00:00Z",
-    "total_price": 260,
-    "queue_number": null,
-    "status": "canceled",
-    "payment_method": "cash",
-    "cash_given": 500,
-    "change": 240,
-    "cancel_status": null
-  },
-  "items": [
+    },
     {
-      "menu_id": 1,
-      "sweetness_id": 1,
-      "size_id": 1,
-      "add_on_id": [],  
-      "menu_type_id": 1,
+      "menu_id": "937a85a7-168c-4bc3-91c4-a5d0a66f6ef2",
+      "sweetness_id": "0d1e5861-26d9-43b5-b211-3ac81c70785d",
+      "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22",
+      "add_on_id": ["9698b6ce-bbc2-4e12-a252-ebd26ccdde1b","1fda408a-8db2-4bc8-b17c-a1212099776e"],  
+      "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf",
       "quantity": 2,
       "price": 100
     }
   ]
 }
 
-### Get All Orders
-GET http://localhost:3000/employee/orders
+### Create Order WITH CASH PAY👌
+POST http://localhost:3000/employee/orders
 Content-Type: application/json
-owner_id: 1
-branch_id: 3
-
-
-### Get Order by ID
-GET http://localhost:3000/employee/orders/5
-
-### Update Order
-PATCH http://localhost:3000/employee/orders/10
-Content-Type: application/json
-
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "status": "cancel"
+  "createOrderDto": {
+    "order_date": "2025-03-03T08:00:00Z",
+    "total_price": 100,
+    "status": "รอทำ",
+    "payment_method": "cash",
+    "path_img": "https://image/payment",
+    "cancel_status": null
+  },
+  "items": [
+    {
+      "menu_id": "937a85a7-168c-4bc3-91c4-a5d0a66f6ef2",
+      "sweetness_id": "0d1e5861-26d9-43b5-b211-3ac81c70785d",
+      "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22",
+      "add_on_id": ["9698b6ce-bbc2-4e12-a252-ebd26ccdde1b","1fda408a-8db2-4bc8-b17c-a1212099776e"],  
+      "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf",
+      "quantity": 2,
+      "price": 100
+    }
+  ]
 }
 
-### Delete Order
-DELETE http://localhost:3000/employee/orders/1
-
-## cancel order
-PATCH http://localhost:3000/employee/orders/15/cancel
+### Get All Orders👌
+GET http://localhost:3000/employee/orders
 Content-Type: application/json
-owner_id: 1
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
+
+
+### Get Order by ID👌
+GET http://localhost:3000/employee/orders/20250303150000-KI8V3
+
+### Update Order👌
+PATCH http://localhost:3000/employee/orders/20250303150000-RTROX
+Content-Type: application/json
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
+{
+  "status": "canceled"
+}
+
+### Delete Order😒 เหมือนจะไม่ต้องใช้
+DELETE http://localhost:3000/employee/orders/20250303150000-505Y4
+
+## cancel order👌
+PATCH http://localhost:3000/employee/orders/20250303150000-KI8V3/cancel
+Content-Type: application/json
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
   "customer_name": "John Doe",
   "contact": "0812345678"
 }
 
-### Get Order Item 
+### Get Order Item 😒
 GET http://localhost:3000/employee/orders/item
 
-### complete order
-PATCH http://localhost:3000/employee/orders/55/complete
+### complete order👌
+PATCH http://localhost:3000/employee/orders/20250303150000-HT9YR/complete
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-### pay with cash
-POST http://localhost:3000/employee/orders/1/cash
+### pay with cash 👌
+POST http://localhost:3000/employee/orders/20250303150000-505Y4/cash
 Content-Type: application/json
 {
 "total_amount": 345,

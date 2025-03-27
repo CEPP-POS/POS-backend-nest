@@ -72,7 +72,7 @@ export class OrderController {
     @Body() updateOrderDto: UpdateOrderDto,
     @Res() res: Response,
   ) {
-    const order = await this.orderService.update(+id, updateOrderDto);
+    const order = await this.orderService.update(id, updateOrderDto);
     if (!order) {
       return res
         .status(HttpStatus.NOT_FOUND)
@@ -90,7 +90,7 @@ export class OrderController {
         .status(HttpStatus.NOT_FOUND)
         .json({ message: 'Order not found' });
     }
-    await this.orderService.remove(+id);
+    await this.orderService.remove(id);
     return res.status(HttpStatus.NO_CONTENT).send();
   }
   //
