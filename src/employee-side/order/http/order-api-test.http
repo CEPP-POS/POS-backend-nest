@@ -14,10 +14,10 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   },
   "items": [
     {
-      "menu_id": "33769a3a-5bfb-41c8-8971-744dae1d92aa",
+      "menu_id": "4158398f-a29e-42ed-a085-f168446527fc",
       "sweetness_id": "0d1e5861-26d9-43b5-b211-3ac81c70785d",
       "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22",
-      "add_on_id": ["8ef90602-6b4b-4f4b-a588-32555dd2a7f3","1dfef6a6-e7c8-4149-b1e6-f35526286cb0"],  
+      "add_on_id": ["9698b6ce-bbc2-4e12-a252-ebd26ccdde1b","1fda408a-8db2-4bc8-b17c-a1212099776e"],  
       "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf",
       "quantity": 2,
       "price": 100
