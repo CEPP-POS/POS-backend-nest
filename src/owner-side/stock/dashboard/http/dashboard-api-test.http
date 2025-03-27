@@ -1,19 +1,19 @@
 ### Get Stock Summary by Date
 GET http://localhost:3000/owner/stock-summary/2025-03-17
 Content-Type: application/json
-owner_id: 1
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 GET http://localhost:3000/owner/stock-sale/2025/03
 Content-Type: application/json
-owner_id: 1
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 ## GET ALL ORDERS
 GET http://localhost:3000/owner/stock-orders/2025-04-01/month
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 ## get menu ingredient by ingredient id👌
 GET http://localhost:3000/owner/stock-ingredients/2d20c47c-2be2-42a0-8530-fe7bab222fe4
@@ -48,13 +48,13 @@ Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-### GET sub ingredient by ingredient_id
-GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/2d20c47c-2be2-42a0-8530-fe7bab222fe4
+### GET sub ingredient by ingredient_id👌
+GET http://localhost:3000/owner/stock-ingredients/sub-ingredient/1dfef6a6-e7c8-4149-b1e6-f35526286cb0
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-# getIngredientsCategories
+# getIngredientsCategories👌
 GET http://localhost:3000/owner/stock-ingredients/categories
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
@@ -66,18 +66,18 @@ Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-#getUpdateIngredient by update_id
+#getUpdateIngredient by update_id👌
 ## fix
-GET http://localhost:3000/owner/update-stock-ingredients/15
+GET http://localhost:3000/owner/update-stock-ingredients/e4e54fe2-6377-43bd-9ed2-ee57fa8942d9
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-## update ingredient popup
-PATCH http://localhost:3000/owner/update-stock-ingredients/15
+## update ingredient popup by update_id👌
+PATCH http://localhost:3000/owner/update-stock-ingredients/e4e54fe2-6377-43bd-9ed2-ee57fa8942d9
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
   "quantity_in_stock": 100,
   "total_volume": 10000,
