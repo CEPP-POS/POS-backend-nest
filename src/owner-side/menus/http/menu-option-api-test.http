@@ -51,8 +51,8 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 {
   "options": [
-    { "บุก": { "price": "10.00", "unit": "กรัม", "quantity":12 } },
-    { "ไข่มุก": { "price": "20.00", "unit": "กรัม", "quantity":15 } }
+    { "บุก2": { "price": "10.00", "unit": "กรัม", "quantity":12 } },
+    { "ไข่มุก2": { "price": "20.00", "unit": "กรัม", "quantity":15 } }
   ],
   "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc","33769a3a-5bfb-41c8-8971-744dae1d92aa"],
   "is_required":true,
@@ -126,39 +126,41 @@ Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-### เพิ่มประเภท ร้อนเย็นปั่น ผูกกับmenu
+### เพิ่มประเภท ร้อนเย็นปั่น ผูกกับmenu👌
 POST http://localhost:3000/owner/menus/options/menu_type
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "menu_type_group_name": "ปั่นสำหรับ",
+  "menu_type_group_name": "สำหรับนม",
   "options": [
-    { "ปั่นเย็น": "5.00" },
-    { "iceน้อย": "20.00" }
+    { "ปั่นเย็น": "10.00" },
+    { "iceน้อย": "0.00" }
   ],
-  "menu_id": ["7f6d910d-fe60-4420-a614-312c8f47180e", "902a9067-112e-43ec-a3d9-100dcf833652"]
+  "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc", "33769a3a-5bfb-41c8-8971-744dae1d92aa"]
 }
 
-
+### แก้ไขประเภท ร้อนเย็นปั่น ผูกกับmenu👌
 PATCH http://localhost:3000/owner/menus/options/menu_type
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "old_menu_type_group_name": "ปั่นเย็น",
-  "new_menu_type_group_name": "เครื่องดื่มเย็นและร้อน",
+  "old_menu_type_group_name": "สำหรับนม",
+  "new_menu_type_group_name": "สำหรับนมใหม่",
   "options": [
-    { "menu_type_id": "32", "type_name": "น้ำแยก", "price_difference": 10.00 },
-    { "menu_type_id": "5", "type_name": "ปั่น", "price_difference": 5.00 }
+    { "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf", "type_name": "เย็น", "price_difference": 5.00 },
+    { "menu_type_id": "7b8e5fdc-0f58-427c-a14e-a07db31c5ab8", "type_name": "ปั่น", "price_difference": 10.00 },
+    { "menu_type_id": null, "type_name": "ร้อน", "price_difference": 0.00 }
   ],
-  "menu_id": [1, 2]
+  "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc", "33769a3a-5bfb-41c8-8971-744dae1d92aa","faa9a7c2-a956-4153-a4d2-eb436a90c2a2"]
 }
 
-DELETE http://localhost:3000/owner/menus/options/menu_type/ปั่นรักสุขภาพ
+### ลบประเภท ร้อนเย็นปั่น ผูกกับmenu👌
+DELETE http://localhost:3000/owner/menus/options/menu_type/สำหรับนมใหม่
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 # GET http://localhost:3000/owner/menus/14
 
@@ -173,8 +175,8 @@ branch_id: 1
 # Delete all add-ons
 DELETE http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 ### Get sweetness group data
 GET http://localhost:3000/owner/menus/options/sweetness/ระดับความหวานทั่วไป

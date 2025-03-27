@@ -1136,11 +1136,11 @@ export class MenuService {
       );
 
       const keepMenuTypeIds = options
-        .filter((opt) => opt.menu_type_id && opt.menu_type_id !== 'null')
+        .filter((opt) => opt.menu_type_id && opt.menu_type_id !== null)
         .map((opt) => opt.menu_type_id);
 
       for (const option of options) {
-        if (option.menu_type_id && option.menu_type_id !== 'null') {
+        if (option.menu_type_id && option.menu_type_id !== null) {
           await this.menuTypeRepository.update(
             { menu_type_id: option.menu_type_id },
             {
@@ -1206,10 +1206,11 @@ export class MenuService {
       }
 
       const newMenuTypeOptions = options.filter(
-        (opt) => opt.menu_type_id === 'null',
+        (opt) => opt.menu_type_id === null,
       );
       for (const newOption of newMenuTypeOptions) {
         const newMenuType = await this.menuTypeRepository.save({
+          menu_type_id: uuidv4(),
           type_name: newOption.type_name,
           price_difference: parseFloat(String(newOption.price_difference)),
           owner: { owner_id },
@@ -1225,6 +1226,7 @@ export class MenuService {
 
         if (!existingLink) {
           await this.menuTypeGroupRepository.save({
+            menu_type_group_id: uuidv4(),
             menu_type_group_name: new_menu_type_group_name,
             menuType: newMenuType,
             owner: { owner_id },
