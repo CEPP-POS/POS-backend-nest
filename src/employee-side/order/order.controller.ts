@@ -23,7 +23,7 @@ import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
 
 @Controller('employee/orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
   @Post()
   async createOrder(
