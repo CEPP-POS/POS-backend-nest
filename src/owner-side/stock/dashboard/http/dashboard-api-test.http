@@ -1,15 +1,16 @@
-### Get Stock Summary by Date
-GET http://localhost:3000/owner/stock-summary/2025-03-17
+### Get Stock Summary by Date👌
+GET http://localhost:3000/owner/stock-summary/2025-03-03
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
+### Get Stock Summary by Month👌
 GET http://localhost:3000/owner/stock-sale/2025/03
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-## GET ALL ORDERS
+## GET ALL ORDERS ใช้แบบนี้ 2 อันบนไม่น่าต้องใช้
 GET http://localhost:3000/owner/stock-orders/2025-03-07/year
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
