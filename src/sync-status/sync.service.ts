@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DeepPartial } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { SyncDataDto } from './dto/sync-data.dto';
 import { SyncStatus } from 'src/entities/sync-status.entity';
@@ -22,18 +22,32 @@ export class SyncService {
   //   }
 
   async saveFailedRequest(data: SyncDataDto) {
+    console.log('📥 Received data:', JSON.stringify(data, null, 2));
+    console.log('🔑 Received headers:', JSON.stringify(data.headers, null, 2));
+
     const syncStatus = this.syncRepo.create({
       id: uuidv4(),
-      ...data,
+      path: data.path,
+      method: data.method,
+      payload: data.payload,
+      headers: {
+        'Content-Type': 'application/json',
+        'owner-id': data.headers?.owner_id,
+        'branch-id': data.headers?.branch_id,
+      },
+      owner_id: data.headers?.owner_id,
+      branch_id: data.headers?.branch_id,
       synced: false,
       retryCount: 0,
-    });
+      statusCode: data.statusCode,
+    } as DeepPartial<SyncStatus>);
+
     const savedSyncStatus = await this.syncRepo.save(syncStatus);
     console.log(`✅ Saved sync status to local database: ${savedSyncStatus.id}`);
+    console.log('📦 Data saved:', JSON.stringify(savedSyncStatus, null, 2));
 
     // ส่งข้อมูลไปยัง server ทันที
     // await this.sendRequestToServer(savedSyncStatus);
-
   }
 
   //   async retryFailedQueue() {
@@ -81,7 +95,8 @@ export class SyncService {
     });
 
     for (const item of failedItems) {
-      await this.sendRequestToServer(item); // เรียกใช้ sendRequestToServer เพื่อส่งข้อมูล
+      console.log('✅ All failed items have been synced',item);
+      await this.sendRequestToServer(item); 
     }
   }
   async sendRequestToServer(data: SyncStatus) {
@@ -134,59 +149,6 @@ export class SyncService {
     await new Promise(res => setTimeout(res, 1000));
   }
   
-  //old
-  // async sendRequestToServer(data: SyncStatus) {
-  //   try {
-  //     // การส่ง request พร้อมกับ headers ที่ได้รับจากข้อมูล
-  //     const headers = {
-  //       'Content-Type': 'application/json',
-  //       ...data.headers,
-  //       'owner-id': data.headers?.['owner-id'] || 'default_owner_id',
-  //       'branch-id': data.headers?.['branch-id'] || 'default_branch_id',
-  //     };
-
-  //     const response = await axios({
-  //       method: data.method.toLowerCase(),
-  //       url: data.path,
-  //       data: data.payload,
-  //       headers: headers,
-  //     });
-  //     console.log(`📤 Sending request to server: ${data.path}`);
-  //     // ถ้าส่งข้อมูลสำเร็จ
-  //     if (response.status >= 200 && response.status < 300) {
-  //       data.synced = true;
-  //       data.statusCode = response.status;
-  //       console.log(`✅ Successfully synced: ${data.path}`);
-        
-  //       // ลบข้อมูลหลังจากส่งสำเร็จ
-  //       await this.syncRepo.delete(data.id);
-  //       console.log(`✅ Deleted sync record with ID: ${data.id}`);
-  //     }
-  //   } catch (error) {
-  //     // ถ้าส่งไม่สำเร็จ, เพิ่ม retryCount
-  //     data.retryCount += 1;
-  //     data.statusCode = error.response?.status || 500;
-      
-  //     // จัดการกับ 409 Conflict
-  //     if (error.response?.status === 409) {
-  //       console.log(`⚠️ Data already exists on server: ${data.path}`);
-  //       data.synced = true; // ถือว่าส่งสำเร็จเพราะข้อมูลมีอยู่แล้ว
-  //       data.errorMessage = 'Data already exists on server';
-  //     } else {
-  //       console.error(`❌ Retry failed for ${data.path}`, error.message);
-  //       console.error('Error details:', error.response?.data || error.message);
-  //       data.errorMessage = error.response?.data?.message || error.message;
-  //     }
-
-  //     if (data.retryCount >= 3) {
-  //       data.synced = true;
-  //       console.log(`⚠️ Max retry attempts reached for ${data.path}`);
-  //     }
-  //   }
-
-  //   await this.syncRepo.save(data);
-  //   await new Promise(resolve => setTimeout(resolve, 1000));
-  // }
 
   async getPendingSyncs() {
     return await this.syncRepo.find({
