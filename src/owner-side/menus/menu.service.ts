@@ -157,9 +157,13 @@ export class MenuService {
     };
   }
 
-  async findAll(p0: number, p1: number): Promise<any[]> {
+  async findAll(ownerId: number, branchId: number): Promise<any[]> {
     const menus = await this.menuRepository.find({
-      where: { is_delete: false },
+      where: {
+        is_delete: false,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
       relations: [
         'menuIngredient',
         'sweetnessGroup',

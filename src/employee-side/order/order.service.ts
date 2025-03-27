@@ -381,7 +381,6 @@ export class OrderService {
 
     // ถ้าเป็นการชำระเงินสด ให้อัพเดทสถานะ order เป็น paid ทันที
     if (createOrderDto.payment_method === PaymentMethod.CASH) {
-      // savedOrder.status = 'รอทำ';
       savedOrder.is_paid = true;
       if (savedOrder.cancel_status !== null) {
         savedOrder.is_paid = false;

@@ -2,6 +2,8 @@
 
 ### Get a specific Category by ID
 GET http://localhost:3000/owner/categories
+owner_id: 1
+branch_id: 3
 
 ### Get a specific Category by ID
 GET http://localhost:3000/owner/categories/5
