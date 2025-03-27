@@ -24,10 +24,10 @@ export class CreateMenuTypeDto {
   is_delete?: boolean;
 
   @IsNotEmpty()
-  @IsNumber()
-  owner_id: number;
+  @IsString()
+  owner_id: string;
 
   @IsNotEmpty()
-  @IsNumber()
-  branch_id: number;
+  @IsString()
+  branch_id: string;
 }

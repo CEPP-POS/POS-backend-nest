@@ -1,10 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Menu } from './menu.entity';
 import { Ingredient } from './ingredient.entity';
 import { Size } from './size.entity';
@@ -14,8 +8,8 @@ import { Branch } from './branch.entity';
 
 @Entity()
 export class MenuIngredient {
-  @PrimaryGeneratedColumn()
-  menu_ingredient_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  menu_ingredient_id: string;
 
   @ManyToOne(() => Menu, { nullable: false })
   @JoinColumn({ name: 'menu_id' })

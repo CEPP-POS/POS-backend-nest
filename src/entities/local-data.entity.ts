@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   CreateDateColumn,
@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { SyncStatus } from './sync-status.entity';
 import { Order } from './order.entity';
-import { Owner } from './owner.entity'; 
+import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
 
 export enum OperationType {
@@ -25,8 +25,8 @@ export enum Status {
 
 @Entity()
 export class LocalData {
-  @PrimaryGeneratedColumn()
-  local_data_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  local_data_id: string;
 
   @Column()
   table_name: string;

@@ -51,8 +51,8 @@ export class CreateOptionDto {
 
   @IsArray()
   @ArrayNotEmpty()
-  @IsInt({ each: true })
-  menu_id: number[];
+  @IsString({ each: true })
+  menu_id: string[];
 
   @IsBoolean()
   @IsOptional()

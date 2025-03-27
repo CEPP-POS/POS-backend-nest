@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   OneToMany,
   ManyToOne,
@@ -14,8 +14,8 @@ import { Branch } from './branch.entity';
 
 @Entity()
 export class MenuType {
-  @PrimaryGeneratedColumn()
-  menu_type_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  menu_type_id: string;
 
   @Column()
   type_name: string;

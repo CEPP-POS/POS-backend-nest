@@ -36,6 +36,6 @@ export class UpdateMenuTypeGroupDto {
   options: MenuTypeOptionDto[];
 
   @IsArray()
-  @IsNumber({}, { each: true })
-  menu_id: number[];
+  @IsString({ each: true })
+  menu_id: string[];
 }

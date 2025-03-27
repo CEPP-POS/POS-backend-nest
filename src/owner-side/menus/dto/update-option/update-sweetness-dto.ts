@@ -1,7 +1,7 @@
-import { ArrayNotEmpty, IsArray, IsBoolean, IsString } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsString } from 'class-validator';
 
 interface SweetnessOption {
-  sweetness_id: number | null;
+  sweetness_id: string | null;
   level_name: string;
 }
 
@@ -17,5 +17,5 @@ export class UpdateSweetnessDto {
   options: SweetnessOption[];
 
   @IsArray()
-  menu_id: number[];
+  menu_id: string[];
 }

@@ -1,4 +1,9 @@
-import { HttpStatus, Injectable, HttpException, NotFoundException } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  HttpException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, Repository } from 'typeorm';
 // import { Category } from '../../entities/category.entity';
@@ -25,14 +30,14 @@ export class IngredientService {
 
     @InjectRepository(MenuIngredient)
     private readonly menuIngredientRepository: Repository<MenuIngredient>,
-  ) { }
+  ) {}
 
   async test(): Promise<Ingredient[]> {
     return this.ingredientRepository.find();
   }
 
   // EDIT ENTITY INGREDIENT MENU LINK
-  async findIngredientById(menuId: number) {
+  async findIngredientById(menuId: string) {
     const menu = await this.menuRepository.findOne({
       where: { menu_id: menuId },
     });
@@ -45,34 +50,16 @@ export class IngredientService {
       };
     }
 
-    // const ingredientLinks = await this.ingredientMenuLinkRepository.find({
-    //     where: { menu_id: menuId } as FindOptionsWhere<IngredientMenuLink>,
-    //     relations: ['ingredient_id'],
-    // });
-
-    // if (ingredientLinks.length === 0) {
-    //     return {
-    //         status: HttpStatus.NO_CONTENT,
-    //         message: `No ingredients linked to menu with ID ${menuId}`,
-    //         ingredients: [],
-    //     };
-    // }
-    // const ingredientIds = ingredientLinks.map(link => link.ingredient_id.ingredient_id);
-
-    // const ingredients = await this.ingredientRepository.findByIds(ingredientIds);
-
     return {
       status: HttpStatus.OK,
       message: `Ingredients found for menu with ID ${menuId}`,
-      // ingredients: ingredients.map(ingredient => ({
-      //     ingredient_id: ingredient.ingredient_id,
-      //     ingredient_name: ingredient.ingredient_name,
-      //     ingredient_unit: ingredient.unit
-      // })),
     };
   }
 
-  async findIngredientsByOwnerId(ownerId: number, branchId: number): Promise<{ ingredient_id: number; ingredient_name: string }[]> {
+  async findIngredientsByOwnerId(
+    ownerId: string,
+    branchId: string,
+  ): Promise<{ ingredient_id: string; ingredient_name: string }[]> {
     try {
       const ingredients = await this.ingredientRepository.find({
         where: {
@@ -82,20 +69,20 @@ export class IngredientService {
         },
       });
 
-      return ingredients.map(ingredient => ({
+      return ingredients.map((ingredient) => ({
         ingredient_id: ingredient.ingredient_id,
         ingredient_name: ingredient.ingredient_name,
-        unit: ingredient.unit
+        unit: ingredient.unit,
       }));
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to find ingredients',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
-  async findAllMenuIngredientById(menuId: number) {
+  async findAllMenuIngredientById(menuId: string) {
     const menuIngredients = await this.menuIngredientRepository.find({
       where: { menu: Equal(menuId) },
       relations: [
@@ -125,15 +112,15 @@ export class IngredientService {
         menu_ingredient_id: menuIngredient.menu_ingredient_id,
         menu: menuIngredient.menu
           ? {
-            menu_id: menuIngredient.menu.menu_id,
-            menu_name: menuIngredient.menu.menu_name,
-          }
+              menu_id: menuIngredient.menu.menu_id,
+              menu_name: menuIngredient.menu.menu_name,
+            }
           : null,
         ingredient: menuIngredient.ingredient
           ? {
-            ingredient_id: menuIngredient.ingredient.ingredient_id,
-            ingredient_name: menuIngredient.ingredient.ingredient_name,
-          }
+              ingredient_id: menuIngredient.ingredient.ingredient_id,
+              ingredient_name: menuIngredient.ingredient.ingredient_name,
+            }
           : null,
         // size: menuIngredient.size_id ? {
         //     size_id: menuIngredient.size_id.size_id,
@@ -145,9 +132,9 @@ export class IngredientService {
         // } : null,
         menu_type: menuIngredient.menu_type
           ? {
-            menu_type_id: menuIngredient.menu_type.menu_type_id,
-            menu_type_name: menuIngredient.menu_type.type_name,
-          }
+              menu_type_id: menuIngredient.menu_type.menu_type_id,
+              menu_type_name: menuIngredient.menu_type.type_name,
+            }
           : null,
         // add_on: menuIngredient.add_on ? {
         //     add_on_id: menuIngredient.add_on.add_on_id,
@@ -159,13 +146,15 @@ export class IngredientService {
   }
 
   // Method to mark an ingredient as deleted
-  async deleteIngredient(ingredient_id: number): Promise<{ message: string }> {
+  async deleteIngredient(ingredient_id: string): Promise<{ message: string }> {
     const ingredient = await this.ingredientRepository.findOne({
       where: { ingredient_id },
     });
 
     if (!ingredient) {
-      throw new NotFoundException(`Ingredient with ID ${ingredient_id} not found`);
+      throw new NotFoundException(
+        `Ingredient with ID ${ingredient_id} not found`,
+      );
     }
 
     // Set is_delete to true
@@ -173,6 +162,8 @@ export class IngredientService {
 
     await this.ingredientRepository.save(ingredient);
 
-    return { message: `Ingredient with ID ${ingredient_id} has been marked as deleted` };
+    return {
+      message: `Ingredient with ID ${ingredient_id} has been marked as deleted`,
+    };
   }
 }

@@ -1,7 +1,7 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -12,8 +12,8 @@ import { Branch } from './branch.entity';
 
 @Entity()
 export class Category {
-  @PrimaryGeneratedColumn()
-  category_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  category_id: string;
 
   @Column()
   category_name: string;

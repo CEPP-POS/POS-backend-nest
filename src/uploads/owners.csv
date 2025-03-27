@@ -1,9 +1,9 @@
-first_name,last_name,email,phone,address,branch_name
-Michael,Green,michael2.green@example.com,0912345678,555 Palm St, Bangkok,Palm Coffee House
-Emma,Wilson,emma2.wilson@example.com,0823456789,777 Ocean Ave, Chiang Mai,Ocean View Café
-David,Lee,david2.lee@example.com,0734567890,999 Mountain Rd, Phuket,Mountain Goods
-Sophia,Clark,sophia2.clark@example.com,0645678901,333 Sunset Blvd, Pattaya,Sunset Market
-James,Hall,james2.hall@example.com,0556789012,222 River Ln, Krabi,River Bakeshop
-Charlie,White,charlie2.white@example.com,0654321098,202 Fifth Ln, Krabi,Fifth Avenue Branch
-Charlie,Black,new2@gmail.com,0654321098,203 lalala, lalala,Lalala Coffee Spot
-Charlie,Black,new2@gmail.com,0654321098,234 bangkoko, popzaparady,hahaholala Corner
+owner_id,first_name,last_name,email,phone,address,branch_id,branch_name
+ba9f18e5-2d91-48b9-b7c6-bb6ff70440b0,Michael,Green,michael2.green@example.com,0912345678,"555 Palm St, Bangkok",e3d1fbd3-6216-4649-bfe4-14dbd31f3c1b,Palm Coffee House
+a6d1fbd3-1234-48b9-b7c6-bb6ff70440b1,Emma,Wilson,emma2.wilson@example.com,0823456789,"777 Ocean Ave, Chiang Mai",e3d1fbd3-6216-4649-bfe4-14dbd31f3c1c,Ocean View Café
+c5d1fbd3-4567-48b9-b7c6-bb6ff70440b2,David,Lee,david2.lee@example.com,0734567890,"999 Mountain Rd, Phuket",e3d1fbd3-6216-4649-bfe4-14dbd31f3c1d,Mountain Goods
+d6d1fbd3-7890-48b9-b7c6-bb6ff70440b3,Sophia,Clark,sophia2.clark@example.com,0645678901,"333 Sunset Blvd, Pattaya",e3d1fbd3-6216-4649-bfe4-14dbd31f3c1e,Sunset Market
+e7d1fbd3-5678-48b9-b7c6-bb6ff70440b4,James,Hall,james2.hall@example.com,0556789012,"222 River Ln, Krabi",e3d1fbd3-6216-4649-bfe4-14dbd31f3c1f,River Bakeshop
+f8d1fbd3-2345-48b9-b7c6-bb6ff70440b5,Charlie,White,charlie2.white@example.com,0654321098,"202 Fifth Ln, Krabi",e3d1fbd3-6216-4649-bfe4-14dbd31f3c1g,Fifth Avenue Branch
+g9d1fbd3-3456-48b9-b7c6-bb6ff70440b6,Charlie,Black,new2@gmail.com,0654321098,"203 lalala, lalala",e3d1fbd3-6216-4649-bfe4-14dbd31f3c1h,Lalala Coffee Spot
+h0d1fbd3-4567-48b9-b7c6-bb6ff70440b7,Charlie,Black,new2@gmail.com,0654321098,"234 bangkoko, popzaparady",e3d1fbd3-6216-4649-bfe4-14dbd31f3c1i,hahaholala Corner

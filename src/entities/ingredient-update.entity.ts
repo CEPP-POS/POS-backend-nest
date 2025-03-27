@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -12,8 +12,8 @@ import { Branch } from './branch.entity';
 
 @Entity()
 export class IngredientUpdate {
-  @PrimaryGeneratedColumn()
-  update_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  update_id: string;
 
   @ManyToOne(() => Ingredient, { nullable: false })
   @JoinColumn({ name: 'ingredient_id' })

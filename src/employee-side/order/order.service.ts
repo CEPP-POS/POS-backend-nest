@@ -29,6 +29,7 @@ import { PaymentMethod } from './dto/create-order/create-order.dto';
 import { Ingredient } from 'src/entities/ingredient.entity';
 import { spawn } from 'child_process';
 import * as path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class OrderService {
@@ -86,7 +87,7 @@ export class OrderService {
     });
   }
 
-  async findOne(id: number): Promise<Order | undefined> {
+  async findOne(id: string): Promise<Order | undefined> {
     return this.orderRepository.findOneBy({ order_id: id });
   }
 
@@ -94,7 +95,7 @@ export class OrderService {
     id: number,
     updateOrderDto: UpdateOrderDto,
   ): Promise<Order | undefined> {
-    const order = await this.findOne(id);
+    const order = await this.findOne(id.toString());
     if (!order) {
       return undefined;
     }
@@ -102,7 +103,7 @@ export class OrderService {
     return this.orderRepository.save(order);
   }
 
-  async getOrderDetails(order_id: number): Promise<Order> {
+  async getOrderDetails(order_id: string): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { order_id },
       relations: ['items'],
@@ -123,10 +124,10 @@ export class OrderService {
   }
 
   async cancelOrder(
-    orderId: number,
+    orderId: string,
     cancelOrderDto: CancelOrderDto,
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
   ): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { order_id: orderId, owner: { owner_id }, branch: { branch_id } },
@@ -152,12 +153,12 @@ export class OrderService {
   }
 
   async updateIngredientStock(
-    menuId: number,
-    sizeId: number,
+    menuId: string,
+    sizeId: string,
     orderQuantity: number,
     orderDate: any,
-    addOnIds: number[] = [],
-    menuTypeId: number,
+    addOnIds: string[] = [],
+    menuTypeId: string,
   ) {
     const addOnIngredients = await this.addOnRepository.find({
       where: {
@@ -256,11 +257,37 @@ export class OrderService {
     }
   }
 
+  // สร้างฟังก์ชันสำหรับสร้าง ID ด้วยวันที่ + อักษรสุ่ม 5 ตัว
+  private generateIdWithDateTimeAndRandomChars(dateTimeStr: string): string {
+    // แปลงวันที่และเวลาให้อยู่ในรูปแบบ YYYYMMDDHHmmss
+    const dateTime = new Date(dateTimeStr);
+    const year = dateTime.getFullYear();
+    const month = String(dateTime.getMonth() + 1).padStart(2, '0');
+    const day = String(dateTime.getDate()).padStart(2, '0');
+    const hours = String(dateTime.getHours()).padStart(2, '0');
+    const minutes = String(dateTime.getMinutes()).padStart(2, '0');
+    const seconds = String(dateTime.getSeconds()).padStart(2, '0');
+
+    const formattedDateTime = `${year}${month}${day}${hours}${minutes}${seconds}`;
+
+    // สร้างอักษรสุ่ม 5 ตัว
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let randomChars = '';
+    for (let i = 0; i < 5; i++) {
+      randomChars += characters.charAt(
+        Math.floor(Math.random() * characters.length),
+      );
+    }
+
+    // รวมวันที่เวลากับอักษรสุ่ม
+    return `${formattedDateTime}-${randomChars}`;
+  }
+
   async createOrder(
     createOrderDto: CreateOrderDto,
     items: OrderItemDto[],
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
   ): Promise<any> {
     // Verify owner and branch
     const owner = await this.ownerRepository.findOne({
@@ -320,6 +347,7 @@ export class OrderService {
     // ถ้าไม่มี sales summary สำหรับวันนี้ ให้สร้างใหม่
     if (!salesSummary) {
       salesSummary = this.salesSummaryRepository.create({
+        sales_summary_id: createOrderDto.sales_summary_id || uuidv4(),
         date: startOfDay,
         total_revenue: createOrderDto.total_price,
         total_orders: 1,
@@ -339,8 +367,13 @@ export class OrderService {
     // บันทึก sales summary
     await this.salesSummaryRepository.save(salesSummary);
 
-    // Proceed to create the order
+    // ใช้ ID จาก JSON ถ้ามี หรือสร้างใหม่จากวันที่และอักษรสุ่ม
     const newOrder = this.orderRepository.create({
+      order_id:
+        createOrderDto.order_id ||
+        this.generateIdWithDateTimeAndRandomChars(
+          createOrderDto.order_date.toISOString(),
+        ),
       ...createOrderDto,
       is_paid: false,
       cancel_status: createOrderDto.cancel_status || null,
@@ -358,6 +391,7 @@ export class OrderService {
 
     // สร้าง payment record ตามวิธีการชำระเงิน
     const payment = this.paymentRepository.create({
+      payment_id: createOrderDto.payment_id || uuidv4(),
       order: savedOrder,
       payment_method: createOrderDto.payment_method,
       status:
@@ -370,7 +404,6 @@ export class OrderService {
       payment_date: new Date(),
       owner,
       branch,
-      // เพิ่มข้อมูลการชำระเงินสดถ้าเป็นการชำระด้วยเงินสด
       ...(createOrderDto.payment_method === PaymentMethod.CASH && {
         cash_given: createOrderDto.cash_given,
         change: createOrderDto.change,
@@ -441,9 +474,10 @@ export class OrderService {
           console.error(`Failed to update ingredient stock: ${error.message}`);
           throw error;
         }
-        // console.log(orderItems);
+
         // Create order item first
         const orderItem = this.orderItemRepository.create({
+          order_item_id: item.order_item_id || uuidv4(),
           quantity: item.quantity,
           price: item.price,
           menu,
@@ -495,8 +529,8 @@ export class OrderService {
     return this.findOrderById(savedOrder.order_id);
   }
   async findAllOrders(
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
   ): Promise<{
     total_orders: number;
     pending_orders: number;
@@ -580,7 +614,7 @@ export class OrderService {
     };
   }
 
-  async findOrderById(order_id: number): Promise<Order> {
+  async findOrderById(order_id: string): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { order_id },
       relations: [
@@ -672,9 +706,9 @@ export class OrderService {
   }
 
   async completeOrder(
-    order_id: number,
-    owner_id: number,
-    branch_id: number,
+    order_id: string,
+    owner_id: string,
+    branch_id: string,
   ): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { order_id: order_id, owner: { owner_id }, branch: { branch_id } },
@@ -695,7 +729,7 @@ export class OrderService {
   }
 
   async payWithCash(
-    order_id: number,
+    order_id: string,
     payWithCashDto: PayWithCashDto,
   ): Promise<Order> {
     const order = await this.orderRepository.findOne({
@@ -717,6 +751,7 @@ export class OrderService {
     if (!payment) {
       // If no payment exists, create a new one
       payment = this.paymentRepository.create({
+        payment_id: payWithCashDto.payment_id || uuidv4(),
         order,
         cash_given: payWithCashDto.cash_given,
         change: payWithCashDto.change,
@@ -744,7 +779,7 @@ export class OrderService {
     }
 
     // Save payment
-    const savedPayment = await this.paymentRepository.save(payment);
+    await this.paymentRepository.save(payment);
 
     // Update order status
     order.status = 'paid';
@@ -758,7 +793,7 @@ export class OrderService {
 
   // เพิ่มฟังก์ชันสำหรับอัพเดทสถานะการชำระเงิน
   async updatePaymentStatus(
-    order_id: number,
+    order_id: string,
     status: string,
   ): Promise<Payment> {
     const payment = await this.paymentRepository.findOne({
@@ -782,9 +817,9 @@ export class OrderService {
   }
 
   async getLatestOrder(
-    owner_id: number,
-    branch_id: number,
-  ): Promise<{ order_id: number; queue_number: number }> {
+    owner_id: string,
+    branch_id: string,
+  ): Promise<{ order_id: string; queue_number: number }> {
     const latestOrder = await this.orderRepository.findOne({
       where: {
         owner: { owner_id },

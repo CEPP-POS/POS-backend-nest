@@ -1,7 +1,7 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   ManyToOne,
   JoinColumn,
   OneToMany,
@@ -17,8 +17,8 @@ import { MenuCategory } from './menu_category';
 
 @Entity()
 export class Menu {
-  @PrimaryGeneratedColumn()
-  menu_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  menu_id: string;
 
   @Column()
   menu_name: string;

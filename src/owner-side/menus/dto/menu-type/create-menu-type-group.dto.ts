@@ -4,6 +4,8 @@ import {
   IsString,
   IsArray,
   ValidateNested,
+  IsOptional,
+  IsUUID,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -13,9 +15,21 @@ class OptionDto {
 
   @IsNumber()
   price: number;
+
+  @IsOptional()
+  @IsUUID()
+  menu_type_id?: string;
 }
 
 export class CreateMenuTypeGroupDto {
+  @IsOptional()
+  @IsString()
+  menu_type_id?: string;
+
+  @IsOptional()
+  @IsUUID()
+  menu_type_group_id?: string;
+
   @IsNotEmpty()
   @IsString()
   menu_type_group_name: string;
@@ -26,6 +40,6 @@ export class CreateMenuTypeGroupDto {
   options: OptionDto[];
 
   @IsArray()
-  @IsNumber({}, { each: true })
-  menu_id: number[];
+  @IsString({ each: true })
+  menu_id: string[];
 }

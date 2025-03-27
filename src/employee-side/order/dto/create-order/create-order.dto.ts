@@ -22,6 +22,16 @@ export enum PaymentMethod {
 
 export class CreateOrderDto {
   @IsOptional()
+  @IsString()
+  order_id?: string;
+
+  @IsOptional()
+  @IsString()
+  payment_id?: string;
+
+  sales_summary_id: string;
+
+  @IsOptional()
   @IsDate()
   @Type(() => Date)
   order_date: Date;

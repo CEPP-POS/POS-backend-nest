@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsInt } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 
 export class UpdateBranchDto {
   @IsString()
@@ -13,7 +13,7 @@ export class UpdateBranchDto {
   @IsOptional()
   branch_phone_number?: string;
 
-  @IsInt()
+  @IsString()
   @IsOptional()
-  owner_id?: number;
+  owner_id?: string;
 }

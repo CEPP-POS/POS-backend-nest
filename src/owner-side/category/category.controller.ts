@@ -13,18 +13,14 @@ import {
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category/create-category.dto';
-import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 // import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 
 @Controller('owner/categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) { }
+  constructor(private readonly categoryService: CategoryService) {}
 
-  @Post('link-menus')
-  async linkMenusToCategory(
-    @Req() request: Request,
-    @Body() linkMenuToCategoryDto: LinkMenuToCategoryDto,
-  ) {
+  @Get('all/menus')
+  async getAllCategoriesWithMenus(@Req() request: Request) {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
@@ -35,31 +31,7 @@ export class CategoryController {
       );
     }
 
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
-
-    const categoryData = {
-      ...linkMenuToCategoryDto,
-      owner_id: ownerIdNum,
-      branch_id: branchIdNum,
-    };
-
-    return await this.categoryService.linkMenusToCategory(categoryData);
-  }
-
-  @Get('all/menus')
-  async getAllCategoriesWithMenus(@Req() request: Request) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
-
-    if (!ownerId || !branchId) {
-      throw new HttpException(
-        'Missing required headers: owner_id or branch_id',
-        HttpStatus.BAD_REQUEST
-      );
-    }
-
-    return this.categoryService.getAllCategoriesWithMenus(+ownerId, +branchId);
+    return this.categoryService.getAllCategoriesWithMenus(ownerId, branchId);
   }
 
   @Get()
@@ -77,12 +49,12 @@ export class CategoryController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.categoryService.findOne(+id);
+    return this.categoryService.findOne(id);
   }
 
   // edit entity
   @Get(':id/menus')
-  async getMenusByCategory(@Param('id') id: number, @Req() request: Request) {
+  async getMenusByCategory(@Param('id') id: string, @Req() request: Request) {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
@@ -93,11 +65,7 @@ export class CategoryController {
       );
     }
 
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
-    const categoryIdNum = Number(id);
-
-    if (isNaN(ownerIdNum) || isNaN(branchIdNum) || isNaN(categoryIdNum)) {
+    if (!ownerId || !branchId || !id) {
       throw new HttpException(
         'Invalid numeric values in headers or params',
         HttpStatus.BAD_REQUEST,
@@ -105,9 +73,9 @@ export class CategoryController {
     }
 
     const data = {
-      id: categoryIdNum,
-      owner_id: ownerIdNum,
-      branch_id: branchIdNum,
+      id: id,
+      owner_id: ownerId,
+      branch_id: branchId,
     };
 
     return this.categoryService.getMenusByCategory(data);
@@ -125,13 +93,10 @@ export class CategoryController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
-
     const CategoryData = {
       ...createCategoryDto,
-      owner_id: ownerIdNum,
-      branch_id: branchIdNum,
+      owner_id: ownerId,
+      branch_id: branchId,
     };
 
     return await this.categoryService.create(CategoryData), HttpStatus.CREATED;
@@ -142,12 +107,12 @@ export class CategoryController {
     const ownerId = request.headers['owner_id'];
     const branchId = request.headers['branch_id'];
 
-    await this.categoryService.remove(+id, +ownerId, +branchId);
+    await this.categoryService.remove(id, ownerId, branchId);
   }
 
   @Patch(':id')
   async updateCategory(
-    @Param('id') categoryId: number,
+    @Param('id') categoryId: string,
     @Req() request: Request,
     @Body() updateCategoryDto: CreateCategoryDto,
   ) {
@@ -158,13 +123,10 @@ export class CategoryController {
       throw new Error('owner_id and branch_id must be provided in headers');
     }
 
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
-
     await this.categoryService.updateCategory(
       categoryId,
-      ownerIdNum,
-      branchIdNum,
+      ownerId,
+      branchId,
       updateCategoryDto,
     );
 

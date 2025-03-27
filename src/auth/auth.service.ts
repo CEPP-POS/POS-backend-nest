@@ -14,7 +14,6 @@ export class AuthService {
     private readonly userService: OwnerService,
     private readonly jwtService: JwtService,
   ) {}
-
   // * Login
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto);
@@ -34,22 +33,7 @@ export class AuthService {
 
     const branchId = user.branch ? user.branch.branch_id : null;
 
-    if (!branchId) {
-      throw new UnauthorizedException(
-        'This account is not associated with any branch.',
-      );
-    }
-
     console.log('✅ Extracted branch_id:', branchId);
-
-    // ✅ ตรวจสอบว่ามี Employee อยู่ในสาขาหรือยัง
-    const employeeCount =
-      await this.userService.countEmployeesInBranch(branchId);
-    if (employeeCount === 0) {
-      throw new BadRequestException(
-        `Your branch (${user.branch.branch_name}) requires at least 1 employee before use. Please create an employee first.`,
-      );
-    }
 
     const payload = {
       owner_id: user.owner_id,

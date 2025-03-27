@@ -1,5 +1,5 @@
 ### 1. Owner อัปโหลดไฟล์ CSV
-POST http://localhost:3000/owner/upload-csv
+POST http://192.168.3.80:3000/owner/upload-csv
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
@@ -10,12 +10,12 @@ Content-Type: text/csv
 --boundary--
 
 ### 2. Owner เข้าสู่ระบบ (Login)
-POST http://localhost:3000/auth/login
+POST http://192.168.3.80:3000/auth/login
 Content-Type: application/json
 
 {
-  "email": "new@gmail.com",
-  "password": "SecureWhite1232"
+  "email": "michael2.green@example.com",
+  "password": "gqkpxwit"
 }
 
 ### 3. Owner ขอ OTP สำหรับรีเซ็ตรหัสผ่าน (Forgot Password)

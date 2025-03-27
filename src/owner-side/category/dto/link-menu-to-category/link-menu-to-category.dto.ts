@@ -1,17 +1,17 @@
-import { IsInt, IsArray, ArrayNotEmpty } from 'class-validator';
+import { IsArray, ArrayNotEmpty, IsString } from 'class-validator';
 
 export class LinkMenuToCategoryDto {
-  @IsInt()
-  category_id: number;
+  @IsString()
+  category_id: string;
 
   @IsArray()
   @ArrayNotEmpty()
-  @IsInt({ each: true })
-  menu_ids: number[]; // ลิสต์ของ menu_id ที่ต้องการเพิ่มในหมวดหมู่
+  @IsString({ each: true })
+  menu_ids: string[]; // ลิสต์ของ menu_id ที่ต้องการเพิ่มในหมวดหมู่
 
-  @IsInt()
-  owner_id?: number; // Ensure these exist in DTO
+  @IsString()
+  owner_id?: string; // Ensure these exist in DTO
 
-  @IsInt()
-  branch_id?: number;
+  @IsString()
+  branch_id?: string;
 }

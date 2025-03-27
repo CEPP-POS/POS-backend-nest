@@ -1,29 +1,29 @@
-### Create a new Menu
+### Create a new Menu 👌
 POST http://localhost:3000/owner/menus
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "menu_name": "ชานมไต้หวันmmm",
-  "description": "Delicious ไต้หวัน",
-  "price": 40,
+  "menu_name": "นมสด",
+  "description": "Delicious นมสด",
+  "price": 30,
   "image_url": "http://example.com/spaghetti.jpg"
 }
 
-### Get all Menus
+### Get all Menus👌
 GET http://localhost:3000/owner/menus
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-### Get a specific Menu by ID
-GET http://localhost:3000/owner/menus/1
+### Get a specific Menu by ID👌
+GET http://localhost:3000/owner/menus/33769a3a-5bfb-41c8-8971-744dae1d92aa
 
-### Update a Menu by ID
-PATCH http://localhost:3000/owner/menus/1
+### Update a Menu by ID👌
+PATCH http://localhost:3000/owner/menus/33769a3a-5bfb-41c8-8971-744dae1d92aa
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
   "menu_name": "milk",
   "price": 15,
@@ -31,41 +31,53 @@ branch_id: 1
   "image_url": "http://example.com/coffee.jpg"
 }
 
-### Delete a Menu by ID
-DELETE http://localhost:3000/owner/menus/1
-owner_id: 1
-branch_id: 1
+### Delete a Menu by ID👌
+DELETE http://localhost:3000/owner/menus/33769a3a-5bfb-41c8-8971-744dae1d92aa
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-### get all menu with ingredient link for auto cut stock
-GET http://localhost:3000/owner/menus/stock/2
+### get all menu with ingredient link for auto cut stock👌
+GET http://localhost:3000/owner/menus/stock/33769a3a-5bfb-41c8-8971-744dae1d92aa
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 
-### link Ingredient to Menu for auto cut stock
-POST http://localhost:3000/owner/menus/stock/2
+### link Ingredient to Menu for auto cut stock👌
+POST http://localhost:3000/owner/menus/stock/33769a3a-5bfb-41c8-8971-744dae1d92aa
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
   "menuData": [
     {
       "ingredient_name": "น้ำเชื่อม",
       "unit": "ml",
       "ingredientListForStock": [
-        { "size_id": 1, "menu_type_id": 38, "quantity_used": 11 },
-        { "size_id": 1, "menu_type_id": 29, "quantity_used": 20 },
-        { "size_id": 1, "menu_type_id": 35, "quantity_used": 30 }
+        { "size_id": "6a7386ef-6516-482b-ab90-4ab841bb124d", "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf", "quantity_used": 10 },
+        { "size_id": "6a7386ef-6516-482b-ab90-4ab841bb124d", "menu_type_id": "7b8e5fdc-0f58-427c-a14e-a07db31c5ab8", "quantity_used": 20 },
+        { "size_id": "6a7386ef-6516-482b-ab90-4ab841bb124d", "menu_type_id": "36576147-daab-41a9-8927-8a85dca9ca98", "quantity_used": 30 },
+        { "size_id": "e0b6547f-c187-4808-8261-c127f3727f65", "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf", "quantity_used": 10 },
+        { "size_id": "e0b6547f-c187-4808-8261-c127f3727f65", "menu_type_id": "7b8e5fdc-0f58-427c-a14e-a07db31c5ab8", "quantity_used": 20 },
+        { "size_id": "e0b6547f-c187-4808-8261-c127f3727f65", "menu_type_id": "36576147-daab-41a9-8927-8a85dca9ca98", "quantity_used": 30 },
+        { "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22", "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf", "quantity_used": 10 },
+        { "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22", "menu_type_id": "7b8e5fdc-0f58-427c-a14e-a07db31c5ab8", "quantity_used": 20 },
+        { "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22", "menu_type_id": "36576147-daab-41a9-8927-8a85dca9ca98", "quantity_used": 30 }
       ]
     },
     {
       "ingredient_name": "น้ำส้ม",
       "unit": "ml",
       "ingredientListForStock": [
-        { "size_id": 1, "menu_type_id": 38, "quantity_used": 10 },
-        { "size_id": 1, "menu_type_id": 29, "quantity_used": 20 },
-        { "size_id": 1, "menu_type_id": 35, "quantity_used": 30 }
+        { "size_id": "6a7386ef-6516-482b-ab90-4ab841bb124d", "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf", "quantity_used": 40 },
+        { "size_id": "6a7386ef-6516-482b-ab90-4ab841bb124d", "menu_type_id": "7b8e5fdc-0f58-427c-a14e-a07db31c5ab8", "quantity_used": 50 },
+        { "size_id": "6a7386ef-6516-482b-ab90-4ab841bb124d", "menu_type_id": "36576147-daab-41a9-8927-8a85dca9ca98", "quantity_used": 60 },
+        { "size_id": "e0b6547f-c187-4808-8261-c127f3727f65", "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf", "quantity_used": 40 },
+        { "size_id": "e0b6547f-c187-4808-8261-c127f3727f65", "menu_type_id": "7b8e5fdc-0f58-427c-a14e-a07db31c5ab8", "quantity_used": 50 },
+        { "size_id": "e0b6547f-c187-4808-8261-c127f3727f65", "menu_type_id": "36576147-daab-41a9-8927-8a85dca9ca98", "quantity_used": 60 },
+        { "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22", "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf", "quantity_used": 40 },
+        { "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22", "menu_type_id": "7b8e5fdc-0f58-427c-a14e-a07db31c5ab8", "quantity_used": 50 },
+        { "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22", "menu_type_id": "36576147-daab-41a9-8927-8a85dca9ca98", "quantity_used": 60 }
       ]
     }
   ]

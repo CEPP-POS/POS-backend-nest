@@ -48,6 +48,7 @@ export class OwnerController {
 
     const owners: CreateOwnerDto[] = [];
     const stream = Readable.from(file.buffer.toString());
+    let newOwnersCount = 0;
 
     try {
       for await (const row of stream.pipe(csvParser())) {
@@ -60,20 +61,28 @@ export class OwnerController {
 
         console.log(`✅ Adding new owner: ${row.email}`);
         const owner = await this.ownerService.createOwnerWithBranch(row);
+        newOwnersCount++;
 
         owners.push({
           owner_name: owner.owner_name,
           contact_info: owner.contact_info,
           email: owner.email,
-          password: '***temp password send tto email***',
+          password: '***temp password send to email***',
         });
       }
 
-      if (owners.length === 0) {
-        throw new BadRequestException('No new owners were added.');
+      if (newOwnersCount === 0) {
+        return { 
+          message: 'No new owners were added. All owners already exist in the system.',
+          existingOwners: true 
+        };
       }
 
-      return { message: 'CSV data uploaded successfully', newOwners: owners };
+      return { 
+        message: 'CSV data uploaded successfully', 
+        newOwners: owners,
+        count: newOwnersCount
+      };
     } catch (error) {
       console.error('Error uploading CSV data:', error);
       throw new BadRequestException('Error processing CSV file');
@@ -85,7 +94,7 @@ export class OwnerController {
     @Param('id') ownerId: string,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    return this.ownerService.updatePassword(+ownerId, updatePasswordDto);
+    return this.ownerService.updatePassword(ownerId, updatePasswordDto);
   }
 
   @Patch('reset-password')
@@ -102,15 +111,13 @@ export class OwnerController {
           'Missing required headers: owner_id or branch_id',
         );
       }
-      const ownerIdNum = Number(ownerId);
-      const branchIdNum = Number(branchId);
 
       console.log('📌 [DEBUG] Headers:', { ownerId, branchId });
 
       return await this.ownerService.resetPassword(
         updatePasswordDto,
-        ownerIdNum,
-        branchIdNum,
+        ownerId[0],
+        branchId[0],
       );
     } catch (error) {
       if (
@@ -136,13 +143,21 @@ export class OwnerController {
     @Body() forgotPasswordDto: ForgotPasswordDto,
     @Req() request: Request,
   ) {
-    const ownerId = Number(request.headers['owner_id']);
-    const branchId = Number(request.headers['branch_id']);
+    let ownerId = request.headers['owner_id'];
+    let branchId = request.headers['branch_id'];
 
-    if (!ownerId || !branchId) {
-      throw new BadRequestException(
-        'Missing required headers: owner_id or branch_id',
-      );
+    // If owner_id or branch_id are arrays, take the first element
+    if (Array.isArray(ownerId)) {
+      ownerId = ownerId[0];
+    }
+
+    if (Array.isArray(branchId)) {
+      branchId = branchId[0];
+    }
+
+    // Validate that ownerId and branchId are strings
+    if (typeof ownerId !== 'string' || typeof branchId !== 'string') {
+      throw new BadRequestException('Invalid owner_id or branch_id');
     }
 
     await this.ownerService.forgotPassword(
@@ -156,23 +171,28 @@ export class OwnerController {
 
   @Post('verify-otp')
   async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto, @Req() request: Request) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    let ownerId = request.headers['owner_id'];
+    let branchId = request.headers['branch_id'];
 
     console.log('📌 [DEBUG] Received Headers:', ownerId, branchId);
 
-    if (!ownerId || !branchId) {
-      throw new BadRequestException(
-        'Missing required headers: owner_id or branch_id',
-      );
+    // If owner_id or branch_id are arrays, take the first element
+    if (Array.isArray(ownerId)) {
+      ownerId = ownerId[0];
     }
 
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
+    if (Array.isArray(branchId)) {
+      branchId = branchId[0];
+    }
 
-    console.log('📌 [DEBUG] Converted IDs:', ownerIdNum, branchIdNum);
+    // Validate that ownerId and branchId are strings
+    if (typeof ownerId !== 'string' || typeof branchId !== 'string') {
+      throw new BadRequestException('Invalid owner_id or branch_id');
+    }
 
-    await this.ownerService.verifyOtp(verifyOtpDto, ownerIdNum, branchIdNum);
+    console.log('📌 [DEBUG] Converted IDs:', ownerId, branchId);
+
+    await this.ownerService.verifyOtp(verifyOtpDto, ownerId, branchId);
 
     return { message: 'OTP ถูกต้อง สามารถตั้งรหัสผ่านใหม่ได้' };
   }
@@ -207,14 +227,15 @@ export class OwnerController {
   }
 
   @Post('branch')
-  async assignBranch(@Body('branch_id') branchId: number, @Req() req: Request) {
+  async assignBranch(@Body('branch_id') branchId: string, @Req() req: Request) {
     const ownerId = req.headers['owner_id'];
     if (!ownerId) {
       throw new BadRequestException(
         'Missing required headers: owner_id or branch_id',
       );
     }
-    await this.ownerService.assignBranch(Number(ownerId), Number(branchId));
+    const ownerIdStr = Array.isArray(ownerId) ? ownerId[0] : ownerId;
+    await this.ownerService.assignBranch(ownerIdStr, branchId);
     return { message: 'Branch assigned successfully' };
   }
 }

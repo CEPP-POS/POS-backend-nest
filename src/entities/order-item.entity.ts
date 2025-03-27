@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -17,8 +17,8 @@ import { Owner } from './owner.entity';
 
 @Entity()
 export class OrderItem {
-  @PrimaryGeneratedColumn()
-  order_item_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  order_item_id: string;
 
   @ManyToOne(() => Order, (order) => order.order_item, {
     nullable: false,

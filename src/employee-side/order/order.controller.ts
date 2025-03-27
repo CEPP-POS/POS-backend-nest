@@ -27,8 +27,8 @@ export class OrderController {
 
   @Post()
   async createOrder(
-    @Headers('owner_id') owner_id: number,
-    @Headers('branch_id') branch_id: number,
+    @Headers('owner_id') owner_id: string,
+    @Headers('branch_id') branch_id: string,
     @Body()
     {
       createOrderDto,
@@ -48,15 +48,15 @@ export class OrderController {
 
   @Get()
   async findAllOrders(
-    @Headers('owner_id') owner_id: number,
-    @Headers('branch_id') branch_id: number,
+    @Headers('owner_id') owner_id: string,
+    @Headers('branch_id') branch_id: string,
   ) {
     return this.orderService.findAllOrders(owner_id, branch_id);
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string, @Res() res: Response) {
-    const order = await this.orderService.findOne(+id);
+    const order = await this.orderService.findOne(id);
     if (!order) {
       return res
         .status(HttpStatus.NOT_FOUND)
@@ -84,7 +84,7 @@ export class OrderController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string, @Res() res: Response) {
-    const order = await this.orderService.findOne(+id);
+    const order = await this.orderService.findOne(id);
     if (!order) {
       return res
         .status(HttpStatus.NOT_FOUND)
@@ -96,9 +96,9 @@ export class OrderController {
   //
   @Patch(':order_id/cancel')
   async cancelOrder(
-    @Headers('owner_id') owner_id: number,
-    @Headers('branch_id') branch_id: number,
-    @Param('order_id') id: number,
+    @Headers('owner_id') owner_id: string,
+    @Headers('branch_id') branch_id: string,
+    @Param('order_id') id: string,
     @Body() cancelOrderDto: CancelOrderDto,
   ) {
     return this.orderService.cancelOrder(
@@ -111,16 +111,16 @@ export class OrderController {
 
   @Patch(':order_id/complete')
   async completeOrder(
-    @Param('order_id') id: number,
-    @Headers('owner_id') owner_id: number,
-    @Headers('branch_id') branch_id: number,
+    @Param('order_id') id: string,
+    @Headers('owner_id') owner_id: string,
+    @Headers('branch_id') branch_id: string,
   ) {
     return this.orderService.completeOrder(id, owner_id, branch_id);
   }
 
   @Post(':id/cash')
   async payWithCash(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() payWithCashDto: PayWithCashDto,
   ) {
     return this.orderService.payWithCash(id, payWithCashDto);
@@ -137,6 +137,6 @@ export class OrderController {
       );
     }
 
-    return this.orderService.getLatestOrder(Number(ownerId), Number(branchId));
+    return this.orderService.getLatestOrder(ownerId, branchId);
   }
 }

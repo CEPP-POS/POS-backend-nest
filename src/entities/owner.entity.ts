@@ -1,10 +1,10 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
   OneToMany,
   ManyToOne,
   JoinColumn,
+  PrimaryColumn,
 } from 'typeorm';
 import { MenuIngredient } from './menu-ingredient.entity';
 import { Branch } from './branch.entity';
@@ -22,11 +22,10 @@ import { SweetnessLevel } from './sweetness-level.entity';
 import { MenuType } from './menu-type.entity';
 import { LocalData } from './local-data.entity';
 import { SyncStatus } from './sync-status.entity';
-
 @Entity()
 export class Owner {
-  @PrimaryGeneratedColumn()
-  owner_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  owner_id: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   owner_name: string;
@@ -57,7 +56,7 @@ export class Owner {
   manager: Owner;
 
   @Column({ nullable: true })
-  branch_id: number;
+  branch_id: string;
 
   @ManyToOne(() => Branch, (branch) => branch.owner, { nullable: true })
   @JoinColumn({ name: 'branch_id' })

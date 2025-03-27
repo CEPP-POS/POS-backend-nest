@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -14,8 +14,8 @@ import { Branch } from './branch.entity';
 
 @Entity()
 export class Size {
-  @PrimaryGeneratedColumn()
-  size_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  size_id: string;
 
   @Column({ nullable: false })
   size_name: string;

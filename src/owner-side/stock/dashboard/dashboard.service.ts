@@ -24,6 +24,7 @@ import { IngredientCategoriesDto } from './dto/ingredients-categories.dto';
 import { Branch } from 'src/entities/branch.entity';
 import { CancelStatus } from 'src/employee-side/order/dto/create-order/create-order.dto';
 import { EditIngredientDto } from './dto/edit-ingredient.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class DashboardService {
@@ -61,9 +62,9 @@ export class DashboardService {
 
   private async calculateMonthlyRevenue(
     year: number,
-    ownerId: number,
-    branchId: number,
-  ): Promise<number[]> {
+    ownerId: string,
+    branchId: string,
+  ): Promise<any> {
     const monthlyRevenue = Array(12).fill(0);
     for (let month = 0; month < 12; month++) {
       const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
@@ -87,8 +88,8 @@ export class DashboardService {
 
   private async calculateDailyStats(
     date: Date,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ): Promise<{
     totalRevenue: number;
     totalOrders: number;
@@ -158,8 +159,8 @@ export class DashboardService {
 
   async getStockSummary(
     date: Date,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ): Promise<Overview> {
     const year = date.getFullYear();
     const monthlyRevenue = await this.calculateMonthlyRevenue(
@@ -184,8 +185,8 @@ export class DashboardService {
   async getStockLineGraph(
     year: number,
     month: number,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ): Promise<Linegraph> {
     const monthlyRevenue = await this.calculateMonthlyRevenue(
       year,
@@ -228,7 +229,7 @@ export class DashboardService {
   }
 
   // ENTITY ORDER TOTAL PRICE
-  async getCancelOrders(ownerId: number, branchId: number) {
+  async getCancelOrders(ownerId: string, branchId: string) {
     const orders = await this.orderRepository.find({
       where: {
         cancel_status: Not(IsNull()),
@@ -292,9 +293,9 @@ export class DashboardService {
   }
 
   async getCancelOrderDetails(
-    order_id: number,
-    ownerId: number,
-    branchId: number,
+    order_id: string,
+    ownerId: string,
+    branchId: string,
   ) {
     const order = await this.orderRepository.findOne({
       where: {
@@ -373,8 +374,8 @@ export class DashboardService {
     });
   }
   async getIngredientsCategories(
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
   ): Promise<IngredientCategoriesDto> {
     const categories = await this.ingredientCategoryRepository.find({
       where: {
@@ -392,9 +393,9 @@ export class DashboardService {
   }
 
   async getIngredientDetails(
-    ingredient_id: number,
-    owner_id: number,
-    branch_id: number,
+    ingredient_id: string,
+    owner_id: string,
+    branch_id: string,
   ): Promise<any> {
     const ingredient = await this.ingredientRepository.findOne({
       where: {
@@ -457,8 +458,8 @@ export class DashboardService {
       category_name:
         menuIng.menu.menuCategory.length > 0
           ? menuIng.menu.menuCategory
-            .map((cat) => cat.category.category_name)
-            .join(', ')
+              .map((cat) => cat.category.category_name)
+              .join(', ')
           : '',
     }));
 
@@ -477,8 +478,8 @@ export class DashboardService {
 
   async createStockGroup(
     createCategoryDto: CreateCategoryDto,
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
   ): Promise<any> {
     const { category_name } = createCategoryDto;
 
@@ -505,6 +506,8 @@ export class DashboardService {
       throw new BadRequestException(`Branch ID ${branch_id} ไม่พบในระบบ`);
 
     const newCategory = this.ingredientCategoryRepository.create({
+      ingredient_category_id:
+        createCategoryDto.ingredient_category_id || uuidv4(),
       ingredient_category_name: category_name,
       owner,
       branch,
@@ -522,8 +525,8 @@ export class DashboardService {
 
   async createIngredient(
     createIngredientDto: CreateIngredientDto,
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
   ): Promise<any> {
     const {
       image_url,
@@ -555,6 +558,8 @@ export class DashboardService {
 
     if (!category) {
       category = this.ingredientCategoryRepository.create({
+        ingredient_category_id:
+          createIngredientDto.ingredient_category_id || uuidv4(),
         ingredient_category_name: category_name,
         owner,
         branch,
@@ -563,11 +568,17 @@ export class DashboardService {
     }
 
     let ingredient = await this.ingredientRepository.findOne({
-      where: { ingredient_name, owner: { owner_id }, branch: { branch_id } },
+      where: {
+        ingredient_name,
+        owner: { owner_id },
+        branch: { branch_id },
+        is_delete: false,
+      },
     });
 
     if (!ingredient) {
       ingredient = this.ingredientRepository.create({
+        ingredient_id: createIngredientDto.ingredient_id || uuidv4(),
         ingredient_name,
         ingredientCategory: category,
         owner,
@@ -619,6 +630,7 @@ export class DashboardService {
       const total_volume = net_volume * quantity_in_stock;
 
       const newUpdate = this.ingredientUpdateRepository.create({
+        update_id: createIngredientDto.update_id || uuidv4(),
         ingredient: ingredient,
         quantity_in_stock,
         net_volume,
@@ -649,9 +661,9 @@ export class DashboardService {
   }
 
   async updateIngredient(
-    update_id: number,
-    owner_id: number,
-    branch_id: number,
+    update_id: string,
+    owner_id: string,
+    branch_id: string,
     updateIngredientDto: UpdateIngredientDto,
   ) {
     console.log(`🔍 Checking update_id: ${update_id}`);
@@ -748,10 +760,10 @@ export class DashboardService {
   }
 
   async updateCancelStatus(
-    order_id: number,
+    order_id: string,
     cancel_status: string,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     const order = await this.orderRepository.findOne({
       where: {
@@ -794,7 +806,7 @@ export class DashboardService {
     return await this.orderRepository.save(order);
   }
 
-  async getStockIngredients(ownerId: number, branchId: number) {
+  async getStockIngredients(ownerId: string, branchId: string) {
     const ingredients = await this.ingredientRepository.find({
       where: {
         owner: { owner_id: ownerId },
@@ -870,9 +882,9 @@ export class DashboardService {
   }
 
   async getSubIngredient(
-    ingredient_id: number,
-    ownerId: number,
-    branchId: number,
+    ingredient_id: string,
+    ownerId: string,
+    branchId: string,
   ) {
     const ingredient = await this.ingredientRepository.findOne({
       where: {
@@ -919,9 +931,9 @@ export class DashboardService {
   }
 
   async getSubIngredientByID(
-    update_id: number,
-    ownerId: number,
-    branchId: number,
+    update_id: string,
+    ownerId: string,
+    branchId: string,
   ) {
     const ingredientUpdate = await this.ingredientUpdateRepository.findOne({
       where: {
@@ -964,9 +976,9 @@ export class DashboardService {
 
   // Method to mark an ingredient as deleted
   async deleteIngredient(
-    ingredient_id: number,
-    owner_id: number,
-    branch_id: number,
+    ingredient_id: string,
+    owner_id: string,
+    branch_id: string,
   ): Promise<{ message: string }> {
     const ingredient = await this.ingredientRepository.findOne({
       where: {
@@ -998,8 +1010,8 @@ export class DashboardService {
   async getOrderTopicWithFilter(
     date: Date,
     filter: 'year' | 'month' | 'date' | 'all',
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ): Promise<any> {
     let startDate: Date;
     let endDate: Date;
@@ -1102,10 +1114,10 @@ export class DashboardService {
   }
 
   async editIngredient(
-    ingredient_id: number,
+    ingredient_id: string,
     editIngredientDto: EditIngredientDto,
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
   ) {
     // ตรวจสอบว่ามีวัตถุดิบนี้อยู่จริงหรือไม่
     const ingredient = await this.ingredientRepository.findOne({
@@ -1134,6 +1146,8 @@ export class DashboardService {
     if (!category) {
       // สร้าง category ใหม่ถ้าไม่มี
       category = this.ingredientCategoryRepository.create({
+        ingredient_category_id:
+          editIngredientDto.ingredient_category_id || uuidv4(),
         ingredient_category_name: editIngredientDto.category_name,
         owner: { owner_id },
         branch: { branch_id },

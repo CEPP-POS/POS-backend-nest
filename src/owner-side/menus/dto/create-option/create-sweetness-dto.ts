@@ -2,11 +2,19 @@ import {
   IsString,
   IsArray,
   ArrayNotEmpty,
-  IsInt,
   IsBoolean,
+  IsOptional,
 } from 'class-validator';
 
 export class CreateSweetnessDto {
+  @IsOptional()
+  @IsString()
+  sweetness_id?: string;
+
+  @IsOptional()
+  @IsString()
+  sweetness_group_id?: string;
+
   @IsString()
   sweetness_group_name: string;
 
@@ -17,8 +25,8 @@ export class CreateSweetnessDto {
 
   @IsArray()
   @ArrayNotEmpty()
-  @IsInt({ each: true })
-  menu_id: number[];
+  @IsString({ each: true })
+  menu_id: string[];
 
   @IsBoolean()
   is_required: boolean;

@@ -32,6 +32,7 @@ import { CreateSweetnessDto } from './dto/create-option/create-sweetness-dto';
 import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
 import { UpdateSizeDto } from './dto/update-option/update-size.dto';
 import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class MenuService {
@@ -77,7 +78,7 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) { }
+  ) {}
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
@@ -134,8 +135,9 @@ export class MenuService {
       );
     }
 
-    // Create new menu
+    // Create new menu with generated UUID
     const newMenu = this.menuRepository.create({
+      menu_id: menuData.menu_id || uuidv4(),
       ...menuData,
       menu_name,
       owner,
@@ -157,12 +159,12 @@ export class MenuService {
     };
   }
 
-  async findAll(ownerId: number, branchId: number): Promise<any[]> {
+  async findAll(owner_id: string, branch_id: string): Promise<any[]> {
     const menus = await this.menuRepository.find({
       where: {
         is_delete: false,
-        owner: { owner_id: ownerId },
-        branch: { branch_id: branchId },
+        owner: { owner_id: owner_id },
+        branch: { branch_id: branch_id },
       },
       relations: [
         'menuIngredient',
@@ -182,16 +184,16 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-          menu_id: menu.menu_id,
-          menu_name: menu.menu_name,
-          description: menu.description,
-          image_url: menu.image_url,
-          price: menu.price,
-        };
+            menu_id: menu.menu_id,
+            menu_name: menu.menu_name,
+            description: menu.description,
+            image_url: menu.image_url,
+            price: menu.price,
+          };
     });
   }
 
-  async findOne(menu_id: number): Promise<Menu> {
+  async findOne(menu_id: string): Promise<Menu> {
     const menu = await this.menuRepository.findOne({
       where: { menu_id },
       relations: ['menuTypeGroup', 'sweetnessGroup', 'sizeGroup'],
@@ -206,9 +208,9 @@ export class MenuService {
 
   // * อัปเดตเมนู
   async update(
-    menu_id: number,
-    owner_id: number,
-    branch_id: number,
+    menu_id: string,
+    owner_id: string,
+    branch_id: string,
     updateMenuDto: Partial<Menu>,
   ): Promise<Menu> {
     const menu = await this.menuRepository.findOne({
@@ -230,9 +232,9 @@ export class MenuService {
 
   // * ลบเมนู
   async remove(
-    menu_id: number,
-    owner_id: number,
-    branch_id: number,
+    menu_id: string,
+    owner_id: string,
+    branch_id: string,
   ): Promise<{ message: string }> {
     const menu = await this.menuRepository.findOne({
       where: { menu_id, owner: { owner_id }, branch: { branch_id } },
@@ -259,8 +261,8 @@ export class MenuService {
   async createSweetness(
     type: string,
     createSweetnessDto: CreateSweetnessDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     if (type !== 'sweetness') {
       throw new Error('Invalid option type');
@@ -268,16 +270,21 @@ export class MenuService {
 
     // Step 1: Insert sweetness levels
     const sweetnessLevels = createSweetnessDto.options.map((option) => ({
+      sweetness_id: createSweetnessDto.sweetness_id || uuidv4(),
       level_name: option,
       owner: { owner_id: ownerId },
       branch: { branch_id: branchId },
     }));
-
+    sweetnessLevels.forEach((sweetness) => {
+      console.log('Owner ID:', sweetness.owner.owner_id);
+      console.log('Branch ID:', sweetness.branch.branch_id);
+    });
     const savedSweetnessLevels =
       await this.sweetnessLevelRepository.save(sweetnessLevels);
-
+    console.log(savedSweetnessLevels);
     // Step 2: Create sweetness groups
     const sweetnessGroups = savedSweetnessLevels.map((sweetness) => ({
+      sweetness_group_id: createSweetnessDto.sweetness_group_id || uuidv4(),
       sweetness_group_name: createSweetnessDto.sweetness_group_name,
       sweetnessLevel: sweetness, // Correct reference
       owner: { owner_id: ownerId },
@@ -313,8 +320,8 @@ export class MenuService {
   async updateSweetness(
     type: string,
     updateSweetnessDto: UpdateSweetnessDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     try {
       if (type !== 'sweetness') {
@@ -424,6 +431,7 @@ export class MenuService {
       for (const option of newOptions) {
         // สร้าง sweetness level ใหม่
         const newLevel = await this.sweetnessLevelRepository.save({
+          sweetness_id: uuidv4(),
           level_name: option.level_name,
           owner: { owner_id: ownerId },
           branch: { branch_id: branchId },
@@ -431,6 +439,7 @@ export class MenuService {
 
         // สร้าง sweetness group ใหม่และ link กับ level
         await this.sweetnessGroupRepository.save({
+          sweetness_group_id: uuidv4(),
           sweetness_group_name: updateSweetnessDto.new_sweetness_group_name,
           sweetnessLevel: newLevel,
           owner: { owner_id: ownerId },
@@ -481,8 +490,8 @@ export class MenuService {
   async createSize(
     type: string,
     createSizeDto: CreateSizeDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     if (type !== 'size') {
       throw new Error('Invalid option type');
@@ -490,6 +499,7 @@ export class MenuService {
 
     // Step 1: Insert sizes name and size price into the size table
     const sizes = createSizeDto.options.map((option) => ({
+      size_id: option.size_id || uuidv4(),
       size_name: Object.keys(option)[0],
       size_price: parseFloat(Object.values(option)[0].price),
       owner: { owner_id: ownerId },
@@ -501,6 +511,7 @@ export class MenuService {
 
     // Step 2: Create size groups for each size
     const sizeGroups = savedSizes.map((size) => ({
+      size_group_id: createSizeDto.size_group_id || uuidv4(),
       size_group_name: createSizeDto.size_group_name,
       size: size,
       owner: { owner_id: ownerId },
@@ -538,16 +549,16 @@ export class MenuService {
   async createAddOn(
     type: string,
     createAddOnDto: CreateAddOnDto,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     const { options, menu_id, is_required, is_multipled } = createAddOnDto;
 
-    //save name in table ingredient
     const ingredientIds = [];
     for (const option of options) {
       const [ingredientName, ingredientData] = Object.entries(option)[0];
 
+      // ค้นหา ingredient โดยไม่สนใจสถานะ is_delete
       let ingredient = await this.ingredientRepository.findOne({
         where: {
           ingredient_name: ingredientName,
@@ -556,8 +567,11 @@ export class MenuService {
         },
       });
 
-      if (!ingredient) {
+      // หากไม่พบ ingredient หรือพบ ingredient ที่มี is_delete = true
+      if (!ingredient || (ingredient && ingredient.is_delete)) {
+        // สร้าง ingredient ใหม่
         ingredient = this.ingredientRepository.create({
+          ingredient_id: ingredientData.ingredient_id || uuidv4(),
           ingredient_name: ingredientName,
           unit: ingredientData.unit,
           owner: { owner_id: ownerId },
@@ -570,6 +584,7 @@ export class MenuService {
 
       // save ingredient_id in table add on
       const addOn = this.addOnRepository.create({
+        add_on_id: ingredientData.add_on_id || uuidv4(),
         ingredient: ingredient,
         add_on_price: parseFloat(ingredientData.price),
         is_required: is_required,
@@ -581,7 +596,6 @@ export class MenuService {
 
       // Save menu id and ingredient id, quantity in table menu_ingredient
       for (const menuId of menu_id) {
-        // Check if the menuIngredient already exists to avoid duplicates
         const existingMenuIngredient =
           await this.menuIngredientRepository.findOne({
             where: {
@@ -606,6 +620,7 @@ export class MenuService {
           }
 
           const menuIngredient = this.menuIngredientRepository.create({
+            menu_ingredient_id: ingredientData.menu_ingredient_id || uuidv4(),
             menu: { menu_id: menuId },
             ingredient: { ingredient_id: ingredient.ingredient_id },
             is_addon: true,
@@ -625,8 +640,8 @@ export class MenuService {
 
   async deleteSizeGroup(
     sizeGroupName: string,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     // find all size group name
     const sizeGroups = await this.sizeGroupRepository.find({
@@ -658,7 +673,7 @@ export class MenuService {
       { sizeGroup: null },
     );
 
-    // delete all size group name in table size group 
+    // delete all size group name in table size group
     await this.sizeGroupRepository.delete({ size_group_name: sizeGroupName });
 
     return {
@@ -666,120 +681,11 @@ export class MenuService {
     };
   }
 
-  // * link menu for auto cut stock
-  // async updateStock(
-  //   menu_id: number,
-  //   owner_id: number,
-  //   branch_id: number,
-  //   linkMenuToStockDtoList: LinkMenuToStockDto[],
-  // ) {
-  //   const queryRunner = this.dataSource.createQueryRunner();
-  //   await queryRunner.startTransaction();
-
-  //   try {
-  //     for (const linkMenuToStockDto of linkMenuToStockDtoList) {
-  //       const { ingredient_name, unit, ingredientListForStock } = linkMenuToStockDto;
-
-  //       // Find the menu
-  //       const menu = await this.menuRepository.findOne({ where: { menu_id } });
-  //       if (!menu) {
-  //         throw new NotFoundException(`Menu with ID ${menu_id} not found`);
-  //       }
-
-  //       // Find the owner
-  //       const owner = await this.ownerRepository.findOne({ where: { owner_id } });
-  //       if (!owner) {
-  //         throw new NotFoundException(`Owner with ID ${owner_id} not found`);
-  //       }
-
-  //       // Validate ingredient list items
-  //       for (const property of ingredientListForStock) {
-  //         const size = await this.sizeRepository.findOne({
-  //           where: { size_id: property.size_id },
-  //         });
-  //         if (!size) {
-  //           throw new NotFoundException(`Size with ID ${property.size_id} not found`);
-  //         }
-
-  //         const menuType = await this.menuTypeRepository.findOne({
-  //           where: { menu_type_id: property.menu_type_id },
-  //         });
-  //         if (!menuType) {
-  //           throw new NotFoundException(`MenuType with ID ${property.menu_type_id} not found`);
-  //         }
-  //       }
-
-  //       // Find or create the ingredient
-  //       let ingredient = await this.ingredientRepository.findOne({
-  //         where: { ingredient_name },
-  //       });
-
-  //       if (!ingredient) {
-  //         ingredient = this.ingredientRepository.create({
-  //           ingredient_name,
-  //           unit,
-  //           owner_id: owner,
-  //         });
-  //         ingredient = await this.ingredientRepository.save(ingredient);
-  //       } else {
-  //         // Update the unit in the ingredient table if needed
-  //         if (ingredient.unit !== unit) {
-  //           ingredient.unit = unit;
-  //           await this.ingredientRepository.save(ingredient);
-  //         }
-  //       }
-
-  //       // Process the ingredient list for stock and link them
-  //       for (const property of ingredientListForStock) {
-  //         let menuIngredient = await this.menuIngredientRepository.findOne({
-  //           where: {
-  //             menu_id: menu,
-  //             ingredient_id: ingredient,
-  //             size_id: Equal(property.size_id),
-  //             menu_type_id: Equal(property.menu_type_id),
-  //           },
-  //         });
-
-  //         if (menuIngredient) {
-  //           // If the ingredient already exists, update quantity_used
-  //           menuIngredient.quantity_used = property.quantity_used;
-  //           await this.menuIngredientRepository.save(menuIngredient);
-  //         } else {
-  //           // Create a new menu ingredient if it doesn't exist
-  //           menuIngredient = this.menuIngredientRepository.create({
-  //             menu_id: menu,
-  //             ingredient_id: ingredient,
-  //             size_id: { size_id: property.size_id },
-  //             menu_type_id: { menu_type_id: property.menu_type_id },
-  //             quantity_used: property.quantity_used,
-  //           });
-  //           await this.menuIngredientRepository.save(menuIngredient);
-  //         }
-  //       }
-
-  //       // Create the ingredient-menu link if necessary
-  //       const ingredientMenuLinkToSave = {
-  //         menu_id: { menu_id: menu.menu_id },
-  //         ingredient_id: { ingredient_id: ingredient.ingredient_id },
-  //       };
-  //       await this.ingredientMenuLinkRepository.save(ingredientMenuLinkToSave);
-  //     }
-
-  //     await queryRunner.commitTransaction();
-  //     return { message: 'Link Stock successfully' };
-  //   } catch (error) {
-  //     await queryRunner.rollbackTransaction();
-  //     throw error;
-  //   } finally {
-  //     await queryRunner.release();
-  //   }
-  // }
-
   // EDIT ENTITY INGREDIENT_MENULINK
   async linkIngredientToStock(
-    menu_id: number,
-    owner_id: number,
-    branch_id: number,
+    menu_id: string,
+    owner_id: string,
+    branch_id: string,
     linkMenuToStockDtoList: LinkMenuToStockDto[],
   ) {
     // ตรวจสอบว่ามี menu, owner, branch อยู่จริง
@@ -816,6 +722,7 @@ export class MenuService {
       // ถ้าไม่มี ingredient ให้สร้างใหม่
       if (!ingredient) {
         ingredient = this.ingredientRepository.create({
+          ingredient_id: linkMenuToStockDto.ingredient_id || uuidv4(),
           ingredient_name,
           unit,
           owner,
@@ -864,6 +771,7 @@ export class MenuService {
         } else {
           // ถ้าไม่มีให้สร้างใหม่
           menuIngredient = this.menuIngredientRepository.create({
+            menu_ingredient_id: stockItem.menu_ingredient_id || uuidv4(),
             menu,
             ingredient,
             size,
@@ -1070,10 +978,11 @@ export class MenuService {
         : {}),
     }));
   }
+
   async createMenuTypeGroup(
     dto: CreateMenuTypeGroupDto,
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
   ): Promise<any> {
     try {
       if (!dto.options || dto.options.length === 0) {
@@ -1088,19 +997,23 @@ export class MenuService {
       });
       if (!branch) throw new NotFoundException('Branch not found');
 
-      // Save menu types first
-      const menuTypes = dto.options.map((option) => ({
-        type_name: Object.keys(option)[0],
-        price_difference: parseFloat(Object.values(option)[0]),
-        is_delete: false,
-        owner,
-        branch,
-      }));
+      const menuTypes = dto.options.map((option) => {
+        const typeName = Object.keys(option)[0];
+        return {
+          menu_type_id: option.menu_type_id || uuidv4(),
+          type_name: typeName,
+          price_difference: parseFloat(Object.values(option)[0]),
+          is_delete: false,
+          owner,
+          branch,
+        };
+      });
 
       const savedMenuTypes = await this.menuTypeRepository.save(menuTypes);
 
       // Create menu type group entries for each menu type
       const menuTypeGroupEntries = savedMenuTypes.map((menuType) => ({
+        menu_type_group_id: dto.menu_type_group_id || uuidv4(),
         menu_type_group_name: dto.menu_type_group_name,
         menuType: menuType,
         owner,
@@ -1142,8 +1055,8 @@ export class MenuService {
 
   async deleteMenuTypeGroup(
     menuTypeGroupName: string,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ): Promise<any> {
     const menuTypeGroups = await this.menuTypeGroupRepository.find({
       where: {
@@ -1190,8 +1103,8 @@ export class MenuService {
   }
 
   async updateMenuTypeGroup(
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
     updateMenuTypeGroupDto: UpdateMenuTypeGroupDto,
   ): Promise<any> {
     try {
@@ -1231,13 +1144,13 @@ export class MenuService {
       );
 
       const keepMenuTypeIds = options
-        .filter((opt) => opt.menu_type_id && opt.menu_type_id !== 'null')
+        .filter((opt) => opt.menu_type_id && opt.menu_type_id !== null)
         .map((opt) => opt.menu_type_id);
 
       for (const option of options) {
-        if (option.menu_type_id && option.menu_type_id !== 'null') {
+        if (option.menu_type_id && option.menu_type_id !== null) {
           await this.menuTypeRepository.update(
-            { menu_type_id: parseInt(option.menu_type_id) },
+            { menu_type_id: option.menu_type_id },
             {
               type_name: option.type_name,
               price_difference: parseFloat(String(option.price_difference)),
@@ -1249,7 +1162,7 @@ export class MenuService {
 
       for (const existingMenuTypeId of existingMenuTypeIds) {
         if (!keepMenuTypeIds.includes(existingMenuTypeId)) {
-          const menuTypeIdNum = parseInt(existingMenuTypeId);
+          const menuTypeIdNum = existingMenuTypeId;
 
           await this.menuTypeRepository.update(
             { menu_type_id: menuTypeIdNum },
@@ -1301,10 +1214,11 @@ export class MenuService {
       }
 
       const newMenuTypeOptions = options.filter(
-        (opt) => opt.menu_type_id === 'null',
+        (opt) => opt.menu_type_id === null,
       );
       for (const newOption of newMenuTypeOptions) {
         const newMenuType = await this.menuTypeRepository.save({
+          menu_type_id: uuidv4(),
           type_name: newOption.type_name,
           price_difference: parseFloat(String(newOption.price_difference)),
           owner: { owner_id },
@@ -1320,6 +1234,7 @@ export class MenuService {
 
         if (!existingLink) {
           await this.menuTypeGroupRepository.save({
+            menu_type_group_id: uuidv4(),
             menu_type_group_name: new_menu_type_group_name,
             menuType: newMenuType,
             owner: { owner_id },
@@ -1367,7 +1282,7 @@ export class MenuService {
     }
   }
 
-  async findOptionById(type: string, menuId: number) {
+  async findOptionById(type: string, menuId: string) {
     const menu = await this.menuRepository.findOne({
       where: { menu_id: menuId },
       relations: ['menuTypeGroup', 'sweetnessGroup', 'sizeGroup'],
@@ -1399,8 +1314,8 @@ export class MenuService {
   }
 
   async updateSize(
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
     updateSizeDto: UpdateSizeDto,
   ) {
     try {
@@ -1438,14 +1353,14 @@ export class MenuService {
         group.size.size_id.toString(),
       );
       const keepSizeIds = options
-        .filter((opt) => opt.size_id !== 'null')
+        .filter((opt) => opt.size_id !== null)
         .map((opt) => opt.size_id);
 
       // Update existing sizes
       for (const option of options) {
-        if (option.size_id !== 'null') {
+        if (option.size_id !== null) {
           await this.sizeRepository.update(
-            { size_id: parseInt(option.size_id) },
+            { size_id: option.size_id },
             {
               size_name: option.size_name,
               size_price: parseFloat(String(option.price)),
@@ -1458,7 +1373,7 @@ export class MenuService {
       // Handle deleted sizes
       for (const existingSizeId of existingSizeIds) {
         if (!keepSizeIds.includes(existingSizeId)) {
-          const sizeIdNum = parseInt(existingSizeId);
+          const sizeIdNum = existingSizeId;
 
           // 1. Mark size as deleted
           await this.sizeRepository.update(
@@ -1509,10 +1424,11 @@ export class MenuService {
       }
 
       // 4. Add new sizes
-      const newSizeOptions = options.filter((opt) => opt.size_id === 'null');
+      const newSizeOptions = options.filter((opt) => opt.size_id === null);
       for (const newOption of newSizeOptions) {
         // Create new size
         const newSize = await this.sizeRepository.save({
+          size_id: uuidv4(),
           size_name: newOption.size_name,
           size_price: parseFloat(String(newOption.price)),
           owner: { owner_id },
@@ -1529,6 +1445,7 @@ export class MenuService {
 
         if (!existingLink) {
           await this.sizeGroupRepository.save({
+            size_group_id: uuidv4(),
             size_group_name: new_size_group_name,
             size: newSize,
             owner: { owner_id },
@@ -1576,7 +1493,7 @@ export class MenuService {
     }
   }
 
-  async deleteAllAddOns(ownerId: number, branchId: number) {
+  async deleteAllAddOns(ownerId: string, branchId: string) {
     try {
       // 1. Find all add-ons for this owner/branch
       const addOns = await this.addOnRepository.find({
@@ -1633,8 +1550,8 @@ export class MenuService {
   }
 
   async updateAddOn(
-    owner_id: number,
-    branch_id: number,
+    owner_id: string,
+    branch_id: string,
     updateAddOnDto: UpdateAddOnDto,
   ) {
     try {
@@ -1680,7 +1597,7 @@ export class MenuService {
       // Get IDs that will remain
       const keepAddOnIds = options
         .filter((opt) => opt.add_on_id !== 'null')
-        .map((opt) => parseInt(opt.add_on_id));
+        .map((opt) => opt.add_on_id);
 
       // 2. Handle deleted add-ons
       const addOnsToRemove = existingAddOns.filter(
@@ -1704,7 +1621,7 @@ export class MenuService {
         if (option.add_on_id !== 'null') {
           // Update existing add-on
           await this.addOnRepository.update(
-            { add_on_id: parseInt(option.add_on_id) },
+            { add_on_id: option.add_on_id },
             {
               add_on_price: parseFloat(option.price),
               is_required: is_require,
@@ -1714,7 +1631,7 @@ export class MenuService {
 
           // Get ingredient_id for this add-on
           const addOn = await this.addOnRepository.findOne({
-            where: { add_on_id: parseInt(option.add_on_id) },
+            where: { add_on_id: option.add_on_id },
             relations: ['ingredient'],
           });
 
@@ -1744,6 +1661,7 @@ export class MenuService {
                 );
               } else {
                 await this.menuIngredientRepository.save({
+                  menu_ingredient_id: uuidv4(),
                   menu: { menu_id: menuId },
                   ingredient: { ingredient_id: addOn.ingredient.ingredient_id },
                   quantity_used: option.quantity,
@@ -1810,8 +1728,8 @@ export class MenuService {
 
   async deleteSweetness(
     sweetness_group_name: string,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     // 1. Find all sweetness groups with the given name and get their sweetness levels
     const sweetnessGroups = await this.sweetnessGroupRepository.find({
@@ -1877,9 +1795,9 @@ export class MenuService {
   }
 
   async getMenuIngredients(
-    menu_id: number,
-    owner_id: number,
-    branch_id: number,
+    menu_id: string,
+    owner_id: string,
+    branch_id: string,
   ) {
     // ตรวจสอบว่ามี menu, owner, branch อยู่จริง
     const menu = await this.menuRepository.findOne({ where: { menu_id } });
@@ -1942,8 +1860,8 @@ export class MenuService {
   async getGroupData(
     type: string,
     groupName: string,
-    ownerId: number,
-    branchId: number,
+    ownerId: string,
+    branchId: string,
   ) {
     try {
       switch (type) {
@@ -2053,7 +1971,7 @@ export class MenuService {
     }
   }
 
-  async getAllOptionGroups(ownerId: number, branchId: number) {
+  async getAllOptionGroups(ownerId: string, branchId: string) {
     try {
       // Get all sweetness groups
       const sweetnessGroups = await this.sweetnessGroupRepository.find({
@@ -2116,7 +2034,7 @@ export class MenuService {
     }
   }
 
-  async getAddOnDetails(ownerId: number, branchId: number) {
+  async getAddOnDetails(ownerId: string, branchId: string) {
     try {
       // 1. Get all add-ons with ingredient info
       const addOns = await this.addOnRepository
@@ -2139,20 +2057,22 @@ export class MenuService {
         .getMany();
 
       // 3. Format the response
-      const options = addOns.map(addon => ({
+      const options = addOns.map((addon) => ({
         add_on_id: addon.add_on_id.toString(),
         add_on_name: addon.ingredient.ingredient_name,
         price: Number(addon.add_on_price).toFixed(2),
-        quantity: menuIngredients.find(mi =>
-          mi.ingredient.ingredient_id === addon.ingredient.ingredient_id
-        )?.quantity_used || 0,
-        unit: addon.ingredient.unit
+        quantity:
+          menuIngredients.find(
+            (mi) =>
+              mi.ingredient.ingredient_id === addon.ingredient.ingredient_id,
+          )?.quantity_used || 0,
+        unit: addon.ingredient.unit,
       }));
 
       // Get unique menu IDs from menu ingredients
-      const menuIds = [...new Set(
-        menuIngredients.map(mi => mi.menu.menu_id)
-      )];
+      const menuIds = [
+        ...new Set(menuIngredients.map((mi) => mi.menu.menu_id)),
+      ];
 
       // Get is_required and is_multiple from first add-on
       const firstAddOn = addOns[0];
@@ -2161,18 +2081,17 @@ export class MenuService {
         options,
         menu_id: menuIds,
         is_require: firstAddOn?.is_required || false,
-        is_multiple: firstAddOn?.is_multipled || false
+        is_multiple: firstAddOn?.is_multipled || false,
       };
-
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to get add-on details',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
-  async getMenuOptions(menu_id: number, owner_id: number, branch_id: number) {
+  async getMenuOptions(menu_id: string, owner_id: string, branch_id: string) {
     try {
       // Find the menu with its size group and menu type group
       const menu = await this.menuRepository
@@ -2193,7 +2112,7 @@ export class MenuService {
         .createQueryBuilder('size')
         .leftJoin('size.sizeGroup', 'sg')
         .where('sg.size_group_name = :groupName', {
-          groupName: menu.sizeGroup?.size_group_name
+          groupName: menu.sizeGroup?.size_group_name,
         })
         .andWhere('size.owner.owner_id = :owner_id', { owner_id })
         .andWhere('size.branch.branch_id = :branch_id', { branch_id })
@@ -2206,7 +2125,7 @@ export class MenuService {
         .createQueryBuilder('mt')
         .leftJoin('mt.menuTypeGroup', 'mtg')
         .where('mtg.menu_type_group_name = :groupName', {
-          groupName: menu.menuTypeGroup?.menu_type_group_name
+          groupName: menu.menuTypeGroup?.menu_type_group_name,
         })
         .andWhere('mt.owner.owner_id = :owner_id', { owner_id })
         .andWhere('mt.branch.branch_id = :branch_id', { branch_id })
@@ -2215,20 +2134,19 @@ export class MenuService {
         .getMany();
 
       return {
-        sizes: sizes.map(size => ({
+        sizes: sizes.map((size) => ({
           size_id: size.size_id,
-          size_name: size.size_name
+          size_name: size.size_name,
         })),
-        menu_types: menuTypes.map(type => ({
+        menu_types: menuTypes.map((type) => ({
           type_id: type.menu_type_id,
-          type_name: type.type_name
-        }))
+          type_name: type.type_name,
+        })),
       };
-
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to get menu options',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

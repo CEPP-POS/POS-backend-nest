@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -13,8 +13,8 @@ import { Branch } from './branch.entity';
 
 @Entity()
 export class SweetnessLevel {
-  @PrimaryGeneratedColumn()
-  sweetness_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  sweetness_id: string;
 
   @Column({ nullable: false })
   level_name: string;

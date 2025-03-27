@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -13,8 +13,8 @@ import { Branch } from './branch.entity';
 
 @Entity()
 export class SweetnessGroup {
-  @PrimaryGeneratedColumn()
-  sweetness_group_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  sweetness_group_id: string;
 
   @Column()
   sweetness_group_name: string;

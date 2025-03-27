@@ -3,14 +3,13 @@ import {
   IsNumber,
   IsString,
   ValidateNested,
-  IsOptional,
   IsDate,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class OrderTopic {
-  @IsNumber()
-  order_id: number;
+  @IsString()
+  order_id: string;
 
   @IsDate()
   order_date: Date;

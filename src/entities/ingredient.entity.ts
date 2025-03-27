@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -14,8 +14,8 @@ import { Owner } from './owner.entity';
 
 @Entity()
 export class Ingredient {
-  @PrimaryGeneratedColumn()
-  ingredient_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  ingredient_id: string;
 
   @Column()
   ingredient_name: string;

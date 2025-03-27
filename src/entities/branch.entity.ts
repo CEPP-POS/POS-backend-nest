@@ -1,10 +1,10 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
   ManyToOne,
   OneToMany,
   JoinColumn,
+  PrimaryColumn,
 } from 'typeorm';
 import { Owner } from './owner.entity';
 import { Menu } from './menu.entity';
@@ -27,11 +27,10 @@ import { SweetnessLevel } from './sweetness-level.entity';
 import { MenuType } from './menu-type.entity';
 import { MenuTypeGroup } from './menu-type-group.entity';
 import { LocalData } from './local-data.entity';
-
 @Entity()
 export class Branch {
-  @PrimaryGeneratedColumn()
-  branch_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  branch_id: string;
 
   @Column()
   branch_name: string;

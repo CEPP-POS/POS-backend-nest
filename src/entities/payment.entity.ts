@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   ManyToOne,
@@ -13,8 +13,8 @@ import { Branch } from './branch.entity';
 
 @Entity()
 export class Payment {
-  @PrimaryGeneratedColumn()
-  payment_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  payment_id: string;
 
   @OneToOne(() => Order, { nullable: false })
   @JoinColumn({ name: 'order_id' })

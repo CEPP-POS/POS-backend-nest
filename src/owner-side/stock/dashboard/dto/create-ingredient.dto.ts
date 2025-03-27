@@ -4,14 +4,27 @@ import {
   IsDateString,
   IsNumber,
   IsNotEmpty,
+  IsOptional,
 } from 'class-validator';
 
 export class CreateIngredientDto {
+  @IsOptional()
+  @IsString()
+  update_id?: string;
+
+  @IsOptional()
+  @IsString()
+  ingredient_id?: string;
+
+  @IsOptional()
+  @IsString()
+  ingredient_category_id?: string;
+
   @IsString()
   image_url: string;
 
-  @IsInt()
-  owner_id: number;
+  @IsString()
+  owner_id: string;
 
   @IsString()
   ingredient_name: string;

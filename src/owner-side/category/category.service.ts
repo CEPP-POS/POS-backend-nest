@@ -13,14 +13,14 @@ import { Menu } from '../../entities/menu.entity';
 import { Owner } from 'src/entities/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 import { MenuCategory } from 'src/entities/menu_category';
-import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
-// import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+
     @InjectRepository(Menu)
     private readonly menuRepository: Repository<Menu>,
 
@@ -32,9 +32,9 @@ export class CategoryService {
 
     @InjectRepository(Branch)
     private readonly branchRepository: Repository<Branch>,
-  ) { }
+  ) {}
 
-  async findAll(ownerId: number, branchId: number) {
+  async findAll(ownerId: string, branchId: string) {
     return await this.categoryRepository.find({
       where: {
         owner: { owner_id: ownerId },
@@ -44,7 +44,7 @@ export class CategoryService {
   }
 
 
-  async findOne(id: number): Promise<Category> {
+  async findOne(id: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({
       where: { category_id: id },
     });
@@ -86,6 +86,7 @@ export class CategoryService {
 
     if (!category) {
       category = this.categoryRepository.create({
+        category_id: createCategoryDto.category_id || uuidv4(),
         category_name,
         owner,
         branch,
@@ -129,67 +130,7 @@ export class CategoryService {
     };
   }
 
-  async linkMenusToCategory(
-    linkMenuToCategoryDto: LinkMenuToCategoryDto,
-  ): Promise<any> {
-    const { owner_id, branch_id, category_id, menu_ids } =
-      linkMenuToCategoryDto;
-
-    // Find the category by category_id, owner_id, and branch_id
-    const category = await this.categoryRepository.findOne({
-      where: { category_id },
-    });
-
-    if (!category) {
-      throw new HttpException(
-        `Category with ID ${category_id} not found for the specified owner and branch`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    // Find the menus by menu_ids and validate ownership/branch
-    const menus = await this.menuRepository.find({
-      where: { menu_id: In(menu_ids) },
-    });
-
-    if (menus.length !== menu_ids.length) {
-      throw new HttpException(
-        `Some menus with IDs ${menu_ids} not found for the specified owner and branch`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    // Step 1: Delete existing MenuCategory entries that are not in the new list
-    const deleteResult = await this.menuCategoryRepository
-      .createQueryBuilder()
-      .delete()
-      .where('category_id = :category_id', { category_id })
-      .andWhere('owner_id = :owner_id', { owner_id })
-      .andWhere('branch_id = :branch_id', { branch_id })
-      .andWhere('menu_id NOT IN (:...menu_ids)', { menu_ids })
-      .execute();
-
-    // Step 2: Create and save new MenuCategory entries for the given menus
-    const menuCategories = menus.map((menu) =>
-      this.menuCategoryRepository.create({
-        category_id: category.category_id,
-        menu_id: menu.menu_id,
-        owner_id: owner_id,
-        branch_id: branch_id,
-      }),
-    );
-
-    await this.menuCategoryRepository.save(menuCategories);
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Menu-category links updated successfully',
-      deletedCount: deleteResult.affected || 0,
-      addedCount: menuCategories.length,
-    };
-  }
-
-  async remove(id: number, owner_id: number, branch_id: number): Promise<void> {
+  async remove(id: string, owner_id: string, branch_id: string): Promise<void> {
     const category = await this.categoryRepository.findOne({
       where: {
         category_id: id,
@@ -227,9 +168,9 @@ export class CategoryService {
   }
 
   async updateCategory(
-    categoryId: number,
-    owner_id: number,
-    branch_id: number,
+    categoryId: string,
+    owner_id: string,
+    branch_id: string,
     updateCategoryDto: CreateCategoryDto,
   ): Promise<any> {
     const { category_name, menu_id } = updateCategoryDto;
@@ -249,19 +190,13 @@ export class CategoryService {
     }
 
     // ✅ Validate Owner and Branch
-    if (
-      !category.owner ||
-      Number(category.owner.owner_id) !== Number(owner_id)
-    ) {
+    if (!category.owner || category.owner.owner_id !== owner_id) {
       throw new ConflictException(
         `Category does not belong to the specified owner`,
       );
     }
 
-    if (
-      category.branch &&
-      Number(category.branch.branch_id) !== Number(branch_id)
-    ) {
+    if (category.branch && category.branch.branch_id !== branch_id) {
       throw new ConflictException(
         `Category does not belong to the specified branch`,
       );
@@ -333,15 +268,15 @@ export class CategoryService {
     };
   }
 
-  async getAllCategoriesWithMenus(ownerId: number, branchId: number) {
+  async getAllCategoriesWithMenus(ownerId: string, branchId: string) {
     try {
       // Get all categories with their menus
       const categories = await this.categoryRepository.find({
         where: {
           owner: { owner_id: ownerId },
-          branch: { branch_id: branchId }
+          branch: { branch_id: branchId },
         },
-        relations: ['menuCategory', 'menuCategory.menu']
+        relations: ['menuCategory', 'menuCategory.menu'],
       });
 
       // Get all menus for this owner/branch
@@ -349,43 +284,43 @@ export class CategoryService {
         where: {
           owner: { owner_id: ownerId },
           branch: { branch_id: branchId },
-          is_delete: false
+          is_delete: false,
         },
-        relations: ['menuCategory']
+        relations: ['menuCategory'],
       });
 
       // Find menus without categories
-      const menusWithoutCategory = allMenus.filter(menu =>
-        !menu.menuCategory || menu.menuCategory.length === 0
-      ).map(menu => ({
-        menu_id: menu.menu_id,
-        menu_name: menu.menu_name
-      }));
+      const menusWithoutCategory = allMenus
+        .filter((menu) => !menu.menuCategory || menu.menuCategory.length === 0)
+        .map((menu) => ({
+          menu_id: menu.menu_id,
+          menu_name: menu.menu_name,
+        }));
 
       // Get all category names for available_category array
-      const available_category = categories.map(cat => cat.category_name);
+      const available_category = categories.map((cat) => cat.category_name);
 
       // Format categories with their menus
-      const formattedCategories = categories.map(category => ({
+      const formattedCategories = categories.map((category) => ({
         name: category.category_name,
         id: category.category_name,
         menus: category.menuCategory
-          .filter(mc => mc.menu)
-          .map(mc => ({
+          .filter((mc) => mc.menu)
+          .map((mc) => ({
             menu_id: mc.menu.menu_id,
-            menu_name: mc.menu.menu_name
-          }))
+            menu_name: mc.menu.menu_name,
+          })),
       }));
 
       return {
         available_category,
         categories: formattedCategories,
-        menus: menusWithoutCategory // Add uncategorized menus directly here
+        menus: menusWithoutCategory, // Add uncategorized menus directly here
       };
     } catch (error) {
       throw new HttpException(
         error.message || 'Failed to get categories with menus',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

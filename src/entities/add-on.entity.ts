@@ -1,18 +1,11 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  JoinColumn,
-  ManyToOne,
-} from 'typeorm';
+import { Entity, PrimaryColumn, Column, JoinColumn, ManyToOne } from 'typeorm';
 import { Ingredient } from './ingredient.entity';
 import { Owner } from './owner.entity';
 import { Branch } from './branch.entity';
-
 @Entity()
 export class AddOn {
-  @PrimaryGeneratedColumn()
-  add_on_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  add_on_id: string;
 
   @ManyToOne(() => Ingredient, { nullable: false })
   @JoinColumn({ name: 'ingredient_id' })

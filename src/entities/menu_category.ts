@@ -6,17 +6,17 @@ import { Owner } from './owner.entity';
 
 @Entity()
 export class MenuCategory {
-  @PrimaryColumn()
-  category_id: number;
+  @PrimaryColumn({ type: 'uuid' })
+  category_id: string;
 
   @PrimaryColumn()
-  menu_id: number;
+  menu_id: string;
 
   @PrimaryColumn()
-  owner_id: number;
+  owner_id: string;
 
   @PrimaryColumn()
-  branch_id: number;
+  branch_id: string;
 
   @ManyToOne(() => Category, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'category_id' })
