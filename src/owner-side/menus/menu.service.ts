@@ -1651,6 +1651,7 @@ export class MenuService {
                 );
               } else {
                 await this.menuIngredientRepository.save({
+                  menu_ingredient_id: uuidv4(),
                   menu: { menu_id: menuId },
                   ingredient: { ingredient_id: addOn.ingredient.ingredient_id },
                   quantity_used: option.quantity,

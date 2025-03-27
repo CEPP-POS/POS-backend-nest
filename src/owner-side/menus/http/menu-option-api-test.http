@@ -1,15 +1,15 @@
 POST http://localhost:3000/owner/menus/options/sweetness
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "sweetness_group_name": "ความหวานกาแฟ",
+  "sweetness_group_name": "ความหวานนม",
   "options": [
-    "หวานน้อยกาแฟ",
-    "หวานกลางกาแฟ",
-    "หวานมากกาแฟ"
+    "หวานน้อย",
+    "หวานกลาง",
+    "หวานมาก"
   ],
-  "menu_id": [1,2]
+  "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc","33769a3a-5bfb-41c8-8971-744dae1d92aa"]
 }
 
 PATCH http://localhost:3000/owner/menus/options/sweetness
@@ -32,7 +32,9 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 
+###ดูรายละเอียด menu จาก menu_id👌
 GET http://localhost:3000/owner/menus/33769a3a-5bfb-41c8-8971-744dae1d92aa
+
 PATCH http://localhost:3000/owner/menus/options/sweetness/104
 Content-Type: application/json
 {
@@ -41,6 +43,7 @@ Content-Type: application/json
   "is_required":true
 }
 
+###เพิ่ม Addon ผูกกับ menu👌
 POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
@@ -48,49 +51,43 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 {
   "options": [
-    { "บุก2": { "price": "10.00", "unit": "กรัม", "quantity":12 } },
-    { "ไข่มุก2": { "price": "20.00", "unit": "กรัม", "quantity":15 } }
+    { "บุก": { "price": "10.00", "unit": "กรัม", "quantity":12 } },
+    { "ไข่มุก": { "price": "20.00", "unit": "กรัม", "quantity":15 } }
   ],
-  "menu_id": ["c91d73c1-7ff3-4868-8f0c-8849050c3f80","a02c06e1-e238-4aa3-a88f-2a5cbfd35f69"],
+  "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc","33769a3a-5bfb-41c8-8971-744dae1d92aa"],
   "is_required":true,
   "is_multipled":true
 }
 
-# edit add on option
+# edit add on option👌
 PATCH http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
   "options": [
     { 
-      "add_on_id": "26",
+      "add_on_id": "89c7a2de-9a35-42d4-b652-c74ce83a23ad",
       "add_on_name": "บุก",
       "price": "10.00",
       "quantity": 20,
       "unit": "กรัม"
     },
     { 
-      "add_on_id": "27",
+      "add_on_id": "884eb457-fd01-410c-8010-cb7900760baf",
       "add_on_name": "ไข่มุก",
       "price": "25.00",
       "quantity": 12,
-      "unit": "กรัม"
-    },
-    { 
-      "add_on_id": "28",
-      "add_on_name": "ว่านบุกใส",
-      "price": "20.00",
-      "quantity": 30,
-      "unit": "มิลลิลิตร"
+      "unit": "g"
     }
   ],
-  "menu_id": [1,2],
+  "menu_id": ["937a85a7-168c-4bc3-91c4-a5d0a66f6ef2","bb24ae81-b635-49df-a74b-5b9cac4e4633","faa9a7c2-a956-4153-a4d2-eb436a90c2a2"],
   "is_require": false,
   "is_multiple": true
 }
 
-POST http://localhost:3000/owner/menus/options/size👌
+### เพิ่ม size ผูกกับ menu👌
+POST http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
@@ -105,8 +102,8 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc","33769a3a-5bfb-41c8-8971-744dae1d92aa"]
 }
 
-# edit size option
-PATCH http://localhost:3000/owner/menus/options/size👌
+# edit size option👌
+PATCH http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
@@ -123,6 +120,13 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   "menu_id": ["33769a3a-5bfb-41c8-8971-744dae1d92aa"]
 }
 
+# delete size group👌
+DELETE http://localhost:3000/owner/menus/options/size/ขนาดแก้วสำหรับนม
+Content-Type: application/json
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
+
+### เพิ่มประเภท ร้อนเย็นปั่น ผูกกับmenu
 POST http://localhost:3000/owner/menus/options/menu_type
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
@@ -136,11 +140,6 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   "menu_id": ["7f6d910d-fe60-4420-a614-312c8f47180e", "902a9067-112e-43ec-a3d9-100dcf833652"]
 }
 
-# delete size group
-DELETE http://localhost:3000/owner/menus/options/size/ขนาดแก้วสำหรับนม
-Content-Type: application/json
-owner_id: 1
-branch_id: 1
 
 PATCH http://localhost:3000/owner/menus/options/menu_type
 Content-Type: application/json

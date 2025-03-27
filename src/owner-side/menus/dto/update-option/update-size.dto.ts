@@ -4,12 +4,10 @@ import {
   IsNumber,
   IsArray,
   ValidateNested,
-  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class SizeOptionDto {
-  @IsOptional()
   @IsString()
   size_id?: string; // "null" means new size
 
