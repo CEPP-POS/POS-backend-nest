@@ -244,19 +244,13 @@ export class CategoryService {
     }
 
     // ✅ Validate Owner and Branch
-    if (
-      !category.owner ||
-      Number(category.owner.owner_id) !== Number(owner_id)
-    ) {
+    if (!category.owner || category.owner.owner_id !== owner_id) {
       throw new ConflictException(
         `Category does not belong to the specified owner`,
       );
     }
 
-    if (
-      category.branch &&
-      Number(category.branch.branch_id) !== Number(branch_id)
-    ) {
+    if (category.branch && category.branch.branch_id !== branch_id) {
       throw new ConflictException(
         `Category does not belong to the specified branch`,
       );

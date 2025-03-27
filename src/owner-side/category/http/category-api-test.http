@@ -28,21 +28,21 @@ branch_id: 3
 
 POST http://localhost:3000/owner/categories
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "category_name": "เปรี้ยวสะใจ",
-  "menu_id": [4]
+  "category_name": "กาแฟสด",
+  "menu_id": ["d3f37e87-c67f-4e8c-8a0d-f2442fa9e4da"]
 }
 
 
-PATCH http://localhost:3000/owner/categories/7
+PATCH http://localhost:3000/owner/categories/cdc5b074-2a8f-4fc6-9b8a-93e1e4590c77
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "category_name": "ชานมเย็น",
-  "menu_id": [1,3]
+  "category_name": "ชานมอร่อยมากๆ",
+  "menu_id": ["bb24ae81-b635-49df-a74b-5b9cac4e4633","937a85a7-168c-4bc3-91c4-a5d0a66f6ef2"]
 }
 
 ### Link menu to category

@@ -1,12 +1,12 @@
 ### Create a new Menu
-POST http://192.168.3.80:3000/owner/menus
+POST http://localhost:3000/owner/menus
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "menu_name": "ชานมไต้หวันd",
-  "description": "Delicious ไต้หวัน",
-  "price": 40,
+  "menu_name": "นมสด",
+  "description": "Delicious นมสด",
+  "price": 30,
   "image_url": "http://example.com/spaghetti.jpg"
 }
 
