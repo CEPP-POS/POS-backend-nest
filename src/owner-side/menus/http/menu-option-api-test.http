@@ -32,7 +32,7 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 
-GET http://localhost:3000/owner/menus/15
+GET http://localhost:3000/owner/menus/33769a3a-5bfb-41c8-8971-744dae1d92aa
 PATCH http://localhost:3000/owner/menus/options/sweetness/104
 Content-Type: application/json
 {
@@ -90,7 +90,7 @@ branch_id: 1
   "is_multiple": true
 }
 
-POST http://localhost:3000/owner/menus/options/size
+POST http://localhost:3000/owner/menus/options/size👌
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
@@ -102,25 +102,25 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
     { "m":  { "price": "10.00" } },
     { "l":  { "price": "15.00" } }
   ],
-  "menu_id": ["d1eb4344-651c-4b97-9dc2-80d1a56a2720"]
+  "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc","33769a3a-5bfb-41c8-8971-744dae1d92aa"]
 }
 
 # edit size option
-PATCH http://localhost:3000/owner/menus/options/size
+PATCH http://localhost:3000/owner/menus/options/size👌
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 {
-  "old_size_group_name": "ขนาดแก้วสำหรับนมจ้า",
-  "new_size_group_name": "ขนาดแก้วสำหรับนมจ้า",
+  "old_size_group_name": "ขนาดแก้วสำหรับนม",
+  "new_size_group_name": "ขนาดแก้วสำหรับนม",
    "options": [
-    { "size_id": "96", "size_name":"m",  "price": "25.00" },
-    { "size_id": "97", "size_name":"l",  "price": "35.00" },
-    { "size_id": "98", "size_name":"xl",  "price": "45.00" },
-    { "size_id": "null", "size_name":"xs",  "price": "45.00" }
+    { "size_id": "eb749792-4e21-4190-a632-68a4562e2aa9", "size_name":"m",  "price": "25.00" },
+    { "size_id": "ddf33ee7-922e-427b-9f0a-ea218c92706b", "size_name":"l",  "price": "35.00" },
+    { "size_id": "5e8cae6d-e352-4ab7-8536-1ba468b709dc", "size_name":"xl",  "price": "45.00" },
+    { "size_id": null, "size_name":"xs",  "price": "45.00" }
   ],
-  "menu_id": [1]
+  "menu_id": ["33769a3a-5bfb-41c8-8971-744dae1d92aa"]
 }
 
 POST http://localhost:3000/owner/menus/options/menu_type

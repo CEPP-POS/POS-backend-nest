@@ -1343,12 +1343,12 @@ export class MenuService {
         group.size.size_id.toString(),
       );
       const keepSizeIds = options
-        .filter((opt) => opt.size_id !== 'null')
+        .filter((opt) => opt.size_id !== null)
         .map((opt) => opt.size_id);
 
       // Update existing sizes
       for (const option of options) {
-        if (option.size_id !== 'null') {
+        if (option.size_id !== null) {
           await this.sizeRepository.update(
             { size_id: option.size_id },
             {
@@ -1414,10 +1414,11 @@ export class MenuService {
       }
 
       // 4. Add new sizes
-      const newSizeOptions = options.filter((opt) => opt.size_id === 'null');
+      const newSizeOptions = options.filter((opt) => opt.size_id === null);
       for (const newOption of newSizeOptions) {
         // Create new size
         const newSize = await this.sizeRepository.save({
+          size_id: uuidv4(),
           size_name: newOption.size_name,
           size_price: parseFloat(String(newOption.price)),
           owner: { owner_id },
@@ -1434,6 +1435,7 @@ export class MenuService {
 
         if (!existingLink) {
           await this.sizeGroupRepository.save({
+            size_group_id: uuidv4(),
             size_group_name: new_size_group_name,
             size: newSize,
             owner: { owner_id },

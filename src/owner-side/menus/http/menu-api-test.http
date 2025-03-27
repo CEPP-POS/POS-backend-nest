@@ -1,4 +1,4 @@
-### Create a new Menu
+### Create a new Menu 👌
 POST http://localhost:3000/owner/menus
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
@@ -10,20 +10,20 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   "image_url": "http://example.com/spaghetti.jpg"
 }
 
-### Get all Menus
+### Get all Menus👌
 GET http://localhost:3000/owner/menus
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-### Get a specific Menu by ID
-GET http://localhost:3000/owner/menus/1
+### Get a specific Menu by ID👌
+GET http://localhost:3000/owner/menus/33769a3a-5bfb-41c8-8971-744dae1d92aa
 
-### Update a Menu by ID
-PATCH http://localhost:3000/owner/menus/1
+### Update a Menu by ID👌
+PATCH http://localhost:3000/owner/menus/33769a3a-5bfb-41c8-8971-744dae1d92aa
 Content-Type: application/json
-owner_id: 1
-branch_id: 1
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
   "menu_name": "milk",
   "price": 15,
@@ -31,16 +31,16 @@ branch_id: 1
   "image_url": "http://example.com/coffee.jpg"
 }
 
-### Delete a Menu by ID
-DELETE http://localhost:3000/owner/menus/1
-owner_id: 1
-branch_id: 1
+### Delete a Menu by ID👌
+DELETE http://localhost:3000/owner/menus/33769a3a-5bfb-41c8-8971-744dae1d92aa
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 ### get all menu with ingredient link for auto cut stock
-GET http://localhost:3000/owner/menus/stock/2
+GET http://localhost:3000/owner/menus/stock/937a85a7-168c-4bc3-91c4-a5d0a66f6ef2
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 
 ### link Ingredient to Menu for auto cut stock
