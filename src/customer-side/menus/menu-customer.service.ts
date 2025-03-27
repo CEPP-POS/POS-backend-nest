@@ -62,7 +62,7 @@ export class MenuCustomerService {
     private readonly orderRepository: Repository<Order>,
   ) { }
 
-  async getCustomerMenus(ownerId: number, branchId: number) {
+  async getCustomerMenus(ownerId: string, branchId: string) {
     // ดึงข้อมูลเมนูทั้งหมดที่เกี่ยวข้อง
     const menus = await this.menuRepository
       .createQueryBuilder('menu')

@@ -1,7 +1,7 @@
 GET http://localhost:3000/customer/menus
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: d458dffa-855b-4040-afba-dbf97055a8206
+branch_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 
 GET http://localhost:3000/customer/menus/7
 Content-Type: application/json
