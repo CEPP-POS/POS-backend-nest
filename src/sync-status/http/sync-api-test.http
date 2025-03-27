@@ -4,7 +4,7 @@ Content-Type: application/json
 owner_id: 13
 branch_id: 7
 
-POST http://192.168.3.80:3000/status/offline  
+POST http://localhost:3000/status/offline  
 Content-Type: application/json
 {
   "path": "http://192.168.3.80:3000/owner/menus",

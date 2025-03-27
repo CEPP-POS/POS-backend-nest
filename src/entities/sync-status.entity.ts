@@ -40,6 +40,9 @@ export class SyncStatus {
   @Column('jsonb', { nullable: true })
   headers: any;
 
+  @Column({ nullable: true })
+  statusCode: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

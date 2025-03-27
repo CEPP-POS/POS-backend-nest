@@ -28,7 +28,12 @@ export class SyncService {
       synced: false,
       retryCount: 0,
     });
-    return this.syncRepo.save(syncStatus);
+    const savedSyncStatus = await this.syncRepo.save(syncStatus);
+    console.log(`✅ Saved sync status to local database: ${savedSyncStatus.id}`);
+
+    // ส่งข้อมูลไปยัง server ทันที
+    // await this.sendRequestToServer(savedSyncStatus);
+
   }
 
   //   async retryFailedQueue() {
@@ -81,52 +86,107 @@ export class SyncService {
   }
   async sendRequestToServer(data: SyncStatus) {
     try {
-      // การส่ง request พร้อมกับ headers ที่ได้รับจากข้อมูล
       const headers = {
         'Content-Type': 'application/json',
-        ...data.headers,
-        'owner-id': data.headers?.['owner-id'] || 'default_owner_id',
-        'branch-id': data.headers?.['branch-id'] || 'default_branch_id',
+        'owner-id': data.headers?.['owner_id'] || 'default_owner_id',
+        'branch-id': data.headers?.['branch_id'] || 'default_branch_id',
       };
-
+  
+      console.log(`📤 Sending to SERVER: ${data.path}`);
       const response = await axios({
         method: data.method.toLowerCase(),
-        url: data.path,
+        url: data.path, // <-- path ที่เป็น server จริง เช่น 192.168.3.73
         data: data.payload,
-        headers: headers,
+        headers,
       });
-
-      // ถ้าส่งข้อมูลสำเร็จ
+  
       if (response.status >= 200 && response.status < 300) {
         data.synced = true;
-        console.log(`✅ Successfully synced: ${data.path}`);
-        
-        // ตรวจสอบว่า id เป็น UUID หรือไม่
-        if (typeof data.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.id)) {
-          await this.syncRepo.delete(data.id);
-          console.log(`✅ Deleted sync record with ID: ${data.id}`);
-        } else {
-          console.log(`⚠️ Invalid UUID format for ID: ${data.id}, skipping deletion`);
-        }
+        data.statusCode = response.status;
+        console.log(`✅ Successfully synced to server`);
+  
+        // ✅ ใช้ .remove() แทน delete() เพื่อมั่นใจว่าลบได้จริง
+        await this.syncRepo.remove(data);
+
+        console.log(`🗑️ Removed synced record ID: ${data.id}`);
       }
     } catch (error) {
-      // ถ้าส่งไม่สำเร็จ, เพิ่ม retryCount
       data.retryCount += 1;
-      console.error(`❌ Retry failed for ${data.path}`, error.message);
-
-      // ถ้า retry ถึง 3 ครั้ง, อัปเดต synced = true
+      data.statusCode = error.response?.status || 500;
+  
+      if (error.response?.status === 409) {
+        console.log(`⚠️ Already exists on server`);
+        data.synced = true;
+        data.errorMessage = '409 Conflict';
+      } else {
+        console.error(`❌ Retry failed`, error.message);
+        data.errorMessage = error.response?.data?.message || error.message;
+      }
+  
       if (data.retryCount >= 3) {
         data.synced = true;
-        console.log(`⚠️ Max retry attempts reached for ${data.path}`);
+        console.log(`⚠️ Max retry attempts reached`);
       }
+  
+      await this.syncRepo.save(data);
     }
-
-    // บันทึกข้อมูลที่อัปเดตในฐานข้อมูล
-    await this.syncRepo.save(data);
-
-    // ให้เวลาเล็กน้อยก่อนจะส่งข้อมูลถัดไป (หน่วงเวลา 1 วินาที)
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  
+    await new Promise(res => setTimeout(res, 1000));
   }
+  
+  //old
+  // async sendRequestToServer(data: SyncStatus) {
+  //   try {
+  //     // การส่ง request พร้อมกับ headers ที่ได้รับจากข้อมูล
+  //     const headers = {
+  //       'Content-Type': 'application/json',
+  //       ...data.headers,
+  //       'owner-id': data.headers?.['owner-id'] || 'default_owner_id',
+  //       'branch-id': data.headers?.['branch-id'] || 'default_branch_id',
+  //     };
+
+  //     const response = await axios({
+  //       method: data.method.toLowerCase(),
+  //       url: data.path,
+  //       data: data.payload,
+  //       headers: headers,
+  //     });
+  //     console.log(`📤 Sending request to server: ${data.path}`);
+  //     // ถ้าส่งข้อมูลสำเร็จ
+  //     if (response.status >= 200 && response.status < 300) {
+  //       data.synced = true;
+  //       data.statusCode = response.status;
+  //       console.log(`✅ Successfully synced: ${data.path}`);
+        
+  //       // ลบข้อมูลหลังจากส่งสำเร็จ
+  //       await this.syncRepo.delete(data.id);
+  //       console.log(`✅ Deleted sync record with ID: ${data.id}`);
+  //     }
+  //   } catch (error) {
+  //     // ถ้าส่งไม่สำเร็จ, เพิ่ม retryCount
+  //     data.retryCount += 1;
+  //     data.statusCode = error.response?.status || 500;
+      
+  //     // จัดการกับ 409 Conflict
+  //     if (error.response?.status === 409) {
+  //       console.log(`⚠️ Data already exists on server: ${data.path}`);
+  //       data.synced = true; // ถือว่าส่งสำเร็จเพราะข้อมูลมีอยู่แล้ว
+  //       data.errorMessage = 'Data already exists on server';
+  //     } else {
+  //       console.error(`❌ Retry failed for ${data.path}`, error.message);
+  //       console.error('Error details:', error.response?.data || error.message);
+  //       data.errorMessage = error.response?.data?.message || error.message;
+  //     }
+
+  //     if (data.retryCount >= 3) {
+  //       data.synced = true;
+  //       console.log(`⚠️ Max retry attempts reached for ${data.path}`);
+  //     }
+  //   }
+
+  //   await this.syncRepo.save(data);
+  //   await new Promise(resolve => setTimeout(resolve, 1000));
+  // }
 
   async getPendingSyncs() {
     return await this.syncRepo.find({
