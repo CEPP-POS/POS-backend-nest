@@ -40,7 +40,7 @@ export class SyncService {
       synced: false,
       retryCount: 0,
       statusCode: data.statusCode,
-    } as DeepPartial<SyncStatus>);
+  });
 
     const savedSyncStatus = await this.syncRepo.save(syncStatus);
     console.log(`✅ Saved sync status to local database: ${savedSyncStatus.id}`);
@@ -49,45 +49,6 @@ export class SyncService {
     // ส่งข้อมูลไปยัง server ทันที
     // await this.sendRequestToServer(savedSyncStatus);
   }
-
-  //   async retryFailedQueue() {
-  //     const failedItems = await this.syncRepo.find({
-  //       where: { synced: false },
-  //       order: { createdAt: 'ASC' },
-  //     });
-
-  //     for (const item of failedItems) {
-  //       try {
-  //         const response = await axios({
-  //           method: item.method.toLowerCase(),
-  //           url: item.path,
-  //           data: item.payload,
-  //           headers: {
-  //             'Content-Type': 'application/json',
-
-  //           },
-  //         });
-
-  //         if (response.status >= 200 && response.status < 300) {
-  //           item.synced = true;
-  //           console.log(`✅ Successfully synced: ${item.path}`);
-  //           await this.syncRepo.delete(item.id);
-  //         }
-  //       } catch (error) {
-  //         item.retryCount += 1;
-  //         console.error(`❌ Retry failed for ${item.path}`, error.message);
-
-  //         if (item.retryCount >= 3) {
-  //           item.synced = true;
-  //           console.log(`⚠️ Max retry attempts reached for ${item.path}`);
-  //         }
-  //       }
-
-  //       await this.syncRepo.save(item);
-
-  //       await new Promise(resolve => setTimeout(resolve, 1000));
-  //     }
-  //   }
   async processSyncQueue() {
     const failedItems = await this.syncRepo.find({
       where: { synced: false },
@@ -99,55 +60,60 @@ export class SyncService {
       await this.sendRequestToServer(item); 
     }
   }
+  
   async sendRequestToServer(data: SyncStatus) {
     try {
-      const headers = {
-        'Content-Type': 'application/json',
-        'owner-id': data.headers?.['owner_id'] || 'default_owner_id',
-        'branch-id': data.headers?.['branch_id'] || 'default_branch_id',
-      };
-  
       console.log(`📤 Sending to SERVER: ${data.path}`);
-      const response = await axios({
-        method: data.method.toLowerCase(),
-        url: data.path, // <-- path ที่เป็น server จริง เช่น 192.168.3.73
-        data: data.payload,
-        headers,
-      });
-  
-      if (response.status >= 200 && response.status < 300) {
-        data.synced = true;
-        data.statusCode = response.status;
-        console.log(`✅ Successfully synced to server`);
-  
-        // ✅ ใช้ .remove() แทน delete() เพื่อมั่นใจว่าลบได้จริง
-        await this.syncRepo.remove(data);
+      console.log('📦 Payload:', JSON.stringify(data.payload, null, 2));
 
+      const serverResponse = await axios({
+        method: data.method.toLowerCase(),
+        url: data.path,
+        data: data.payload,
+        headers: {
+          'Content-Type': 'application/json',
+          'owner_id': data.owner_id,
+          'branch_id': data.branch_id,
+        },
+        timeout: 10000,
+      });
+
+      if (serverResponse.status >= 200 && serverResponse.status < 300) {
+        data.synced = true;
+        data.statusCode = serverResponse.status;
+        console.log(`✅ Successfully synced to server`);
+
+        await this.syncRepo.remove(data);
         console.log(`🗑️ Removed synced record ID: ${data.id}`);
       }
     } catch (error) {
       data.retryCount += 1;
       data.statusCode = error.response?.status || 500;
-  
+
       if (error.response?.status === 409) {
         console.log(`⚠️ Already exists on server`);
         data.synced = true;
         data.errorMessage = '409 Conflict';
+        await this.syncRepo.remove(data);
       } else {
         console.error(`❌ Retry failed`, error.message);
         data.errorMessage = error.response?.data?.message || error.message;
       }
-  
+
       if (data.retryCount >= 3) {
         data.synced = true;
         console.log(`⚠️ Max retry attempts reached`);
+        await this.syncRepo.remove(data);
       }
-  
+
       await this.syncRepo.save(data);
     }
-  
+
     await new Promise(res => setTimeout(res, 1000));
   }
+  
+  
+  
   
 
   async getPendingSyncs() {

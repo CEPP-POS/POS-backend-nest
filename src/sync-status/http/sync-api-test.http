@@ -11,9 +11,9 @@ Content-Type: application/json
   "method": "POST",
   "statusCode": 404,
   "payload": {
-    "menu_name": "nom sodddddddddddddddddddddddd so hot",
-    "description": "Delicious tea so hot",
-    "price": 50,
+    "menu_name": "thai tea",
+    "description": "thai tea from thailand",
+    "price": 100,
     "image_url": "http://example.com/spaghetti.jpg"
   },
   "headers": {
@@ -42,8 +42,8 @@ branch_id: default_branch_id
 
 GET http://localhost:3000/status/retry
 Content-Type: application/json
-owner_id: default_owner_id
-branch_id: default_branch_id
+owner_id: ba9f18e5-2d91-48b9-b7c6-bb6ff70440b0
+branch_id: 4d5abfe9-f2b0-4dda-96d2-ffe68797fe74
 
 
 
