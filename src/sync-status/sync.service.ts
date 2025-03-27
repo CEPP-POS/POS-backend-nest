@@ -14,13 +14,6 @@ export class SyncService {
     private readonly syncRepo: Repository<SyncStatus>,
     private readonly httpService: HttpService,
   ) {}
-
-  //   async handleStatus(isOnline: boolean) {
-  //     if (isOnline) {
-  //       await this.retryFailedQueue();
-  //     }
-  //   }
-
   async saveFailedRequest(data: SyncDataDto) {
     console.log('📥 Received data:', JSON.stringify(data, null, 2));
     console.log('🔑 Received headers:', JSON.stringify(data.headers, null, 2));
@@ -43,16 +36,11 @@ export class SyncService {
   });
 
     const savedSyncStatus = await this.syncRepo.save(syncStatus);
-    console.log(`✅ Saved sync status to local database: ${savedSyncStatus.id}`);
-    console.log('📦 Data saved:', JSON.stringify(savedSyncStatus, null, 2));
-
-    // ส่งข้อมูลไปยัง server ทันที
-    // await this.sendRequestToServer(savedSyncStatus);
   }
   async processSyncQueue() {
     const failedItems = await this.syncRepo.find({
       where: { synced: false },
-      order: { createdAt: 'ASC' }, // เลือกข้อมูลที่เก่าที่สุดก่อน
+      order: { createdAt: 'ASC' },
     });
 
     for (const item of failedItems) {
@@ -111,11 +99,6 @@ export class SyncService {
 
     await new Promise(res => setTimeout(res, 1000));
   }
-  
-  
-  
-  
-
   async getPendingSyncs() {
     return await this.syncRepo.find({
       where: { synced: false },
@@ -127,41 +110,4 @@ export class SyncService {
     await this.syncRepo.clear();
     return { message: 'All sync records cleared' };
   }
-
-  //   async sendRequestToServer(data: SyncDataDto) {
-  //     try {
-  //       const res = await firstValueFrom(
-  //         this.httpService.request({
-  //           url: data.path,             // path ที่จะไปเรียก
-  //           method: data.method.toLowerCase(),  // ใช้ method ที่ระบุ (POST, GET, ฯลฯ)
-  //           data: data.payload,
-  //           headers: {
-  //             'Content-Type': 'application/json',
-  //             ...data.headers,  // ใช้ headers ที่ส่งมาในข้อมูล
-  //           },       // ส่ง payload เป็น JSON
-  //         }),
-  //       );
-
-  //       // บันทึกข้อมูลลงในฐานข้อมูล หลังจากยิง request
-  //       const syncStatus = this.syncRepo.create({
-  //         ...data,
-  //         statusCode: res.status,   // เก็บ statusCode ของการ response
-  //         synced: true,             // เปลี่ยนสถานะว่าเรียบร้อยแล้ว
-  //       });
-
-  //       await this.syncRepo.save(syncStatus);
-  //       return { message: 'Data sent successfully', status: res.status };
-
-  //     } catch (error) {
-  //       // ถ้าเกิดข้อผิดพลาดในการยิง request จะบันทึกลงฐานข้อมูลว่า failed
-  //       const syncStatus = this.syncRepo.create({
-  //         ...data,
-  //         statusCode: error.response ? error.response.status : 500,  // เก็บ status code ของ error
-  //         synced: false,  // สถานะว่าไม่สำเร็จ
-  //       });
-
-  //       await this.syncRepo.save(syncStatus);
-  //       return { message: 'Failed to send data', error: error.message };
-  //     }
-  //   }
 }
