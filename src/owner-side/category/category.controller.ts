@@ -99,10 +99,7 @@ export class CategoryController {
       branch_id: branchId,
     };
 
-    return {
-      statusCode: HttpStatus.CREATED,
-      data: await this.categoryService.create(CategoryData),
-    };
+    return await this.categoryService.create(CategoryData);
   }
 
   @Delete(':id')
