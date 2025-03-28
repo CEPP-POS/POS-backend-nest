@@ -147,15 +147,11 @@ export class MenuService {
     const savedMenu = await this.menuRepository.save(newMenu);
 
     return {
-      statusCode: HttpStatus.CREATED,
-      message: 'Menu created successfully',
-      menu: {
-        menu_id: savedMenu.menu_id,
-        menu_name: savedMenu.menu_name,
-        description: savedMenu.description,
-        price: savedMenu.price,
-        image_url: savedMenu.image_url,
-      },
+      menu_id: savedMenu.menu_id,
+      menu_name: savedMenu.menu_name,
+      description: savedMenu.description,
+      price: savedMenu.price,
+      image_url: savedMenu.image_url,
     };
   }
 
