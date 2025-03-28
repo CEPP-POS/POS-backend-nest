@@ -51,8 +51,8 @@ export class SyncService {
   
   async sendRequestToServer(data: SyncStatus) {
     try {
-      console.log(`📤 Sending to SERVER: ${data.path}`);
-      console.log('📦 Payload:', JSON.stringify(data.payload, null, 2));
+      // console.log(`📤 Sending to SERVER: ${data.path}`);
+      // console.log('📦 Payload:', JSON.stringify(data.payload, null, 2));
 
       const serverResponse = await axios({
         method: data.method.toLowerCase(),
@@ -92,9 +92,13 @@ export class SyncService {
         data.synced = true;
         console.log(`⚠️ Max retry attempts reached`);
         await this.syncRepo.remove(data);
+      } else {
+        const updatedData = {
+          ...data,
+          id: data.id || uuidv4()
+        };
+        await this.syncRepo.save(updatedData);
       }
-
-      await this.syncRepo.save(data);
     }
 
     await new Promise(res => setTimeout(res, 1000));
