@@ -69,7 +69,7 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 
 ### Get Order by ID👌
-GET http://localhost:3000/employee/orders/20250303150000-KI8V3
+GET http://localhost:3000/employee/orders/20250303150000-6WL1S
 
 ### Update Order👌
 PATCH http://localhost:3000/employee/orders/20250303150000-RTROX
