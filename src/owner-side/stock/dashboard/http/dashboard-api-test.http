@@ -95,19 +95,19 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   "category_name": "น้ำหวาน4"
 }
 
-## create new ingredient update👌
+## create new ingredient update👌✅✅
 POST http://localhost:3000/owner/create-stock-ingredients
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
   "image_url": "imagepath/image.png",
-  "ingredient_name": "ไข่มุก2",
+  "ingredient_name": "ไข่มุก19",
   "net_volume": 1000,
   "unit": "g",
   "quantity_in_stock": 4,
   "category_name": "น้ำหวาน",
-  "expiration_date": "2025-05-29"
+  "expiration_date": "2025-05-30"
 }
 
 ## DELETE Ingredient👌
