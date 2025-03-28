@@ -709,6 +709,8 @@ export class MenuService {
       throw new NotFoundException(`Branch with ID ${branch_id} not found`);
     }
 
+    const results = []; // สร้างอาเรย์เพื่อเก็บผลลัพธ์
+
     for (const linkMenuToStockDto of linkMenuToStockDtoList) {
       const { ingredient_name, unit, ingredientListForStock } =
         linkMenuToStockDto;
@@ -722,7 +724,7 @@ export class MenuService {
         },
       });
 
-      // ถ้าไม่มี ingredient ให้สร้างใหม่
+      // ถ้าไม่มี ingredient ให้สร้างใหม่✅
       if (!ingredient) {
         ingredient = this.ingredientRepository.create({
           ingredient_id: linkMenuToStockDto.ingredient_id || uuidv4(),
@@ -736,7 +738,8 @@ export class MenuService {
 
       // วนลูปจัดการแต่ละ size และ menu type
       for (const stockItem of ingredientListForStock) {
-        const { size_id, menu_type_id, quantity_used } = stockItem;
+        const { size_id, menu_type_id, quantity_used, menu_ingredient_id } =
+          stockItem;
 
         // ตรวจสอบว่ามี size และ menu type อยู่จริง
         const size = await this.sizeRepository.findOne({
@@ -767,6 +770,13 @@ export class MenuService {
           },
         });
 
+        // ถ้า menu_ingredient_id ถูกส่งมา ให้ค้นหาโดยใช้ menu_ingredient_id
+        if (menu_ingredient_id) {
+          menuIngredient = await this.menuIngredientRepository.findOne({
+            where: { menu_ingredient_id },
+          });
+        }
+
         if (menuIngredient) {
           // ถ้ามีอยู่แล้วให้อัพเดท quantity_used
           menuIngredient.quantity_used = quantity_used;
@@ -774,7 +784,7 @@ export class MenuService {
         } else {
           // ถ้าไม่มีให้สร้างใหม่
           menuIngredient = this.menuIngredientRepository.create({
-            menu_ingredient_id: stockItem.menu_ingredient_id || uuidv4(),
+            menu_ingredient_id: menu_ingredient_id || uuidv4(),
             menu,
             ingredient,
             size,
@@ -787,11 +797,18 @@ export class MenuService {
           await this.menuIngredientRepository.save(menuIngredient);
         }
       }
+
+      // เพิ่มข้อมูล ingredient_id และ ingredient_name ลงในผลลัพธ์
+      results.push({
+        ingredient_id: ingredient.ingredient_id,
+        ingredient_name: ingredient.ingredient_name,
+      });
     }
 
     return {
       message: 'Link Stock successfully',
       statusCode: HttpStatus.OK,
+      ingredients: results, // คืนค่าผลลัพธ์ที่มี ingredient_id และ ingredient_name
     };
   }
 
