@@ -94,6 +94,7 @@ export class BranchController {
     }
 
     // Check if ownerId is still a string
+    console.log("OWBER TYPE:", typeof ownerId)
     if (typeof ownerId !== 'string') {
       throw new BadRequestException('Invalid owner_id');
     }
@@ -109,6 +110,8 @@ export class BranchController {
     const ownerId = Array.isArray(request.headers['owner_id'])
       ? request.headers['owner_id'][0]
       : request.headers['owner_id'];
+
+    console.log("OWBER TYPE:", typeof ownerId)
 
     const branchId = Array.isArray(request.headers['branch_id'])
       ? request.headers['branch_id'][0]

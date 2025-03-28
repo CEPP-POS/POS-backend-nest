@@ -1,8 +1,8 @@
 ### Create a new Menu 👌
-POST http://localhost:3000/owner/menus
+POST http://10.240.67.14:80/api/owner/menus
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
-branch_id: d458dffa-855b-4040-afba-dbf97055a820
+branch_id: 85f246e6-42da-4b82-8cf4-bdf2c62fa131
 {
   "menu_name": "นมสดm",
   "description": "Delicious นมสด",
@@ -14,7 +14,7 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
 GET http://localhost:3000/owner/menus
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
-branch_id: d458dffa-855b-4040-afba-dbf97055a820
+branch_id: 85f246e6-42da-4b82-8cf4-bdf2c62fa131
 
 ### Get a specific Menu by ID👌
 GET http://localhost:3000/owner/menus/33769a3a-5bfb-41c8-8971-744dae1d92aa

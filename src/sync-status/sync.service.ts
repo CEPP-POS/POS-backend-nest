@@ -99,6 +99,7 @@ export class SyncService {
 
     await new Promise(res => setTimeout(res, 1000));
   }
+  
   async getPendingSyncs() {
     return await this.syncRepo.find({
       where: { synced: false },

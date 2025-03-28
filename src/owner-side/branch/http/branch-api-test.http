@@ -13,7 +13,7 @@ Content-Type: application/json
 GET http://localhost:3000/branches
 
 ### Get all Branches by owner_id
-GET http://localhost:3000/branches/owner/c630720f-f05d-4d91-ba66-8a7dd60c2353
+GET http://10.240.67.14:80/api/branches/owner/c630720f-f05d-4d91-ba66-8a7dd60c2353
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 
 ### Get a specific Branch by ID
@@ -43,12 +43,12 @@ owner_id: 1
 branch_id: 4
 
 ### Get Branch Setup
-GET http://192.168.1.53:3000/branches/owner/get-branch-setup/d458dffa-855b-4040-afba-dbf97055a820
+GET http://10.240.67.14:80/api/branches/owner/get-branch-setup/d458dffa-855b-4040-afba-dbf97055a820
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 
 ### Clone Branch Setup /branch ที่ต้องการจะ clone
-POST http://localhost:3000/branches/owner/clone-branch-setup/d458dffa-855b-4040-afba-dbf97055a820
+POST http://localhost:3000/branches/owner/clone-branch-setup/85f246e6-42da-4b82-8cf4-bdf2c62fa131
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
-branch_id: 25b217e3-6158-4edb-98e2-5fad824f8d92
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
