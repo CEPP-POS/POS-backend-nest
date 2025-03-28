@@ -516,10 +516,8 @@ export class DashboardService {
     await this.ingredientCategoryRepository.save(newCategory);
 
     return {
-      message: 'สร้างหมวดหมู่สำเร็จ',
+      ingredient_category_id: newCategory.ingredient_category_id,
       category_name: category_name,
-      owner_id: owner_id,
-      branch_id: branch_id,
     };
   }
 
