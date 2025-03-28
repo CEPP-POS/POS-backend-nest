@@ -552,6 +552,7 @@ export class MenuService {
         price: size.size_price,
         size_order: size.size_order,
       })),
+      menu_id: createSizeDto.menu_id,
     };
   }
 
