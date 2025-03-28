@@ -273,7 +273,7 @@ export class MenuService {
       const sweetnessId = option.sweetness_id || uuidv4(); // ใช้ sweetness_id ถ้ามี ถ้าไม่มีก็สร้างใหม่
       return {
         sweetness_id: sweetnessId,
-        sweetness_order: index + 1, // ใช้ index + 1
+        sweetness_order: option.sweetness_order || index + 1, // ใช้ index + 1
         level_name: option.level_name,
         owner: { owner_id: ownerId },
         branch: { branch_id: branchId },
@@ -313,7 +313,14 @@ export class MenuService {
     }
 
     throw new HttpException(
-      { message: `All sweetness options and groups created successfully` },
+      {
+        message: `All sweetness options and groups created successfully`,
+        sweetness: savedSweetnessLevels.map((sweetness) => ({
+          sweetness_id: sweetness.sweetness_id,
+          level_name: sweetness.level_name,
+          sweetness_order: sweetness.sweetness_order,
+        })),
+      },
       HttpStatus.OK,
     );
   }

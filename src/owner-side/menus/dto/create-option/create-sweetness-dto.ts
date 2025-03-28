@@ -16,6 +16,10 @@ class SweetnessOption {
 
   @IsString()
   level_name: string;
+
+  @IsOptional()
+  @IsString()
+  sweetness_order?: number;
 }
 
 export class CreateSweetnessDto {

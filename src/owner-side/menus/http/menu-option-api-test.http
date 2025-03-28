@@ -1,14 +1,14 @@
-### สร้าง sweetness ผูกกับ menu 👌
+### สร้าง sweetness ผูกกับ menu 👌✅
 POST http://localhost:3000/owner/menus/options/sweetness
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "sweetness_group_name": "ความหวานฟิก",
+  "sweetness_group_name": "ความหวานฟิก2",
   "options": [
-    {"sweetness_id": "0df79d3d-a3bd-4974-92a9-2966e3fc62f8","level_name": "หวานน้อยๆ" },
-    {"sweetness_id": "5618d2a3-0019-44d8-9d3f-25e780ef7dbb","level_name": "หวานกลางๆ"},
-    {"sweetness_id": "8f5744ce-e23c-4b5c-b097-e91009eb39ea","level_name": "หวานมากๆ" }
+    {"sweetness_id": "6657e6e6-bc94-42e7-a416-442f83addf07","level_name": "หวานน้อยๆ" ,"sweetness_order": 4},
+    {"sweetness_id": "718b9eb7-e195-4703-94dc-afc26d289028","level_name": "หวานกลางๆ", "sweetness_order": 5},
+    {"sweetness_id": "c2de9c62-0233-494d-86ab-43019d8b0f8d","level_name": "หวานมากๆ","sweetness_order": 6}
   ],
   "menu_id": ["3b9335a8-9d4b-40e3-ac37-1e299b213436"]
 }
