@@ -1,18 +1,13 @@
 ####### ping google for check connection #######
-GET http://192.168.3.80:3000/sync/check-connection
-Content-Type: application/json
-owner_id: 13
-branch_id: 7
-
 POST http://localhost:3000/status/offline  
 Content-Type: application/json
 {
-  "path": "http://192.168.3.73:3000/owner/menus",
+  "path": "http://192.168.3.86:3000/owner/menus",
   "method": "POST",
   "statusCode": 404,
   "payload": {
-    "menu_name": "thai tea",
-    "description": "thai tea from thailand",
+    "menu_name": "thai tea ma leaew jaaa",
+    "description": "thai tea from memeeeeeeeeeeeeeeeeee",
     "price": 100,
     "image_url": "http://example.com/spaghetti.jpg"
   },
@@ -26,35 +21,24 @@ Content-Type: application/json
 owner_id: ba9f18e5-2d91-48b9-b7c6-bb6ff70440b0
 branch_id: 4d5abfe9-f2b0-4dda-96d2-ffe68797fe74
 
-### Get sync status for a branch
-GET http://192.168.3.80:3000/sync/status
-Content-Type: application/json
-owner_id: 13
-branch_id: 7
 
-### Manually trigger data sync
-POST http://192.168.3.80:3000/sync/sync-now
-Content-Type: application/json
-owner_id: 13
-branch_id: 7
 
-GET http://192.168.3.80:3000/sync/test/internet-check
 
-POST http://192.168.3.80:3000/sync-status/connection-status
 
-POST http://192.168.3.80:3000/sync-status/check-status
-Content-Type: application/json
-{
-  "path": "http://192.168.3.80:3000/owner/menus",
-  "statusCode": 404,
-  "data": {
-  "menu_name": "ชานมไต้หวันmmm",
-  "description": "Delicious ไต้หวัน",
-  "price": 40,
-  "image_url": "http://example.com/spaghetti.jpg"
-  }
-}
 
-# GET http://10.66.14.48:3000/sync-status/pending-syncs
 
-# DELETE http://10.66.14.48:3000/sync-status/clear-syncs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
