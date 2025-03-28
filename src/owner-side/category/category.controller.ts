@@ -17,7 +17,7 @@ import { CreateCategoryDto } from './dto/create-category/create-category.dto';
 
 @Controller('owner/categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) { }
+  constructor(private readonly categoryService: CategoryService) {}
 
   @Get('all/menus')
   async getAllCategoriesWithMenus(@Req() request: Request) {
@@ -99,7 +99,10 @@ export class CategoryController {
       branch_id: branchId,
     };
 
-    return await this.categoryService.create(CategoryData), HttpStatus.CREATED;
+    return {
+      statusCode: HttpStatus.CREATED,
+      data: await this.categoryService.create(CategoryData),
+    };
   }
 
   @Delete(':id')
