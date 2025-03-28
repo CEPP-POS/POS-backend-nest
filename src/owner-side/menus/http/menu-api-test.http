@@ -43,7 +43,7 @@ owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 
-### link Ingredient to Menu for auto cut stock👌✅
+### link Ingredient to Menu for auto cut stock👌✅✅
 POST http://localhost:3000/owner/menus/stock/51d9180f-85e5-4ad8-832d-0a1e20ec1157
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
@@ -51,8 +51,7 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
   "menuData": [
     {
-      "ingredient_id": "ee971ec2-415b-4e32-b6f1-8c9755d028e8",
-      "ingredient_name": "น้ำเชื่อม7",
+      "ingredient_name": "น้ำเชื่อม10",
       "unit": "ml",
       "ingredientListForStock": [
         { "size_id": "6a7386ef-6516-482b-ab90-4ab841bb124d", "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf", "quantity_used": 10 },

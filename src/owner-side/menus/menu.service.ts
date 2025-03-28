@@ -827,9 +827,16 @@ export class MenuService {
     }
 
     return {
-      message: 'Link Stock successfully',
-      statusCode: HttpStatus.OK,
-      ingredients: results, // คืนค่าผลลัพธ์ที่มี ingredient_id และ ingredient_name
+      menuData: results.map((result) => ({
+        ingredient_id: result.ingredient_id,
+        ingredient_name: result.ingredient_name,
+        unit: linkMenuToStockDtoList.find(
+          (dto) => dto.ingredient_name === result.ingredient_name,
+        )?.unit,
+        ingredientListForStock: linkMenuToStockDtoList
+          .map((dto) => dto.ingredientListForStock)
+          .flat(),
+      })),
     };
   }
 
