@@ -269,20 +269,21 @@ export class MenuService {
     }
 
     // Step 1: Insert sweetness levels
-    const sweetnessLevels = createSweetnessDto.options.map((option, index) => ({
-      sweetness_id: createSweetnessDto.sweetness_id || uuidv4(),
-      sweetness_order: createSweetnessDto.sweetness_order || index + 1, // ใช้ size_order ที่ส่งมา หรือกำหนดเป็น index + 1
-      level_name: option,
-      owner: { owner_id: ownerId },
-      branch: { branch_id: branchId },
-    }));
-    sweetnessLevels.forEach((sweetness) => {
-      console.log('Owner ID:', sweetness.owner.owner_id);
-      console.log('Branch ID:', sweetness.branch.branch_id);
+    const sweetnessLevels = createSweetnessDto.options.map((option, index) => {
+      const sweetnessId = option.sweetness_id || uuidv4(); // ใช้ sweetness_id ถ้ามี ถ้าไม่มีก็สร้างใหม่
+      return {
+        sweetness_id: sweetnessId,
+        sweetness_order: index + 1, // ใช้ index + 1
+        level_name: option.level_name,
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      };
     });
+
+    // บันทึก sweetness levels
     const savedSweetnessLevels =
       await this.sweetnessLevelRepository.save(sweetnessLevels);
-    console.log(savedSweetnessLevels);
+
     // Step 2: Create sweetness groups
     const sweetnessGroups = savedSweetnessLevels.map((sweetness) => ({
       sweetness_group_id: createSweetnessDto.sweetness_group_id || uuidv4(),
@@ -292,7 +293,6 @@ export class MenuService {
       branch: { branch_id: branchId },
     }));
 
-    // const savedSweetnessGroups =
     await this.sweetnessGroupRepository.save(sweetnessGroups);
 
     // Ensure the sweetness group exists

@@ -5,7 +5,18 @@ import {
   IsBoolean,
   IsOptional,
   IsNumber,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class SweetnessOption {
+  @IsOptional()
+  @IsString()
+  sweetness_id?: string;
+
+  @IsString()
+  level_name: string;
+}
 
 export class CreateSweetnessDto {
   @IsOptional()
@@ -25,8 +36,9 @@ export class CreateSweetnessDto {
 
   @IsArray()
   @ArrayNotEmpty()
-  @IsString({ each: true })
-  options: string[];
+  @ValidateNested({ each: true })
+  @Type(() => SweetnessOption)
+  options: SweetnessOption[];
 
   @IsArray()
   @ArrayNotEmpty()

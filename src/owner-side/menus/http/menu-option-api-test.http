@@ -4,13 +4,13 @@ Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "sweetness_group_name": "ความหวานนม",
+  "sweetness_group_name": "ความหวานฟิก",
   "options": [
-    "หวานน้อย",
-    "หวานกลาง",
-    "หวานมาก"
+    {"sweetness_id": "0df79d3d-a3bd-4974-92a9-2966e3fc62f8","level_name": "หวานน้อยๆ" },
+    {"sweetness_id": "5618d2a3-0019-44d8-9d3f-25e780ef7dbb","level_name": "หวานกลางๆ"},
+    {"sweetness_id": "8f5744ce-e23c-4b5c-b097-e91009eb39ea","level_name": "หวานมากๆ" }
   ],
-  "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc","33769a3a-5bfb-41c8-8971-744dae1d92aa"]
+  "menu_id": ["3b9335a8-9d4b-40e3-ac37-1e299b213436"]
 }
 
 ### แก้ไข sweetness ผูกกับ menu 👌
