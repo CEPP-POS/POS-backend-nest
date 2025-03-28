@@ -509,8 +509,8 @@ export class MenuService {
     const sizes = createSizeDto.options.map((option, index) => ({
       size_id: option.size_id || uuidv4(),
       size_order: option.size_order || index + 1, // ใช้ size_order ที่ส่งมา หรือกำหนดเป็น index + 1
-      size_name: Object.keys(option)[0],
-      size_price: parseFloat(Object.values(option)[0].price),
+      size_name: option.size_name,
+      size_price: parseFloat(option.price),
       owner: { owner_id: ownerId },
       branch: { branch_id: branchId },
     }));
@@ -545,12 +545,13 @@ export class MenuService {
         { sizeGroup: sizeGroup },
       );
     }
-    // คืนค่า JSON ที่มี size_id และ size_order
+    // คืนค่า JSON ที่มี size_id, size_name, size_order และ price
     return {
-      message: `All size options and groups created successfully`,
-      sizes: savedSizes.map((size) => ({
+      size_group_name: sizeGroup.size_group_name,
+      options: savedSizes.map((size) => ({
         size_id: size.size_id,
         size_name: size.size_name,
+        price: size.size_price,
         size_order: size.size_order,
       })),
     };

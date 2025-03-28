@@ -20,6 +20,14 @@ class SizeOption {
   @IsOptional()
   @IsString()
   size_order?: number;
+
+  @IsOptional()
+  @IsString()
+  price?: string;
+
+  @IsOptional()
+  @IsString()
+  size_name?: string;
 }
 
 export class CreateSizeDto {

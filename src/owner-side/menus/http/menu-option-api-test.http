@@ -100,18 +100,18 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   "is_multiple": true
 }
 
-### เพิ่ม size ผูกกับ menu👌✅
+### เพิ่ม size ผูกกับ menu👌✅✅
 POST http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 {
-  "size_group_name": "ขนาดแก้วนม5",
+  "size_group_name": "ขนาดแก้วนม6",
    "options": [
-    { "size_id": "b09a6d3a-9428-423c-a7f7-5d6d65dd500e", "size_name":"m",  "price": "25.00", "size_order":2 },
-    { "size_id": "73ac3651-e175-42a2-8b3d-54ca38cc21ad", "size_name":"l",  "price": "35.00", "size_order":3},
-    { "size_id": "ed03c76a-eea5-4037-8959-2877db5d24ed", "size_name":"xl",  "price": "45.00", "size_order":4}
+    { "size_name":"m",  "price": "25.50" },
+    { "size_name":"l",  "price": "35.00"},
+    { "size_name":"xl", "price": "45.00"}
   ],
   "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc","33769a3a-5bfb-41c8-8971-744dae1d92aa"]
 }
