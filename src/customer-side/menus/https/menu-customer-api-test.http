@@ -5,7 +5,7 @@ owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 ### ลูกค้าดูรายละเอียดภายใน menu 👌
-GET http://localhost:3000/customer/menus/bb24ae81-b635-49df-a74b-5b9cac4e4633
+GET http://localhost:3000/customer/menus/33769a3a-5bfb-41c8-8971-744dae1d92aa
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820

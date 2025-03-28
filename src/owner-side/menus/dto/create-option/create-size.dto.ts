@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
@@ -12,6 +13,10 @@ export class CreateSizeDto {
   @IsOptional()
   @IsString()
   size_group_id?: string;
+
+  @IsOptional()
+  @IsNumber()
+  size_order?: number;
 
   @IsString()
   size_group_name: string;

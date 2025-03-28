@@ -4,12 +4,17 @@ import {
   ArrayNotEmpty,
   IsBoolean,
   IsOptional,
+  IsNumber,
 } from 'class-validator';
 
 export class CreateSweetnessDto {
   @IsOptional()
   @IsString()
   sweetness_id?: string;
+
+  @IsOptional()
+  @IsNumber()
+  sweetness_order?: number;
 
   @IsOptional()
   @IsString()

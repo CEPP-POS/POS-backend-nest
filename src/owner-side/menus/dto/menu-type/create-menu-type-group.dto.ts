@@ -19,12 +19,20 @@ class OptionDto {
   @IsOptional()
   @IsUUID()
   menu_type_id?: string;
+
+  @IsOptional()
+  @IsNumber()
+  menu_type_order?: number;
 }
 
 export class CreateMenuTypeGroupDto {
   @IsOptional()
   @IsString()
   menu_type_id?: string;
+
+  @IsOptional()
+  @IsNumber()
+  menu_type_order?: number;
 
   @IsOptional()
   @IsUUID()

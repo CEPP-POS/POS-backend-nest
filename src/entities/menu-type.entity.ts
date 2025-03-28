@@ -17,6 +17,9 @@ export class MenuType {
   @PrimaryColumn({ type: 'uuid' })
   menu_type_id: string;
 
+  @Column({ nullable: true })
+  menu_type_order: number;
+
   @Column()
   type_name: string;
 

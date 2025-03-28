@@ -97,7 +97,7 @@ owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 {
-  "size_group_name": "ขนาดแก้วสำหรับนม",
+  "size_group_name": "ขนาดแก้วนม3",
    "options": [
     { "s":  { "price": "5.00" } },
     { "m":  { "price": "10.00" } },
@@ -138,8 +138,9 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
   "menu_type_group_name": "สำหรับนม",
   "options": [
-    { "ปั่นเย็น": "10.00" },
-    { "iceน้อย": "0.00" }
+    { "ร้อน": "0.00" },
+    { "เย็น": "0.00" },
+    { "ปั่น": "10.00" }
   ],
   "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc", "33769a3a-5bfb-41c8-8971-744dae1d92aa"]
 }

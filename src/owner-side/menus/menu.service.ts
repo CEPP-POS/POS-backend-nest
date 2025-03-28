@@ -269,8 +269,9 @@ export class MenuService {
     }
 
     // Step 1: Insert sweetness levels
-    const sweetnessLevels = createSweetnessDto.options.map((option) => ({
+    const sweetnessLevels = createSweetnessDto.options.map((option, index) => ({
       sweetness_id: createSweetnessDto.sweetness_id || uuidv4(),
+      sweetness_order: createSweetnessDto.sweetness_order || index + 1, // ใช้ size_order ที่ส่งมา หรือกำหนดเป็น index + 1
       level_name: option,
       owner: { owner_id: ownerId },
       branch: { branch_id: branchId },
@@ -498,8 +499,9 @@ export class MenuService {
     }
 
     // Step 1: Insert sizes name and size price into the size table
-    const sizes = createSizeDto.options.map((option) => ({
+    const sizes = createSizeDto.options.map((option, index) => ({
       size_id: option.size_id || uuidv4(),
+      size_order: option.size_order || index + 1, // ใช้ size_order ที่ส่งมา หรือกำหนดเป็น index + 1
       size_name: Object.keys(option)[0],
       size_price: parseFloat(Object.values(option)[0].price),
       owner: { owner_id: ownerId },
@@ -525,8 +527,6 @@ export class MenuService {
       where: { size_group_name: createSizeDto.size_group_name },
     });
 
-    console.log('size group:', sizeGroup.size_group_name);
-
     if (!sizeGroup) {
       throw new Error('Size Group not found');
     }
@@ -538,11 +538,14 @@ export class MenuService {
         { sizeGroup: sizeGroup },
       );
     }
-
-    throw new HttpException(
-      { message: `All size options and groups created successfully` },
-      HttpStatus.OK,
-    );
+    // คืนค่า JSON ที่มี size_id และ size_order
+    return {
+      message: `All size options and groups created successfully`,
+      sizes: savedSizes.map((size) => ({
+        size_id: size.size_id,
+        size_order: size.size_order,
+      })),
+    };
   }
 
   //POST ADD ON OPTION
@@ -997,10 +1000,11 @@ export class MenuService {
       });
       if (!branch) throw new NotFoundException('Branch not found');
 
-      const menuTypes = dto.options.map((option) => {
+      const menuTypes = dto.options.map((option, index) => {
         const typeName = Object.keys(option)[0];
         return {
           menu_type_id: option.menu_type_id || uuidv4(),
+          menu_type_order: option.menu_type_order || index + 1, // ใช้ size_order ที่ส่งมา หรือกำหนดเป็น index + 1
           type_name: typeName,
           price_difference: parseFloat(Object.values(option)[0]),
           is_delete: false,
