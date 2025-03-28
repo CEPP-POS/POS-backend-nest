@@ -550,6 +550,7 @@ export class MenuService {
       message: `All size options and groups created successfully`,
       sizes: savedSizes.map((size) => ({
         size_id: size.size_id,
+        size_name: size.size_name,
         size_order: size.size_order,
       })),
     };

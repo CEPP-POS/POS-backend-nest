@@ -312,7 +312,12 @@ export class MenuController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    await this.menuService.createSize('size', createSizeDto, ownerId, branchId);
+    return await this.menuService.createSize(
+      'size',
+      createSizeDto,
+      ownerId,
+      branchId,
+    );
   }
 
   @Post('options/add-ons')

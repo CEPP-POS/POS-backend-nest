@@ -6,8 +6,21 @@ import {
   IsOptional,
   IsString,
   ValidateNested,
+  ArrayNotEmpty,
 } from 'class-validator';
 import { Size } from 'src/entities/size.entity';
+class SizeOption {
+  @IsOptional()
+  @IsString()
+  size_id?: string;
+
+  @IsString()
+  level_name: string;
+
+  @IsOptional()
+  @IsString()
+  size_order?: number;
+}
 
 export class CreateSizeDto {
   @IsOptional()
@@ -22,9 +35,10 @@ export class CreateSizeDto {
   size_group_name: string;
 
   @IsArray()
+  @ArrayNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => Size)
-  options: Size[];
+  options: SizeOption[];
 
   @IsArray()
   @IsString({ each: true })
