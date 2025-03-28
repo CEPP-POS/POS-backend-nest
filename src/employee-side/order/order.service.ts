@@ -387,7 +387,9 @@ export class OrderService {
     const savedOrder = await this.orderRepository.save(newOrder);
 
     // Calculate total amount with 7% VAT
-    const totalAmount = createOrderDto.total_price * 1.07;
+    const totalAmount = parseFloat(
+      (createOrderDto.total_price * 1.07).toFixed(2),
+    );
 
     // Create payment record
     const payment = this.paymentRepository.create({
@@ -757,7 +759,14 @@ export class OrderService {
   async payWithCash(
     order_id: string,
     payWithCashDto: PayWithCashDto,
-  ): Promise<Order> {
+  ): Promise<{
+    payment_id: string;
+    total_amount: number;
+    cash_given: number;
+    change: number;
+    status: string;
+    amount: number;
+  }> {
     const order = await this.orderRepository.findOne({
       where: { order_id: order_id },
       relations: ['owner', 'branch'],
@@ -772,7 +781,7 @@ export class OrderService {
     });
 
     // คำนวณ total_amount รวม VAT 7%
-    const totalAmount = payWithCashDto.amount * 1.07;
+    const totalAmount = parseFloat((payWithCashDto.amount * 1.07).toFixed(2));
 
     if (!payment) {
       // If no payment exists, create a new one
@@ -810,11 +819,14 @@ export class OrderService {
     // Update order status
     order.status = 'paid';
     await this.orderRepository.save(order);
-
-    return this.orderRepository.findOne({
-      where: { order_id: order_id },
-      relations: ['owner', 'branch'],
-    });
+    return {
+      payment_id: payment.payment_id,
+      total_amount: totalAmount,
+      cash_given: payWithCashDto.cash_given,
+      change: payWithCashDto.change,
+      status: payment.status,
+      amount: payWithCashDto.amount,
+    };
   }
 
   // เพิ่มฟังก์ชันสำหรับอัพเดทสถานะการชำระเงิน

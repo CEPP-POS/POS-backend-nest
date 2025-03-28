@@ -43,7 +43,6 @@ export class CategoryService {
     });
   }
 
-
   async findOne(id: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({
       where: { category_id: id },
@@ -122,11 +121,9 @@ export class CategoryService {
     }
 
     return {
-      message: 'Category created successfully',
-      category: {
-        category_id: category.category_id,
-        category_name: category.category_name,
-      },
+      category_id: category.category_id,
+      category_name: category.category_name,
+      menu_id: menu_id,
     };
   }
 

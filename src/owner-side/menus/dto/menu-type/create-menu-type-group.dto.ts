@@ -10,22 +10,22 @@ import {
 import { Type } from 'class-transformer';
 
 class OptionDto {
-  @IsString()
-  name: string;
-
-  @IsNumber()
-  price: number;
-
   @IsOptional()
   @IsUUID()
   menu_type_id?: string;
+
+  @IsString()
+  type_name: string;
+
+  @IsNumber()
+  price_difference: number;
+
+  @IsOptional()
+  @IsNumber()
+  menu_type_order?: number;
 }
 
 export class CreateMenuTypeGroupDto {
-  @IsOptional()
-  @IsString()
-  menu_type_id?: string;
-
   @IsOptional()
   @IsUUID()
   menu_type_group_id?: string;

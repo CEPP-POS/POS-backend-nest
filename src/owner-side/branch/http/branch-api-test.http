@@ -37,11 +37,6 @@ Content-Type: application/json
 owner_id: 1
 branch_id: 1
 
-POST http://localhost:3000/branches/owner/clone-branch-setup/1
-Content-Type: application/json
-owner_id: 1
-branch_id: 4
-
 ### Get Branch Setup
 GET http://10.240.67.14:80/api/branches/owner/get-branch-setup/d458dffa-855b-4040-afba-dbf97055a820
 Content-Type: application/json

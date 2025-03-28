@@ -516,10 +516,8 @@ export class DashboardService {
     await this.ingredientCategoryRepository.save(newCategory);
 
     return {
-      message: 'สร้างหมวดหมู่สำเร็จ',
+      ingredient_category_id: newCategory.ingredient_category_id,
       category_name: category_name,
-      owner_id: owner_id,
-      branch_id: branch_id,
     };
   }
 
@@ -621,9 +619,15 @@ export class DashboardService {
         .getRawOne();
 
       return {
-        message: 'Stock updated successfully',
         ingredient_id: ingredient.ingredient_id,
         update_id: existingUpdate.update_id,
+        image_url: image_url,
+        ingredient_name: ingredient_name,
+        net_volume: net_volume,
+        unit: unit,
+        quantity_in_stock: existingUpdate.quantity_in_stock,
+        category_name: category_name,
+        expiration_date: new Date(expiration_date).toISOString().split('T')[0],
         total_volume: totalVolumeResult.total || 0,
       };
     } else {
@@ -652,9 +656,15 @@ export class DashboardService {
         .getRawOne();
 
       return {
-        message: 'Ingredient created successfully',
         ingredient_id: ingredient.ingredient_id,
         update_id: newUpdate.update_id,
+        image_url: image_url,
+        ingredient_name: ingredient_name,
+        net_volume: net_volume,
+        unit: unit,
+        quantity_in_stock: newUpdate.quantity_in_stock,
+        category_name: category_name,
+        expiration_date: new Date(expiration_date).toISOString().split('T')[0],
         total_volume: totalVolumeResult.total || 0,
       };
     }
@@ -1082,11 +1092,11 @@ export class DashboardService {
         ? order.payment.payment_method
         : 'Unknown';
 
-      console.log("ORDER DETAILS:", order)
-      console.log("ORDER AMOUNT:", order.payment)
+      console.log('ORDER DETAILS:', order);
+      console.log('ORDER AMOUNT:', order.payment);
 
       if (order.payment.amount === null) {
-        console.log("ORDER AMOUNT NULL FOUND:", order.payment);
+        console.log('ORDER AMOUNT NULL FOUND:', order.payment);
       }
 
       const amount = order.payment.amount;

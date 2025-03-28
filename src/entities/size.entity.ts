@@ -17,6 +17,9 @@ export class Size {
   @PrimaryColumn({ type: 'uuid' })
   size_id: string;
 
+  @Column({ nullable: true })
+  size_order: number;
+
   @Column({ nullable: false })
   size_name: string;
 

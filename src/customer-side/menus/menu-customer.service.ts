@@ -60,7 +60,7 @@ export class MenuCustomerService {
 
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
-  ) { }
+  ) {}
 
   async getCustomerMenus(ownerId: string, branchId: string) {
     // ดึงข้อมูลเมนูทั้งหมดที่เกี่ยวข้อง
@@ -196,95 +196,98 @@ export class MenuCustomerService {
     // 2. ค้นหา menu types จาก menu type group
     const menuTypes = menu.menuTypeGroup
       ? await this.menuTypeRepository
-        .createQueryBuilder('mt')
-        .innerJoin(
-          'menu_type_group',
-          'mtg',
-          'mtg.menu_type_id = mt.menu_type_id',
-        )
-        .where((qb) => {
-          const subQuery = qb
-            .subQuery()
-            .select('menu_type_group_name')
-            .from('menu_type_group', 'mtg2')
-            .where('mtg2.menu_type_group_id = :groupId')
-            .getQuery();
-          return 'mtg.menu_type_group_name = ' + subQuery;
-        })
-        .setParameter('groupId', menu.menuTypeGroup.menu_type_group_id)
-        .andWhere('mt.is_delete = :isDelete', { isDelete: false })
-        .andWhere('mt.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
-        .andWhere('mt.branch_id = :branchId', {
-          branchId: menu.branch.branch_id,
-        })
-        .distinct()
-        .select([
-          'mt.menu_type_id as menu_type_id',
-          'mt.type_name as type_name',
-          'mt.price_difference as price_difference',
-        ])
-        .getRawMany()
+          .createQueryBuilder('mt')
+          .innerJoin(
+            'menu_type_group',
+            'mtg',
+            'mtg.menu_type_id = mt.menu_type_id',
+          )
+          .where((qb) => {
+            const subQuery = qb
+              .subQuery()
+              .select('menu_type_group_name')
+              .from('menu_type_group', 'mtg2')
+              .where('mtg2.menu_type_group_id = :groupId')
+              .getQuery();
+            return 'mtg.menu_type_group_name = ' + subQuery;
+          })
+          .setParameter('groupId', menu.menuTypeGroup.menu_type_group_id)
+          .andWhere('mt.is_delete = :isDelete', { isDelete: false })
+          .andWhere('mt.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
+          .andWhere('mt.branch_id = :branchId', {
+            branchId: menu.branch.branch_id,
+          })
+          .distinct()
+          .select([
+            'mt.menu_type_id as menu_type_id',
+            'mt.type_name as type_name',
+            'mt.price_difference as price_difference',
+            'mt.menu_type_order as menu_type_order',
+          ])
+          .getRawMany()
       : [];
 
     // 3. ค้นหา sweetness levels จาก sweetness group
     const sweetnessLevels = menu.sweetnessGroup
       ? await this.sweetnessLevelRepository
-        .createQueryBuilder('sl')
-        .innerJoin(
-          'sweetness_group',
-          'sg',
-          'sg.sweetness_id = sl.sweetness_id',
-        )
-        .where((qb) => {
-          const subQuery = qb
-            .subQuery()
-            .select('sweetness_group_name')
-            .from('sweetness_group', 'sg2')
-            .where('sg2.sweetness_group_id = :groupId')
-            .getQuery();
-          return 'sg.sweetness_group_name = ' + subQuery;
-        })
-        .setParameter('groupId', menu.sweetnessGroup.sweetness_group_id)
-        .andWhere('sl.is_delete = :isDelete', { isDelete: false })
-        .andWhere('sl.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
-        .andWhere('sl.branch_id = :branchId', {
-          branchId: menu.branch.branch_id,
-        })
-        .distinct()
-        .select([
-          'sl.sweetness_id as sweetness_id',
-          'sl.level_name as level_name',
-        ])
-        .getRawMany()
+          .createQueryBuilder('sl')
+          .innerJoin(
+            'sweetness_group',
+            'sg',
+            'sg.sweetness_id = sl.sweetness_id',
+          )
+          .where((qb) => {
+            const subQuery = qb
+              .subQuery()
+              .select('sweetness_group_name')
+              .from('sweetness_group', 'sg2')
+              .where('sg2.sweetness_group_id = :groupId')
+              .getQuery();
+            return 'sg.sweetness_group_name = ' + subQuery;
+          })
+          .setParameter('groupId', menu.sweetnessGroup.sweetness_group_id)
+          .andWhere('sl.is_delete = :isDelete', { isDelete: false })
+          .andWhere('sl.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
+          .andWhere('sl.branch_id = :branchId', {
+            branchId: menu.branch.branch_id,
+          })
+          .distinct()
+          .select([
+            'sl.sweetness_id as sweetness_id',
+            'sl.level_name as level_name',
+            'sl.sweetness_order as sweetness_order',
+          ])
+          .getRawMany()
       : [];
 
     // 4. ค้นหา sizes จาก size group
     const sizes = menu.sizeGroup
       ? await this.sizeRepository
-        .createQueryBuilder('s')
-        .innerJoin('size_group', 'sg', 'sg.size_id = s.size_id')
-        .where((qb) => {
-          const subQuery = qb
-            .subQuery()
-            .select('size_group_name')
-            .from('size_group', 'sg2')
-            .where('sg2.size_group_id = :groupId')
-            .getQuery();
-          return 'sg.size_group_name = ' + subQuery;
-        })
-        .setParameter('groupId', menu.sizeGroup.size_group_id)
-        .andWhere('s.is_delete = :isDelete', { isDelete: false })
-        .andWhere('s.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
-        .andWhere('s.branch_id = :branchId', {
-          branchId: menu.branch.branch_id,
-        })
-        .distinct()
-        .select([
-          's.size_id as size_id',
-          's.size_name as size_name',
-          's.size_price as size_price',
-        ])
-        .getRawMany()
+          .createQueryBuilder('s')
+          .innerJoin('size_group', 'sg', 'sg.size_id = s.size_id')
+          .where((qb) => {
+            const subQuery = qb
+              .subQuery()
+              .select('size_group_name')
+              .from('size_group', 'sg2')
+              .where('sg2.size_group_id = :groupId')
+              .getQuery();
+            return 'sg.size_group_name = ' + subQuery;
+          })
+          .setParameter('groupId', menu.sizeGroup.size_group_id)
+          .andWhere('s.is_delete = :isDelete', { isDelete: false })
+          .andWhere('s.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
+          .andWhere('s.branch_id = :branchId', {
+            branchId: menu.branch.branch_id,
+          })
+          .distinct()
+          .select([
+            's.size_id as size_id',
+            's.size_name as size_name',
+            's.size_price as size_price',
+            's.size_order as size_order',
+          ])
+          .getRawMany()
       : [];
 
     // 5. ค้นหา add-ons
@@ -326,9 +329,13 @@ export class MenuCustomerService {
       price: menu.price,
       description: menu.description,
       image_url: menu.image_url,
-      menu_type_group: menuTypes,
-      sweetness_group: sweetnessLevels,
-      size_group: sizes,
+      menu_type_group: menuTypes.sort(
+        (a, b) => a.menu_type_order - b.menu_type_order,
+      ),
+      sweetness_group: sweetnessLevels.sort(
+        (a, b) => a.sweetness_order - b.sweetness_order,
+      ),
+      size_group: sizes.sort((a, b) => a.size_order - b.size_order),
       add_on: addOns,
     };
   }

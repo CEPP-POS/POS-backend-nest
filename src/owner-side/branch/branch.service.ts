@@ -196,6 +196,7 @@ export class BranchService {
           size_id: true,
           size_name: true,
           size_price: true,
+          size_order: true,
           is_delete: true,
           owner: {
             owner_id: true,
@@ -242,6 +243,7 @@ export class BranchService {
         },
         select: {
           sweetness_id: true,
+          sweetness_order: true,
           level_name: true,
           is_delete: true,
           owner: {
@@ -289,6 +291,7 @@ export class BranchService {
         },
         select: {
           menu_type_id: true,
+          menu_type_order: true,
           type_name: true,
           price_difference: true,
           is_delete: true,
@@ -559,12 +562,16 @@ export class BranchService {
       );
 
       const sourceSetup = response.data;
-      const owner = await this.ownerRepository.findOne({ where: { owner_id: ownerId } });
-      const branch = await this.branchRepository.findOne({ where: { branch_id: targetBranchId } });
+      const owner = await this.ownerRepository.findOne({
+        where: { owner_id: ownerId },
+      });
+      const branch = await this.branchRepository.findOne({
+        where: { branch_id: targetBranchId },
+      });
 
       // บันทึกข้อมูล Size
       if (sourceSetup.size && sourceSetup.size.length > 0) {
-        const sizes = sourceSetup.size.map(size => ({
+        const sizes = sourceSetup.size.map((size) => ({
           ...size,
           owner,
           branch,
@@ -574,7 +581,7 @@ export class BranchService {
 
       // บันทึกข้อมูล SizeGroup
       if (sourceSetup.size_group && sourceSetup.size_group.length > 0) {
-        const sizeGroups = sourceSetup.size_group.map(group => ({
+        const sizeGroups = sourceSetup.size_group.map((group) => ({
           ...group,
           owner,
           branch,
@@ -583,8 +590,11 @@ export class BranchService {
       }
 
       // บันทึกข้อมูล SweetnessLevel
-      if (sourceSetup.sweetness_level && sourceSetup.sweetness_level.length > 0) {
-        const sweetnessLevels = sourceSetup.sweetness_level.map(level => ({
+      if (
+        sourceSetup.sweetness_level &&
+        sourceSetup.sweetness_level.length > 0
+      ) {
+        const sweetnessLevels = sourceSetup.sweetness_level.map((level) => ({
           ...level,
           owner,
           branch,
@@ -593,8 +603,11 @@ export class BranchService {
       }
 
       // บันทึกข้อมูล SweetnessGroup
-      if (sourceSetup.sweetness_group && sourceSetup.sweetness_group.length > 0) {
-        const sweetnessGroups = sourceSetup.sweetness_group.map(group => ({
+      if (
+        sourceSetup.sweetness_group &&
+        sourceSetup.sweetness_group.length > 0
+      ) {
+        const sweetnessGroups = sourceSetup.sweetness_group.map((group) => ({
           ...group,
           owner,
           branch,
@@ -604,7 +617,7 @@ export class BranchService {
 
       // บันทึกข้อมูล MenuType
       if (sourceSetup.menu_type && sourceSetup.menu_type.length > 0) {
-        const menuTypes = sourceSetup.menu_type.map(type => ({
+        const menuTypes = sourceSetup.menu_type.map((type) => ({
           ...type,
           owner,
           branch,
@@ -613,8 +626,11 @@ export class BranchService {
       }
 
       // บันทึกข้อมูล MenuTypeGroup
-      if (sourceSetup.menu_type_group && sourceSetup.menu_type_group.length > 0) {
-        const menuTypeGroups = sourceSetup.menu_type_group.map(group => ({
+      if (
+        sourceSetup.menu_type_group &&
+        sourceSetup.menu_type_group.length > 0
+      ) {
+        const menuTypeGroups = sourceSetup.menu_type_group.map((group) => ({
           ...group,
           owner,
           branch,
@@ -623,18 +639,23 @@ export class BranchService {
       }
 
       // บันทึกข้อมูล IngredientCategory
-      if (sourceSetup.ingredient_category && sourceSetup.ingredient_category.length > 0) {
-        const ingredientCategories = sourceSetup.ingredient_category.map(category => ({
-          ...category,
-          owner,
-          branch,
-        }));
+      if (
+        sourceSetup.ingredient_category &&
+        sourceSetup.ingredient_category.length > 0
+      ) {
+        const ingredientCategories = sourceSetup.ingredient_category.map(
+          (category) => ({
+            ...category,
+            owner,
+            branch,
+          }),
+        );
         await this.ingredientCategoryRepository.save(ingredientCategories);
       }
 
       // บันทึกข้อมูล Ingredient
       if (sourceSetup.ingredient && sourceSetup.ingredient.length > 0) {
-        const ingredients = sourceSetup.ingredient.map(ingredient => ({
+        const ingredients = sourceSetup.ingredient.map((ingredient) => ({
           ...ingredient,
           owner,
           branch,
@@ -644,7 +665,7 @@ export class BranchService {
 
       // บันทึกข้อมูล AddOn
       if (sourceSetup.add_on && sourceSetup.add_on.length > 0) {
-        const addOns = sourceSetup.add_on.map(addon => ({
+        const addOns = sourceSetup.add_on.map((addon) => ({
           ...addon,
           owner,
           branch,
@@ -654,7 +675,7 @@ export class BranchService {
 
       // บันทึกข้อมูล Category
       if (sourceSetup.category && sourceSetup.category.length > 0) {
-        const categories = sourceSetup.category.map(category => ({
+        const categories = sourceSetup.category.map((category) => ({
           ...category,
           owner,
           branch,
@@ -664,7 +685,7 @@ export class BranchService {
 
       // บันทึกข้อมูล Menu
       if (sourceSetup.menu && sourceSetup.menu.length > 0) {
-        const menus = sourceSetup.menu.map(menu => ({
+        const menus = sourceSetup.menu.map((menu) => ({
           ...menu,
           owner,
           branch,
@@ -674,7 +695,7 @@ export class BranchService {
 
       // บันทึกข้อมูล MenuCategory
       if (sourceSetup.menu_category && sourceSetup.menu_category.length > 0) {
-        const menuCategories = sourceSetup.menu_category.map(category => ({
+        const menuCategories = sourceSetup.menu_category.map((category) => ({
           ...category,
           owner_id: ownerId,
           branch_id: targetBranchId,
@@ -683,12 +704,17 @@ export class BranchService {
       }
 
       // บันทึกข้อมูล MenuIngredient
-      if (sourceSetup.menu_ingredient && sourceSetup.menu_ingredient.length > 0) {
-        const menuIngredients = sourceSetup.menu_ingredient.map(ingredient => ({
-          ...ingredient,
-          owner,
-          branch,
-        }));
+      if (
+        sourceSetup.menu_ingredient &&
+        sourceSetup.menu_ingredient.length > 0
+      ) {
+        const menuIngredients = sourceSetup.menu_ingredient.map(
+          (ingredient) => ({
+            ...ingredient,
+            owner,
+            branch,
+          }),
+        );
         await this.menuIngredientRepository.save(menuIngredients);
       }
 
@@ -699,9 +725,7 @@ export class BranchService {
       };
     } catch (error) {
       console.error('Error cloning branch setup:', error);
-      throw new BadRequestException(
-        'Failed to clone branch setup',
-      );
+      throw new BadRequestException('Failed to clone branch setup');
     }
   }
 

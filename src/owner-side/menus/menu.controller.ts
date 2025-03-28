@@ -110,8 +110,7 @@ export class MenuController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    await this.menuService.createMenuTypeGroup(dto, ownerId, branchId);
-    return HttpStatus.CREATED;
+    return await this.menuService.createMenuTypeGroup(dto, ownerId, branchId);
   }
   @Delete('options/menu_type/:menuTypeGroupName')
   // @UseGuards(JwtGuard, RolesGuard) // ✅ ต้องใช้ Token และต้องเป็น Owner
@@ -312,7 +311,12 @@ export class MenuController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    await this.menuService.createSize('size', createSizeDto, ownerId, branchId);
+    return await this.menuService.createSize(
+      'size',
+      createSizeDto,
+      ownerId,
+      branchId,
+    );
   }
 
   @Post('options/add-ons')
@@ -327,7 +331,7 @@ export class MenuController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    await this.menuService.createAddOn(
+    return await this.menuService.createAddOn(
       'addOn',
       createAddOnDto,
       ownerId,
