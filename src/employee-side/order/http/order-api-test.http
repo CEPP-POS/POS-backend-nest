@@ -1,4 +1,4 @@
-### Create Order with QRCODE PAY👌
+### Create Order with QRCODE PAY👌✅ เพิ่ม order_id ใน createOrderDto ได้เลยตอนยิงเก็ย
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
@@ -34,7 +34,7 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   ]
 }
 
-### Create Order WITH CASH PAY👌
+### Create Order WITH CASH PAY👌✅เพิ่ม order_id ใน createOrderDto ได้เลยตอนยิงเก็ย
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
@@ -103,7 +103,7 @@ owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 ### pay with cash 👌
-POST http://localhost:3000/employee/orders/20250303150000-505Y4/cash
+POST http://localhost:3000/employee/orders/20250303150000-UAGGD/cash
 Content-Type: application/json
 {
 "total_amount": 345,

@@ -757,7 +757,7 @@ export class OrderService {
   async payWithCash(
     order_id: string,
     payWithCashDto: PayWithCashDto,
-  ): Promise<Order> {
+  ): Promise<{ order: Order; payment_id: string }> {
     const order = await this.orderRepository.findOne({
       where: { order_id: order_id },
       relations: ['owner', 'branch'],
@@ -811,10 +811,13 @@ export class OrderService {
     order.status = 'paid';
     await this.orderRepository.save(order);
 
-    return this.orderRepository.findOne({
-      where: { order_id: order_id },
-      relations: ['owner', 'branch'],
-    });
+    return {
+      order: await this.orderRepository.findOne({
+        where: { order_id: order_id },
+        relations: ['owner', 'branch'],
+      }),
+      payment_id: payment.payment_id,
+    };
   }
 
   // เพิ่มฟังก์ชันสำหรับอัพเดทสถานะการชำระเงิน
