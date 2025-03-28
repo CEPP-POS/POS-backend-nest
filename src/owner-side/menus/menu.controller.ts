@@ -110,8 +110,7 @@ export class MenuController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    await this.menuService.createMenuTypeGroup(dto, ownerId, branchId);
-    return HttpStatus.CREATED;
+    return await this.menuService.createMenuTypeGroup(dto, ownerId, branchId);
   }
   @Delete('options/menu_type/:menuTypeGroupName')
   // @UseGuards(JwtGuard, RolesGuard) // ✅ ต้องใช้ Token และต้องเป็น Owner

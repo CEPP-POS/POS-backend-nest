@@ -140,19 +140,19 @@ Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-### เพิ่มประเภท ร้อนเย็นปั่น ผูกกับmenu👌
+### เพิ่มประเภท ร้อนเย็นปั่น ผูกกับmenu👌✅✅
 POST http://localhost:3000/owner/menus/options/menu_type
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "menu_type_group_name": "สำหรับนม",
+  "menu_type_group_name": "สำหรับนม2",
   "options": [
-    { "ร้อน": "0.00" },
-    { "เย็น": "0.00" },
-    { "ปั่น": "10.00" }
+    { "type_name": "ร้อน", "price_difference": 0.00 },
+    { "type_name": "เย็น", "price_difference": 5.00 },
+    { "type_name": "ปั่น", "price_difference": 10.00  }
   ],
-  "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc", "33769a3a-5bfb-41c8-8971-744dae1d92aa"]
+  "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc"]
 }
 
 ### แก้ไขประเภท ร้อนเย็นปั่น ผูกกับmenu👌

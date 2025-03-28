@@ -1035,13 +1035,13 @@ export class MenuService {
       });
       if (!branch) throw new NotFoundException('Branch not found');
 
+      // สร้าง menu types จาก options ที่ได้รับ
       const menuTypes = dto.options.map((option, index) => {
-        const typeName = Object.keys(option)[0];
         return {
-          menu_type_id: option.menu_type_id || uuidv4(),
-          menu_type_order: option.menu_type_order || index + 1, // ใช้ size_order ที่ส่งมา หรือกำหนดเป็น index + 1
-          type_name: typeName,
-          price_difference: parseFloat(Object.values(option)[0]),
+          menu_type_id: option.menu_type_id || uuidv4(), // ใช้ menu_type_id ถ้ามี ถ้าไม่มีก็สร้างใหม่
+          menu_type_order: option.menu_type_order || index + 1, // ใช้ menu_type_order ที่ส่งมา
+          type_name: option.type_name, // ใช้ type_name ที่ส่งมา
+          price_difference: option.price_difference, // ใช้ price_difference ที่ส่งมา
           is_delete: false,
           owner,
           branch,
@@ -1078,11 +1078,16 @@ export class MenuService {
           .execute();
       }
 
+      // คืนค่าผลลัพธ์ในรูปแบบ JSON ที่ต้องการ
       return {
-        message: 'Menu Type Group created successfully',
         menu_type_group_name: dto.menu_type_group_name,
-        menu_types: savedMenuTypes,
-        linked_menus: dto.menu_id,
+        options: menuTypes.map((menuType) => ({
+          menu_type_id: menuType.menu_type_id,
+          type_name: menuType.type_name,
+          price_difference: menuType.price_difference,
+          menu_type_order: menuType.menu_type_order,
+        })),
+        menu_id: dto.menu_id,
       };
     } catch (error) {
       throw new HttpException(
