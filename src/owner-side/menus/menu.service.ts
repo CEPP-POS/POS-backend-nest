@@ -2121,6 +2121,7 @@ export class MenuService {
         .andWhere('size.owner.owner_id = :owner_id', { owner_id })
         .andWhere('size.branch.branch_id = :branch_id', { branch_id })
         .andWhere('size.is_delete = :isDelete', { isDelete: false })
+        .orderBy('size.size_order', 'ASC')
         .select(['size.size_id', 'size.size_name'])
         .getMany();
 
@@ -2134,6 +2135,7 @@ export class MenuService {
         .andWhere('mt.owner.owner_id = :owner_id', { owner_id })
         .andWhere('mt.branch.branch_id = :branch_id', { branch_id })
         .andWhere('mt.is_delete = :isDelete', { isDelete: false })
+        .orderBy('mt.menu_type_order', 'ASC')
         .select(['mt.menu_type_id', 'mt.type_name'])
         .getMany();
 

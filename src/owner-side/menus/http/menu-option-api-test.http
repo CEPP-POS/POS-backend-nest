@@ -22,9 +22,9 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   "old_sweetness_group_name": "ความหวานนม",
   "new_sweetness_group_name": "ความหวานนม",
   "options": [
-    { "sweetness_id": "66baeb58-aca4-4e34-ac17-ab4887f17be6", "level_name": "หวานน้อยๆ" },
-    { "sweetness_id": "ddd9e5ba-67c7-4a24-8052-e6c34d140f71", "level_name": "หวานกลางๆ" },
-    { "sweetness_id": "260bde44-5398-47b1-9459-bc153f79546a", "level_name": "หวานมากๆ" },
+    { "sweetness_id": "1dbc76b4-2483-4cf7-b36d-4e793e8599c2", "level_name": "หวานน้อยๆ" },
+    { "sweetness_id": "c244fb7f-1e63-464d-b650-ecff72af4635", "level_name": "หวานกลางๆ" },
+    { "sweetness_id": "b7bb0ed9-d9cb-4da3-bbfe-8e995e601d7a", "level_name": "หวานมากๆ" },
     { "sweetness_id": null,"level_name": "หวานมากๆqqq"}
   ],
   "menu_id": ["faa9a7c2-a956-4153-a4d2-eb436a90c2a2","4158398f-a29e-42ed-a085-f168446527fc","33769a3a-5bfb-41c8-8971-744dae1d92aa"]
