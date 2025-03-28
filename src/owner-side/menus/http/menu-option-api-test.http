@@ -47,7 +47,7 @@ Content-Type: application/json
   "is_required":true
 }
 
-###เพิ่ม Addon ผูกกับ menu👌
+###เพิ่ม Addon ผูกกับ menu👌✅✅
 POST http://localhost:3000/owner/menus/options/add-ons
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
@@ -55,12 +55,22 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 {
   "options": [
-    { "บุก2": { "price": "10.00", "unit": "กรัม", "quantity":12 } },
-    { "ไข่มุก2": { "price": "20.00", "unit": "กรัม", "quantity":15 } }
+    { 
+      "add_on_name": "บุก6",
+      "price": "10.00",
+      "quantity": 20,
+      "unit": "กรัม"
+    },
+    { 
+      "add_on_name": "ไข่มุก6",
+      "price": "25.00",
+      "quantity": 12,
+      "unit": "g"
+    }
   ],
-  "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc","33769a3a-5bfb-41c8-8971-744dae1d92aa"],
-  "is_required":true,
-  "is_multipled":true
+  "menu_id": ["937a85a7-168c-4bc3-91c4-a5d0a66f6ef2","bb24ae81-b635-49df-a74b-5b9cac4e4633","faa9a7c2-a956-4153-a4d2-eb436a90c2a2"],
+  "is_required": false,
+  "is_multipled": true
 }
 
 # edit add on option👌
@@ -90,7 +100,7 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   "is_multiple": true
 }
 
-### เพิ่ม size ผูกกับ menu👌
+### เพิ่ม size ผูกกับ menu👌✅
 POST http://localhost:3000/owner/menus/options/size
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353

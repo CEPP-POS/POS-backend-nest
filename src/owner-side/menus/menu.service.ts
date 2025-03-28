@@ -564,10 +564,14 @@ export class MenuService {
     branchId: string,
   ) {
     const { options, menu_id, is_required, is_multipled } = createAddOnDto;
-
+    console.log(is_multipled);
+    console.log(is_required);
     const ingredientIds = [];
+    const addOnResults = []; // สร้างอาเรย์เพื่อเก็บผลลัพธ์ของ add-ons
+
     for (const option of options) {
-      const [ingredientName, ingredientData] = Object.entries(option)[0];
+      const addOnId = option.add_on_id || uuidv4(); // ใช้ add_on_id ถ้ามี ถ้าไม่มีก็สร้างใหม่
+      const ingredientName = option.add_on_name;
 
       // ค้นหา ingredient โดยไม่สนใจสถานะ is_delete
       let ingredient = await this.ingredientRepository.findOne({
@@ -582,9 +586,9 @@ export class MenuService {
       if (!ingredient || (ingredient && ingredient.is_delete)) {
         // สร้าง ingredient ใหม่
         ingredient = this.ingredientRepository.create({
-          ingredient_id: ingredientData.ingredient_id || uuidv4(),
+          ingredient_id: option.ingredient_id || uuidv4(),
           ingredient_name: ingredientName,
-          unit: ingredientData.unit,
+          unit: option.unit,
           owner: { owner_id: ownerId },
           branch: { branch_id: branchId },
         });
@@ -595,15 +599,25 @@ export class MenuService {
 
       // save ingredient_id in table add on
       const addOn = this.addOnRepository.create({
-        add_on_id: ingredientData.add_on_id || uuidv4(),
+        add_on_id: addOnId, // ใช้ add_on_id ที่ได้รับ
         ingredient: ingredient,
-        add_on_price: parseFloat(ingredientData.price),
-        is_required: is_required,
-        is_multipled: is_multipled,
+        add_on_price: parseFloat(option.price), // แปลงราคาเป็นตัวเลข
+        is_required: is_required, // ใช้ is_required ที่ได้รับ
+        is_multipled: is_multipled, // ใช้ is_multipled ที่ได้รับ
         owner: { owner_id: ownerId },
         branch: { branch_id: branchId },
       });
       await this.addOnRepository.save(addOn);
+
+      // บันทึกผลลัพธ์ของ add-on
+      addOnResults.push({
+        add_on_id: addOnId,
+        add_on_name: ingredientName,
+        price: option.price,
+        quantity: option.quantity,
+        unit: option.unit,
+        ingredient_id: ingredient.ingredient_id, // เพิ่ม ingredient_id
+      });
 
       // Save menu id and ingredient id, quantity in table menu_ingredient
       for (const menuId of menu_id) {
@@ -618,24 +632,12 @@ export class MenuService {
           });
 
         if (!existingMenuIngredient) {
-          // Log ingredientId for debugging
-          console.log(`Processing ingredientId: ${ingredient.ingredient_id}`);
-
-          // Log the result of ingredientData lookup
-          console.log('Found ingredientData:', ingredientData);
-
-          if (!ingredientData) {
-            throw new Error(
-              `Ingredient data not found for ingredient: ${ingredientName}`,
-            );
-          }
-
           const menuIngredient = this.menuIngredientRepository.create({
-            menu_ingredient_id: ingredientData.menu_ingredient_id || uuidv4(),
+            menu_ingredient_id: uuidv4(), // สร้าง menu_ingredient_id ใหม่
             menu: { menu_id: menuId },
             ingredient: { ingredient_id: ingredient.ingredient_id },
             is_addon: true,
-            quantity_used: parseFloat(ingredientData.quantity),
+            quantity_used: option.quantity, // ใช้ quantity ที่ได้รับ
             owner: { owner_id: ownerId },
             branch: { branch_id: branchId },
           });
@@ -647,6 +649,14 @@ export class MenuService {
         }
       }
     }
+
+    // คืนค่าผลลัพธ์ในรูปแบบ JSON ที่ต้องการ
+    return {
+      options: addOnResults,
+      menu_id: menu_id,
+      is_required: is_required, // คืนค่า is_require
+      is_multipled: is_multipled, // คืนค่า is_multipled
+    };
   }
 
   async deleteSizeGroup(

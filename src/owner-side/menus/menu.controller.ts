@@ -332,7 +332,7 @@ export class MenuController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    await this.menuService.createAddOn(
+    return await this.menuService.createAddOn(
       'addOn',
       createAddOnDto,
       ownerId,
