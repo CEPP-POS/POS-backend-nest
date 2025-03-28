@@ -293,6 +293,7 @@ export class MenuService {
       branch: { branch_id: branchId },
     }));
 
+    // บันทึก sweetness groups
     await this.sweetnessGroupRepository.save(sweetnessGroups);
 
     // Ensure the sweetness group exists
@@ -314,12 +315,13 @@ export class MenuService {
 
     throw new HttpException(
       {
-        message: `All sweetness options and groups created successfully`,
-        sweetness: savedSweetnessLevels.map((sweetness) => ({
+        sweetness_group_name: sweetnessGroup.sweetness_group_name,
+        options: savedSweetnessLevels.map((sweetness) => ({
           sweetness_id: sweetness.sweetness_id,
           level_name: sweetness.level_name,
           sweetness_order: sweetness.sweetness_order,
         })),
+        menu_id: createSweetnessDto.menu_id,
       },
       HttpStatus.OK,
     );
