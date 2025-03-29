@@ -873,7 +873,7 @@ export class OrderService {
     if (!payment) {
       // If no payment exists, create a new one
       payment = this.paymentRepository.create({
-        payment_id: payWithCashDto.payment_id || uuidv4(),
+        payment_id: payWithCashDto.payment_id || uuidv4(), // ใช้ payment_id ที่ส่งมาโดยตรง
         order,
         cash_given: payWithCashDto.cash_given,
         change: payWithCashDto.change,

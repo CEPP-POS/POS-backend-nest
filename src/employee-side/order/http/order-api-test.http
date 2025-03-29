@@ -1,4 +1,4 @@
-### Create Order with QRCODE PAY👌✅ เพิ่ม order_id ใน createOrderDto ได้เลยตอนยิงเก็ย
+### Create Order with QRCODE PAY👌✅✅ เพิ่ม order_id ใน createOrderDto ได้เลยตอนยิงเก็ย
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
@@ -34,42 +34,7 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   ]
 }
 
-###ทดสอบส่งกลับ
-POST http://localhost:3000/employee/orders
-Content-Type: application/json
-owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
-branch_id: d458dffa-855b-4040-afba-dbf97055a820
-{
-  "createOrderDto": {
-    "sales_summary_id": "5b1dd765-abab-4d0e-90a0-3130fab5bdec",
-    "order_id": "20250306150100-AAAAA",
-    "payment_id": "40eaf502-e9f0-42f8-9206-e71cb9c9e3a8",
-    "queue_number": 3,
-    "order_date": "2025-03-06T08:01:00.000Z",
-    "total_price": 100.00,
-    "status": "รอทำ",
-    "payment_method": "qr-code",
-    "path_img": "https://image/paymentะะ",
-    "cancel_status": "ยังไม่คืนเงิน"
-  },
-  "items": [
-    {
-      "order_item_id": "e8e7b352-5210-45db-b26b-8216bf967c5f",
-      "menu_id": "4158398f-a29e-42ed-a085-f168446527fc",
-      "sweetness_id": "0d1e5861-26d9-43b5-b211-3ac81c70785d",
-      "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22",
-      "add_on_id": [
-        "9698b6ce-bbc2-4e12-a252-ebd26ccdde1b",
-        "1fda408a-8db2-4bc8-b17c-a1212099776e"
-      ],
-      "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf",
-      "quantity": 2,
-      "price": "100.00"
-    }
-  ]
-}
-
-### Create Order WITH CASH PAY👌✅เพิ่ม order_id ใน createOrderDto ได้เลยตอนยิงเก็ย
+### Create Order WITH CASH PAY👌✅✅เพิ่ม order_id ใน createOrderDto ได้เลยตอนยิงเก็ย
 POST http://localhost:3000/employee/orders
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
@@ -138,13 +103,13 @@ owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 ### pay with cash 👌
-POST http://localhost:3000/employee/orders/20250303150000-T0MY3/cash
+POST http://localhost:3000/employee/orders/20250303150000-6WL1S/cash
 Content-Type: application/json
 {
-"payment_id": "03525bbd-208e-4974-99db-32745170b6d8",
-"total_amount": 345,
-"cash_given": 500,
-"change": 155,
-"status": "cash",
-"amount": 345
+  "payment_id": "59d9ae01-c765-48d9-a6ff-cf54d598d0f8",
+  "total_amount": 345,
+  "cash_given": 500,
+  "change": 155,
+  "status": "cash",
+  "amount": 345
 }
