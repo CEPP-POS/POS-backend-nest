@@ -52,7 +52,7 @@ export class SyncService {
         },
         order: { createdAt: 'ASC' },
       });
-  
+  console.log('path is ',postItem)
       const relatedTempId = postItem ? postItem.tempId : null;
   
       const syncStatus = this.syncRepo.create({
@@ -83,36 +83,65 @@ export class SyncService {
       where: { synced: false },
       order: { createdAt: 'ASC' },
     });
-
-    const tempIdMap = new Map<string, string>(); // tempId -> server ID
-
+  
+    // tempId (จาก POST) → serverGeneratedId
+    const tempIdMap = new Map<string, string>();
+  
     for (const item of queue) {
-      // ถ้า DELETE แต่ยังไม่มี serverGeneratedId จาก POST ที่อ้างถึง
+      if (!item.path) {
+        console.warn(`⚠️ Skipping item ID: ${item.id} — path is null`);
+        continue;
+      }
+      // ตรวจว่าเป็น DELETE และต้องมี relatedTempId
       if (item.method === 'DELETE' && item.relatedTempId) {
-        const serverId = tempIdMap.get(item.relatedTempId);
+        const relatedPost = await this.syncRepo.findOne({
+          where: { tempId: item.relatedTempId },
+        });
+      
+        const serverId = relatedPost?.serverGeneratedId;
+      
         if (!serverId) {
-          console.log(`⏭️ Skipping DELETE until related POST (${item.relatedTempId}) is done.`);
+          console.log(`⏭️ Skipping DELETE - missing serverGeneratedId for tempId ${item.relatedTempId}`);
           continue;
         }
-        // แทนที่ path ด้วย id ที่ได้จาก server
+      
         item.path = item.path.replace('{replace-this}', serverId);
-      }
+console.log(`🔄 Final DELETE path: ${item.path}`);
 
+// ✅ แก้จุดสำคัญนี้:
+await this.syncRepo.save(item);
+
+      }
+  
       const result = await this.sendRequestToServer(item);
 
-      // ถ้า POST สำเร็จแล้ว server ส่ง id กลับมา
-      if (result && 'serverGeneratedId' in result && item.method === 'POST' && item.tempId) {
-        tempIdMap.set(item.tempId, result.serverGeneratedId);
-      }
+if (item.method === 'POST' && result && result.serverGeneratedId && item.tempId) {
+  tempIdMap.set(item.tempId, result.serverGeneratedId);
+  item.serverGeneratedId = result.serverGeneratedId;
+  await this.syncRepo.save(item);
+}
 
-      await new Promise((res) => setTimeout(res, 1000)); // Delay เล็กน้อย
+console.log('✅ READY TO SEND', {
+  id: item.id,
+  method: item.method,
+  path: item.path,
+  relatedTempId: item.relatedTempId,
+});
+
+      await new Promise((res) => setTimeout(res, 1000));
     }
   }
+  
   
 
   async sendRequestToServer(data: SyncStatus): Promise<{ serverGeneratedId?: string } | void> {
     try {
       console.log(`📤 Sending to SERVER: ${data.method} ${data.path}`);
+      if (data.path.includes('{replace-this}')) {
+        console.warn(`⛔️ BLOCKED SYNC: path still contains placeholder! ID: ${data.id}`);
+        return;
+      }
+      
       const response = await axios({
         method: data.method.toLowerCase(),
         url: data.path,
@@ -133,6 +162,8 @@ export class SyncService {
 
         if (data.method === 'POST' && response.data?.id) {
           data.serverGeneratedId = response.data.id;
+          await this.syncRepo.save(data);
+
         }
 
         await this.syncRepo.remove(data);
@@ -156,7 +187,7 @@ export class SyncService {
       }
 
       if (data.retryCount >= 3) {
-        data.synced = true;
+      
         console.log(`🚫 Max retry reached for ID: ${data.id}`);
       }
 
