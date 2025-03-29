@@ -22,10 +22,9 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   "old_sweetness_group_name": "ความหวานนม",
   "new_sweetness_group_name": "ความหวานนม",
   "options": [
-    { "sweetness_id": "1dbc76b4-2483-4cf7-b36d-4e793e8599c2", "level_name": "หวานน้อยๆ" },
-    { "sweetness_id": "c244fb7f-1e63-464d-b650-ecff72af4635", "level_name": "หวานกลางๆ" },
-    { "sweetness_id": "b7bb0ed9-d9cb-4da3-bbfe-8e995e601d7a", "level_name": "หวานมากๆ" },
-    { "sweetness_id": null,"level_name": "หวานมากๆqqq"}
+    { "sweetness_id": "1dbc76b4-2483-4cf7-b36d-4e793e8599c2", "level_name": "หวานน้อยๆX" },
+    { "sweetness_id": "c244fb7f-1e63-464d-b650-ecff72af4635", "level_name": "หวานกลางๆXX" },
+    { "sweetness_id": null,"level_name": "หวานมากๆXXX"}
   ],
   "menu_id": ["faa9a7c2-a956-4153-a4d2-eb436a90c2a2","4158398f-a29e-42ed-a085-f168446527fc","33769a3a-5bfb-41c8-8971-744dae1d92aa"]
 }
@@ -123,13 +122,13 @@ owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 {
-  "old_size_group_name": "ขนาดแก้วสำหรับนม",
-  "new_size_group_name": "ขนาดแก้วสำหรับนม",
+  "old_size_group_name": "ขนาดแก้วนม6",
+  "new_size_group_name": "ขนาดแก้วนม6",
    "options": [
-    { "size_id": "eb749792-4e21-4190-a632-68a4562e2aa9", "size_name":"m",  "price": "25.00" },
-    { "size_id": "ddf33ee7-922e-427b-9f0a-ea218c92706b", "size_name":"l",  "price": "35.00" },
-    { "size_id": "5e8cae6d-e352-4ab7-8536-1ba468b709dc", "size_name":"xl",  "price": "45.00" },
-    { "size_id": null, "size_name":"xs",  "price": "45.00" }
+    { "size_id": "46ae925a-ff78-473b-a9f9-fd2c56a2762d", "size_name":"s",  "price": "1.50" },
+    { "size_id": "7e282de2-d56b-4e32-9b56-5e40a5affe7d", "size_name":"m",  "price": "2.50" },
+    { "size_id": "a604d7a5-aa42-40f3-bdb1-465d02948ef8", "size_name":"l",  "price": "3.50" },
+    { "size_id": null, "size_name":"xl",  "price": "45.00" }
   ],
   "menu_id": ["33769a3a-5bfb-41c8-8971-744dae1d92aa"]
 }
