@@ -1285,6 +1285,23 @@ export class MenuService {
         }
       }
 
+      // หา menu_type_order สูงสุดจาก menu types ที่มีอยู่ใน JSON
+      const existingMenuTypesData = await this.menuTypeRepository.find({
+        where: {
+          menu_type_id: In(keepMenuTypeIds),
+          owner: { owner_id },
+          branch: { branch_id },
+        },
+        select: ['menu_type_order'],
+      });
+
+      const maxMenuTypeOrder = Math.max(
+        ...existingMenuTypesData.map((type) => type.menu_type_order || 0),
+        0,
+      );
+
+      let currentOrder = maxMenuTypeOrder + 1;
+
       const newMenuTypeOptions = options.filter(
         (opt) => opt.menu_type_id === null,
       );
@@ -1293,6 +1310,7 @@ export class MenuService {
           menu_type_id: uuidv4(),
           type_name: newOption.type_name,
           price_difference: parseFloat(String(newOption.price_difference)),
+          menu_type_order: currentOrder++,
           owner: { owner_id },
           branch: { branch_id },
         });

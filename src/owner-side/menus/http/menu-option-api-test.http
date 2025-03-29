@@ -145,11 +145,11 @@ Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "menu_type_group_name": "สำหรับนม2",
+  "menu_type_group_name": "สำหรับนม4",
   "options": [
-    { "type_name": "ร้อน", "price_difference": 0.00 },
-    { "type_name": "เย็น", "price_difference": 5.00 },
-    { "type_name": "ปั่น", "price_difference": 10.00  }
+    { "type_name": "ร้อน4", "price_difference": 0.00 },
+    { "type_name": "เย็น4", "price_difference": 5.00 },
+    { "type_name": "ปั่น4", "price_difference": 10.00  }
   ],
   "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc"]
 }
@@ -160,12 +160,14 @@ Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
-  "old_menu_type_group_name": "สำหรับนม",
-  "new_menu_type_group_name": "สำหรับนมใหม่",
+  "old_menu_type_group_name": "สำหรับนม3",
+  "new_menu_type_group_name": "สำหรับนม3",
   "options": [
-    { "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf", "type_name": "เย็น", "price_difference": 5.00 },
-    { "menu_type_id": "7b8e5fdc-0f58-427c-a14e-a07db31c5ab8", "type_name": "ปั่น", "price_difference": 10.00 },
-    { "menu_type_id": null, "type_name": "ร้อน", "price_difference": 0.00 }
+    { "menu_type_id": "67c32b28-7a1e-414f-a959-6d2f59985325", "type_name": "ร้อนนนนน", "price_difference": 5.50 },
+    { "menu_type_id": "73c17af8-0fb7-448a-9975-67ca95356f0b", "type_name": "เย็นนนนน", "price_difference": 10.50 },
+    { "menu_type_id": "aa8e0bfb-4433-4f64-b793-a3a4c7933f3d", "type_name": "ปั่นนนนน", "price_difference": 15.50 },
+    { "menu_type_id": null, "type_name": "ไทป์ใหม่ๆ", "price_difference": 16.50 },
+    { "menu_type_id": null, "type_name": "ไทป์ใหม่ๆๆ", "price_difference": 17.50 }
   ],
   "menu_id": ["4158398f-a29e-42ed-a085-f168446527fc", "33769a3a-5bfb-41c8-8971-744dae1d92aa","faa9a7c2-a956-4153-a4d2-eb436a90c2a2"]
 }
