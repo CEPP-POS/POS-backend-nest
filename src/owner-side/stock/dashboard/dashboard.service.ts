@@ -1180,4 +1180,79 @@ export class DashboardService {
       category_name: ingredient.ingredientCategory.ingredient_category_name,
     };
   }
+
+  async getNearlyExpiredAndOutOfStock(ownerId: string, branchId: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // หา ingredients ทั้งหมดที่ไม่ถูกลบ
+    const ingredients = await this.ingredientRepository.find({
+      where: {
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+        is_delete: false,
+      },
+      relations: ['ingredientUpdate'],
+    });
+
+    // หา ingredient ที่ใกล้หมดสต็อก (total_volume น้อยที่สุด)
+    let nearlyOutOfStock = [];
+    for (const ingredient of ingredients) {
+      // หา ingredient_update ที่ยังไม่หมดอายุ
+      const validUpdates = ingredient.ingredientUpdate.filter(
+        (update) => new Date(update.expiration_date) > today,
+      );
+
+      if (validUpdates.length > 0) {
+        // เรียงตาม total_volume น้อยไปมาก
+        validUpdates.sort((a, b) => a.total_volume - b.total_volume);
+
+        nearlyOutOfStock.push({
+          ingredient_name: ingredient.ingredient_name,
+          total_volume: validUpdates[0].total_volume,
+        });
+      }
+    }
+
+    // เรียงตาม total_volume น้อยไปมาก และเลือก 5 อันดับแรก
+    nearlyOutOfStock = nearlyOutOfStock
+      .sort((a, b) => a.total_volume - b.total_volume)
+      .slice(0, 1);
+
+    // หา ingredient ที่ใกล้หมดอายุ
+    let nearlyExpired = [];
+    for (const ingredient of ingredients) {
+      // หา ingredient_update ที่ยังไม่หมดอายุ
+      const validUpdates = ingredient.ingredientUpdate.filter(
+        (update) => new Date(update.expiration_date) > today,
+      );
+
+      if (validUpdates.length > 0) {
+        // เรียงตามวันหมดอายุใกล้สุดไปไกลสุด
+        validUpdates.sort(
+          (a, b) =>
+            new Date(a.expiration_date).getTime() -
+            new Date(b.expiration_date).getTime(),
+        );
+
+        nearlyExpired.push({
+          ingredient_name: ingredient.ingredient_name,
+          expire_date: validUpdates[0].expiration_date,
+        });
+      }
+    }
+
+    // เรียงตามวันหมดอายุใกล้สุดไปไกลสุด และเลือก 5 อันดับแรก
+    nearlyExpired = nearlyExpired
+      .sort(
+        (a, b) =>
+          new Date(a.expire_date).getTime() - new Date(b.expire_date).getTime(),
+      )
+      .slice(0, 1);
+
+    return {
+      nearly_out_of_stock: nearlyOutOfStock,
+      nearly_expired: nearlyExpired,
+    };
+  }
 }
