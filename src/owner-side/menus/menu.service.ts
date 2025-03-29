@@ -78,7 +78,7 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) { }
+  ) {}
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
@@ -180,12 +180,12 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-          menu_id: menu.menu_id,
-          menu_name: menu.menu_name,
-          description: menu.description,
-          image_url: menu.image_url,
-          price: menu.price,
-        };
+            menu_id: menu.menu_id,
+            menu_name: menu.menu_name,
+            description: menu.description,
+            image_url: menu.image_url,
+            price: menu.price,
+          };
     });
   }
 
@@ -433,12 +433,33 @@ export class MenuService {
         );
       }
 
+      // หา sweetness_order สูงสุดจาก sweetness levels ที่มีอยู่ใน JSON
+      const existingSweetnessLevelsData =
+        await this.sweetnessLevelRepository.find({
+          where: {
+            sweetness_id: In(keepSweetnessIds),
+            owner: { owner_id: ownerId },
+            branch: { branch_id: branchId },
+          },
+          select: ['sweetness_order'],
+        });
+
+      const maxSweetnessOrder = Math.max(
+        ...existingSweetnessLevelsData.map(
+          (level) => level.sweetness_order || 0,
+        ),
+        0,
+      );
+
+      let currentOrder = maxSweetnessOrder + 1;
+
       // สร้าง sweetness levels ใหม่และ link กับ group
       for (const option of newOptions) {
         // สร้าง sweetness level ใหม่
         const newLevel = await this.sweetnessLevelRepository.save({
           sweetness_id: uuidv4(),
           level_name: option.level_name,
+          sweetness_order: currentOrder++,
           owner: { owner_id: ownerId },
           branch: { branch_id: branchId },
         });
@@ -1264,6 +1285,23 @@ export class MenuService {
         }
       }
 
+      // หา menu_type_order สูงสุดจาก menu types ที่มีอยู่ใน JSON
+      const existingMenuTypesData = await this.menuTypeRepository.find({
+        where: {
+          menu_type_id: In(keepMenuTypeIds),
+          owner: { owner_id },
+          branch: { branch_id },
+        },
+        select: ['menu_type_order'],
+      });
+
+      const maxMenuTypeOrder = Math.max(
+        ...existingMenuTypesData.map((type) => type.menu_type_order || 0),
+        0,
+      );
+
+      let currentOrder = maxMenuTypeOrder + 1;
+
       const newMenuTypeOptions = options.filter(
         (opt) => opt.menu_type_id === null,
       );
@@ -1272,6 +1310,7 @@ export class MenuService {
           menu_type_id: uuidv4(),
           type_name: newOption.type_name,
           price_difference: parseFloat(String(newOption.price_difference)),
+          menu_type_order: currentOrder++,
           owner: { owner_id },
           branch: { branch_id },
         });
@@ -1474,6 +1513,23 @@ export class MenuService {
         }
       }
 
+      // หา size_order สูงสุดจาก size ที่มีอยู่ใน JSON
+      const existingSizesData = await this.sizeRepository.find({
+        where: {
+          size_id: In(keepSizeIds),
+          owner: { owner_id },
+          branch: { branch_id },
+        },
+        select: ['size_order'],
+      });
+
+      const maxSizeOrder = Math.max(
+        ...existingSizesData.map((size) => size.size_order || 0),
+        0,
+      );
+
+      let currentOrder = maxSizeOrder + 1;
+
       // 4. Add new sizes
       const newSizeOptions = options.filter((opt) => opt.size_id === null);
       for (const newOption of newSizeOptions) {
@@ -1482,6 +1538,7 @@ export class MenuService {
           size_id: uuidv4(),
           size_name: newOption.size_name,
           size_price: parseFloat(String(newOption.price)),
+          size_order: currentOrder++,
           owner: { owner_id },
           branch: { branch_id },
         });

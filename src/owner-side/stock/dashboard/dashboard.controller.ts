@@ -348,4 +348,15 @@ export class DashboardController {
       branchId,
     );
   }
+
+  @Get('nearly-expired-out')
+  async getNearlyExpiredIngredients(@Req() request: Request) {
+    const ownerId = request.headers['owner_id'];
+    const branchId = request.headers['branch_id'];
+
+    return this.dashboardService.getNearlyExpiredAndOutOfStock(
+      ownerId,
+      branchId,
+    );
+  }
 }
