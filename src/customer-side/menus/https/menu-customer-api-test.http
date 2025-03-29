@@ -1,14 +1,17 @@
+### ลูกค้าดูเมนูทั้งหมด👌
 GET http://localhost:3000/customer/menus
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
-GET http://localhost:3000/customer/menus/7
+### ลูกค้าดูรายละเอียดภายใน menu 👌
+GET http://localhost:3000/customer/menus/33769a3a-5bfb-41c8-8971-744dae1d92aa
 Content-Type: application/json
-owner_id: 6
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
+### ใช้ที่ไหนไม่รู้ 👌
 GET http://localhost:3000/customer/menus/queue
 Content-Type: application/json
-owner_id: 1
-branch_id: 3
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820

@@ -36,7 +36,7 @@ export class OwnerController {
     private readonly ownerService: OwnerService,
     private readonly authService: AuthService,
     private readonly branchService: BranchService,
-  ) {}
+  ) { }
 
   // * Function Upload CSV file to create Owner with Branch
   @Post('upload-csv')
@@ -72,14 +72,14 @@ export class OwnerController {
       }
 
       if (newOwnersCount === 0) {
-        return { 
+        return {
           message: 'No new owners were added. All owners already exist in the system.',
-          existingOwners: true 
+          existingOwners: true
         };
       }
 
-      return { 
-        message: 'CSV data uploaded successfully', 
+      return {
+        message: 'CSV data uploaded successfully',
         newOwners: owners,
         count: newOwnersCount
       };
@@ -116,10 +116,11 @@ export class OwnerController {
 
       return await this.ownerService.resetPassword(
         updatePasswordDto,
-        ownerId[0],
-        branchId[0],
+        ownerId as string,
+        branchId as string,
       );
     } catch (error) {
+      console.log(error)
       if (
         error instanceof BadRequestException ||
         error instanceof UnauthorizedException

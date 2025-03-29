@@ -9,7 +9,7 @@ import { MenuCustomerService } from './menu-customer.service';
 
 @Controller('customer/menus')
 export class MenuCustomerController {
-  constructor(private readonly menuCustomerService: MenuCustomerService) {}
+  constructor(private readonly menuCustomerService: MenuCustomerService) { }
 
   @Get()
   async getCustomerMenus(
@@ -17,14 +17,12 @@ export class MenuCustomerController {
     @Headers('branch_id') branchId: string,
   ) {
     // ตรวจสอบและแปลงค่า
-    const ownerIdNum = parseInt(ownerId);
-    const branchIdNum = parseInt(branchId);
 
-    if (isNaN(ownerIdNum) || isNaN(branchIdNum)) {
+    if (!ownerId || !branchId) {
       throw new BadRequestException('Invalid owner_id or branch_id format');
     }
 
-    return this.menuCustomerService.getCustomerMenus(ownerIdNum, branchIdNum);
+    return this.menuCustomerService.getCustomerMenus(ownerId, branchId);
   }
 
   @Get('queue')

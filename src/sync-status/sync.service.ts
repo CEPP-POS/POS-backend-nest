@@ -33,7 +33,7 @@ export class SyncService {
       synced: false,
       retryCount: 0,
       statusCode: data.statusCode,
-  });
+    });
 
     const savedSyncStatus = await this.syncRepo.save(syncStatus);
   }
@@ -44,11 +44,11 @@ export class SyncService {
     });
 
     for (const item of failedItems) {
-      console.log('✅ All failed items have been synced',item);
-      await this.sendRequestToServer(item); 
+      console.log('✅ All failed items have been synced', item);
+      await this.sendRequestToServer(item);
     }
   }
-  
+
   async sendRequestToServer(data: SyncStatus) {
     try {
       console.log(`📤 Sending to SERVER: ${data.path}`);
@@ -60,8 +60,8 @@ export class SyncService {
         data: data.payload,
         headers: {
           'Content-Type': 'application/json',
-          'owner_id': data.owner_id,
-          'branch_id': data.branch_id,
+          owner_id: data.owner_id,
+          branch_id: data.branch_id,
         },
         timeout: 10000,
       });
@@ -97,8 +97,9 @@ export class SyncService {
       await this.syncRepo.save(data);
     }
 
-    await new Promise(res => setTimeout(res, 1000));
+    await new Promise((res) => setTimeout(res, 1000));
   }
+  
   async getPendingSyncs() {
     return await this.syncRepo.find({
       where: { synced: false },

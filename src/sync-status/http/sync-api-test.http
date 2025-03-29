@@ -2,7 +2,7 @@
 POST http://localhost:3000/status/offline  
 Content-Type: application/json
 {
-  "path": "http://192.168.3.86:3000/owner/menus",
+  "path": "http://10.240.67.14:80/api/owner/menus",
   "method": "POST",
   "statusCode": 404,
   "payload": {

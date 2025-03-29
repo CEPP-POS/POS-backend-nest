@@ -39,6 +39,10 @@ export class LinkMenuToStockDto {
   @IsString()
   unit: string;
 
+  @IsString()
+  @IsOptional()
+  menu_ingredient_id?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => IngredientListForStockDto)

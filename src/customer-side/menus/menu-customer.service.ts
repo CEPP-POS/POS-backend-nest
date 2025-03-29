@@ -62,7 +62,7 @@ export class MenuCustomerService {
     private readonly orderRepository: Repository<Order>,
   ) {}
 
-  async getCustomerMenus(ownerId: number, branchId: number) {
+  async getCustomerMenus(ownerId: string, branchId: string) {
     // ดึงข้อมูลเมนูทั้งหมดที่เกี่ยวข้อง
     const menus = await this.menuRepository
       .createQueryBuilder('menu')
@@ -76,22 +76,33 @@ export class MenuCustomerService {
       .andWhere('menu.branch_id = :branchId', { branchId })
       .getMany();
 
-    // กรองเมนูที่มีส่วนประกอบไม่พร้อมใช้งาน
+    // กรองเมนูที่มีส่วนประกอบพร้อมใช้งาน
     const filteredMenus = menus.filter((menu) => {
-      // ถ้าเมนูไม่มีส่วนประกอบใดๆ ให้แสดงเมนูนั้น
+      // ถ้าเมนูไม่มีส่วนประกอบใดๆ ให้ไม่แสดงเมนูนั้น
       if (!menu.menuIngredient || menu.menuIngredient.length === 0) {
         return true;
       }
 
-      // ตรวจสอบว่ามีส่วนประกอบที่ไม่ใช่ addon และถูก paused หรือ is_delete หรือไม่
-      const hasUnavailableIngredient = menu.menuIngredient.some(
-        (mi) =>
-          !mi.is_addon &&
-          mi.ingredient &&
-          (mi.ingredient.paused || mi.ingredient.is_delete),
+      // แยกส่วนประกอบออกเป็น non-addon
+      const nonAddonIngredients = menu.menuIngredient.filter(
+        (mi) => !mi.is_addon,
       );
 
-      return !hasUnavailableIngredient;
+      // ถ้าไม่มี non-addon ingredients เลย ให้ filter out
+      if (nonAddonIngredients.length === 0) {
+        return false;
+      }
+
+      // ตรวจสอบว่ามี non-addon ingredients ที่ถูก pause หรือ delete หรือไม่
+      const allNonAddonIngredientsAvailable = nonAddonIngredients.every(
+        (mi) =>
+          mi.ingredient &&
+          mi.ingredient.is_delete === false &&
+          mi.ingredient.paused === false,
+      );
+
+      // ถ้า non-addon ingredients ทุกตัวพร้อมใช้งาน ให้แสดงเมนู
+      return allNonAddonIngredientsAvailable;
     });
 
     // สร้าง Map เพื่อจัดกลุ่มเมนูตามหมวดหมู่
@@ -211,6 +222,7 @@ export class MenuCustomerService {
             'mt.menu_type_id as menu_type_id',
             'mt.type_name as type_name',
             'mt.price_difference as price_difference',
+            'mt.menu_type_order as menu_type_order',
           ])
           .getRawMany()
       : [];
@@ -243,6 +255,7 @@ export class MenuCustomerService {
           .select([
             'sl.sweetness_id as sweetness_id',
             'sl.level_name as level_name',
+            'sl.sweetness_order as sweetness_order',
           ])
           .getRawMany()
       : [];
@@ -272,6 +285,7 @@ export class MenuCustomerService {
             's.size_id as size_id',
             's.size_name as size_name',
             's.size_price as size_price',
+            's.size_order as size_order',
           ])
           .getRawMany()
       : [];
@@ -286,6 +300,7 @@ export class MenuCustomerService {
       .andWhere('mi.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
       .andWhere('mi.branch_id = :branchId', { branchId: menu.branch.branch_id })
       .andWhere('i.is_delete = :isDelete', { isDelete: false })
+      .andWhere('i.paused = :paused', { paused: false })
       .andWhere('ao.owner_id = :ownerId', { ownerId: menu.owner.owner_id })
       .andWhere('ao.branch_id = :branchId', { branchId: menu.branch.branch_id })
       .select([
@@ -314,9 +329,13 @@ export class MenuCustomerService {
       price: menu.price,
       description: menu.description,
       image_url: menu.image_url,
-      menu_type_group: menuTypes,
-      sweetness_group: sweetnessLevels,
-      size_group: sizes,
+      menu_type_group: menuTypes.sort(
+        (a, b) => a.menu_type_order - b.menu_type_order,
+      ),
+      sweetness_group: sweetnessLevels.sort(
+        (a, b) => a.sweetness_order - b.sweetness_order,
+      ),
+      size_group: sizes.sort((a, b) => a.size_order - b.size_order),
       add_on: addOns,
     };
   }

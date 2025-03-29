@@ -193,7 +193,6 @@ export class DashboardService {
       ownerId,
       branchId,
     );
-
     const dailyStats = [];
     const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
 
@@ -517,10 +516,8 @@ export class DashboardService {
     await this.ingredientCategoryRepository.save(newCategory);
 
     return {
-      message: 'สร้างหมวดหมู่สำเร็จ',
+      ingredient_category_id: newCategory.ingredient_category_id,
       category_name: category_name,
-      owner_id: owner_id,
-      branch_id: branch_id,
     };
   }
 
@@ -569,7 +566,12 @@ export class DashboardService {
     }
 
     let ingredient = await this.ingredientRepository.findOne({
-      where: { ingredient_name, owner: { owner_id }, branch: { branch_id } },
+      where: {
+        ingredient_name,
+        owner: { owner_id },
+        branch: { branch_id },
+        is_delete: false,
+      },
     });
 
     if (!ingredient) {
@@ -617,9 +619,15 @@ export class DashboardService {
         .getRawOne();
 
       return {
-        message: 'Stock updated successfully',
         ingredient_id: ingredient.ingredient_id,
         update_id: existingUpdate.update_id,
+        image_url: image_url,
+        ingredient_name: ingredient_name,
+        net_volume: net_volume,
+        unit: unit,
+        quantity_in_stock: existingUpdate.quantity_in_stock,
+        category_name: category_name,
+        expiration_date: new Date(expiration_date).toISOString().split('T')[0],
         total_volume: totalVolumeResult.total || 0,
       };
     } else {
@@ -648,9 +656,15 @@ export class DashboardService {
         .getRawOne();
 
       return {
-        message: 'Ingredient created successfully',
         ingredient_id: ingredient.ingredient_id,
         update_id: newUpdate.update_id,
+        image_url: image_url,
+        ingredient_name: ingredient_name,
+        net_volume: net_volume,
+        unit: unit,
+        quantity_in_stock: newUpdate.quantity_in_stock,
+        category_name: category_name,
+        expiration_date: new Date(expiration_date).toISOString().split('T')[0],
         total_volume: totalVolumeResult.total || 0,
       };
     }
@@ -915,6 +929,7 @@ export class DashboardService {
     return {
       ingredient_id: ingredient.ingredient_id,
       ingredient_name: ingredient.ingredient_name,
+      ingredient_img: ingredient.image_url,
       updates: validUpdates.map((update) => ({
         update_id: update.update_id,
         quantity_in_stock: update.quantity_in_stock,
@@ -984,6 +999,9 @@ export class DashboardService {
     });
 
     if (!ingredient) {
+      throw new NotFoundException(
+        `Ingredient with ID ${ingredient_id} not found for owner ID ${owner_id} and branch ID ${branch_id}`,
+      );
       throw new NotFoundException(
         `Ingredient with ID ${ingredient_id} not found for owner ID ${owner_id} and branch ID ${branch_id}`,
       );
@@ -1073,6 +1091,13 @@ export class DashboardService {
       const paymentMethod = order.payment
         ? order.payment.payment_method
         : 'Unknown';
+
+      console.log('ORDER DETAILS:', order);
+      console.log('ORDER AMOUNT:', order.payment);
+
+      if (order.payment.amount === null) {
+        console.log('ORDER AMOUNT NULL FOUND:', order.payment);
+      }
 
       const amount = order.payment.amount;
       const total_amount = order.payment.total_amount;

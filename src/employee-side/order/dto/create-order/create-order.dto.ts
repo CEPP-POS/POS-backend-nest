@@ -6,6 +6,7 @@ import {
   IsString,
   IsOptional,
   IsNumber,
+  IsDecimal,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Column } from 'typeorm';

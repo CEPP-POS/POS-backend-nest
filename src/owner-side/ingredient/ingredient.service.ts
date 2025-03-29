@@ -50,30 +50,9 @@ export class IngredientService {
       };
     }
 
-    // const ingredientLinks = await this.ingredientMenuLinkRepository.find({
-    //     where: { menu_id: menuId } as FindOptionsWhere<IngredientMenuLink>,
-    //     relations: ['ingredient_id'],
-    // });
-
-    // if (ingredientLinks.length === 0) {
-    //     return {
-    //         status: HttpStatus.NO_CONTENT,
-    //         message: `No ingredients linked to menu with ID ${menuId}`,
-    //         ingredients: [],
-    //     };
-    // }
-    // const ingredientIds = ingredientLinks.map(link => link.ingredient_id.ingredient_id);
-
-    // const ingredients = await this.ingredientRepository.findByIds(ingredientIds);
-
     return {
       status: HttpStatus.OK,
       message: `Ingredients found for menu with ID ${menuId}`,
-      // ingredients: ingredients.map(ingredient => ({
-      //     ingredient_id: ingredient.ingredient_id,
-      //     ingredient_name: ingredient.ingredient_name,
-      //     ingredient_unit: ingredient.unit
-      // })),
     };
   }
 

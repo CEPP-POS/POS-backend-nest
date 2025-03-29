@@ -39,11 +39,11 @@ branch_id: 22
 ### 5. Owner รีเซ็ตรหัสผ่านใหม่
 PATCH http://localhost:3000/owner/reset-password
 Content-Type: application/json
-owner_id: 48
-branch_id: 22
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: 85f246e6-42da-4b82-8cf4-bdf2c62fa131
 {
-  "email": "new@gmail.com",
-  "newPassword": "SecureWhite1232"
+  "email": "pich2@gmail.com",
+  "newPassword": "Pp0869201512102153"
 }
 ### 6. Owner เข้าสู่ระบบ (Login)
 POST http://localhost:3000/auth/login

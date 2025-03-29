@@ -92,7 +92,7 @@ export class OrderService {
   }
 
   async update(
-    id: number,
+    id: string,
     updateOrderDto: UpdateOrderDto,
   ): Promise<Order | undefined> {
     const order = await this.findOne(id.toString());
@@ -116,7 +116,7 @@ export class OrderService {
     return order;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const result = await this.orderRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Order with ID ${id} not found`);
@@ -290,6 +290,7 @@ export class OrderService {
     branch_id: string,
   ): Promise<any> {
     // Verify owner and branch
+
     const owner = await this.ownerRepository.findOne({
       where: { owner_id },
     });
@@ -331,11 +332,11 @@ export class OrderService {
     });
 
     // Set queue number to latest + 1 or 1 if no orders exist for today
-    createOrderDto.queue_number = latestOrder
-      ? latestOrder.queue_number + 1
-      : 1;
+    createOrderDto.queue_number =
+      createOrderDto.queue_number ||
+      (latestOrder ? latestOrder.queue_number + 1 : 1);
 
-    // ค้นหา sales summary สำหรับวันนี้
+    // Find sales summary for today
     let salesSummary = await this.salesSummaryRepository.findOne({
       where: {
         date: Between(startOfDay, endOfDay),
@@ -344,30 +345,44 @@ export class OrderService {
       },
     });
 
-    // ถ้าไม่มี sales summary สำหรับวันนี้ ให้สร้างใหม่
+    // Create or update sales summary
     if (!salesSummary) {
       salesSummary = this.salesSummaryRepository.create({
         sales_summary_id: createOrderDto.sales_summary_id || uuidv4(),
         date: startOfDay,
-        total_revenue: createOrderDto.total_price,
+        total_revenue: createOrderDto.total_price
+          ? parseFloat(createOrderDto.total_price.toString())
+          : 0,
         total_orders: 1,
         canceled_orders: createOrderDto.cancel_status ? 1 : 0,
         owner,
         branch,
       });
     } else {
-      // อัพเดทข้อมูลที่มีอยู่
-      salesSummary.total_revenue += createOrderDto.total_price;
+      // Update existing sales summary
+      console.log(typeof createOrderDto.total_price);
+      console.log(typeof salesSummary.total_revenue);
+      const currentRevenue = parseFloat(
+        salesSummary.total_revenue.toString(),
+      ).toFixed(2);
+      salesSummary.total_revenue = parseFloat(
+        (
+          parseFloat(currentRevenue) +
+          parseFloat(createOrderDto.total_price.toString())
+        ).toFixed(2),
+      );
       salesSummary.total_orders += 1;
       if (createOrderDto.cancel_status) {
         salesSummary.canceled_orders += 1;
       }
     }
 
-    // บันทึก sales summary
+    console.log('HERE');
+    console.log('SALES SUMMARY:', salesSummary);
+    // Save sales summary
     await this.salesSummaryRepository.save(salesSummary);
 
-    // ใช้ ID จาก JSON ถ้ามี หรือสร้างใหม่จากวันที่และอักษรสุ่ม
+    // Create new order
     const newOrder = this.orderRepository.create({
       order_id:
         createOrderDto.order_id ||
@@ -377,16 +392,21 @@ export class OrderService {
       ...createOrderDto,
       is_paid: false,
       cancel_status: createOrderDto.cancel_status || null,
+      status: createOrderDto.status,
       owner,
       branch,
     });
 
+    console.log('SAVE NEW ORDER:', newOrder);
+
     const savedOrder = await this.orderRepository.save(newOrder);
+    // Calculate total amount with 7% VAT
+    const totalAmount =
+      parseFloat(createOrderDto.total_price.toString()) * 1.07;
+    console.log('TOTAL AMOUNT:', totalAmount);
+    console.log(typeof totalAmount);
 
-    // คำนวณ total_amount รวม VAT 7%
-    const totalAmount = createOrderDto.total_price * 1.07;
-
-    // สร้าง payment record ตามวิธีการชำระเงิน
+    // Create payment record
     const payment = this.paymentRepository.create({
       payment_id: createOrderDto.payment_id || uuidv4(),
       order: savedOrder,
@@ -409,9 +429,8 @@ export class OrderService {
 
     await this.paymentRepository.save(payment);
 
-    // ถ้าเป็นการชำระเงินสด ให้อัพเดทสถานะ order เป็น paid ทันที
+    // Update order paid status for cash payments
     if (createOrderDto.payment_method === PaymentMethod.CASH) {
-      savedOrder.status = 'รอทำ';
       savedOrder.is_paid = true;
       if (savedOrder.cancel_status !== null) {
         savedOrder.is_paid = false;
@@ -419,8 +438,10 @@ export class OrderService {
       await this.orderRepository.save(savedOrder);
     }
 
-    await Promise.all(
+    // Process order items
+    const savedOrderItems = await Promise.all(
       items.map(async (item) => {
+        // Validate menu, sweetness, size, and menu type
         const menu = await this.menuRepository.findOne({
           where: {
             menu_id: item.menu_id,
@@ -459,6 +480,7 @@ export class OrderService {
           );
         }
 
+        // Update ingredient stock
         try {
           await this.updateIngredientStock(
             item.menu_id,
@@ -473,7 +495,7 @@ export class OrderService {
           throw error;
         }
 
-        // Create order item first
+        // Create order item
         const orderItem = this.orderItemRepository.create({
           order_item_id: item.order_item_id || uuidv4(),
           quantity: item.quantity,
@@ -486,29 +508,51 @@ export class OrderService {
           branch,
           order: savedOrder,
         });
+        console.log(orderItem);
 
         const savedOrderItem = await this.orderItemRepository.save(orderItem);
 
-        // Create order item add-ons with reference to saved order item
+        // Process add-ons with ingredient retrieval from AddOn table
         const orderItemAddOns = await Promise.all(
           item.add_on_id.map(async (addon_id) => {
+            // Find AddOn with its related ingredient
+            const addon = await this.addOnRepository.findOne({
+              where: { add_on_id: addon_id },
+              relations: ['ingredient'], // Load related ingredient
+              select: {
+                ingredient: { ingredient_id: true },
+              },
+            });
+
+            if (!addon || !addon.ingredient) {
+              throw new NotFoundException(
+                `AddOn with ID ${addon_id} not found`,
+              );
+            }
+
+            const ingredientId = addon.ingredient.ingredient_id;
+
+            // Verify ingredient exists
             const ingredient = await this.ingredientRepository.findOne({
-              where: { ingredient_id: addon_id },
+              where: { ingredient_id: ingredientId },
             });
 
             if (!ingredient) {
               throw new NotFoundException(
-                `Ingredient with ID ${addon_id} not found`,
+                `Ingredient with ID ${ingredientId} not found`,
               );
             }
 
-            const addon = this.orderItemAddOnRepository.create({
+            // Create order item add-on
+            const orderItemAddOn = this.orderItemAddOnRepository.create({
               order_item_id: savedOrderItem.order_item_id,
-              ingredient_id: addon_id,
+              ingredient_id: ingredientId,
               owner,
               branch,
             });
-            const savedAddon = await this.orderItemAddOnRepository.save(addon);
+
+            const savedAddon =
+              await this.orderItemAddOnRepository.save(orderItemAddOn);
 
             return {
               ...savedAddon,
@@ -519,13 +563,15 @@ export class OrderService {
 
         return {
           ...savedOrderItem,
-          orderItem: orderItemAddOns,
+          orderItemAddOns,
         };
       }),
     );
 
+    // Retrieve and return the full order details
     return this.findOrderById(savedOrder.order_id);
   }
+
   async findAllOrders(
     owner_id: string,
     branch_id: string,
@@ -552,7 +598,7 @@ export class OrderService {
     });
 
     const orders = await this.orderRepository.find({
-      where: { owner: { owner_id }, branch: { branch_id } },
+      where: { owner: { owner_id }, branch: { branch_id }, status: 'รอทำ' },
       relations: [
         'order_item',
         'order_item.menu',
@@ -612,7 +658,12 @@ export class OrderService {
     };
   }
 
-  async findOrderById(order_id: string): Promise<Order> {
+  async findOrderById(order_id: string): Promise<any> {
+    // ดึงข้อมูล payment โดยตรง
+    const payment = await this.paymentRepository.findOne({
+      where: { order: { order_id } },
+    });
+
     const order = await this.orderRepository.findOne({
       where: { order_id },
       relations: [
@@ -624,6 +675,7 @@ export class OrderService {
         'order_item.orderItem.ingredient',
         'order_item.menuType',
         'branch',
+        'owner',
       ],
     });
 
@@ -700,7 +752,72 @@ export class OrderService {
       console.error('Failed to generate receipt image:', error);
     }
 
-    return transformedOrder as any;
+    // Transform order items to match requested format
+    const formattedItems = await Promise.all(
+      order.order_item.map(async (item) => {
+        // ดึง add_on_id จาก addon table โดยใช้ ingredient_id
+        const addOnIds = item.orderItem
+          ? await Promise.all(
+              item.orderItem.map(async (addon) => {
+                const foundAddOn = await this.addOnRepository.findOne({
+                  where: { ingredient: { ingredient_id: addon.ingredient_id } },
+                });
+                return foundAddOn?.add_on_id;
+              }),
+            )
+          : [];
+
+        return {
+          order_item_id: item.order_item_id,
+          menu_id: item.menu.menu_id,
+          sweetness_id: item.sweetnessLevel.sweetness_id,
+          size_id: item.size.size_id,
+          add_on_id: addOnIds.filter((id) => id !== undefined), // กรองเอาเฉพาะค่าที่ไม่เป็น undefined
+          menu_type_id: item.menuType.menu_type_id,
+          quantity: item.quantity,
+          price: item?.price ? parseFloat(item.price.toString()) : 0,
+        };
+      }),
+    );
+
+    // Find sales summary for the order date
+    const startOfDay = new Date(order.order_date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(order.order_date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // ตรวจสอบว่ามี owner และ branch ก่อนใช้งาน
+    let salesSummary = null;
+    if (order.owner && order.branch) {
+      salesSummary = await this.salesSummaryRepository.findOne({
+        where: {
+          date: Between(startOfDay, endOfDay),
+          owner: { owner_id: order.owner.owner_id },
+          branch: { branch_id: order.branch.branch_id },
+        },
+      });
+    }
+
+    // Return data in requested format
+    const responseData = {
+      createOrderDto: {
+        sales_summary_id: salesSummary?.sales_summary_id || null,
+        order_id: order.order_id,
+        payment_id: payment?.payment_id,
+        queue_number: order.queue_number,
+        order_date: order.order_date,
+        total_price: payment?.amount
+          ? parseFloat(payment.amount.toString())
+          : 0,
+        status: order.status,
+        payment_method: payment?.payment_method,
+        path_img: payment?.path_img,
+        cancel_status: order.cancel_status,
+      },
+      items: formattedItems,
+    };
+
+    return responseData;
   }
 
   async completeOrder(
@@ -729,7 +846,14 @@ export class OrderService {
   async payWithCash(
     order_id: string,
     payWithCashDto: PayWithCashDto,
-  ): Promise<Order> {
+  ): Promise<{
+    payment_id: string;
+    total_amount: number;
+    cash_given: number;
+    change: number;
+    status: string;
+    amount: number;
+  }> {
     const order = await this.orderRepository.findOne({
       where: { order_id: order_id },
       relations: ['owner', 'branch'],
@@ -744,12 +868,12 @@ export class OrderService {
     });
 
     // คำนวณ total_amount รวม VAT 7%
-    const totalAmount = payWithCashDto.amount * 1.07;
+    const totalAmount = parseFloat((payWithCashDto.amount * 1.07).toFixed(2));
 
     if (!payment) {
       // If no payment exists, create a new one
       payment = this.paymentRepository.create({
-        payment_id: payWithCashDto.payment_id || uuidv4(),
+        payment_id: payWithCashDto.payment_id || uuidv4(), // ใช้ payment_id ที่ส่งมาโดยตรง
         order,
         cash_given: payWithCashDto.cash_given,
         change: payWithCashDto.change,
@@ -782,11 +906,14 @@ export class OrderService {
     // Update order status
     order.status = 'paid';
     await this.orderRepository.save(order);
-
-    return this.orderRepository.findOne({
-      where: { order_id: order_id },
-      relations: ['owner', 'branch'],
-    });
+    return {
+      payment_id: payment.payment_id,
+      total_amount: totalAmount,
+      cash_given: payWithCashDto.cash_given,
+      change: payWithCashDto.change,
+      status: payment.status,
+      amount: payWithCashDto.amount,
+    };
   }
 
   // เพิ่มฟังก์ชันสำหรับอัพเดทสถานะการชำระเงิน

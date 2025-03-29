@@ -23,7 +23,7 @@ import { PayWithCashDto } from './dto/pay-with-cash/pay-with-cash.dto';
 
 @Controller('employee/orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
   @Post()
   async createOrder(
@@ -72,7 +72,7 @@ export class OrderController {
     @Body() updateOrderDto: UpdateOrderDto,
     @Res() res: Response,
   ) {
-    const order = await this.orderService.update(+id, updateOrderDto);
+    const order = await this.orderService.update(id, updateOrderDto);
     if (!order) {
       return res
         .status(HttpStatus.NOT_FOUND)
@@ -90,7 +90,7 @@ export class OrderController {
         .status(HttpStatus.NOT_FOUND)
         .json({ message: 'Order not found' });
     }
-    await this.orderService.remove(+id);
+    await this.orderService.remove(id);
     return res.status(HttpStatus.NO_CONTENT).send();
   }
   //

@@ -110,8 +110,7 @@ export class MenuController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    await this.menuService.createMenuTypeGroup(dto, ownerId, branchId);
-    return HttpStatus.CREATED;
+    return await this.menuService.createMenuTypeGroup(dto, ownerId, branchId);
   }
   @Delete('options/menu_type/:menuTypeGroupName')
   // @UseGuards(JwtGuard, RolesGuard) // ✅ ต้องใช้ Token และต้องเป็น Owner
@@ -276,7 +275,7 @@ export class MenuController {
       'sweetness',
       createSweetnessDto,
       ownerId,
-      ownerId,
+      branchId,
     );
   }
 
@@ -312,7 +311,12 @@ export class MenuController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    await this.menuService.createSize('size', createSizeDto, ownerId, branchId);
+    return await this.menuService.createSize(
+      'size',
+      createSizeDto,
+      ownerId,
+      branchId,
+    );
   }
 
   @Post('options/add-ons')
@@ -327,7 +331,7 @@ export class MenuController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    await this.menuService.createAddOn(
+    return await this.menuService.createAddOn(
       'addOn',
       createAddOnDto,
       ownerId,
@@ -440,13 +444,10 @@ export class MenuController {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
 
-    const ownerIdNum = Number(ownerId);
-    const branchIdNum = Number(branchId);
-
     return await this.menuService.deleteSweetness(
       sweetness_group_name,
-      ownerIdNum,
-      branchIdNum,
+      ownerId,
+      branchId,
     );
   }
 
@@ -467,7 +468,7 @@ export class MenuController {
 
   @Get('stock/option/:menu_id')
   async getMenuOptions(
-    @Param('menu_id') menu_id: number,
+    @Param('menu_id') menu_id: string,
     @Req() request: Request,
   ) {
     const ownerId = request.headers['owner_id'];
@@ -479,6 +480,6 @@ export class MenuController {
       );
     }
 
-    return this.menuService.getMenuOptions(menu_id, +ownerId, +branchId);
+    return this.menuService.getMenuOptions(menu_id, ownerId, branchId);
   }
 }

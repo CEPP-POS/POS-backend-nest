@@ -9,7 +9,7 @@ import { Type } from 'class-transformer';
 
 class SizeOptionDto {
   @IsString()
-  size_id: string; // "null" means new size
+  size_id?: string; // "null" means new size
 
   @IsNotEmpty()
   size_name: string;

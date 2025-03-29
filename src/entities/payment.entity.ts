@@ -26,10 +26,10 @@ export class Payment {
   @Column({ type: 'varchar', length: 255 })
   payment_method: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   amount: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   total_amount: number;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
@@ -38,10 +38,10 @@ export class Payment {
   @Column({ type: 'varchar', length: 255, nullable: true })
   path_img: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({ nullable: true, type: 'decimal', precision: 10, scale: 2 })
   cash_given: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({ nullable: true, type: 'decimal', precision: 10, scale: 2 })
   change: number;
 
   @ManyToOne(() => Owner, { nullable: false })

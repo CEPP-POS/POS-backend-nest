@@ -13,7 +13,6 @@ import { Menu } from '../../entities/menu.entity';
 import { Owner } from 'src/entities/owner.entity';
 import { Branch } from 'src/entities/branch.entity';
 import { MenuCategory } from 'src/entities/menu_category';
-import { LinkMenuToCategoryDto } from './dto/link-menu-to-category/link-menu-to-category.dto';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -21,6 +20,7 @@ export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+
     @InjectRepository(Menu)
     private readonly menuRepository: Repository<Menu>,
 
@@ -34,8 +34,13 @@ export class CategoryService {
     private readonly branchRepository: Repository<Branch>,
   ) {}
 
-  async findAll(): Promise<Category[]> {
-    return this.categoryRepository.find();
+  async findAll(ownerId: string, branchId: string) {
+    return await this.categoryRepository.find({
+      where: {
+        owner: { owner_id: ownerId },
+        branch: { branch_id: branchId },
+      },
+    });
   }
 
   async findOne(id: string): Promise<Category> {
@@ -116,71 +121,9 @@ export class CategoryService {
     }
 
     return {
-      message: 'Category created successfully',
-      category: {
-        category_id: category.category_id,
-        category_name: category.category_name,
-      },
-    };
-  }
-
-  async linkMenusToCategory(
-    linkMenuToCategoryDto: LinkMenuToCategoryDto,
-  ): Promise<any> {
-    const { owner_id, branch_id, category_id, menu_ids } =
-      linkMenuToCategoryDto;
-
-    // Find the category by category_id, owner_id, and branch_id
-    const category = await this.categoryRepository.findOne({
-      where: { category_id },
-    });
-
-    if (!category) {
-      throw new HttpException(
-        `Category with ID ${category_id} not found for the specified owner and branch`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    // Find the menus by menu_ids and validate ownership/branch
-    const menus = await this.menuRepository.find({
-      where: { menu_id: In(menu_ids) },
-    });
-
-    if (menus.length !== menu_ids.length) {
-      throw new HttpException(
-        `Some menus with IDs ${menu_ids} not found for the specified owner and branch`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    // Step 1: Delete existing MenuCategory entries that are not in the new list
-    const deleteResult = await this.menuCategoryRepository
-      .createQueryBuilder()
-      .delete()
-      .where('category_id = :category_id', { category_id })
-      .andWhere('owner_id = :owner_id', { owner_id })
-      .andWhere('branch_id = :branch_id', { branch_id })
-      .andWhere('menu_id NOT IN (:...menu_ids)', { menu_ids })
-      .execute();
-
-    // Step 2: Create and save new MenuCategory entries for the given menus
-    const menuCategories = menus.map((menu) =>
-      this.menuCategoryRepository.create({
-        category_id: category.category_id,
-        menu_id: menu.menu_id,
-        owner_id: owner_id,
-        branch_id: branch_id,
-      }),
-    );
-
-    await this.menuCategoryRepository.save(menuCategories);
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Menu-category links updated successfully',
-      deletedCount: deleteResult.affected || 0,
-      addedCount: menuCategories.length,
+      category_id: category.category_id,
+      category_name: category.category_name,
+      menu_id: menu_id,
     };
   }
 
@@ -244,19 +187,13 @@ export class CategoryService {
     }
 
     // ✅ Validate Owner and Branch
-    if (
-      !category.owner ||
-      Number(category.owner.owner_id) !== Number(owner_id)
-    ) {
+    if (!category.owner || category.owner.owner_id !== owner_id) {
       throw new ConflictException(
         `Category does not belong to the specified owner`,
       );
     }
 
-    if (
-      category.branch &&
-      Number(category.branch.branch_id) !== Number(branch_id)
-    ) {
+    if (category.branch && category.branch.branch_id !== branch_id) {
       throw new ConflictException(
         `Category does not belong to the specified branch`,
       );

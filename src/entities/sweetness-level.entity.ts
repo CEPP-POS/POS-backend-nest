@@ -16,6 +16,9 @@ export class SweetnessLevel {
   @PrimaryColumn({ type: 'uuid' })
   sweetness_id: string;
 
+  @Column({ nullable: true })
+  sweetness_order: number;
+
   @Column({ nullable: false })
   level_name: string;
 

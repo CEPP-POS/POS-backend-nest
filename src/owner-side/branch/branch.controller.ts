@@ -20,7 +20,7 @@ import { Request } from 'express';
 
 @Controller('branches')
 export class BranchController {
-  constructor(private readonly branchService: BranchService) {}
+  constructor(private readonly branchService: BranchService) { }
   // * Create Branch (Owner Only)
   @Post()
   @UseGuards(JwtGuard, RolesGuard)
@@ -94,6 +94,7 @@ export class BranchController {
     }
 
     // Check if ownerId is still a string
+    console.log("OWBER TYPE:", typeof ownerId)
     if (typeof ownerId !== 'string') {
       throw new BadRequestException('Invalid owner_id');
     }
@@ -109,6 +110,8 @@ export class BranchController {
     const ownerId = Array.isArray(request.headers['owner_id'])
       ? request.headers['owner_id'][0]
       : request.headers['owner_id'];
+
+    console.log("OWBER TYPE:", typeof ownerId)
 
     const branchId = Array.isArray(request.headers['branch_id'])
       ? request.headers['branch_id'][0]
@@ -126,8 +129,8 @@ export class BranchController {
     );
   }
 
-  // @Get('owner/:ownerId')
-  // async getBranchesByOwner(@Param('ownerId') ownerId: number) {
-  //   return this.branchService.getBranchesByOwnerId(ownerId);
-  // }
+  @Get('owner/:ownerId')
+  async getBranchesByOwner(@Param('ownerId') ownerId: string) {
+    return this.branchService.getBranchesByOwnerId(ownerId);
+  }
 }
