@@ -158,7 +158,6 @@ export class SyncService {
       if (data.retryCount >= 3) {
         data.synced = true;
         console.log(`🚫 Max retry reached for ID: ${data.id}`);
-        await this.syncRepo.remove(data);
       }
 
       await this.syncRepo.save(data);
