@@ -82,16 +82,14 @@ export class SyncService {
         console.log(`⚠️ Already exists on server`);
         data.synced = true;
         data.errorMessage = '409 Conflict';
-        await this.syncRepo.remove(data);
+        await this.syncRepo.save(data); 
       } else {
         console.error(`❌ Retry failed`, error.message);
         data.errorMessage = error.response?.data?.message || error.message;
       }
 
       if (data.retryCount >= 3) {
-        // data.synced = true;
         console.log(`⚠️ Max retry attempts reached`);
-        // await this.syncRepo.remove(data);
       }
 
       await this.syncRepo.save(data);
