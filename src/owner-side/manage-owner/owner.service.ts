@@ -254,7 +254,7 @@ export class OwnerService {
     updatePasswordDto: UpdatePasswordDto,
     ownerId: string,
     branchId: string,
-  ): Promise<{ message: string }> {
+  ): Promise<{ message: string; updatePassword: boolean }> {
     const { email, newPassword } = updatePasswordDto;
     const user = await this.ownerRepository.findOne({
       where: { email, owner_id: ownerId, branch: { branch_id: branchId } },
@@ -262,7 +262,10 @@ export class OwnerService {
     });
     user.password = await bcrypt.hash(newPassword, 10);
     await this.ownerRepository.save(user);
-    return { message: 'Password reset successful. You can now log in.' };
+    return { 
+      message: 'Password reset successful. You can now log in.',
+      updatePassword: true 
+    };
   }
 
   async updatePassword(
