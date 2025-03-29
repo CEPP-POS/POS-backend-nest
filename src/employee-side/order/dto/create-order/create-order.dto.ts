@@ -6,6 +6,7 @@ import {
   IsString,
   IsOptional,
   IsNumber,
+  IsDecimal,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Column } from 'typeorm';
@@ -36,6 +37,7 @@ export class CreateOrderDto {
   @Type(() => Date)
   order_date: Date;
 
+  @IsDecimal()
   @IsNotEmpty()
   total_price: number;
 

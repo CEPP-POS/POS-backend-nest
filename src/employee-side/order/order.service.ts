@@ -643,6 +643,11 @@ export class OrderService {
   }
 
   async findOrderById(order_id: string): Promise<any> {
+    // ดึงข้อมูล payment โดยตรง
+    const payment = await this.paymentRepository.findOne({
+      where: { order: { order_id } },
+    });
+
     const order = await this.orderRepository.findOne({
       where: { order_id },
       relations: [
@@ -654,7 +659,6 @@ export class OrderService {
         'order_item.orderItem.ingredient',
         'order_item.menuType',
         'branch',
-        'payment',
         'owner',
       ],
     });
@@ -746,18 +750,9 @@ export class OrderService {
         add_on_id: addOnIds,
         menu_type_id: item.menuType.menu_type_id,
         quantity: item.quantity,
-        price: item.price,
+        price: item?.price ? parseFloat(item.price.toString()) : 0,
       };
     });
-
-    // Calculate total price from order items
-    const totalPrice = order.order_item.reduce(
-      (sum, item) => sum + item.price,
-      0,
-    );
-
-    // Get payment information
-    const payment = order.payment?.[0];
 
     // Find sales summary for the order date
     const startOfDay = new Date(order.order_date);
@@ -778,21 +773,25 @@ export class OrderService {
     }
 
     // Return data in requested format
-    return {
+    const responseData = {
       createOrderDto: {
         sales_summary_id: salesSummary?.sales_summary_id || null,
         order_id: order.order_id,
-        payment_id: payment?.payment_id || null,
+        payment_id: payment?.payment_id,
         queue_number: order.queue_number,
         order_date: order.order_date,
-        total_price: totalPrice,
+        total_price: payment?.amount
+          ? parseFloat(payment.amount.toString())
+          : 0,
         status: order.status,
-        payment_method: payment?.payment_method || null,
-        path_img: payment?.path_img || null,
+        payment_method: payment?.payment_method,
+        path_img: payment?.path_img,
         cancel_status: order.cancel_status,
       },
       items: formattedItems,
     };
+
+    return responseData;
   }
 
   async completeOrder(

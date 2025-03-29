@@ -5,11 +5,11 @@ owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
   "createOrderDto": {
-    "order_date": "2025-03-05T08:01:00Z",
-    "total_price": 100,
+    "order_date": "2025-03-06T08:01:00Z",
+    "total_price": 100.50,
     "status": "รอทำ",
     "payment_method": "qr-code",
-    "path_img": "https://image/payment",
+    "path_img": "https://image/paymentะะ",
     "cancel_status": null
   },
   "items": [
@@ -30,6 +30,54 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
       "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf",
       "quantity": 2,
       "price": 100
+    }
+  ]
+}
+
+###ทดสอบส่งกลับ
+POST http://localhost:3000/employee/orders
+Content-Type: application/json
+owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
+branch_id: d458dffa-855b-4040-afba-dbf97055a820
+{
+  "createOrderDto": {
+    "sales_summary_id": "5b1dd765-abab-4d0e-90a0-3130fab5bdec",
+    "order_id": "20250306150100-AAAAA",
+    "payment_id": "40eaf502-e9f0-42f8-9206-e71cb9c9e3a8",
+    "queue_number": 3,
+    "order_date": "2025-03-06T08:01:00.000Z",
+    "total_price": 100.00,
+    "status": "รอทำ",
+    "payment_method": "qr-code",
+    "path_img": "https://image/paymentะะ",
+    "cancel_status": "ยังไม่คืนเงิน"
+  },
+  "items": [
+    {
+      "order_item_id": "e8e7b352-5210-45db-b26b-8216bf967c5f",
+      "menu_id": "4158398f-a29e-42ed-a085-f168446527fc",
+      "sweetness_id": "0d1e5861-26d9-43b5-b211-3ac81c70785d",
+      "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22",
+      "add_on_id": [
+        "6ee894de-d532-47ac-972a-ecbf2cebbe65",
+        "4a00f6f3-6d1f-4330-93f8-05ca95121081"
+      ],
+      "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf",
+      "quantity": 2,
+      "price": "100.00"
+    },
+    {
+      "order_item_id": "7c2c0927-dd26-487d-aa46-c6b76a73b92b",
+      "menu_id": "937a85a7-168c-4bc3-91c4-a5d0a66f6ef2",
+      "sweetness_id": "0d1e5861-26d9-43b5-b211-3ac81c70785d",
+      "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22",
+      "add_on_id": [
+        "4a00f6f3-6d1f-4330-93f8-05ca95121081",
+        "6ee894de-d532-47ac-972a-ecbf2cebbe65"
+      ],
+      "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf",
+      "quantity": 2,
+      "price": "100.00"
     }
   ]
 }
