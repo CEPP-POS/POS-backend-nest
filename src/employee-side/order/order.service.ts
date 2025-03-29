@@ -642,7 +642,7 @@ export class OrderService {
     };
   }
 
-  async findOrderById(order_id: string): Promise<Order> {
+  async findOrderById(order_id: string): Promise<any> {
     const order = await this.orderRepository.findOne({
       where: { order_id },
       relations: [
@@ -654,6 +654,8 @@ export class OrderService {
         'order_item.orderItem.ingredient',
         'order_item.menuType',
         'branch',
+        'payment',
+        'owner',
       ],
     });
 
@@ -730,7 +732,67 @@ export class OrderService {
       console.error('Failed to generate receipt image:', error);
     }
 
-    return transformedOrder as any;
+    // Transform order items to match requested format
+    const formattedItems = order.order_item.map((item) => {
+      const addOnIds = item.orderItem
+        ? item.orderItem.map((addon) => addon.ingredient_id)
+        : [];
+
+      return {
+        order_item_id: item.order_item_id,
+        menu_id: item.menu.menu_id,
+        sweetness_id: item.sweetnessLevel.sweetness_id,
+        size_id: item.size.size_id,
+        add_on_id: addOnIds,
+        menu_type_id: item.menuType.menu_type_id,
+        quantity: item.quantity,
+        price: item.price,
+      };
+    });
+
+    // Calculate total price from order items
+    const totalPrice = order.order_item.reduce(
+      (sum, item) => sum + item.price,
+      0,
+    );
+
+    // Get payment information
+    const payment = order.payment?.[0];
+
+    // Find sales summary for the order date
+    const startOfDay = new Date(order.order_date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(order.order_date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // ตรวจสอบว่ามี owner และ branch ก่อนใช้งาน
+    let salesSummary = null;
+    if (order.owner && order.branch) {
+      salesSummary = await this.salesSummaryRepository.findOne({
+        where: {
+          date: Between(startOfDay, endOfDay),
+          owner: { owner_id: order.owner.owner_id },
+          branch: { branch_id: order.branch.branch_id },
+        },
+      });
+    }
+
+    // Return data in requested format
+    return {
+      createOrderDto: {
+        sales_summary_id: salesSummary?.sales_summary_id || null,
+        order_id: order.order_id,
+        payment_id: payment?.payment_id || null,
+        queue_number: order.queue_number,
+        order_date: order.order_date,
+        total_price: totalPrice,
+        status: order.status,
+        payment_method: payment?.payment_method || null,
+        path_img: payment?.path_img || null,
+        cancel_status: order.cancel_status,
+      },
+      items: formattedItems,
+    };
   }
 
   async completeOrder(
