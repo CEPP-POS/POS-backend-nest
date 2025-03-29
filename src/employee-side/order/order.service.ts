@@ -331,9 +331,9 @@ export class OrderService {
     });
 
     // Set queue number to latest + 1 or 1 if no orders exist for today
-    createOrderDto.queue_number = latestOrder
-      ? latestOrder.queue_number + 1
-      : 1;
+    createOrderDto.queue_number =
+      createOrderDto.queue_number ||
+      (latestOrder ? latestOrder.queue_number + 1 : 1);
 
     // Find sales summary for today
     let salesSummary = await this.salesSummaryRepository.findOne({
