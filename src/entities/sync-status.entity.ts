@@ -5,6 +5,7 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Branch } from './branch.entity';
 import { Owner } from './owner.entity';
@@ -16,8 +17,9 @@ export enum syncStatus {
 
 @Entity('sync_status')
 export class SyncStatus {
-  @PrimaryColumn({ type: 'uuid' })
-  id: string;
+  @PrimaryGeneratedColumn('uuid')
+id: string;
+
 
   @Column()
   path: string;
@@ -60,4 +62,14 @@ export class SyncStatus {
 
   @ManyToOne(() => Branch, (branch) => branch.syncStatus)
   branch: Branch;
+
+  @Column({ nullable: true })
+tempId?: string; // ไว้ผูกกับ DELETE หรือคำสั่งอื่นๆ ที่ต้องอิง ID จาก POST ก่อนหน้า
+
+@Column({ nullable: true })
+relatedTempId?: string;
+
+@Column({ nullable: true })
+serverGeneratedId?: string; // ID จริงที่ได้จาก server
+
 }

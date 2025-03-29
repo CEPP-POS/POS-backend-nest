@@ -2,15 +2,10 @@
 POST http://localhost:3000/status/offline  
 Content-Type: application/json
 {
-  "path": "http://10.240.67.14:80/api/owner/menus",
-  "method": "POST",
+  "path": "http://192.168.3.86:3000/owner/menus/menu_id?",
+  "method": "DELETE",
   "statusCode": 404,
-  "payload": {
-    "menu_name": "ชานมมม",
-    "description": "thai tea from อร่อยยยยยยยย",
-    "price": 100,
-    "image_url": "http://example.com/spaghetti.jpg"
-  },
+  "payload": {},
   "headers": {
     "owner_id": "ba9f18e5-2d91-48b9-b7c6-bb6ff70440b0",
     "branch_id": "a6f7afc2-7908-405a-a348-1f9ed115a35f"
