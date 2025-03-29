@@ -6,7 +6,7 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
 {
   "createOrderDto": {
     "order_date": "2025-03-06T08:01:00Z",
-    "total_price": 100.50,
+    "total_price": 100,
     "status": "รอทำ",
     "payment_method": "qr-code",
     "path_img": "https://image/paymentะะ",
@@ -59,21 +59,8 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
       "sweetness_id": "0d1e5861-26d9-43b5-b211-3ac81c70785d",
       "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22",
       "add_on_id": [
-        "6ee894de-d532-47ac-972a-ecbf2cebbe65",
-        "4a00f6f3-6d1f-4330-93f8-05ca95121081"
-      ],
-      "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf",
-      "quantity": 2,
-      "price": "100.00"
-    },
-    {
-      "order_item_id": "7c2c0927-dd26-487d-aa46-c6b76a73b92b",
-      "menu_id": "937a85a7-168c-4bc3-91c4-a5d0a66f6ef2",
-      "sweetness_id": "0d1e5861-26d9-43b5-b211-3ac81c70785d",
-      "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22",
-      "add_on_id": [
-        "4a00f6f3-6d1f-4330-93f8-05ca95121081",
-        "6ee894de-d532-47ac-972a-ecbf2cebbe65"
+        "9698b6ce-bbc2-4e12-a252-ebd26ccdde1b",
+        "1fda408a-8db2-4bc8-b17c-a1212099776e"
       ],
       "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf",
       "quantity": 2,

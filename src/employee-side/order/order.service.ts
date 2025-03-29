@@ -349,7 +349,9 @@ export class OrderService {
       salesSummary = this.salesSummaryRepository.create({
         sales_summary_id: createOrderDto.sales_summary_id || uuidv4(),
         date: startOfDay,
-        total_revenue: createOrderDto.total_price,
+        total_revenue: createOrderDto.total_price
+          ? parseFloat(createOrderDto.total_price.toString())
+          : 0,
         total_orders: 1,
         canceled_orders: createOrderDto.cancel_status ? 1 : 0,
         owner,
@@ -387,9 +389,10 @@ export class OrderService {
     const savedOrder = await this.orderRepository.save(newOrder);
 
     // Calculate total amount with 7% VAT
-    const totalAmount = parseFloat(
-      (createOrderDto.total_price * 1.07).toFixed(2),
-    );
+    const totalAmount =
+      parseFloat(createOrderDto.total_price.toString()) * 1.07;
+    console.log('TOTAL AMOUNT:', totalAmount);
+    console.log(typeof totalAmount);
 
     // Create payment record
     const payment = this.paymentRepository.create({
@@ -737,22 +740,32 @@ export class OrderService {
     }
 
     // Transform order items to match requested format
-    const formattedItems = order.order_item.map((item) => {
-      const addOnIds = item.orderItem
-        ? item.orderItem.map((addon) => addon.ingredient_id)
-        : [];
+    const formattedItems = await Promise.all(
+      order.order_item.map(async (item) => {
+        // ดึง add_on_id จาก addon table โดยใช้ ingredient_id
+        const addOnIds = item.orderItem
+          ? await Promise.all(
+              item.orderItem.map(async (addon) => {
+                const foundAddOn = await this.addOnRepository.findOne({
+                  where: { ingredient: { ingredient_id: addon.ingredient_id } },
+                });
+                return foundAddOn?.add_on_id;
+              }),
+            )
+          : [];
 
-      return {
-        order_item_id: item.order_item_id,
-        menu_id: item.menu.menu_id,
-        sweetness_id: item.sweetnessLevel.sweetness_id,
-        size_id: item.size.size_id,
-        add_on_id: addOnIds,
-        menu_type_id: item.menuType.menu_type_id,
-        quantity: item.quantity,
-        price: item?.price ? parseFloat(item.price.toString()) : 0,
-      };
-    });
+        return {
+          order_item_id: item.order_item_id,
+          menu_id: item.menu.menu_id,
+          sweetness_id: item.sweetnessLevel.sweetness_id,
+          size_id: item.size.size_id,
+          add_on_id: addOnIds.filter((id) => id !== undefined), // กรองเอาเฉพาะค่าที่ไม่เป็น undefined
+          menu_type_id: item.menuType.menu_type_id,
+          quantity: item.quantity,
+          price: item?.price ? parseFloat(item.price.toString()) : 0,
+        };
+      }),
+    );
 
     // Find sales summary for the order date
     const startOfDay = new Date(order.order_date);

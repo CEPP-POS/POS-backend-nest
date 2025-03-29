@@ -37,7 +37,6 @@ export class CreateOrderDto {
   @Type(() => Date)
   order_date: Date;
 
-  @IsDecimal()
   @IsNotEmpty()
   total_price: number;
 
