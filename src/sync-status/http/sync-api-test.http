@@ -6,8 +6,8 @@ Content-Type: application/json
   "method": "POST",
   "statusCode": 404,
   "payload": {
-    "menu_name": "สสสสสส",
-    "description": "สสสสส",
+    "menu_name": "ขขขขขขขขขขขขขข",
+    "description": "ขขขขขขขขขขขขข",
     "price": 100,
     "image_url": "http://example.com/spaghetti.jpg"
   },
