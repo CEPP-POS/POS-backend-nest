@@ -16,7 +16,7 @@ export class SalesSummary {
   @JoinColumn({ name: 'branch_id' })
   branch: Branch;
 
-  @Column()
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   total_revenue: number;
 
   @Column()

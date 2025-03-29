@@ -290,6 +290,7 @@ export class OrderService {
     branch_id: string,
   ): Promise<any> {
     // Verify owner and branch
+
     const owner = await this.ownerRepository.findOne({
       where: { owner_id },
     });
@@ -359,13 +360,25 @@ export class OrderService {
       });
     } else {
       // Update existing sales summary
-      salesSummary.total_revenue += createOrderDto.total_price;
+      console.log(typeof createOrderDto.total_price);
+      console.log(typeof salesSummary.total_revenue);
+      const currentRevenue = parseFloat(
+        salesSummary.total_revenue.toString(),
+      ).toFixed(2);
+      salesSummary.total_revenue = parseFloat(
+        (
+          parseFloat(currentRevenue) +
+          parseFloat(createOrderDto.total_price.toString())
+        ).toFixed(2),
+      );
       salesSummary.total_orders += 1;
       if (createOrderDto.cancel_status) {
         salesSummary.canceled_orders += 1;
       }
     }
 
+    console.log('HERE');
+    console.log('SALES SUMMARY:', salesSummary);
     // Save sales summary
     await this.salesSummaryRepository.save(salesSummary);
 
@@ -387,7 +400,6 @@ export class OrderService {
     console.log('SAVE NEW ORDER:', newOrder);
 
     const savedOrder = await this.orderRepository.save(newOrder);
-
     // Calculate total amount with 7% VAT
     const totalAmount =
       parseFloat(createOrderDto.total_price.toString()) * 1.07;
@@ -496,6 +508,7 @@ export class OrderService {
           branch,
           order: savedOrder,
         });
+        console.log(orderItem);
 
         const savedOrderItem = await this.orderItemRepository.save(orderItem);
 
