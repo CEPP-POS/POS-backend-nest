@@ -35,8 +35,8 @@ export class DashboardController {
     @Param('date') date: string,
     @Req() request: Request,
   ): Promise<Overview> {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -58,8 +58,8 @@ export class DashboardController {
     @Param('month') month: string,
     @Req() request: Request,
   ): Promise<Linegraph> {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     return this.dashboardService.getStockLineGraph(
       Number(year),
@@ -75,8 +75,8 @@ export class DashboardController {
     @Param('filter') filter: 'year' | 'month' | 'date' | 'all',
     @Req() request: Request,
   ): Promise<OrderItemDto> {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -94,8 +94,8 @@ export class DashboardController {
 
   @Get('stock-cancel-orders')
   async getCancelOrders(@Req() request: Request): Promise<CancelOrderTopicDto> {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -112,8 +112,8 @@ export class DashboardController {
     @Param('order_id') order_id: string,
     @Req() request: Request,
   ): Promise<any> {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -130,8 +130,8 @@ export class DashboardController {
 
   @Get('stock-ingredients')
   async getStockIngredients(@Req() request: Request) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -146,8 +146,8 @@ export class DashboardController {
   async getIngredientsCategories(
     @Req() request: Request,
   ): Promise<IngredientCategoriesDto> {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -163,8 +163,8 @@ export class DashboardController {
     @Param('ingredient_id') ingredient_id: string,
     @Headers() headers: Record<string, string>,
   ): Promise<any> {
-    const ownerId = headers['owner_id'];
-    const branchId = headers['branch_id'];
+    const ownerId = headers['owner-id'];
+    const branchId = headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -184,8 +184,8 @@ export class DashboardController {
     @Body() createCategoryDto: CreateCategoryDto,
     @Req() request: Request,
   ) {
-    const owner_id = request.headers['owner_id'];
-    const branch_id = request.headers['branch_id'];
+    const owner_id = request.headers['owner-id'];
+    const branch_id = request.headers['branch-id'];
 
     if (!owner_id || !branch_id) {
       throw new BadRequestException(
@@ -205,8 +205,8 @@ export class DashboardController {
     @Req() req: Request,
     @Body() createIngredientDto: CreateIngredientDto,
   ) {
-    const ownerId = req.headers['owner_id'];
-    const branchId = req.headers['branch_id'];
+    const ownerId = req.headers['owner-id'];
+    const branchId = req.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -227,8 +227,8 @@ export class DashboardController {
   @Patch('update-stock-ingredients/:update_id')
   async updateIngredient(
     @Param('update_id') update_id: string,
-    @Headers('owner_id') owner_id: string,
-    @Headers('branch_id') branch_id: string,
+    @Headers('owner-id') owner_id: string,
+    @Headers('branch-id') branch_id: string,
     @Body() body: UpdateIngredientDto,
   ) {
     if (!owner_id || !branch_id) {
@@ -252,8 +252,8 @@ export class DashboardController {
     @Body() updateData: { cancel_status: string },
     @Req() request: Request,
   ): Promise<any> {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -272,8 +272,8 @@ export class DashboardController {
   @Get('stock-ingredients/sub-ingredient/:id')
   async getSubIngredient(
     @Param('id') ingredientId: string,
-    @Headers('owner_id') ownerId: string,
-    @Headers('branch_id') branchId: string,
+    @Headers('owner-id') ownerId: string,
+    @Headers('branch-id') branchId: string,
   ) {
     return await this.dashboardService.getSubIngredient(
       ingredientId,
@@ -307,8 +307,8 @@ export class DashboardController {
     @Param('ingredient_id') ingredient_id: string,
     @Headers() headers: Record<string, string>,
   ) {
-    const ownerId = headers['owner_id'];
-    const branchId = headers['branch_id'];
+    const ownerId = headers['owner-id'];
+    const branchId = headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -329,8 +329,8 @@ export class DashboardController {
     @Body() editIngredientDto: EditIngredientDto,
     @Headers() headers: Record<string, string>,
   ) {
-    const ownerId = headers['owner_id'];
-    const branchId = headers['branch_id'];
+    const ownerId = headers['owner-id'];
+    const branchId = headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -351,8 +351,8 @@ export class DashboardController {
 
   @Get('nearly-expired-out')
   async getNearlyExpiredIngredients(@Req() request: Request) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     return this.dashboardService.getNearlyExpiredAndOutOfStock(
       ownerId,

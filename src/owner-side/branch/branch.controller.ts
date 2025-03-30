@@ -65,13 +65,13 @@ export class BranchController {
 
   @Get('owner/my-branches')
   async getOwnerBranches(@Req() request: Request) {
-    const ownerId = Array.isArray(request.headers['owner_id'])
-      ? request.headers['owner_id'][0]
-      : request.headers['owner_id'];
+    const ownerId = Array.isArray(request.headers['owner-id'])
+      ? request.headers['owner-id'][0]
+      : request.headers['owner-id'];
 
-    const branchId = Array.isArray(request.headers['branch_id'])
-      ? request.headers['branch_id'][0]
-      : request.headers['branch_id'];
+    const branchId = Array.isArray(request.headers['branch-id'])
+      ? request.headers['branch-id'][0]
+      : request.headers['branch-id'];
 
     // Check if either ownerId or branchId is missing
     if (!ownerId || !branchId) {
@@ -86,7 +86,7 @@ export class BranchController {
     @Param('selected_branch_id') selectedBranchId: string,
     @Req() request: Request,
   ) {
-    let ownerId = request.headers['owner_id'];
+    let ownerId = request.headers['owner-id'];
 
     // If owner_id is an array, take the first element
     if (Array.isArray(ownerId)) {
@@ -107,15 +107,15 @@ export class BranchController {
     @Param('selected_branch_id') selectedBranchId: string,
     @Req() request: Request,
   ) {
-    const ownerId = Array.isArray(request.headers['owner_id'])
-      ? request.headers['owner_id'][0]
-      : request.headers['owner_id'];
+    const ownerId = Array.isArray(request.headers['owner-id'])
+      ? request.headers['owner-id'][0]
+      : request.headers['owner-id'];
 
     console.log("OWBER TYPE:", typeof ownerId)
 
-    const branchId = Array.isArray(request.headers['branch_id'])
-      ? request.headers['branch_id'][0]
-      : request.headers['branch_id'];
+    const branchId = Array.isArray(request.headers['branch-id'])
+      ? request.headers['branch-id'][0]
+      : request.headers['branch-id'];
 
     // Check if either ownerId or branchId is missing
     if (!ownerId || !branchId) {

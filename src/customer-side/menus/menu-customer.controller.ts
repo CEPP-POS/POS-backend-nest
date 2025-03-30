@@ -13,8 +13,8 @@ export class MenuCustomerController {
 
   @Get()
   async getCustomerMenus(
-    @Headers('owner_id') ownerId: string,
-    @Headers('branch_id') branchId: string,
+    @Headers('owner-id') ownerId: string,
+    @Headers('branch-id') branchId: string,
   ) {
     // ตรวจสอบและแปลงค่า
 
@@ -27,8 +27,8 @@ export class MenuCustomerController {
 
   @Get('queue')
   async getLatestOrder(
-    @Headers('owner_id') ownerId: string,
-    @Headers('branch_id') branchId: string,
+    @Headers('owner-id') ownerId: string,
+    @Headers('branch-id') branchId: string,
   ) {
     return this.menuCustomerService.getLatestOrder(ownerId, branchId);
   }
@@ -36,8 +36,8 @@ export class MenuCustomerController {
   @Get(':id')
   async getMenuDetails(
     @Param('id') id: string,
-    @Headers('owner_id') ownerId: string,
-    @Headers('branch_id') branchId: string,
+    @Headers('owner-id') ownerId: string,
+    @Headers('branch-id') branchId: string,
   ) {
     return this.menuCustomerService.getMenuDetails(id, ownerId, branchId);
   }

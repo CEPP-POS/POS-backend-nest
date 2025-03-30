@@ -45,8 +45,8 @@ export class MenuController {
   // * Create a new menu
   @Post()
   async create(@Req() request: Request, @Body() createMenuDto: CreateMenuDto) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
@@ -75,8 +75,8 @@ export class MenuController {
 
   @Get('options/add-on')
   async getAddOnDetails(@Req() request: Request) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -90,8 +90,8 @@ export class MenuController {
   // * เรียกดู ชื่อ ID Menu ทั้งหมด
   @Get()
   async findAll(@Req() request: Request) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -107,8 +107,8 @@ export class MenuController {
     @Body() dto: CreateMenuTypeGroupDto,
     @Req() request: Request,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
@@ -122,8 +122,8 @@ export class MenuController {
     @Param('menuTypeGroupName') menuTypeGroupName: string,
     @Req() request: Request,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
     return this.menuService.deleteMenuTypeGroup(
       menuTypeGroupName,
       ownerId,
@@ -136,8 +136,8 @@ export class MenuController {
     @Req() request: Request,
     @Body() updateMenuTypeGroupDto: UpdateMenuTypeGroupDto,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -160,8 +160,8 @@ export class MenuController {
 
   @Get('options/groups')
   async getAllOptionGroups(@Req() request: Request) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -177,8 +177,8 @@ export class MenuController {
     @Param('groupName') groupName: string,
     @Req() request: Request,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -199,8 +199,8 @@ export class MenuController {
     @Param('groupName') groupName: string,
     @Req() request: Request,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -216,8 +216,8 @@ export class MenuController {
     @Param('groupName') groupName: string,
     @Req() request: Request,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(
@@ -240,8 +240,8 @@ export class MenuController {
     @Body() updateMenuDto: UpdateMenuDto,
     @Req() request: Request,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner_id or branch_id');
@@ -253,8 +253,8 @@ export class MenuController {
   // * Delete a menu
   @Delete(':id')
   remove(@Req() request: Request, @Param('id') id: string) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
     }
@@ -267,8 +267,8 @@ export class MenuController {
     @Req() request: Request,
     @Body() createSweetnessDto: CreateSweetnessDto,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
@@ -287,8 +287,8 @@ export class MenuController {
     @Req() request: Request,
     @Body() updateSweetnessDto: UpdateSweetnessDto,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
@@ -307,8 +307,8 @@ export class MenuController {
     @Req() request: Request,
     @Body() createSizeDto: CreateSizeDto,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
@@ -327,8 +327,8 @@ export class MenuController {
     @Req() request: Request,
     @Body() createAddOnDto: CreateAddOnDto,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
@@ -353,8 +353,8 @@ export class MenuController {
       menuData: LinkMenuToStockDto[];
     },
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
@@ -379,8 +379,8 @@ export class MenuController {
     @Req() request: Request,
     @Param('sizeGroupName') sizeGroupName: string,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
@@ -398,8 +398,8 @@ export class MenuController {
     @Req() request: Request,
     @Body() updateSizeDto: UpdateSizeDto,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
@@ -410,8 +410,8 @@ export class MenuController {
 
   @Delete('options/add-ons')
   async deleteAllAddOns(@Req() request: Request) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
@@ -425,8 +425,8 @@ export class MenuController {
     @Req() request: Request,
     @Body() updateAddOnDto: UpdateAddOnDto,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
@@ -440,8 +440,8 @@ export class MenuController {
     @Param('sweetness_group_name') sweetness_group_name: string,
     @Req() request: Request,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
@@ -459,8 +459,8 @@ export class MenuController {
     @Param('menu_id') menu_id: string,
     @Req() request: Request,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new Error('Missing required headers: owner-id or branch-id');
@@ -474,8 +474,8 @@ export class MenuController {
     @Param('menu_id') menu_id: string,
     @Req() request: Request,
   ) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(

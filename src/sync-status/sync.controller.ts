@@ -13,7 +13,7 @@ import { SyncDataDto } from './dto/sync-data.dto';
 
 @Controller('status')
 export class SyncController {
-  constructor(private readonly syncService: SyncService) {}
+  constructor(private readonly syncService: SyncService) { }
 
   @Post('offline')
   @HttpCode(201)
@@ -24,8 +24,8 @@ export class SyncController {
 
   @Get('retry')
   async retryFailedData(@Req() request: Request) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !this.isValidUUID(ownerId)) {
       throw new BadRequestException('Invalid owner_id');

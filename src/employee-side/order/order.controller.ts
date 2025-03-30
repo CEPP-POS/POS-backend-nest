@@ -27,8 +27,8 @@ export class OrderController {
 
   @Post()
   async createOrder(
-    @Headers('owner_id') owner_id: string,
-    @Headers('branch_id') branch_id: string,
+    @Headers('owner-id') owner_id: string,
+    @Headers('branch-id') branch_id: string,
     @Body()
     {
       createOrderDto,
@@ -48,8 +48,8 @@ export class OrderController {
 
   @Get()
   async findAllOrders(
-    @Headers('owner_id') owner_id: string,
-    @Headers('branch_id') branch_id: string,
+    @Headers('owner-id') owner_id: string,
+    @Headers('branch-id') branch_id: string,
   ) {
     return this.orderService.findAllOrders(owner_id, branch_id);
   }
@@ -96,8 +96,8 @@ export class OrderController {
   //
   @Patch(':order_id/cancel')
   async cancelOrder(
-    @Headers('owner_id') owner_id: string,
-    @Headers('branch_id') branch_id: string,
+    @Headers('owner-id') owner_id: string,
+    @Headers('branch-id') branch_id: string,
     @Param('order_id') id: string,
     @Body() cancelOrderDto: CancelOrderDto,
   ) {
@@ -112,8 +112,8 @@ export class OrderController {
   @Patch(':order_id/complete')
   async completeOrder(
     @Param('order_id') id: string,
-    @Headers('owner_id') owner_id: string,
-    @Headers('branch_id') branch_id: string,
+    @Headers('owner-id') owner_id: string,
+    @Headers('branch-id') branch_id: string,
   ) {
     return this.orderService.completeOrder(id, owner_id, branch_id);
   }
@@ -128,8 +128,8 @@ export class OrderController {
 
   @Get('latest')
   async getLatestOrder(@Headers() headers: Record<string, string>) {
-    const ownerId = headers['owner_id'];
-    const branchId = headers['branch_id'];
+    const ownerId = headers['owner-id'];
+    const branchId = headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(

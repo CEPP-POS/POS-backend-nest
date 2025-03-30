@@ -697,7 +697,7 @@ export class BranchService {
             const imageFilename = `${menu.image_url.split('/').pop()}`
             const savePath = path.join(__dirname, '../../../uploads/', imageFilename);
 
-            localImagePath = await this.downloadImage(`http://10.240.67.14/${menu.image_url}`, savePath);
+            localImagePath = await this.downloadImage(`http://ce67-08.cloud.ce.kmitl.ac.th/${menu.image_url}`, savePath);
           }
 
           menus.push({

@@ -9,7 +9,7 @@ import { IngredientService } from './ingredient.service';
 
 @Controller('owner/ingredient')
 export class IngredientController {
-  constructor(private readonly ingredientService: IngredientService) {}
+  constructor(private readonly ingredientService: IngredientService) { }
 
   // @Get()
   // async test() {
@@ -28,8 +28,8 @@ export class IngredientController {
 
   @Get()
   async findIngredientsByOwnerId(@Req() request: Request) {
-    const ownerId = request.headers['owner_id'];
-    const branchId = request.headers['branch_id'];
+    const ownerId = request.headers['owner-id'];
+    const branchId = request.headers['branch-id'];
 
     if (!ownerId || !branchId) {
       throw new BadRequestException(

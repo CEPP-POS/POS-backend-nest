@@ -103,8 +103,8 @@ export class OwnerController {
     @Req() request: Request,
   ) {
     try {
-      const ownerId = request.headers['owner_id'];
-      const branchId = request.headers['branch_id'];
+      const ownerId = request.headers['owner-id'];
+      const branchId = request.headers['branch-id'];
 
       if (!ownerId || !branchId) {
         throw new BadRequestException(
@@ -144,8 +144,8 @@ export class OwnerController {
     @Body() forgotPasswordDto: ForgotPasswordDto,
     @Req() request: Request,
   ) {
-    let ownerId = request.headers['owner_id'];
-    let branchId = request.headers['branch_id'];
+    let ownerId = request.headers['owner-id'];
+    let branchId = request.headers['branch-id'];
 
     // If owner_id or branch_id are arrays, take the first element
     if (Array.isArray(ownerId)) {
@@ -172,8 +172,8 @@ export class OwnerController {
 
   @Post('verify-otp')
   async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto, @Req() request: Request) {
-    let ownerId = request.headers['owner_id'];
-    let branchId = request.headers['branch_id'];
+    let ownerId = request.headers['owner-id'];
+    let branchId = request.headers['branch-id'];
 
     console.log('📌 [DEBUG] Received Headers:', ownerId, branchId);
 
@@ -229,7 +229,7 @@ export class OwnerController {
 
   @Post('branch')
   async assignBranch(@Body('branch_id') branchId: string, @Req() req: Request) {
-    const ownerId = req.headers['owner_id'];
+    const ownerId = req.headers['owner-id'];
     if (!ownerId) {
       throw new BadRequestException(
         'Missing required headers: owner_id or branch_id',
