@@ -559,7 +559,7 @@ export class BranchService {
         {
           headers: {
             'Content-Type': 'application/json',
-            owner_id: ownerId.toString(),
+            'owner-id': ownerId.toString(),
           },
         },
       );
