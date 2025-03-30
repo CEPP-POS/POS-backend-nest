@@ -42,11 +42,6 @@ export class MenuController {
     return this.menuService.handleFileUpload(file);
   }
 
-  // @Post('upload-sync')
-  // uploadFileSync(@Body() path: string) {
-  //   return this.menuService.handleFileUpload2MinIOSync(path);
-  // }
-
   // * Create a new menu
   @Post()
   async create(@Req() request: Request, @Body() createMenuDto: CreateMenuDto) {

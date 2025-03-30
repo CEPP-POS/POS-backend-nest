@@ -97,43 +97,6 @@ export class MenuService {
     } as S3ClientConfig);
   }
 
-  // upload picture to MinIO Sync
-  // async handleFileUpload2MinIOSync(path: string) {
-  //   if (process.env.IS_MAIN_SERVER !== "true") {
-  //     return new NotFoundException("Not use MinIO in this local!");
-  //   }
-
-  //   try {
-  //     console.log("read file from path:", path)
-  //     const fileStream = createReadStream(path);
-
-  //     const mime = (await import("mime")).default; // Dynamic import
-  //     const fileMime = mime.getType(path);
-  //     console.log("file mime:", fileMime);
-
-  //     const filename = path.split("/")[1];
-
-  //     const params: PutObjectCommandInput = {
-  //       Bucket: this.bucket,
-  //       Key: filename, // บันทึกไฟล์ลง
-  //       Body: fileStream,
-  //       ContentType: fileMime
-  //     }
-
-  //     console.log('upload picture to syc MinIO');
-  //     const putObjectCommand = new PutObjectCommand(params);
-  //     await this.s3.send(putObjectCommand);
-
-  //     console.log("FILE PATH MINIO:", { message: 'File uploaded successfully', filePath: `uploads/${filename}` })
-
-  //     // คืนค่า URL เป็น /upload/... เพื่อให้ frontend ใช้รูปแบบเดียวกัน
-  //     return { message: 'File uploaded successfully', filePath: `uploads/${filename}` };
-  //   } catch (error) {
-  //     console.log("error when uploading to MinIO:", error);
-  //     throw new InternalServerErrorException('Failed to upload file');
-  //   }
-  // }
-
   // upload picture to MinIO
   async handleFileUpload2MinIO(file: Express.Multer.File) {
     console.log('upload picture to MinIO');

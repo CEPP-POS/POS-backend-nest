@@ -6,8 +6,9 @@ import { SyncDataDto } from './dto/sync-data.dto';
 import { SyncStatus } from 'src/entities/sync-status.entity';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
-import fs from "fs";
-import FormData from "form-data";
+import * as FormData from "form-data";
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class SyncService {
@@ -56,14 +57,17 @@ export class SyncService {
           const imageUrl = payload.image_url;
           console.log("Extracted Image URL:", imageUrl);
 
+          const fullPath = path.join(__dirname, '../../', imageUrl);
+          console.log(fullPath);
+
           // Read file from local storage
-          if (fs.existsSync(imageUrl)) {
+          if (fs.existsSync(fullPath)) {
             console.log("Upload Image to MinIO");
 
             const formData = new FormData();
             formData.append("file", fs.createReadStream(imageUrl), { filename: imageUrl.split("/").pop() });
 
-            await axios.post(`${process.env.MAIN_SERVER_URL}/upload`, formData, {
+            await axios.post(`${process.env.MAIN_SERVER_URL}/owner/menus/upload`, formData, {
               headers: {
                 ...formData.getHeaders(), // Use headers from `form-data`
               },
@@ -76,11 +80,10 @@ export class SyncService {
           }
         }
       } catch (error) {
-        console.error("Invalid JSON format in payload:", item.payload);
+        console.error("error when syncing data:", error);
       }
 
       console.log('✅ All failed items have been synced', item);
-      return { "test": "testtt" }
       await this.sendRequestToServer(item);
     }
   }

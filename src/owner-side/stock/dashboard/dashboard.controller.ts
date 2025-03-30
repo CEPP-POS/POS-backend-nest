@@ -28,7 +28,7 @@ import { EditIngredientDto } from './dto/edit-ingredient.dto';
 
 @Controller('owner')
 export class DashboardController {
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(private readonly dashboardService: DashboardService) { }
 
   @Get('stock-summary/:date')
   async getStockSummary(

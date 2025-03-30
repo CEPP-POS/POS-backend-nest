@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
@@ -25,6 +26,8 @@ import { Menu } from '../../entities/menu.entity';
 import { MenuCategory } from 'src/entities/menu_category';
 import { MenuIngredient } from '../../entities/menu-ingredient.entity';
 import { v4 as uuidv4 } from 'uuid';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class BranchService {
@@ -73,7 +76,7 @@ export class BranchService {
 
     @InjectRepository(MenuIngredient)
     private readonly menuIngredientRepository: Repository<MenuIngredient>,
-  ) {}
+  ) { }
   // * Create Branch (Owner Only)
   async create(createBranchDto: CreateBranchDto): Promise<Branch> {
     const { owner_id, ...branchData } = createBranchDto;
@@ -685,11 +688,31 @@ export class BranchService {
 
       // บันทึกข้อมูล Menu
       if (sourceSetup.menu && sourceSetup.menu.length > 0) {
-        const menus = sourceSetup.menu.map((menu) => ({
-          ...menu,
-          owner,
-          branch,
-        }));
+        const menus = []
+
+        for (const menu of sourceSetup.menu) {
+          let localImagePath = null;
+
+          if (menu.image_url) {
+            const imageFilename = `${menu.image_url.split('/').pop()}`
+            const savePath = path.join(__dirname, '../../../uploads/', imageFilename);
+
+            localImagePath = await this.downloadImage(`http://10.240.67.14/${menu.image_url}`, savePath);
+          }
+
+          menus.push({
+            ...menu,
+            owner,
+            branch,
+          });
+        }
+
+        // const menus = sourceSetup.menu.map((menu) => ({
+        //     ...menu,
+        //     owner,
+        //     branch,
+        // }));
+
         await this.menuRepository.save(menus);
       }
 
@@ -739,5 +762,29 @@ export class BranchService {
       branch_name: branch.branch_name,
       branch_address: branch.branch_address,
     }));
+  }
+
+  async downloadImage(imageUrl: string, savePath: string) {
+    try {
+      console.log(`Downloading image from: ${imageUrl}`);
+      const response = await axios({
+        method: "get",
+        url: imageUrl,
+        responseType: 'stream',
+      })
+
+      await new Promise((resolve, reject) => {
+        const writer = fs.createWriteStream(savePath);
+        response.data.pipe(writer);
+        writer.on('finish', () => resolve(null));
+        writer.on('error', reject);
+      });
+
+      console.log(`✅ Image saved to: ${savePath}`);
+      return savePath;
+    } catch (error) {
+      console.error('❌ Error downloading image:', error.message);
+      return null;
+    }
   }
 }
