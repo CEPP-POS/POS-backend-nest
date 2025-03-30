@@ -416,14 +416,14 @@ export class OrderService {
           ? 'cash'
           : 'pending',
       path_img: createOrderDto.path_img,
-      amount: createOrderDto.total_price,
-      total_amount: totalAmount,
+      amount: parseFloat(createOrderDto.total_price.toString()),
+      total_amount: parseFloat(totalAmount.toString()),
       payment_date: new Date(),
       owner,
       branch,
       ...(createOrderDto.payment_method === PaymentMethod.CASH && {
-        cash_given: createOrderDto.cash_given,
-        change: createOrderDto.change,
+        cash_given: parseFloat(createOrderDto.cash_given?.toString() || '0'),
+        change: parseFloat(createOrderDto.change?.toString() || '0'),
       }),
     });
 
@@ -439,7 +439,7 @@ export class OrderService {
     }
 
     // Process order items
-    const savedOrderItems = await Promise.all(
+    await Promise.all(
       items.map(async (item) => {
         // Validate menu, sweetness, size, and menu type
         const menu = await this.menuRepository.findOne({
@@ -873,15 +873,15 @@ export class OrderService {
     if (!payment) {
       // If no payment exists, create a new one
       payment = this.paymentRepository.create({
-        payment_id: payWithCashDto.payment_id || uuidv4(), // ใช้ payment_id ที่ส่งมาโดยตรง
+        payment_id: payWithCashDto.payment_id || uuidv4(),
         order,
         cash_given: payWithCashDto.cash_given,
         change: payWithCashDto.change,
         payment_method: 'CASH',
         status: 'cash',
         payment_date: new Date(),
-        amount: payWithCashDto.amount,
-        total_amount: totalAmount,
+        amount: parseFloat(payWithCashDto.amount.toString()),
+        total_amount: parseFloat(totalAmount.toString()),
         owner: order.owner,
         branch: order.branch,
       });
@@ -893,8 +893,8 @@ export class OrderService {
         payment_method: 'CASH',
         status: 'cash',
         payment_date: new Date(),
-        amount: payWithCashDto.amount,
-        total_amount: totalAmount,
+        amount: parseFloat(payWithCashDto.amount.toString()),
+        total_amount: parseFloat(totalAmount.toString()),
         owner: order.owner,
         branch: order.branch,
       });
@@ -908,11 +908,11 @@ export class OrderService {
     await this.orderRepository.save(order);
     return {
       payment_id: payment.payment_id,
-      total_amount: totalAmount,
-      cash_given: payWithCashDto.cash_given,
-      change: payWithCashDto.change,
+      total_amount: parseFloat(totalAmount.toString()),
+      cash_given: parseFloat(payWithCashDto.cash_given.toString()),
+      change: parseFloat(payWithCashDto.change.toString()),
       status: payment.status,
-      amount: payWithCashDto.amount,
+      amount: parseFloat(payWithCashDto.amount.toString()),
     };
   }
 

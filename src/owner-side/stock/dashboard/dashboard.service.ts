@@ -79,7 +79,7 @@ export class DashboardService {
       });
 
       monthlyRevenue[month] = salesSummaries.reduce(
-        (sum, item) => sum + (typeof item.total_revenue === 'string' ? parseFloat(item.total_revenue) : item.total_revenue),
+        (sum, item) => sum + parseFloat(item.total_revenue.toString()),
         0,
       );
     }
@@ -143,7 +143,7 @@ export class DashboardService {
     return {
       top_three: top3Items,
       totalRevenue: salesSummariesForDay.reduce(
-        (sum, item) => sum + item.total_revenue,
+        (sum, item) => sum + parseFloat(item.total_revenue.toString()),
         0,
       ),
       totalOrders: salesSummariesForDay.reduce(
@@ -252,8 +252,12 @@ export class DashboardService {
       const paymentMethod = order.payment
         ? order.payment.payment_method
         : 'Unknown';
-      const amount = order.payment.amount;
-      const total_amount = order.payment.total_amount;
+      const amount = order.payment?.amount
+        ? parseFloat(order.payment.amount.toString())
+        : 0;
+      const total_amount = order.payment?.total_amount
+        ? parseFloat(order.payment.total_amount.toString())
+        : 0;
       const cancel_status = order.cancel_status;
 
       // Return the formatted order details
@@ -329,7 +333,9 @@ export class DashboardService {
       order_table: order.order_item.map((item) => ({
         menu_name: item.menu?.menu_name || 'N/A',
         quantity: item.quantity,
-        amount: item.price,
+        amount: item.price
+          ? Number(parseFloat(item.price.toString()).toFixed(2))
+          : 0,
         size_name: item.size?.size_name || 'N/A',
         sweetness_name: item.sweetnessLevel?.level_name || 'N/A',
         add_on_name:
@@ -339,7 +345,9 @@ export class DashboardService {
           item.menu?.menuCategory?.map((cat) => cat.category.category_name) ||
           'N/A',
       })),
-      total_amount: order.payment?.amount || 0,
+      total_amount: order.payment?.amount
+        ? Number(parseFloat(order.payment.amount.toString()).toFixed(2))
+        : 0,
       payment_method: order.payment?.payment_method || 'N/A',
       cancel_status: order.cancel_status,
       customer_name: order.customer_name,
@@ -792,7 +800,7 @@ export class DashboardService {
     }
 
     // ถ้าสถานะเป็น "คืนเงินเสร็จสิ้น" ให้หักยอดเงินออกจาก sales_summary
-    if (cancel_status === 'คืนเงินเสร็จสิ้น') {
+    if (cancel_status === 'คืนเงินเสร็จสิ้น' && order.payment?.amount) {
       const orderDate = new Date(order.order_date);
       const startOfDay = new Date(orderDate.setHours(0, 0, 0, 0));
       const endOfDay = new Date(orderDate.setHours(23, 59, 59, 999));
@@ -808,7 +816,10 @@ export class DashboardService {
 
       if (salesSummary) {
         // หักยอดเงินออกจาก total_revenue
-        salesSummary.total_revenue -= order.payment.amount;
+        const refundAmount = parseFloat(order.payment.amount.toString());
+        salesSummary.total_revenue = parseFloat(
+          (salesSummary.total_revenue - refundAmount).toFixed(2),
+        );
         await this.salesSummaryRepository.save(salesSummary);
       }
     }
@@ -1096,14 +1107,18 @@ export class DashboardService {
       console.log('ORDER DETAILS:', order);
       console.log('ORDER AMOUNT:', order.payment);
 
-      if (order.payment.amount === null) {
+      if (order.payment?.amount === null) {
         console.log('ORDER AMOUNT NULL FOUND:', order.payment);
       }
 
-      const amount = order.payment.amount;
-      const total_amount = order.payment.total_amount;
+      const amount = order.payment?.amount
+        ? parseFloat(order.payment.amount.toString())
+        : 0;
+      const total_amount = order.payment?.total_amount
+        ? parseFloat(order.payment.total_amount.toString())
+        : 0;
       const cancel_status = order.cancel_status;
-      const image_url = order.payment.path_img;
+      const image_url = order.payment?.path_img;
 
       return {
         order_id: order.order_id,

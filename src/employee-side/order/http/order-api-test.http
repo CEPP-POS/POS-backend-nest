@@ -14,22 +14,13 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
   },
   "items": [
     {
-      "menu_id": "4158398f-a29e-42ed-a085-f168446527fc",
-      "sweetness_id": "0d1e5861-26d9-43b5-b211-3ac81c70785d",
-      "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22",
-      "add_on_id": ["9698b6ce-bbc2-4e12-a252-ebd26ccdde1b","1fda408a-8db2-4bc8-b17c-a1212099776e"],  
-      "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf",
+      "menu_id": "33769a3a-5bfb-41c8-8971-744dae1d92aa",
+      "sweetness_id": "8a37c89d-53dd-4004-9eae-ac3e27873605",
+      "size_id": "8630478c-6507-444d-bb39-9e0d2f543be0",
+      "add_on_id": ["be2d2ae9-75fb-4c1a-a626-6c3be3b70e8c"],  
+      "menu_type_id": "73c17af8-0fb7-448a-9975-67ca95356f0b",
       "quantity": 2,
       "price": 100.5
-    },
-    {
-      "menu_id": "937a85a7-168c-4bc3-91c4-a5d0a66f6ef2",
-      "sweetness_id": "0d1e5861-26d9-43b5-b211-3ac81c70785d",
-      "size_id": "5063ff4e-9a32-4d28-836d-3dd2ede90d22",
-      "add_on_id": ["9698b6ce-bbc2-4e12-a252-ebd26ccdde1b","1fda408a-8db2-4bc8-b17c-a1212099776e"],  
-      "menu_type_id": "7061ae01-16bb-4e44-a593-8fa689218edf",
-      "quantity": 2,
-      "price": 100
     }
   ]
 }
@@ -84,7 +75,7 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
 DELETE http://localhost:3000/employee/orders/20250303150000-505Y4
 
 ## cancel order👌
-PATCH http://localhost:3000/employee/orders/20250303150000-NJ4Y7/cancel
+PATCH http://localhost:3000/employee/orders/20250306150100-P7V6Q/cancel
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
@@ -97,13 +88,13 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
 GET http://localhost:3000/employee/orders/item
 
 ### complete order👌
-PATCH http://localhost:3000/employee/orders/20250303150000-HT9YR/complete
+PATCH http://localhost:3000/employee/orders/20250306150100-AID9T/complete
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
 branch_id: d458dffa-855b-4040-afba-dbf97055a820
 
 ### pay with cash 👌
-POST http://localhost:3000/employee/orders/20250303150000-6WL1S/cash
+POST http://localhost:3000/employee/orders/20250306150100-I6P0T/cash
 Content-Type: application/json
 {
   "payment_id": "59d9ae01-c765-48d9-a6ff-cf54d598d0f8",
