@@ -79,7 +79,7 @@ export class DashboardService {
       });
 
       monthlyRevenue[month] = salesSummaries.reduce(
-        (sum, item) => sum + item.total_revenue,
+        (sum, item) => sum + parseFloat(item.total_revenue.toString()),
         0,
       );
     }
@@ -143,7 +143,7 @@ export class DashboardService {
     return {
       top_three: top3Items,
       totalRevenue: salesSummariesForDay.reduce(
-        (sum, item) => sum + item.total_revenue,
+        (sum, item) => sum + parseFloat(item.total_revenue.toString()),
         0,
       ),
       totalOrders: salesSummariesForDay.reduce(
@@ -251,8 +251,12 @@ export class DashboardService {
       const paymentMethod = order.payment
         ? order.payment.payment_method
         : 'Unknown';
-      const amount = order.payment.amount;
-      const total_amount = order.payment.total_amount;
+      const amount = order.payment?.amount
+        ? parseFloat(order.payment.amount.toString())
+        : 0;
+      const total_amount = order.payment?.total_amount
+        ? parseFloat(order.payment.total_amount.toString())
+        : 0;
       const cancel_status = order.cancel_status;
 
       // Return the formatted order details
@@ -1095,14 +1099,18 @@ export class DashboardService {
       console.log('ORDER DETAILS:', order);
       console.log('ORDER AMOUNT:', order.payment);
 
-      if (order.payment.amount === null) {
+      if (order.payment?.amount === null) {
         console.log('ORDER AMOUNT NULL FOUND:', order.payment);
       }
 
-      const amount = order.payment.amount;
-      const total_amount = order.payment.total_amount;
+      const amount = order.payment?.amount
+        ? parseFloat(order.payment.amount.toString())
+        : 0;
+      const total_amount = order.payment?.total_amount
+        ? parseFloat(order.payment.total_amount.toString())
+        : 0;
       const cancel_status = order.cancel_status;
-      const image_url = order.payment.path_img;
+      const image_url = order.payment?.path_img;
 
       return {
         order_id: order.order_id,
