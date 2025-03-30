@@ -13,7 +13,7 @@ export class AuthService {
   constructor(
     private readonly userService: OwnerService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
   // * Login
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto);
@@ -36,10 +36,11 @@ export class AuthService {
     console.log('✅ Extracted branch_id:', branchId);
 
     const payload = {
-      owner_id: user.owner_id,
+      "owner-id": user.owner_id,
       email: user.email,
-      branch_id: branchId,
+      "branch_id": branchId,
       roles: user.roles && user.roles.length > 0 ? user.roles : ['employee'],
+      manager: user.manager.owner_id
     };
 
     const token = await this.jwtService.signAsync(payload);
@@ -47,8 +48,8 @@ export class AuthService {
 
     return {
       token,
-      owner_id: user.owner_id,
-      branch_id: branchId,
+      "owner-id": user.owner_id,
+      "branch-id": branchId,
     };
   }
 
