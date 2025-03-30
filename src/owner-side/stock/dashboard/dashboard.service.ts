@@ -58,7 +58,7 @@ export class DashboardService {
 
     @InjectRepository(Owner)
     private ownerRepository: Repository<Owner>,
-  ) {}
+  ) { }
 
   private async calculateMonthlyRevenue(
     year: number,
@@ -79,7 +79,7 @@ export class DashboardService {
       });
 
       monthlyRevenue[month] = salesSummaries.reduce(
-        (sum, item) => sum + item.total_revenue,
+        (sum, item) => sum + (typeof item.total_revenue === 'string' ? parseFloat(item.total_revenue) : item.total_revenue),
         0,
       );
     }
@@ -168,6 +168,7 @@ export class DashboardService {
       ownerId,
       branchId,
     );
+
     const { top_three, totalRevenue, totalOrders, canceledOrders } =
       await this.calculateDailyStats(date, ownerId, branchId);
 
@@ -458,8 +459,8 @@ export class DashboardService {
       category_name:
         menuIng.menu.menuCategory.length > 0
           ? menuIng.menu.menuCategory
-              .map((cat) => cat.category.category_name)
-              .join(', ')
+            .map((cat) => cat.category.category_name)
+            .join(', ')
           : '',
     }));
 
@@ -1209,6 +1210,7 @@ export class DashboardService {
 
         nearlyOutOfStock.push({
           ingredient_name: ingredient.ingredient_name,
+          ingredient_unit: ingredient.unit,
           total_volume: validUpdates[0].total_volume,
         });
       }

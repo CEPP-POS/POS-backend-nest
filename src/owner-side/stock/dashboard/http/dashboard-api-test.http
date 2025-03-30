@@ -1,8 +1,8 @@
 ### Get Stock Summary by Date👌
-GET http://localhost:3000/owner/stock-summary/2025-03-03
+GET http://localhost:3000/owner/stock-summary/2025-03-30
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
-branch_id: d458dffa-855b-4040-afba-dbf97055a820
+branch_id: 85f246e6-42da-4b82-8cf4-bdf2c62fa131
 
 ### Get Stock Summary by Month👌
 GET http://localhost:3000/owner/stock-sale/2025/03
@@ -133,6 +133,6 @@ branch_id: d458dffa-855b-4040-afba-dbf97055a820
 GET http://localhost:3000/owner/nearly-expired-out
 Content-Type: application/json
 owner_id: c630720f-f05d-4d91-ba66-8a7dd60c2353
-branch_id: d458dffa-855b-4040-afba-dbf97055a820
+branch_id: 85f246e6-42da-4b82-8cf4-bdf2c62fa131
 
 

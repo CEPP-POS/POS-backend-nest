@@ -3,7 +3,9 @@ import {
   ConflictException,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -33,6 +35,8 @@ import { UpdateSweetnessDto } from './dto/update-option/update-sweetness-dto';
 import { UpdateSizeDto } from './dto/update-option/update-size.dto';
 import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
 import { v4 as uuidv4 } from 'uuid';
+import { S3Client, S3ClientConfig, PutObjectCommand, PutObjectCommandInput } from '@aws-sdk/client-s3';
+import { createReadStream } from 'fs';
 
 @Injectable()
 export class MenuService {
@@ -78,7 +82,97 @@ export class MenuService {
 
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
-  ) {}
+
+    private readonly s3: S3Client,
+    @Inject('MINIO_BUCKET') private readonly bucket: string,
+  ) {
+    this.s3 = new S3Client({
+      endpoint: process.env.MINIO_ENDPOINT,
+      region: 'us-east-1',
+      credentials: {
+        accessKeyId: process.env.MINIO_ACCESS_KEY,
+        secretAccessKey: process.env.MINIO_SECRET_KEY,
+      },
+      forcePathStyle: true,
+    } as S3ClientConfig);
+  }
+
+  // upload picture to MinIO Sync
+  // async handleFileUpload2MinIOSync(path: string) {
+  //   if (process.env.IS_MAIN_SERVER !== "true") {
+  //     return new NotFoundException("Not use MinIO in this local!");
+  //   }
+
+  //   try {
+  //     console.log("read file from path:", path)
+  //     const fileStream = createReadStream(path);
+
+  //     const mime = (await import("mime")).default; // Dynamic import
+  //     const fileMime = mime.getType(path);
+  //     console.log("file mime:", fileMime);
+
+  //     const filename = path.split("/")[1];
+
+  //     const params: PutObjectCommandInput = {
+  //       Bucket: this.bucket,
+  //       Key: filename, // บันทึกไฟล์ลง
+  //       Body: fileStream,
+  //       ContentType: fileMime
+  //     }
+
+  //     console.log('upload picture to syc MinIO');
+  //     const putObjectCommand = new PutObjectCommand(params);
+  //     await this.s3.send(putObjectCommand);
+
+  //     console.log("FILE PATH MINIO:", { message: 'File uploaded successfully', filePath: `uploads/${filename}` })
+
+  //     // คืนค่า URL เป็น /upload/... เพื่อให้ frontend ใช้รูปแบบเดียวกัน
+  //     return { message: 'File uploaded successfully', filePath: `uploads/${filename}` };
+  //   } catch (error) {
+  //     console.log("error when uploading to MinIO:", error);
+  //     throw new InternalServerErrorException('Failed to upload file');
+  //   }
+  // }
+
+  // upload picture to MinIO
+  async handleFileUpload2MinIO(file: Express.Multer.File) {
+    console.log('upload picture to MinIO');
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException('Invalid file type');
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new BadRequestException('File is too large!');
+    }
+
+    try {
+      // const fileStream = createReadStream(file.path);
+
+      const params: PutObjectCommandInput = {
+        Bucket: this.bucket,
+        Key: file.originalname, // บันทึกไฟล์ลง
+        Body: file.buffer,
+        ContentType: file.mimetype
+      }
+
+      const putObjectCommand = new PutObjectCommand(params);
+      await this.s3.send(putObjectCommand);
+
+      console.log("FILE PATH MINIO:", { message: 'File uploaded successfully', filePath: `uploads/${file.originalname}` })
+
+      // คืนค่า URL เป็น /upload/... เพื่อให้ frontend ใช้รูปแบบเดียวกัน
+      // return { message: 'File uploaded successfully', filePath: `uploads/${file.originalname}` };
+    } catch (error) {
+      console.log("error when uploading to MinIO:", error);
+      throw new InternalServerErrorException('Failed to upload file');
+    }
+  }
 
   // upload picture to local
   handleFileUpload(file: Express.Multer.File) {
@@ -99,7 +193,7 @@ export class MenuService {
       throw new BadRequestException('file is too large!');
     }
 
-    return { message: 'File uploaded successfully', filePath: file.path };
+    return { message: 'File uploaded successfully', filePath: `uploads/${file.filename}` };
   }
 
   // * สร้างเมนูใหม่
@@ -180,12 +274,12 @@ export class MenuService {
       return hasRelations
         ? menu
         : {
-            menu_id: menu.menu_id,
-            menu_name: menu.menu_name,
-            description: menu.description,
-            image_url: menu.image_url,
-            price: menu.price,
-          };
+          menu_id: menu.menu_id,
+          menu_name: menu.menu_name,
+          description: menu.description,
+          image_url: menu.image_url,
+          price: menu.price,
+        };
     });
   }
 

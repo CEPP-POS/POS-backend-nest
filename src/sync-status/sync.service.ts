@@ -6,6 +6,8 @@ import { SyncDataDto } from './dto/sync-data.dto';
 import { SyncStatus } from 'src/entities/sync-status.entity';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
+import fs from "fs";
+import FormData from "form-data";
 
 @Injectable()
 export class SyncService {
@@ -13,7 +15,7 @@ export class SyncService {
     @InjectRepository(SyncStatus)
     private readonly syncRepo: Repository<SyncStatus>,
     private readonly httpService: HttpService,
-  ) {}
+  ) { }
   async saveFailedRequest(data: SyncDataDto) {
     console.log('📥 Received data:', JSON.stringify(data, null, 2));
     console.log('🔑 Received headers:', JSON.stringify(data.headers, null, 2));
@@ -37,14 +39,48 @@ export class SyncService {
 
     const savedSyncStatus = await this.syncRepo.save(syncStatus);
   }
+
   async processSyncQueue() {
+    console.log("PROCESS SYNC QUEUE")
     const failedItems = await this.syncRepo.find({
       where: { synced: false },
       order: { createdAt: 'ASC' },
     });
 
     for (const item of failedItems) {
+
+      try {
+        const payload = item.payload;
+        console.log("PAYLOAD MINIO:", payload)
+        if (payload.image_url) {
+          const imageUrl = payload.image_url;
+          console.log("Extracted Image URL:", imageUrl);
+
+          // Read file from local storage
+          if (fs.existsSync(imageUrl)) {
+            console.log("Upload Image to MinIO");
+
+            const formData = new FormData();
+            formData.append("file", fs.createReadStream(imageUrl), { filename: imageUrl.split("/").pop() });
+
+            await axios.post(`${process.env.MAIN_SERVER_URL}/upload`, formData, {
+              headers: {
+                ...formData.getHeaders(), // Use headers from `form-data`
+              },
+              timeout: 10000,
+            });
+
+            console.log("✅ Image uploaded successfully!");
+          } else {
+            console.log("⚠️ Image file not found:", imageUrl);
+          }
+        }
+      } catch (error) {
+        console.error("Invalid JSON format in payload:", item.payload);
+      }
+
       console.log('✅ All failed items have been synced', item);
+      return { "test": "testtt" }
       await this.sendRequestToServer(item);
     }
   }
@@ -77,8 +113,8 @@ export class SyncService {
       if (error.response?.status === 409) {
         data.synced = true;
         data.errorMessage = '409 Conflict';
-        await this.syncRepo.save(data); 
-        await this.syncRepo.remove(data); 
+        await this.syncRepo.save(data);
+        await this.syncRepo.remove(data);
       } else {
         data.errorMessage = error.response?.data?.message || error.message;
       }
@@ -92,7 +128,7 @@ export class SyncService {
 
     await new Promise((res) => setTimeout(res, 1000));
   }
-  
+
   async getPendingSyncs() {
     return await this.syncRepo.find({
       where: { synced: false },

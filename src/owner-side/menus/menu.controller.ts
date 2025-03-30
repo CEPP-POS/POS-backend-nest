@@ -30,14 +30,22 @@ import { UpdateAddOnDto } from './dto/update-option/update-add-on.dto';
 export class MenuController {
   constructor(
     private readonly menuService: MenuService, // Inject MenuService
-  ) {}
+  ) { }
 
-  // upload picture to local storage
+  // upload picture to disk storage/MinIO
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
+    if (process.env.IS_MAIN_SERVER == 'true') {
+      return this.menuService.handleFileUpload2MinIO(file);
+    }
     return this.menuService.handleFileUpload(file);
   }
+
+  // @Post('upload-sync')
+  // uploadFileSync(@Body() path: string) {
+  //   return this.menuService.handleFileUpload2MinIOSync(path);
+  // }
 
   // * Create a new menu
   @Post()

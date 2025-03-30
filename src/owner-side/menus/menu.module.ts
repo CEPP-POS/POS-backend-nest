@@ -20,7 +20,10 @@ import { MenuTypeGroup } from 'src/entities/menu-type-group.entity';
 import { SweetnessGroup } from 'src/entities/sweetness-group.entity';
 import { SizeGroup } from 'src/entities/size-group.entity';
 import { MulterModule } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { diskStorage, memoryStorage } from 'multer';
+import { S3Client } from '@aws-sdk/client-s3';
+
+const isMainServer = process.env.IS_MAIN_SERVER === 'true';
 
 @Module({
   imports: [
@@ -40,17 +43,39 @@ import { diskStorage } from 'multer';
     OwnerModule,
     BranchModule,
     MulterModule.register({
-      storage: diskStorage({
-        destination: 'uploads/',
-        filename: (req, file, cb) => {
-          const filename = `${Date.now()}-${file.originalname}`;
-          cb(null, filename);
-        },
-      }),
+      storage: isMainServer
+        ? memoryStorage() // Store files in memory if it main server
+        : diskStorage({
+          destination: 'uploads/',
+          filename: (req, file, cb) => {
+            const filename = `${Date.now()}-${file.originalname}`;
+            cb(null, filename);
+          },
+        }),
     }),
   ],
   controllers: [MenuController],
-  providers: [MenuService],
+  providers: [
+    MenuService,
+    {
+      provide: S3Client,
+      useFactory: () => {
+        return new S3Client({
+          endpoint: process.env.MINIO_ENDPOINT,
+          region: 'us-east-1',
+          credentials: {
+            accessKeyId: process.env.MINIO_ACCESS_KEY,
+            secretAccessKey: process.env.MINIO_SECRET_KEY,
+          },
+          forcePathStyle: true,
+        });
+      },
+    },
+    {
+      provide: 'MINIO_BUCKET',
+      useValue: process.env.MINIO_BUCKET || '',
+    },
+  ],
   exports: [MenuService],
 })
-export class MenuModule {}
+export class MenuModule { }
