@@ -18,7 +18,7 @@ export enum syncStatus {
 @Entity('sync_status')
 export class SyncStatus {
   @PrimaryGeneratedColumn('uuid')
-id: string;
+  id: string;
 
 
   @Column()

@@ -28,11 +28,11 @@ export class SyncService {
       payload: data.payload,
       headers: {
         'Content-Type': 'application/json',
-        'owner-id': data.headers?.owner_id,
-        'branch-id': data.headers?.branch_id,
+        'owner-id': data.headers?.["owner-id"],
+        'branch-id': data.headers?.["branch-id"],
       },
-      owner_id: data.headers?.owner_id,
-      branch_id: data.headers?.branch_id,
+      owner_id: data.headers?.["owner-id"],
+      branch_id: data.headers?.["branch-id"],
       synced: false,
       retryCount: 0,
       statusCode: data.statusCode,
@@ -96,8 +96,8 @@ export class SyncService {
         data: data.payload,
         headers: {
           'Content-Type': 'application/json',
-          owner_id: data.owner_id,
-          branch_id: data.branch_id,
+          "owner-id": data.owner_id,
+          "branch-id": data.branch_id,
         },
         timeout: 10000,
       });
