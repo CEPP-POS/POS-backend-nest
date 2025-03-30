@@ -40,7 +40,7 @@ export class AuthService {
       email: user.email,
       "branch_id": branchId,
       roles: user.roles && user.roles.length > 0 ? user.roles : ['employee'],
-      manager: user.manager.owner_id
+      manager: user.manager?.owner_id
     };
 
     const token = await this.jwtService.signAsync(payload);
