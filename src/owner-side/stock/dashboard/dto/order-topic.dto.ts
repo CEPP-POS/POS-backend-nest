@@ -14,14 +14,23 @@ export class OrderTopic {
   @IsDate()
   order_date: Date;
 
-  @IsString()
-  quantity: string;
+  @IsNumber()
+  quantity: number;
 
-  @IsString()
-  total_amount: string;
+  @IsNumber()
+  amount: number;
+
+  @IsNumber()
+  total_amount: number;
 
   @IsString()
   payment_method: string;
+
+  @IsString()
+  cancel_status: string;
+
+  @IsString()
+  image_url: string;
 }
 
 export class OrderTopicDto {
